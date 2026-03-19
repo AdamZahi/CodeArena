@@ -1,0 +1,28 @@
+﻿{
+  "realm": "code-arena",
+  "enabled": true,
+  "defaultRoles": ["PARTICIPANT"],
+  "roles": {
+    "realm": [
+      { "name": "PARTICIPANT" },
+      { "name": "ADMIN" },
+      { "name": "COACH" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "code-arena-backend",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "code-arena-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "redirectUris": ["http://localhost:4200/*"],
+      "webOrigins": ["http://localhost:4200"]
+    }
+  ]
+}

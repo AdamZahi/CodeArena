@@ -1,0 +1,27 @@
+﻿server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/codearena
+    username: codearena
+    password: codearena
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8081/realms/code-arena/protocol/openid-connect/certs
+
+keycloak:
+  realm: code-arena
+  client-id: code-arena-backend
+  server-url: http://localhost:8081
+
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:4200

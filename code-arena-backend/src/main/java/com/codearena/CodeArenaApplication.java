@@ -1,0 +1,18 @@
+﻿package com.codearena;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CodeArenaApplication {
+
+    /**
+     * Starts the Code Arena backend application.
+     *
+     * @param args startup arguments
+     */
+    public static void main(String[] args) {
+        // TODO: Add startup hooks and bootstrap tasks.
+        SpringApplication.run(CodeArenaApplication.class, args);
+    }
+}

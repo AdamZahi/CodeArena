@@ -1,0 +1,39 @@
+﻿version: "3.9"
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: codearena
+      MYSQL_USER: codearena
+      MYSQL_PASSWORD: codearena
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    ports:
+      - "8081:8080"
+
+  backend:
+    build: ./code-arena-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - keycloak
+
+  frontend:
+    build: ./code-arena-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend

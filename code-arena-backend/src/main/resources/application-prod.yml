@@ -1,0 +1,18 @@
+﻿server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWK_SET_URI}
+
+keycloak:
+  realm: ${KEYCLOAK_REALM}
+  client-id: ${KEYCLOAK_CLIENT_ID}
+  server-url: ${KEYCLOAK_SERVER_URL}

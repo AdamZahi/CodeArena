@@ -1,0 +1,59 @@
+# ------------------------------
+# Code Arena monorepo .gitignore
+# ------------------------------
+
+# Environment and secret files
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.template
+!**/.env.sample
+
+# Local secret overrides
+**/*secret*.yml
+**/*secret*.yaml
+**/*secret*.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-*.local.yml
+**/application-*.local.yaml
+
+# Credentials / keys / certs
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/*.crt
+**/*.csr
+**/id_rsa
+**/id_ed25519
+
+# Secret directories
+**/secrets/
+**/.secrets/
+
+# Keycloak local exports/backups (keep tracked stub realm-export.json)
+keycloak/*.backup.json
+keycloak/*-private*.json
+keycloak/realm-export.local.json
+
+# Build outputs and dependencies (monorepo safety)
+**/target/
+**/node_modules/
+**/dist/
+**/build/
+**/.angular/cache/
+
+# Logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE / OS
+**/.idea/
+**/.DS_Store
+**/Thumbs.db
