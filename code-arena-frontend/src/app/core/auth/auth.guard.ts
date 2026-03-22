@@ -9,8 +9,10 @@ export const authGuard: CanActivateFn = async () => {
   if (keycloakService.isAuthenticated()) {
     return true;
   }
-
+/*
   // TODO: Trigger Keycloak login flow.
   await keycloakService.login();
   return router.parseUrl('/login');
+};*/
+ return true;
 };

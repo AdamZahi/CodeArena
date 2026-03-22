@@ -11,7 +11,7 @@ export const BO_ROUTES: Routes = [
       { path: 'users/:id', loadComponent: () => import('./user-management/pages/user-detail/user-detail.component').then((m) => m.UserDetailComponent) },
       { path: 'challenges', loadComponent: () => import('./challenge-management/challenge-management.component').then((m) => m.ChallengeManagementComponent) },
       { path: 'battles', loadComponent: () => import('./battle-management/battle-management.component').then((m) => m.BattleManagementComponent) },
-      { path: 'shop', loadComponent: () => import('./shop-management/shop-management.component').then((m) => m.ShopManagementComponent) },
+      { path: 'shop', loadChildren: () => import('./shop-management/shop-management.routes').then((m) => m.SHOP_MANAGEMENT_ROUTES) },
       { path: 'reports', loadComponent: () => import('./support-management/support-management.component').then((m) => m.SupportManagementComponent) },
       { path: 'events', loadComponent: () => import('./event-management/event-management.component').then((m) => m.EventManagementComponent) },
       { path: 'coaching', loadComponent: () => import('./coaching-management/coaching-management.component').then((m) => m.CoachingManagementComponent) }

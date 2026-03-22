@@ -1,0 +1,120 @@
+<div class="dashboard-container">
+
+  <!-- ── HEADER ──────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">// SHOP DASHBOARD</h1>
+      <p class="page-sub">Real-time shop analytics</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-nav" (click)="goToProducts()">📦 PRODUCTS</button>
+      <button class="btn-nav" (click)="goToOrders()">📋 ORDERS</button>
+    </div>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">LOADING ANALYTICS...</div>
+
+  <ng-container *ngIf="!isLoading && stats">
+
+    <!-- ── KPI CARDS ─────────────────────────── -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card purple">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-value">{{ stats.totalProducts }}</div>
+        <div class="kpi-label">TOTAL PRODUCTS</div>
+      </div>
+
+      <div class="kpi-card cyan">
+        <div class="kpi-icon">🛒</div>
+        <div class="kpi-value">{{ stats.totalOrders }}</div>
+        <div class="kpi-label">TOTAL ORDERS</div>
+      </div>
+
+      <div class="kpi-card green">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-value">{{ stats.totalRevenue | currency }}</div>
+        <div class="kpi-label">TOTAL REVENUE</div>
+      </div>
+
+      <div class="kpi-card amber">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-value">{{ stats.pendingOrders }}</div>
+        <div class="kpi-label">PENDING ORDERS</div>
+      </div>
+
+      <div class="kpi-card red" *ngIf="stats.outOfStock > 0">
+        <div class="kpi-icon">❌</div>
+        <div class="kpi-value">{{ stats.outOfStock }}</div>
+        <div class="kpi-label">OUT OF STOCK</div>
+      </div>
+
+      <div class="kpi-card orange" *ngIf="stats.lowStock > 0">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-value">{{ stats.lowStock }}</div>
+        <div class="kpi-label">LOW STOCK (&lt;10)</div>
+      </div>
+
+    </div>
+
+    <!-- ── CHARTS ROW ────────────────────────── -->
+    <div class="charts-grid">
+
+      <div class="chart-card">
+        <div class="chart-title">PRODUCTS BY CATEGORY</div>
+        <div class="chart-wrapper">
+          <canvas #categoryChart></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">ORDERS BY STATUS</div>
+        <div class="chart-wrapper">
+          <canvas #orderChart></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── BEST SELLERS ──────────────────────── -->
+    <div class="table-card" *ngIf="bestSellers.length > 0">
+      <div class="chart-title">🏆 BEST SELLERS</div>
+      <table class="sellers-table">
+        <thead>
+          <tr>
+            <th>RANK</th>
+            <th>PRODUCT</th>
+            <th>TOTAL SOLD</th>
+            <th>POPULARITY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of bestSellers; let i = index">
+            <td>
+              <span class="rank" [class.gold]="i===0" [class.silver]="i===1" [class.bronze]="i===2">
+                {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1) }}
+              </span>
+            </td>
+            <td class="product-name">{{ item.name }}</td>
+            <td class="sold-count">{{ item.totalSold }}</td>
+            <td>
+              <div class="bar-container">
+                <div class="bar-fill"
+                  [style.width.%]="(item.totalSold / bestSellers[0].totalSold) * 100">
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- no orders yet -->
+    <div class="empty-sellers" *ngIf="bestSellers.length === 0">
+      <p>// No orders yet — best sellers will appear here after first purchases</p>
+    </div>
+
+  </ng-container>
+
+</div>

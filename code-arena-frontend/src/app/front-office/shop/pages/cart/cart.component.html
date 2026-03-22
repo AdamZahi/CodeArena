@@ -1,0 +1,88 @@
+<div class="cart-container">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="cart-header">
+    <button class="back-btn" (click)="continueShopping()">← BACK TO SHOP</button>
+    <h1>⚔ YOUR CART</h1>
+    <button class="clear-btn" (click)="clearCart()" *ngIf="cartItems.length > 0">
+      CLEAR ALL
+    </button>
+  </div>
+
+  <!-- ── SUCCESS ──────────────────────────────── -->
+  <div class="success-msg" *ngIf="checkoutSuccess">
+    🎉 ORDER PLACED! THANK YOU FOR YOUR PURCHASE!
+  </div>
+
+  <!-- ── EMPTY ────────────────────────────────── -->
+  <div class="empty-cart" *ngIf="cartItems.length === 0 && !checkoutSuccess">
+    <p>// CART IS EMPTY</p>
+    <button class="shop-btn" (click)="continueShopping()">BROWSE SHOP</button>
+  </div>
+
+  <!-- ── CART CONTENT ─────────────────────────── -->
+  <div class="cart-content" *ngIf="cartItems.length > 0">
+
+    <!-- Items -->
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of cartItems">
+
+        <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image"/>
+
+        <div class="item-info">
+          <h3>{{ item.product.name }}</h3>
+          <span class="item-category">{{ item.product.category }}</span>
+          <p class="item-price">{{ item.product.price | currency }} each</p>
+
+          <!-- Stock warning per item -->
+          <p class="item-stock-warning"
+             *ngIf="item.quantity > item.product.stock">
+            ⚠ Only {{ item.product.stock }} available!
+          </p>
+        </div>
+
+        <div class="qty-controls">
+          <button class="qty-btn" (click)="decreaseQty(item.product.id, item.quantity)">−</button>
+          <span class="qty-display">{{ item.quantity }}</span>
+          <button class="qty-btn" (click)="increaseQty(item.product.id, item.quantity)">+</button>
+        </div>
+
+        <div class="item-total">{{ item.product.price * item.quantity | currency }}</div>
+
+        <button class="remove-btn" (click)="removeItem(item.product.id)">✕</button>
+
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="order-summary">
+      <h2>ORDER SUMMARY</h2>
+
+      <div class="summary-row" *ngFor="let item of cartItems">
+        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+        <span>{{ item.product.price * item.quantity | currency }}</span>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-total">
+        <span>TOTAL</span>
+        <span>{{ total | currency }}</span>
+      </div>
+
+      <!-- Checkout error message -->
+      <div class="error-msg" *ngIf="checkoutError">
+        ⚠ {{ checkoutError }}
+      </div>
+
+      <button
+        class="checkout-btn"
+        (click)="checkout()"
+        [disabled]="isCheckingOut">
+        {{ isCheckingOut ? 'PROCESSING...' : '[ CHECKOUT ]' }}
+      </button>
+
+    </div>
+  </div>
+
+</div>

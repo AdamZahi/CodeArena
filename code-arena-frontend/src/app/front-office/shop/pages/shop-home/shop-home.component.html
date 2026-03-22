@@ -1,0 +1,185 @@
+<div class="shop-container">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="shop-header">
+    <div class="shop-title">
+      <h1>⚔ CODEARENA SHOP</h1>
+      <p>// GEAR UP · CODE HARDER · REPRESENT</p>
+    </div>
+    <button class="cart-btn" (click)="goToCart()">
+      [ CART ]
+      <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+    </button>
+  </div>
+
+  <!-- ── SEARCH ───────────────────────────────── -->
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="SEARCH GEAR..."
+      [(ngModel)]="searchText"
+      (input)="onSearch()"
+      class="search-input"
+    />
+  </div>
+
+  <!-- ── SORT ──────────────────────────────────── -->
+<div class="sort-bar">
+  <span class="sort-label">SORT BY</span>
+  <select
+    class="sort-select"
+    [(ngModel)]="sortBy"
+    (change)="onSortChange()">
+    <option value="">DEFAULT</option>
+    <option value="price-asc">PRICE: LOW → HIGH</option>
+    <option value="price-desc">PRICE: HIGH → LOW</option>
+    <option value="stock-asc">STOCK: LOW FIRST</option>
+    <option value="name-asc">NAME: A → Z</option>
+  </select>
+</div>
+
+  <!-- ── CATEGORY FILTERS ─────────────────────── -->
+  <div class="category-filters">
+    <button
+      class="filter-btn"
+      [class.active]="selectedCategory === ''"
+      (click)="clearFilter()">
+      ALL
+    </button>
+    <button
+      *ngFor="let cat of categories"
+      class="filter-btn"
+      [class.active]="selectedCategory === cat"
+      (click)="filterByCategory(cat)">
+      {{ cat }}
+    </button>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">
+    LOADING GEAR...
+  </div>
+
+  <!-- ── EMPTY STATE ──────────────────────────── -->
+  <div class="empty" *ngIf="!isLoading && filteredProducts.length === 0">
+      <p *ngIf="searchText">
+    // NO RESULTS FOR "{{ searchText }}"
+  </p>
+  </div>
+
+  <!-- ── PRODUCT GRID ──────────────────────────── -->
+  <div class="product-grid" *ngIf="!isLoading && filteredProducts.length > 0">
+    <div
+      class="product-card"
+      *ngFor="let product of filteredProducts">
+
+      <img
+        [src]="product.imageUrl"
+        [alt]="product.name"
+        class="product-image"
+        (click)="viewProduct(product)"
+        (error)="onImageError($event)"
+      />
+
+      <span class="category-badge">{{ product.category }}</span>
+
+      <span class="low-stock-badge" *ngIf="isLowStock(product.stock)">
+         🔥 ONLY {{ product.stock }} LEFT
+        </span>
+
+      <div class="product-info">
+        <h3 (click)="viewProduct(product)">{{ product.name }}</h3>
+        <p class="product-desc">{{ product.description }}</p>
+
+        <span class="price">{{ product.price | currency }}</span>
+
+        <p class="stock" [class.out-of-stock]="product.stock === 0">
+          {{ product.stock > 0 ? '◆ ' + product.stock + ' IN STOCK' : '✕ OUT OF STOCK' }}
+        </p>
+
+        <button
+          class="add-to-cart-btn"
+          (click)="addToCart(product)"
+          [disabled]="product.stock === 0">
+          {{ product.stock === 0 ? 'OUT OF STOCK' : '+ ADD TO CART' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+  <!-- ── PRODUCT MODAL ─────────────────────────── -->
+<div class="modal-overlay" *ngIf="selectedProduct" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <button class="modal-close" (click)="closeModal()">✕</button>
+
+    <img [src]="selectedProduct.imageUrl" [alt]="selectedProduct.name" class="modal-img"/>
+
+    <div class="modal-body">
+      <span class="category-badge">{{ selectedProduct.category }}</span>
+      <h2 class="modal-title">{{ selectedProduct.name }}</h2>
+      <p class="modal-desc">{{ selectedProduct.description }}</p>
+
+      <div class="modal-footer">
+        <div>
+          <span class="modal-price">{{ selectedProduct.price | currency }}</span>
+          <p class="modal-stock" [class.out-of-stock]="selectedProduct.stock === 0">
+            {{ selectedProduct.stock > 0 ? '◆ ' + selectedProduct.stock + ' IN STOCK' : '✕ OUT OF STOCK' }}
+          </p>
+        </div>
+        <button
+          class="add-to-cart-btn"
+          style="width: auto; padding: 12px 28px;"
+          (click)="addToCart(selectedProduct); closeModal()"
+          [disabled]="selectedProduct.stock === 0">
+          + ADD TO CART
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- ── ADD THIS after the product grid ──────────────────────────── -->
+
+<!-- PAGINATION -->
+<div class="pagination" *ngIf="totalPages > 1">
+
+  <!-- Info -->
+  <span class="page-info">
+    {{ currentPage * pageSize + 1 }}–{{ min((currentPage + 1) * pageSize, totalItems) }}
+    of {{ totalItems }} products
+  </span>
+
+  <!-- Controls -->
+  <div class="page-controls">
+
+    <!-- Prev -->
+    <button
+      class="page-btn"
+      (click)="prevPage()"
+      [disabled]="currentPage === 0">
+      ←
+    </button>
+
+    <!-- Page numbers -->
+    <button
+      *ngFor="let page of pages"
+      class="page-btn"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)">
+      {{ page + 1 }}
+    </button>
+
+    <!-- Next -->
+    <button
+      class="page-btn"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages - 1">
+      →
+    </button>
+
+  </div>
+
+</div>
+
+</div>

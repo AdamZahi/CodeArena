@@ -1,4 +1,4 @@
-export interface ShopItem {
-  id: string;
-}
+/export interface ShopItem {
+  //id: string;
+//}
 

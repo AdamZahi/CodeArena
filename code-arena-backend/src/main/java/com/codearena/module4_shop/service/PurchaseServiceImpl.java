@@ -1,18 +1,209 @@
 package com.codearena.module4_shop.service;
 
+import com.codearena.module4_shop.dto.PurchaseItemRequest;
+import com.codearena.module4_shop.dto.PurchaseRequest;
+import com.codearena.module4_shop.dto.PurchaseResponse;
+import com.codearena.module4_shop.entity.Purchase;
+import com.codearena.module4_shop.entity.PurchaseItem;
+import com.codearena.module4_shop.entity.ShopItem;
+import com.codearena.module4_shop.enums.OrderStatus;
+import com.codearena.module4_shop.repository.PurchaseItemRepository;
+import com.codearena.module4_shop.repository.PurchaseRepository;
+import com.codearena.module4_shop.repository.ShopItemRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PurchaseServiceImpl implements PurchaseService {
 
-    /**
-     * Placeholder service method.
-     */
+    private final PurchaseRepository purchaseRepository;
+    private final PurchaseItemRepository purchaseItemRepository;
+    private final ShopItemRepository shopItemRepository;
+    private final ShopService shopService;
+    private final EmailService emailService;
+
+    @Value("${app.shop.admin-email}")
+    private String adminEmail;
+
+    // ── CHECKOUT ─────────────────────────────────
     @Override
-    public void placeholder() {
-        // TODO: Implement service business logic.
-        log.info("PurchaseServiceImpl scaffold placeholder executed");
+    @Transactional
+    public PurchaseResponse checkout(PurchaseRequest request) {
+        log.info("Processing checkout for participant: {}", request.getParticipantId());
+
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new RuntimeException("Cart cannot be empty");
+        }
+
+        List<PurchaseItem> orderItems = new ArrayList<>();
+        double totalPrice = 0.0;
+
+        for (PurchaseItemRequest itemRequest : request.getItems()) {
+
+            ShopItem product = shopItemRepository.findById(itemRequest.getProductId())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Product not found: " + itemRequest.getProductId()));
+
+            if (product.getStock() < itemRequest.getQuantity()) {
+                throw new RuntimeException(
+                        "Insufficient stock for: " + product.getName() +
+                                ". Available: " + product.getStock() +
+                                ", Requested: " + itemRequest.getQuantity());
+            }
+
+            totalPrice += product.getPrice() * itemRequest.getQuantity();
+
+            PurchaseItem item = PurchaseItem.builder()
+                    .shopItem(product)
+                    .quantity(itemRequest.getQuantity())
+                    .unitPrice(product.getPrice())
+                    .build();
+
+            orderItems.add(item);
+        }
+
+        Purchase purchase = Purchase.builder()
+                .participantId(request.getParticipantId())
+                .totalPrice(totalPrice)
+                .status(OrderStatus.PENDING)
+                .items(new ArrayList<>())
+                .build();
+
+        Purchase savedPurchase = purchaseRepository.save(purchase);
+
+        for (PurchaseItem item : orderItems) {
+            item.setPurchase(savedPurchase);
+            purchaseItemRepository.save(item);
+
+            ShopItem product = item.getShopItem();
+            product.setStock(product.getStock() - item.getQuantity());
+            shopItemRepository.save(product);
+        }
+
+        log.info("Order created successfully: {}", savedPurchase.getId());
+
+        PurchaseResponse response = toResponse(savedPurchase, orderItems);
+
+        try {
+            emailService.sendOrderConfirmation(request.getParticipantId(), response);
+            emailService.sendAdminOrderAlert(adminEmail, response);
+        } catch (Exception e) {
+            log.warn("Email failed but order placed: {}", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // ── CRUD ─────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PurchaseResponse> getAllOrders() {
+        return purchaseRepository.findAll()
+                .stream()
+                .map(p -> toResponse(p, p.getItems()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PurchaseResponse getOrderById(UUID id) {
+        Purchase purchase = purchaseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        return toResponse(purchase, purchase.getItems());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PurchaseResponse> getOrdersByParticipant(String participantId) {
+        return purchaseRepository.findByParticipantId(participantId)
+                .stream()
+                .map(p -> toResponse(p, p.getItems()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public PurchaseResponse updateOrderStatus(UUID id, OrderStatus status) {
+        log.info("Updating order {} status to {}", id, status);
+        Purchase purchase = purchaseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        purchase.setStatus(status);
+        return toResponse(purchaseRepository.save(purchase), purchase.getItems());
+    }
+
+    @Override
+    @Transactional
+    public PurchaseResponse cancelOrder(UUID id) {
+        Purchase purchase = purchaseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+
+        if (purchase.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Only PENDING orders can be cancelled");
+        }
+
+        for (PurchaseItem item : purchase.getItems()) {
+            ShopItem product = item.getShopItem();
+            product.setStock(product.getStock() + item.getQuantity());
+            shopItemRepository.save(product);
+        }
+
+        purchase.setStatus(OrderStatus.CANCELLED);
+        return toResponse(purchaseRepository.save(purchase), purchase.getItems());
+    }
+
+    // ── METIERS AVANCES ───────────────────────────
+
+    @Override
+    public Double getTotalRevenue() {
+        Double revenue = purchaseRepository.calculateTotalRevenue();
+        return revenue != null ? revenue : 0.0;
+    }
+
+    @Override
+    public Long countByStatus(OrderStatus status) {
+        if (status == null) return purchaseRepository.count();
+        return purchaseRepository.countByStatus(status);
+    }
+
+    @Override
+    public Long countAllOrders() {
+        return purchaseRepository.count();
+    }
+
+    @Override
+    public List<Object[]> getBestSellers() {
+        return purchaseItemRepository.findBestSellers();
+    }
+
+    // ── HELPER ────────────────────────────────────
+    private PurchaseResponse toResponse(Purchase purchase, List<PurchaseItem> items) {
+        List<PurchaseResponse.PurchaseItemResponse> itemResponses = items.stream()
+                .map((PurchaseItem item) -> PurchaseResponse.PurchaseItemResponse.builder()
+                        .id(item.getId())
+                        .product(shopService.getProductById(item.getShopItem().getId()))
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PurchaseResponse.builder()
+                .id(purchase.getId())
+                .participantId(purchase.getParticipantId())
+                .totalPrice(purchase.getTotalPrice())
+                .status(purchase.getStatus())
+                .createdAt(purchase.getCreatedAt())
+                .items(itemResponses)
+                .build();
     }
 }
