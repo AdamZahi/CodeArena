@@ -69,7 +69,7 @@
           <!-- Items count -->
           <td>
             <span class="items-count">
-              {{ order.items?.length || 0 }} items
+              {{ order.items.length || 0 }} items
             </span>
           </td>
 
@@ -142,10 +142,10 @@
 
       <div class="modal-items">
         <div class="modal-item" *ngFor="let item of selectedOrder.items">
-          <img [src]="item.product?.imageUrl" class="modal-item-img"/>
+          <img [src]="item.product.imageUrl" class="modal-item-img"/>
           <div class="modal-item-info">
-            <span class="modal-item-name">{{ item.product?.name }}</span>
-            <span class="modal-item-cat">{{ item.product?.category }}</span>
+            <span class="modal-item-name">{{ item.product.name }}</span>
+            <span class="modal-item-cat">{{ item.product.category }}</span>
           </div>
           <span class="modal-item-qty">×{{ item.quantity }}</span>
           <span class="modal-item-price">
