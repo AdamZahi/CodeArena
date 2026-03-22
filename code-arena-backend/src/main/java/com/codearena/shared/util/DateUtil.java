@@ -1,4 +1,4 @@
-﻿package com.codearena.shared.util;
+package com.codearena.shared.util;
 
 import java.time.Instant;
 

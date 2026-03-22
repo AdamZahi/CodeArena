@@ -1,4 +1,4 @@
-﻿package com.codearena.module6_event.service;
+package com.codearena.module6_event.service;
 
 public interface EventService {
 

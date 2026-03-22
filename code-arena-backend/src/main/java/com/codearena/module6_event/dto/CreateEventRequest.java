@@ -1,4 +1,4 @@
-﻿package com.codearena.module6_event.dto;
+package com.codearena.module6_event.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

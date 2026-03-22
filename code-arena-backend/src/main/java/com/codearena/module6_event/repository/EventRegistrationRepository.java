@@ -1,4 +1,4 @@
-﻿package com.codearena.module6_event.repository;
+package com.codearena.module6_event.repository;
 
 import com.codearena.module6_event.entity.EventRegistration;
 import org.springframework.data.jpa.repository.JpaRepository;

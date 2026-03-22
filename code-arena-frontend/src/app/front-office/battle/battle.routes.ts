@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const BATTLE_ROUTES: Routes = [
   { path: '', loadComponent: () => import('./pages/battle-lobby/battle-lobby.component').then((m) => m.BattleLobbyComponent) },

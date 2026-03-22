@@ -1,4 +1,4 @@
-﻿import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { KeycloakService } from '../auth/keycloak.service';
 

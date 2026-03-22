@@ -1,4 +1,4 @@
-﻿package com.codearena.module1_challenge;
+package com.codearena.module1_challenge;
 
 import org.junit.jupiter.api.Test;
 

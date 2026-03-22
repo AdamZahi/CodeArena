@@ -1,4 +1,4 @@
-﻿package com.codearena.module0_user.service;
+package com.codearena.module0_user.service;
 
 public interface UserService {
 

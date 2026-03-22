@@ -1,4 +1,4 @@
-﻿package com.codearena.module4_shop.repository;
+package com.codearena.module4_shop.repository;
 
 import com.codearena.module4_shop.entity.ShopItem;
 import org.springframework.data.jpa.repository.JpaRepository;

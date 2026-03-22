@@ -1,4 +1,4 @@
-﻿package com.codearena.module2_battle.repository;
+package com.codearena.module2_battle.repository;
 
 import com.codearena.module2_battle.entity.BattleRoom;
 import org.springframework.data.jpa.repository.JpaRepository;

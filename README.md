@@ -1,4 +1,4 @@
-﻿# Code Arena
+# Code Arena
 
 Monorepo scaffold for Code Arena competitive programming platform.
 

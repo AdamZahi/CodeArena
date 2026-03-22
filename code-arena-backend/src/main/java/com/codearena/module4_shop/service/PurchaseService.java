@@ -1,4 +1,4 @@
-﻿package com.codearena.module4_shop.service;
+package com.codearena.module4_shop.service;
 
 public interface PurchaseService {
 

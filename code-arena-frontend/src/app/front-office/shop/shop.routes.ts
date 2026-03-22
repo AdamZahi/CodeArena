@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const SHOP_ROUTES: Routes = [
   { path: '', loadComponent: () => import('./pages/shop-home/shop-home.component').then((m) => m.ShopHomeComponent) },

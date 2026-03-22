@@ -1,4 +1,4 @@
-﻿package com.codearena.module7_coaching.repository;
+package com.codearena.module7_coaching.repository;
 
 import com.codearena.module7_coaching.entity.CoachingSession;
 import org.springframework.data.jpa.repository.JpaRepository;

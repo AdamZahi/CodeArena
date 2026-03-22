@@ -1,4 +1,4 @@
-﻿package com.codearena.module6_event.controller;
+package com.codearena.module6_event.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;

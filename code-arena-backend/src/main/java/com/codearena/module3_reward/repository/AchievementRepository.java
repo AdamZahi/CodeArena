@@ -1,4 +1,4 @@
-﻿package com.codearena.module3_reward.repository;
+package com.codearena.module3_reward.repository;
 
 import com.codearena.module3_reward.entity.Achievement;
 import org.springframework.data.jpa.repository.JpaRepository;

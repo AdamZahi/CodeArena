@@ -1,4 +1,4 @@
-﻿package com.codearena.module4_shop.dto;
+package com.codearena.module4_shop.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-﻿package com.codearena.shared.exception;
+package com.codearena.shared.exception;
 
 import com.codearena.shared.response.ApiResponse;
 import org.springframework.http.HttpStatus;

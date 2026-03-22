@@ -1,4 +1,4 @@
-﻿package com.codearena.module2_battle.dto;
+package com.codearena.module2_battle.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

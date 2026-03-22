@@ -1,4 +1,4 @@
-﻿export interface Submission {
+export interface Submission {
   id: string;
 }
 

@@ -1,4 +1,4 @@
-﻿package com.codearena.shared.response;
+package com.codearena.shared.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

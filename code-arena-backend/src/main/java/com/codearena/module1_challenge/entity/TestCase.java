@@ -1,4 +1,4 @@
-﻿package com.codearena.module1_challenge.entity;
+package com.codearena.module1_challenge.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

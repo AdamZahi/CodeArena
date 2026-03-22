@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const COACHING_ROUTES: Routes = [
   { path: 'coaches', loadComponent: () => import('./pages/coach-list/coach-list.component').then((m) => m.CoachListComponent) },

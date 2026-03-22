@@ -1,4 +1,4 @@
-﻿package com.codearena.module1_challenge.controller;
+package com.codearena.module1_challenge.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;

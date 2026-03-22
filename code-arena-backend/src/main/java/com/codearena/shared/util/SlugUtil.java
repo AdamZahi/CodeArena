@@ -1,4 +1,4 @@
-﻿package com.codearena.shared.util;
+package com.codearena.shared.util;
 
 public final class SlugUtil {
     private SlugUtil() {

@@ -1,4 +1,4 @@
-﻿export interface Challenge {
+export interface Challenge {
   id: string;
 }
 
