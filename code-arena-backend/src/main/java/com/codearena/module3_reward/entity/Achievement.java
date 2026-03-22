@@ -1,4 +1,4 @@
-﻿package com.codearena.module3_reward.entity;
+package com.codearena.module3_reward.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

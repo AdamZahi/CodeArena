@@ -1,4 +1,4 @@
-﻿package com.codearena.module5_support.repository;
+package com.codearena.module5_support.repository;
 
 import com.codearena.module5_support.entity.SupportTicket;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -6,9 +6,20 @@ spring:
     url: jdbc:mysql://localhost:3306/codearena
     username: codearena
     password: codearena
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: islemazzouz04@gmail.com
+    password: ycsm qcyo tqfk hlbd
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
   security:
     oauth2:
@@ -25,3 +36,5 @@ app:
   cors:
     allowed-origins:
       - http://localhost:4200
+  shop:
+    admin-email: islemazzouz04@gmail.com

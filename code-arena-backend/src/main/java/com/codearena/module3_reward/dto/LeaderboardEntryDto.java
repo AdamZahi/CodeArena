@@ -1,4 +1,4 @@
-﻿package com.codearena.module3_reward.dto;
+package com.codearena.module3_reward.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

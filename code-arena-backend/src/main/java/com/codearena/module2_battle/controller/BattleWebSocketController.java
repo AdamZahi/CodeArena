@@ -1,4 +1,4 @@
-﻿package com.codearena.module2_battle.controller;
+package com.codearena.module2_battle.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;

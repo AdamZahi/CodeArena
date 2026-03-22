@@ -1,4 +1,4 @@
-﻿package com.codearena.config;
+package com.codearena.config;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

@@ -1,4 +1,4 @@
-﻿package com.codearena.module0_user.repository;
+package com.codearena.module0_user.repository;
 
 import com.codearena.module0_user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -13,10 +13,21 @@ export class KeycloakService {
 
   readonly userProfile$ = new BehaviorSubject<Record<string, unknown> | null>(null);
 
-  async init(): Promise<boolean> {
+  /*async init(): Promise<boolean> {
     // TODO: Configure onLoad/check-sso strategy and token refresh hooks.
     return this.keycloak.init({ onLoad: 'check-sso' });
+  }*/
+
+    async init(): Promise<boolean> {
+  // TODO: Re-enable when Keycloak server is running
+  // DEVELOPMENT BYPASS
+  try {
+    return await this.keycloak.init({ onLoad: 'check-sso' });
+  } catch {
+    console.warn('Keycloak not available — running in dev mode');
+    return false;
   }
+}
 
   async login(): Promise<void> {
     // TODO: Pass redirectUri and optional idpHint if needed.

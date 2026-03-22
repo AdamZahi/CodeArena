@@ -1,4 +1,4 @@
-﻿package com.codearena.module7_coaching.service;
+package com.codearena.module7_coaching.service;
 
 public interface CoachingService {
 

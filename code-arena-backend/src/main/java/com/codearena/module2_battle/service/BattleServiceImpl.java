@@ -1,4 +1,4 @@
-﻿package com.codearena.module2_battle.service;
+package com.codearena.module2_battle.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

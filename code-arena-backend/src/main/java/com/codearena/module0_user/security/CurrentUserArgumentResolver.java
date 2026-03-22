@@ -1,4 +1,4 @@
-﻿package com.codearena.module0_user.security;
+package com.codearena.module0_user.security;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;

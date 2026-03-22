@@ -1,4 +1,4 @@
-﻿package com.codearena.config;
+package com.codearena.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ public class SecurityConfig {
      * @throws Exception when configuration fails
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  /*  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // TODO: Harden endpoint rules and role matrix.
         return http
             .csrf(csrf -> csrf.disable())
@@ -29,5 +29,17 @@ public class SecurityConfig {
                 .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))
             .build();
+    }*/
+
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // TODO: Re-enable Keycloak when auth server is running
+        // DEVELOPMENT BYPASS
+        return http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll())
+                .build();
     }
+
 }

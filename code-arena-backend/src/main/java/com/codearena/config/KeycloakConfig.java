@@ -1,4 +1,4 @@
-﻿package com.codearena.config;
+package com.codearena.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

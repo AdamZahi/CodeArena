@@ -1,4 +1,4 @@
-﻿package com.codearena.module5_support.dto;
+package com.codearena.module5_support.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

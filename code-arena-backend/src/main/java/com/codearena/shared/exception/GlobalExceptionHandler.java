@@ -1,4 +1,4 @@
-﻿package com.codearena.shared.exception;
+package com.codearena.shared.exception;
 
 import com.codearena.shared.response.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -42,4 +42,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.<Void>builder()
             .success(false).message("Access denied").timestamp(Instant.now()).build());
     }
+    /*for validation errors shop*/
+
 }

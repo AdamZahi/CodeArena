@@ -1,4 +1,4 @@
-﻿package com.codearena.module1_challenge.repository;
+package com.codearena.module1_challenge.repository;
 
 import com.codearena.module1_challenge.entity.Challenge;
 import org.springframework.data.jpa.repository.JpaRepository;

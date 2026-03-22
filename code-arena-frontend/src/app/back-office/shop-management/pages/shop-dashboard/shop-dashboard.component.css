@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+.dashboard-container {
+  min-height: 100vh;
+  background: #0a0a0f;
+  padding: 32px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #e2e8f0;
+  position: relative;
+}
+
+.dashboard-container::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image:
+    linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ──────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1a1a2e;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 300px; height: 2px;
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4, transparent);
+}
+
+.page-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+}
+
+.page-sub {
+  color: #64748b;
+  font-size: 12px;
+  margin: 4px 0 0;
+  letter-spacing: 2px;
+}
+
+.header-actions { display: flex; gap: 10px; }
+
+.btn-nav {
+  background: transparent;
+  border: 1px solid #1a1a2e;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.btn-nav:hover { border-color: #8b5cf6; color: #8b5cf6; }
+
+/* ── KPI GRID ────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.kpi-card {
+  background: #0d0d15;
+  border: 1px solid #1a1a2e;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+  border-left-width: 3px;
+}
+
+.kpi-card:hover { transform: translateY(-3px); }
+
+.kpi-card.purple { border-left-color: #8b5cf6; }
+.kpi-card.cyan   { border-left-color: #06b6d4; }
+.kpi-card.green  { border-left-color: #10b981; }
+.kpi-card.amber  { border-left-color: #f59e0b; }
+.kpi-card.red    { border-left-color: #ef4444; }
+.kpi-card.orange { border-left-color: #f97316; }
+
+.kpi-icon { font-size: 24px; margin-bottom: 8px; }
+
+.kpi-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 26px;
+  font-weight: 900;
+  color: #e2e8f0;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.kpi-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 2px;
+}
+
+/* ── CHARTS GRID ─────────────────── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.chart-card {
+  background: #0d0d15;
+  border: 1px solid #1a1a2e;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.chart-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-wrapper canvas { max-height: 260px; }
+
+/* ── BEST SELLERS TABLE ──────────── */
+.table-card {
+  background: #0d0d15;
+  border: 1px solid #1a1a2e;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.sellers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.sellers-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 2px;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.sellers-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #1a1a2e;
+  vertical-align: middle;
+}
+
+.sellers-table tr:last-child td { border-bottom: none; }
+.sellers-table tr:hover td { background: #12121e; }
+
+.rank { font-size: 16px; }
+.product-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+.sold-count {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+
+/* ── BAR ─────────────────────────── */
+.bar-container {
+  background: #1a1a2e;
+  border-radius: 4px;
+  height: 8px;
+  width: 200px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ── LOADING / EMPTY ─────────────── */
+.loading {
+  text-align: center;
+  padding: 80px;
+  font-family: 'Orbitron', monospace;
+  color: #64748b;
+  letter-spacing: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+.empty-sellers {
+  text-align: center;
+  padding: 30px;
+  color: #64748b;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}

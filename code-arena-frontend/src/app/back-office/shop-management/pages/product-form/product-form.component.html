@@ -1,0 +1,138 @@
+<div class="admin-container">
+
+  <div class="page-header">
+    <div>
+      <button class="btn-back" (click)="goBack()">← BACK</button>
+      <h1 class="page-title">{{ isEditMode ? 'EDIT PRODUCT' : 'NEW PRODUCT' }}</h1>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Loading product...</div>
+
+  <div class="success-msg" *ngIf="saveSuccess">
+    ✅ Product {{ isEditMode ? 'updated' : 'created' }} successfully!
+  </div>
+
+  <!-- Global error banner -->
+  <div class="error-banner" *ngIf="hasErrors()">
+    ⚠ Please fix the errors below before submitting.
+  </div>
+
+  <div class="form-card" *ngIf="!isLoading">
+    <form (ngSubmit)="onSubmit()" #productForm="ngForm">
+
+      <div class="form-grid">
+
+        <!-- Name -->
+        <div class="form-group full-width">
+          <label class="form-label">PRODUCT NAME *</label>
+          <input
+            class="form-input"
+            [class.input-error]="errors['name']"
+            type="text"
+            [(ngModel)]="formData.name"
+            name="name"
+            placeholder="e.g. CodeArena Hoodie"
+            (input)="clearError('name')"
+          />
+          <span class="error-msg" *ngIf="errors['name']">⚠ {{ errors['name'] }}</span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group full-width">
+          <label class="form-label">DESCRIPTION *</label>
+          <textarea
+            class="form-input form-textarea"
+            [class.input-error]="errors['description']"
+            [(ngModel)]="formData.description"
+            name="description"
+            placeholder="Describe the product..."
+            rows="3"
+            (input)="clearError('description')"
+          ></textarea>
+          <span class="error-msg" *ngIf="errors['description']">⚠ {{ errors['description'] }}</span>
+        </div>
+
+        <!-- Price -->
+        <div class="form-group">
+          <label class="form-label">PRICE ($) *</label>
+          <input
+            class="form-input"
+            [class.input-error]="errors['price']"
+            type="number"
+            [(ngModel)]="formData.price"
+            name="price"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            (input)="clearError('price')"
+          />
+          <span class="error-msg" *ngIf="errors['price']">⚠ {{ errors['price'] }}</span>
+        </div>
+
+        <!-- Stock -->
+        <div class="form-group">
+          <label class="form-label">STOCK *</label>
+          <input
+            class="form-input"
+            [class.input-error]="errors['stock']"
+            type="number"
+            [(ngModel)]="formData.stock"
+            name="stock"
+            placeholder="0"
+            min="0"
+            (input)="clearError('stock')"
+          />
+          <span class="error-msg" *ngIf="errors['stock']">⚠ {{ errors['stock'] }}</span>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label">CATEGORY *</label>
+          <select
+            class="form-input form-select"
+            [class.input-error]="errors['category']"
+            [(ngModel)]="formData.category"
+            name="category"
+            (change)="clearError('category')"
+          >
+            <option value="">-- SELECT CATEGORY --</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+          <span class="error-msg" *ngIf="errors['category']">⚠ {{ errors['category'] }}</span>
+        </div>
+
+        <!-- Image URL -->
+        <div class="form-group">
+          <label class="form-label">IMAGE URL</label>
+          <input
+            class="form-input"
+            [class.input-error]="errors['imageUrl']"
+            type="text"
+            [(ngModel)]="formData.imageUrl"
+            name="imageUrl"
+            placeholder="https://..."
+            (input)="clearError('imageUrl')"
+          />
+          <span class="error-msg" *ngIf="errors['imageUrl']">⚠ {{ errors['imageUrl'] }}</span>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="form-group full-width" *ngIf="formData.imageUrl && !errors['imageUrl']">
+          <label class="form-label">PREVIEW</label>
+          <img [src]="formData.imageUrl" alt="preview" class="image-preview"/>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="goBack()">CANCEL</button>
+        <button type="submit" class="btn-submit" [disabled]="isSaving">
+          {{ isSaving ? 'SAVING...' : (isEditMode ? 'UPDATE PRODUCT' : 'CREATE PRODUCT') }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

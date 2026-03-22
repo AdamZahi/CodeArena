@@ -1,4 +1,4 @@
-﻿package com.codearena.module7_coaching.entity;
+package com.codearena.module7_coaching.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

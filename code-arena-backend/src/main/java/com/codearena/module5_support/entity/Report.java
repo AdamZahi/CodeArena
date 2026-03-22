@@ -1,4 +1,4 @@
-﻿package com.codearena.module5_support.entity;
+package com.codearena.module5_support.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,6 +1,13 @@
-﻿package com.codearena.module4_shop.enums;
+package com.codearena.module4_shop.enums;
 
 public enum ItemType {
-    AVATAR_FRAME, THEME, BADGE_SKIN, TITLE
+    TSHIRT,
+    HOODIE,
+    MUG,
+    STICKER,
+    CAP,
+    MOUSEPAD,
+    KEYBOARD,
+    ACCESSORY,
+    OTHER
 }
-

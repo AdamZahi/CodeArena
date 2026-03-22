@@ -1,4 +1,4 @@
-﻿package com.codearena.module7_coaching.dto;
+package com.codearena.module7_coaching.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

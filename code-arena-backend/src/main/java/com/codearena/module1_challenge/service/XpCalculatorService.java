@@ -1,4 +1,4 @@
-﻿package com.codearena.module1_challenge.service;
+package com.codearena.module1_challenge.service;
 
 public interface XpCalculatorService {
 

@@ -1,4 +1,4 @@
-﻿package com.codearena.shared.exception;
+package com.codearena.shared.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-﻿package com.codearena.module1_challenge.dto;
+package com.codearena.module1_challenge.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

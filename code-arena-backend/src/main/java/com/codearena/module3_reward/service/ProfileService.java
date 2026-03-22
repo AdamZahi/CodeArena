@@ -1,4 +1,4 @@
-﻿package com.codearena.module3_reward.service;
+package com.codearena.module3_reward.service;
 
 public interface ProfileService {
 
