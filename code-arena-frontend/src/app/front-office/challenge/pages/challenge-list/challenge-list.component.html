@@ -1,54 +1,75 @@
-<div class="user-container">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">PROBLEMS</h1>
-      <p class="page-sub">Sharpen your coding skills with CodeArena</p>
+<div class="lc-container">
+  <!-- HEADER BAR -->
+  <div class="lc-header">
+    <div class="lc-header-left">
+      <span class="lc-logo">⚔️ CODE<span class="accent">ARENA</span></span>
+      <span class="lc-separator">|</span>
+      <span class="lc-nav-item active">Problems</span>
     </div>
   </div>
 
-  <div class="loading" *ngIf="isLoading">Loading problems...</div>
+  <!-- TAG BAR -->
+  <div class="tag-bar">
+    <div class="tag-list">
+      <button class="tag-chip" [class.active]="selectedDifficulty === ''" (click)="filterByDifficulty('')">All Topics</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'EASY'" (click)="filterByDifficulty('EASY')">Easy</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'MEDIUM'" (click)="filterByDifficulty('MEDIUM')">Medium</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'HARD'" (click)="filterByDifficulty('HARD')">Hard</button>
+    </div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="Search questions" [(ngModel)]="searchTerm" (input)="onSearch()" />
+    </div>
+  </div>
 
-  <div class="table-wrapper" *ngIf="!isLoading">
-    <table class="product-table">
+  <!-- LOADING -->
+  <div class="lc-loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    Loading problems...
+  </div>
+
+  <!-- PROBLEM TABLE -->
+  <div class="lc-table-wrap" *ngIf="!isLoading">
+    <table class="lc-table">
       <thead>
         <tr>
-          <th>STATUS</th>
-          <th>TITLE</th>
-          <th>DIFFICULTY</th>
-          <th>TAGS</th>
-          <th>ACTION</th>
+          <th class="col-status">Status</th>
+          <th class="col-title">Title</th>
+          <th class="col-acceptance">Tags</th>
+          <th class="col-difficulty">Difficulty</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let challenge of challenges" class="table-row">
-          <td>
-            <span class="stock-badge stock-ok" style="background:transparent; border:none; color:#1a1a2e">⭕</span>
+        <tr *ngFor="let c of filteredChallenges; let i = index"
+            class="lc-row"
+            [class.even]="i % 2 === 0"
+            (click)="goToChallenge(c.id)">
+          <td class="col-status">
+            <span class="status-dot"></span>
           </td>
-          <td>
-            <a (click)="goToChallenge(challenge.id)" class="product-name challenge-link">{{ challenge.title }}</a>
-            <span class="product-desc-small">{{ challenge.description | slice:0:80 }}...</span>
+          <td class="col-title">
+            <span class="problem-number">{{ i + 1 }}.</span>
+            <span class="problem-title">{{ c.title }}</span>
           </td>
-          <td>
-            <span class="category-pill" 
-                  [ngClass]="{
-                    'pill-easy': challenge.difficulty === 'EASY',
-                    'pill-med': challenge.difficulty === 'MEDIUM',
-                    'pill-hard': challenge.difficulty === 'HARD'
-                  }">
-              {{ challenge.difficulty }}
+          <td class="col-acceptance">
+            <span class="tag-mini" *ngFor="let tag of getTags(c.tags)">{{ tag }}</span>
+          </td>
+          <td class="col-difficulty">
+            <span class="diff-pill"
+                  [class.easy]="c.difficulty === 'EASY'"
+                  [class.medium]="c.difficulty === 'MEDIUM'"
+                  [class.hard]="c.difficulty === 'HARD'">
+              {{ c.difficulty === 'EASY' ? 'Easy' : c.difficulty === 'MEDIUM' ? 'Med.' : 'Hard' }}
             </span>
-          </td>
-          <td>
-             <span class="price-text" style="font-size: 11px; color:#64748b;">{{ challenge.tags }}</span>
-          </td>
-          <td class="actions-cell">
-             <button class="btn-primary" style="height:32px; font-size:10px" (click)="goToChallenge(challenge.id)">SOLVE</button>
           </td>
         </tr>
       </tbody>
     </table>
-    <div class="empty" *ngIf="challenges.length === 0">
-      No challenges available right now.
+    <div class="lc-empty" *ngIf="filteredChallenges.length === 0">
+      No problems found.
+    </div>
+    <div class="lc-footer">
+      <span class="lc-count">{{ filteredChallenges.length }} / {{ challenges.length }} problems</span>
     </div>
   </div>
 </div>

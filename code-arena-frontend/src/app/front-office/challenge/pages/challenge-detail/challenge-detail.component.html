@@ -1,125 +1,144 @@
-<div class="split-container">
+<div class="lc-detail-container">
 
-  <!-- LEFT PANEL: TABS -->
-  <div class="left-panel">
-    <div class="tabs">
-      <button class="tab-btn" [class.active]="activeTab === 'description'" (click)="activeTab = 'description'">Description</button>
-      <button class="tab-btn" [class.active]="activeTab === 'submissions'" (click)="viewSubmissions()">History</button>
+  <!-- ═══ TOP TOOLBAR ═══ -->
+  <div class="lc-toolbar">
+    <div class="toolbar-left">
+      <button class="toolbar-btn" routerLink="/challenge">← Problem List</button>
+      <span class="toolbar-sep">|</span>
+      <span class="toolbar-title" *ngIf="challenge">{{ challenge.title }}</span>
     </div>
+    <div class="toolbar-right">
+      <button class="toolbar-run" (click)="submitCode()" [disabled]="isSubmitting">
+        <span *ngIf="!isSubmitting">▶ Submit</span>
+        <span *ngIf="isSubmitting">⏳ Judging...</span>
+      </button>
+    </div>
+  </div>
 
-    <!-- DESCRIPTION TAB -->
-    <div class="tab-content" *ngIf="activeTab === 'description'">
-      <div class="loading" *ngIf="isLoading">Loading problem...</div>
-      
-      <div *ngIf="!isLoading && challenge">
-        <h1 class="problem-title">{{ challenge.title }}</h1>
-        <div class="problem-meta">
-          <span class="category-pill" 
-                  [ngClass]="{
-                    'pill-easy': challenge.difficulty === 'EASY',
-                    'pill-med': challenge.difficulty === 'MEDIUM',
-                    'pill-hard': challenge.difficulty === 'HARD'
-                  }">
-            {{ challenge.difficulty }}
-          </span>
-          <span style="font-size: 11px; color:#64748b;">{{ challenge.tags }}</span>
-        </div>
-        
-        <div class="problem-desc" [innerHTML]="challenge.description.replace('\\n', '<br/>')"></div>
-        
-        <h3 class="io-title">Example Test Cases</h3>
-        <div *ngFor="let tc of challenge.testCases; let i = index">
-          <div class="example-box" *ngIf="!tc.isHidden">
-            <strong>Input:</strong> <br/>
-            <code>{{ tc.input }}</code>
-            <br/><br/>
-            <strong>Expected Output:</strong> <br/>
-            <code>{{ tc.expectedOutput }}</code>
+  <!-- ═══ SPLIT PANELS ═══ -->
+  <div class="lc-split">
+
+    <!-- LEFT: Problem Description -->
+    <div class="lc-left">
+      <!-- Tabs -->
+      <div class="lc-tabs">
+        <button class="lc-tab" [class.active]="activeTab === 'description'" (click)="activeTab = 'description'">📋 Description</button>
+        <button class="lc-tab" [class.active]="activeTab === 'submissions'" (click)="viewSubmissions()">📊 Submissions</button>
+      </div>
+
+      <!-- Description Content -->
+      <div class="lc-tab-body" *ngIf="activeTab === 'description'">
+        <div class="lc-loading-inner" *ngIf="isLoading">Loading problem...</div>
+
+        <div *ngIf="!isLoading && challenge" class="desc-content">
+          <h1 class="desc-title">{{ challenge.title }}</h1>
+          <div class="desc-meta">
+            <span class="diff-badge"
+                  [class.easy]="challenge.difficulty === 'EASY'"
+                  [class.medium]="challenge.difficulty === 'MEDIUM'"
+                  [class.hard]="challenge.difficulty === 'HARD'">
+              {{ challenge.difficulty === 'EASY' ? 'Easy' : challenge.difficulty === 'MEDIUM' ? 'Medium' : 'Hard' }}
+            </span>
+            <span class="tag-pill" *ngFor="let tag of getTags(challenge.tags)">🏷 {{ tag }}</span>
+          </div>
+
+          <div class="desc-body" [innerHTML]="formatDescription(challenge.description)"></div>
+
+          <!-- Example Test Cases -->
+          <div class="examples-section" *ngIf="challenge.testCases && getVisibleTestCases().length > 0">
+            <div class="example-block" *ngFor="let tc of getVisibleTestCases(); let i = index">
+              <h4 class="example-title">Example {{ i + 1 }}:</h4>
+              <div class="example-io">
+                <div class="io-row">
+                  <span class="io-label">Input:</span>
+                  <code class="io-value">{{ tc.input }}</code>
+                </div>
+                <div class="io-row">
+                  <span class="io-label">Output:</span>
+                  <code class="io-value">{{ tc.expectedOutput }}</code>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- SUBMISSIONS TAB -->
-    <div class="tab-content" *ngIf="activeTab === 'submissions'">
-      
-      <!-- Current Submission Live Result -->
-      <div class="result-panel" *ngIf="isSubmitting || submissionResult">
-        <h3>LATEST RESULT</h3>
-        <div *ngIf="isSubmitting" class="loading">Evaluating against test cases...</div>
-        
-        <div *ngIf="!isSubmitting && submissionResult" class="result-details">
-          <div class="status-box"
-              [class.status-ac]="submissionResult.status === 'ACCEPTED'"
-              [class.status-err]="submissionResult.status !== 'ACCEPTED'">
+      <!-- Submissions Content -->
+      <div class="lc-tab-body" *ngIf="activeTab === 'submissions'">
+
+        <!-- Latest result -->
+        <div class="result-card" *ngIf="submissionResult">
+          <div class="result-status"
+               [class.accepted]="submissionResult.status === 'ACCEPTED'"
+               [class.failed]="submissionResult.status !== 'ACCEPTED' && submissionResult.status !== 'PENDING'">
             {{ submissionResult.status }}
           </div>
-          
-          <div style="display:flex; justify-content:space-between; margin-top:20px;">
-            <div class="metric-box">
-              <div class="metric-label">Execution Time</div>
-              <div class="metric-val">{{ submissionResult.executionTime || 0 }} s</div>
+          <div class="result-metrics" *ngIf="submissionResult.status === 'ACCEPTED'">
+            <div class="metric">
+              <span class="metric-label">Runtime</span>
+              <span class="metric-value">{{ submissionResult.executionTime || 0 }}s</span>
             </div>
-            <div class="metric-box">
-              <div class="metric-label">Memory Used</div>
-              <div class="metric-val">{{ submissionResult.memoryUsed || 0 }} KB</div>
+            <div class="metric">
+              <span class="metric-label">Memory</span>
+              <span class="metric-value">{{ submissionResult.memoryUsed || 0 }} KB</span>
             </div>
           </div>
-          
-          <div *ngIf="submissionResult.errorOutput" class="error-log">
-            <strong>Error details:</strong><br/>
+          <div class="result-error" *ngIf="submissionResult.errorOutput">
             <pre>{{ submissionResult.errorOutput }}</pre>
           </div>
         </div>
+
+        <!-- Submission History -->
+        <h3 class="history-title">All Submissions</h3>
+        <div class="history-list">
+          <div class="history-row" *ngFor="let sub of mySubmissions">
+            <span class="history-time">{{ sub.submittedAt | date:'MMM d, HH:mm' }}</span>
+            <span class="history-status"
+                  [class.ac]="sub.status === 'ACCEPTED'"
+                  [class.wa]="sub.status !== 'ACCEPTED'">
+              {{ sub.status }}
+            </span>
+            <span class="history-lang">{{ getLanguageName(sub.language) }}</span>
+          </div>
+          <div class="lc-empty" *ngIf="mySubmissions.length === 0">No submissions yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Code Editor -->
+    <div class="lc-right">
+      <!-- Editor Header -->
+      <div class="editor-topbar">
+        <span class="editor-label">💻 Code</span>
+        <div class="lang-picker">
+          <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
+            <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Historical Submissions -->
-      <h3>PAST SUBMISSIONS</h3>
-      <table class="product-table">
-        <thead>
-          <tr>
-            <th>TIME</th>
-            <th>STATUS</th>
-            <th>LANG</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let sub of mySubmissions" class="table-row">
-            <td><span class="product-desc-small">{{ sub.submittedAt | date:'short' }}</span></td>
-            <td>
-              <span class="status-pill" [class.ac]="sub.status === 'ACCEPTED'" [class.wa]="sub.status !== 'ACCEPTED'">
-                {{ sub.status }}
-              </span>
-            </td>
-            <td><span class="price-text" style="font-size:10px">{{ sub.language }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-      
+      <!-- Code Editor Area -->
+      <div class="editor-body">
+        <div class="line-numbers">
+          <span *ngFor="let line of getLineNumbers()">{{ line }}</span>
+        </div>
+        <textarea
+          class="code-area"
+          spellcheck="false"
+          [(ngModel)]="code"
+          (input)="updateLineNumbers()"
+          (keydown)="handleTab($event)"
+        ></textarea>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="editor-bottom">
+        <div class="testcase-tabs">
+          <span class="tc-tab active">⚡ Testcase</span>
+          <span class="tc-tab">📊 Test Result</span>
+        </div>
+      </div>
     </div>
+
   </div>
-
-  <!-- RIGHT PANEL: CODE EDITOR -->
-  <div class="right-panel">
-    
-    <div class="editor-header">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <label style="font-size:11px; font-weight:bold; color:#64748b">Language</label>
-        <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
-          <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
-        </select>
-      </div>
-      <div>
-        <button class="btn-primary" (click)="submitCode()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'SUBMITTING...' : 'SUBMIT CODE' }}
-        </button>
-      </div>
-    </div>
-
-    <div class="editor-wrapper">
-      <textarea class="code-textarea" spellcheck="false" [(ngModel)]="code"></textarea>
-    </div>
-
-  </div>
-
 </div>
