@@ -1,14 +1,12 @@
 package com.codearena.module1_challenge.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.EqualsAndHashCode;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -16,15 +14,25 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@EqualsAndHashCode(exclude = "challenge")
 public class TestCase {
     @Id
     private UUID id;
 
-    private String challengeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "challenge_id", nullable = false)
+    private Challenge challenge;
 
+    @Column(columnDefinition = "TEXT")
     private String input;
 
+    @Column(columnDefinition = "TEXT")
     private String expectedOutput;
 
-    private String isHidden;
+    private Boolean isHidden;
+
+    @PrePersist
+    public void prePersist() {
+        if (id == null) id = UUID.randomUUID();
+    }
 }

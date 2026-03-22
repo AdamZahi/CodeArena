@@ -1,0 +1,125 @@
+<div class="split-container">
+
+  <!-- LEFT PANEL: TABS -->
+  <div class="left-panel">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'description'" (click)="activeTab = 'description'">Description</button>
+      <button class="tab-btn" [class.active]="activeTab === 'submissions'" (click)="viewSubmissions()">History</button>
+    </div>
+
+    <!-- DESCRIPTION TAB -->
+    <div class="tab-content" *ngIf="activeTab === 'description'">
+      <div class="loading" *ngIf="isLoading">Loading problem...</div>
+      
+      <div *ngIf="!isLoading && challenge">
+        <h1 class="problem-title">{{ challenge.title }}</h1>
+        <div class="problem-meta">
+          <span class="category-pill" 
+                  [ngClass]="{
+                    'pill-easy': challenge.difficulty === 'EASY',
+                    'pill-med': challenge.difficulty === 'MEDIUM',
+                    'pill-hard': challenge.difficulty === 'HARD'
+                  }">
+            {{ challenge.difficulty }}
+          </span>
+          <span style="font-size: 11px; color:#64748b;">{{ challenge.tags }}</span>
+        </div>
+        
+        <div class="problem-desc" [innerHTML]="challenge.description.replace('\\n', '<br/>')"></div>
+        
+        <h3 class="io-title">Example Test Cases</h3>
+        <div *ngFor="let tc of challenge.testCases; let i = index">
+          <div class="example-box" *ngIf="!tc.isHidden">
+            <strong>Input:</strong> <br/>
+            <code>{{ tc.input }}</code>
+            <br/><br/>
+            <strong>Expected Output:</strong> <br/>
+            <code>{{ tc.expectedOutput }}</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMISSIONS TAB -->
+    <div class="tab-content" *ngIf="activeTab === 'submissions'">
+      
+      <!-- Current Submission Live Result -->
+      <div class="result-panel" *ngIf="isSubmitting || submissionResult">
+        <h3>LATEST RESULT</h3>
+        <div *ngIf="isSubmitting" class="loading">Evaluating against test cases...</div>
+        
+        <div *ngIf="!isSubmitting && submissionResult" class="result-details">
+          <div class="status-box"
+              [class.status-ac]="submissionResult.status === 'ACCEPTED'"
+              [class.status-err]="submissionResult.status !== 'ACCEPTED'">
+            {{ submissionResult.status }}
+          </div>
+          
+          <div style="display:flex; justify-content:space-between; margin-top:20px;">
+            <div class="metric-box">
+              <div class="metric-label">Execution Time</div>
+              <div class="metric-val">{{ submissionResult.executionTime || 0 }} s</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Memory Used</div>
+              <div class="metric-val">{{ submissionResult.memoryUsed || 0 }} KB</div>
+            </div>
+          </div>
+          
+          <div *ngIf="submissionResult.errorOutput" class="error-log">
+            <strong>Error details:</strong><br/>
+            <pre>{{ submissionResult.errorOutput }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Submissions -->
+      <h3>PAST SUBMISSIONS</h3>
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>TIME</th>
+            <th>STATUS</th>
+            <th>LANG</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sub of mySubmissions" class="table-row">
+            <td><span class="product-desc-small">{{ sub.submittedAt | date:'short' }}</span></td>
+            <td>
+              <span class="status-pill" [class.ac]="sub.status === 'ACCEPTED'" [class.wa]="sub.status !== 'ACCEPTED'">
+                {{ sub.status }}
+              </span>
+            </td>
+            <td><span class="price-text" style="font-size:10px">{{ sub.language }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+      
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: CODE EDITOR -->
+  <div class="right-panel">
+    
+    <div class="editor-header">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label style="font-size:11px; font-weight:bold; color:#64748b">Language</label>
+        <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
+          <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+        </select>
+      </div>
+      <div>
+        <button class="btn-primary" (click)="submitCode()" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'SUBMITTING...' : 'SUBMIT CODE' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-wrapper">
+      <textarea class="code-textarea" spellcheck="false" [(ngModel)]="code"></textarea>
+    </div>
+
+  </div>
+
+</div>

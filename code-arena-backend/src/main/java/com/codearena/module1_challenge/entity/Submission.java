@@ -1,7 +1,6 @@
 package com.codearena.module1_challenge.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,15 +21,33 @@ public class Submission {
 
     private String userId;
 
-    private String challengeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "challenge_id", nullable = false)
+    private Challenge challenge;
 
+    @Column(columnDefinition = "TEXT")
     private String code;
 
-    private String language;
+    private String language; // e.g., JAVA, PYTHON, C, CPP, JAVASCRIPT
 
-    private String status;
+    private String status; // e.g., PENDING, ACCEPTED, WRONG_ANSWER, COMPILATION_ERROR, TLE
 
     private String xpEarned;
 
-    private String submittedAt;
+    @CreationTimestamp
+    private Instant submittedAt;
+
+    private String judgeToken;
+
+    private Float executionTime;
+
+    private Float memoryUsed;
+
+    @Column(columnDefinition = "TEXT")
+    private String errorOutput;
+
+    @PrePersist
+    public void prePersist() {
+        if (id == null) id = UUID.randomUUID();
+    }
 }

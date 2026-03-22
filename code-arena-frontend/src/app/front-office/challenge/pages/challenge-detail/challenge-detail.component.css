@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;600;700&family=Fira+Code&display=swap');
+
+.split-container {
+  display: flex;
+  height: calc(100vh - 60px); /* header offset */
+  background: #0a0a0f;
+  color: #e2e8f0;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.left-panel {
+  flex: 1;
+  border-right: 1px solid #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0d0d15;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  background: #12121e;
+  border-bottom: 1px solid #1a1a2e;
+  padding: 0 20px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 15px 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover { color: #8b5cf6; }
+.tab-btn.active { color: #8b5cf6; border-bottom: 2px solid #8b5cf6; }
+
+.tab-content { padding: 30px; }
+
+.problem-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  color: #e2e8f0;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.problem-meta { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+
+.category-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.pill-easy { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+.pill-med { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+.pill-hard { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+.problem-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  border-bottom: 1px solid #1a1a2e;
+  padding-bottom: 20px;
+}
+
+.io-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  margin-top: 20px;
+  color: #64748b;
+  letter-spacing: 2px;
+}
+
+.example-box {
+  background: #12121e;
+  border: 1px solid #1a1a2e;
+  border-left: 3px solid #06b6d4;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+/* Editor Header */
+.editor-header {
+  height: 50px;
+  border-bottom: 1px solid #1a1a2e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: #12121e;
+}
+
+.lang-select {
+  background: #0a0a0f;
+  color: #e2e8f0;
+  border: 1px solid #1a1a2e;
+  padding: 5px 10px;
+  font-family: 'Rajdhani', sans-serif;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  height: 32px;
+  padding: 0 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #7c3aed;
+  box-shadow: 0 0 20px rgba(139,92,246,0.4);
+}
+
+.btn-primary:disabled {
+  background: #1a1a2e;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Code Textarea mimicking IDE */
+.editor-wrapper {
+  flex: 1;
+  display: flex;
+}
+
+.code-textarea {
+  flex: 1;
+  background: #0d0d15;
+  color: #a78bfa;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  border: none;
+  padding: 20px;
+  resize: none;
+  line-height: 1.5;
+  outline: none;
+}
+
+/* Submissions tab styling */
+.result-panel {
+  background: #12121e;
+  border: 1px solid #1a1a2e;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.result-panel h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  color: #64748b;
+  letter-spacing: 2px;
+  margin-top: 0;
+}
+
+.status-box {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  font-weight: 700;
+}
+.status-ac { color: #10b981; }
+.status-err { color: #ef4444; }
+
+.metric-box {
+  background: #0a0a0f;
+  border: 1px solid #1a1a2e;
+  padding: 10px 15px;
+  border-radius: 6px;
+  flex: 1;
+  margin-right: 10px;
+}
+.metric-box:last-child { margin-right: 0; }
+
+.metric-label { font-size: 10px; font-family: 'Orbitron', monospace; color: #64748b; }
+.metric-val { font-size: 18px; font-weight: 700; color: #e2e8f0; }
+
+.error-log {
+  margin-top: 20px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  padding: 15px;
+  border-radius: 4px;
+  color: #ef4444;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.loading { text-align: center; color: #64748b; font-family: 'Orbitron', monospace; font-size: 12px; letter-spacing: 2px; }
+
+/* Table */
+.product-table { width: 100%; border-collapse: collapse; }
+.product-table th { text-align: left; padding: 10px; border-bottom: 1px solid #1a1a2e; font-family: 'Orbitron', monospace; font-size: 10px; color: #64748b; }
+.product-table td { padding: 10px; border-bottom: 1px solid #1a1a2e; }
+.status-pill { font-weight: 600; font-size: 11px; font-family: 'Rajdhani', sans-serif; }
+.status-pill.ac { color: #10b981; }
+.status-pill.wa { color: #ef4444; }

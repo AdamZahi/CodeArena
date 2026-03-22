@@ -1,0 +1,54 @@
+<div class="user-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">PROBLEMS</h1>
+      <p class="page-sub">Sharpen your coding skills with CodeArena</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Loading problems...</div>
+
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>STATUS</th>
+          <th>TITLE</th>
+          <th>DIFFICULTY</th>
+          <th>TAGS</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let challenge of challenges" class="table-row">
+          <td>
+            <span class="stock-badge stock-ok" style="background:transparent; border:none; color:#1a1a2e">⭕</span>
+          </td>
+          <td>
+            <a (click)="goToChallenge(challenge.id)" class="product-name challenge-link">{{ challenge.title }}</a>
+            <span class="product-desc-small">{{ challenge.description | slice:0:80 }}...</span>
+          </td>
+          <td>
+            <span class="category-pill" 
+                  [ngClass]="{
+                    'pill-easy': challenge.difficulty === 'EASY',
+                    'pill-med': challenge.difficulty === 'MEDIUM',
+                    'pill-hard': challenge.difficulty === 'HARD'
+                  }">
+              {{ challenge.difficulty }}
+            </span>
+          </td>
+          <td>
+             <span class="price-text" style="font-size: 11px; color:#64748b;">{{ challenge.tags }}</span>
+          </td>
+          <td class="actions-cell">
+             <button class="btn-primary" style="height:32px; font-size:10px" (click)="goToChallenge(challenge.id)">SOLVE</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty" *ngIf="challenges.length === 0">
+      No challenges available right now.
+    </div>
+  </div>
+</div>
