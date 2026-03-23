@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8089',
+  apiBaseUrl: 'http://localhost:8080',
   keycloak: {
-    url: 'http://localhost:8081',
+    url: 'http://localhost:8080',
     realm: 'code-arena',
     clientId: 'code-arena-frontend'
   }
