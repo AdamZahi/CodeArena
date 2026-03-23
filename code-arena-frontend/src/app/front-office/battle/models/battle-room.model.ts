@@ -1,4 +1,4 @@
-﻿export interface BattleRoom {
+export interface BattleRoom {
   id: string;
 }
 

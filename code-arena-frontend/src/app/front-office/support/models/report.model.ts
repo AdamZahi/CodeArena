@@ -1,4 +1,4 @@
-﻿export interface Report {
+export interface Report {
   id: string;
 }
 

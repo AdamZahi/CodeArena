@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const CHALLENGE_ROUTES: Routes = [
   { path: '', loadComponent: () => import('./pages/challenge-list/challenge-list.component').then((m) => m.ChallengeListComponent) },

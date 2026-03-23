@@ -1,4 +1,4 @@
-﻿export interface CoachingSession {
+export interface CoachingSession {
   id: string;
 }
 

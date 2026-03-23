@@ -1,4 +1,4 @@
-﻿export const environment = {
+export const environment = {
   production: true,
   apiBaseUrl: 'https://api.example.com',
   keycloak: {

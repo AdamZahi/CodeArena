@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { BoShellComponent } from './bo-shell.component';
 
 export const BO_ROUTES: Routes = [

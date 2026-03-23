@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 export const EVENT_ROUTES: Routes = [
   { path: '', loadComponent: () => import('./pages/event-list/event-list.component').then((m) => m.EventListComponent) },

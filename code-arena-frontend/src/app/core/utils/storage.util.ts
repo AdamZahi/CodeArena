@@ -1,4 +1,4 @@
-﻿export function saveToStorage(key: string, value: string): void {
+export function saveToStorage(key: string, value: string): void {
   // TODO: Add encryption for sensitive values if required.
   localStorage.setItem(key, value);
 }
