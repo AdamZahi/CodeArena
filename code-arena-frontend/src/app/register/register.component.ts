@@ -3,13 +3,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [RouterLink],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
 })
-export class LoginComponent {
+export class RegisterComponent {
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
 
@@ -17,22 +17,23 @@ export class LoginComponent {
     return this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
   }
 
-  loginWithGoogle(): void {
+  registerWithGoogle(): void {
     void this.auth.loginWithRedirect({
       authorizationParams: { connection: 'google-oauth2' },
       appState: { target: this.returnUrl }
     });
   }
 
-  loginWithGitHub(): void {
+  registerWithGitHub(): void {
     void this.auth.loginWithRedirect({
       authorizationParams: { connection: 'github' },
       appState: { target: this.returnUrl }
     });
   }
 
-  loginWithEmail(): void {
+  registerWithEmail(): void {
     void this.auth.loginWithRedirect({
+      authorizationParams: { screen_hint: 'signup' },
       appState: { target: this.returnUrl }
     });
   }

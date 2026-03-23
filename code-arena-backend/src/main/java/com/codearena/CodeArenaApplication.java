@@ -14,5 +14,6 @@ public class CodeArenaApplication {
     public static void main(String[] args) {
         // TODO: Add startup hooks and bootstrap tasks.
         SpringApplication.run(CodeArenaApplication.class, args);
+        System.out.println("Code Arena backend is running...");
     }
 }

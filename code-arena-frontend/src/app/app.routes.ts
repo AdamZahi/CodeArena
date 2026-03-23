@@ -19,6 +19,15 @@ export const routes: Routes = [
     loadComponent: () => import('./login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'register',
+    loadComponent: () => import('./register/register.component').then((m) => m.RegisterComponent)
+  },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./profile/profile.component').then((m) => m.ProfileComponent)
+  },
+  {
     path: 'forbidden',
     loadComponent: () => import('./forbidden/forbidden.component').then((m) => m.ForbiddenComponent)
   }

@@ -6,7 +6,7 @@ import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
 })
 export class HasRoleDirective {
   @Input() set hasRole(role: string) {
-    // TODO: Integrate with KeycloakService and conditionally render.
+    // TODO: Integrate with Auth0 roles claim and conditionally render.
     this.viewContainer.clear();
     if (role) {
       this.viewContainer.createEmbeddedView(this.templateRef);
