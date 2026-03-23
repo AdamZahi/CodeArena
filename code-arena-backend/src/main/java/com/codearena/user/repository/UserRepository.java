@@ -1,6 +1,6 @@
-package com.codearena.module0_user.repository;
+package com.codearena.user.repository;
 
-import com.codearena.module0_user.entity.User;
+import com.codearena.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -8,6 +8,4 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByKeycloakId(String keycloakId);
-
-    Optional<User> findByUsername(String username);
 }

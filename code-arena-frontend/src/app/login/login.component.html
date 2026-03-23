@@ -1,0 +1,31 @@
+<section class="auth-shell">
+  <div class="auth-glow auth-glow-left"></div>
+  <div class="auth-glow auth-glow-right"></div>
+
+  <article class="auth-card">
+    <p class="auth-kicker">Code Arena</p>
+    <h1>Welcome Back</h1>
+    <p class="auth-subtitle">
+      Sign in to continue your coding duels, climb the leaderboard, and unlock rewards.
+    </p>
+
+    <div class="auth-actions">
+      <button type="button" class="auth-btn auth-btn-primary" (click)="loginWithEmail()">
+        Continue with Email
+      </button>
+
+      <button type="button" class="auth-btn auth-btn-outline" (click)="loginWithGoogle()">
+        Continue with Google
+      </button>
+
+      <button type="button" class="auth-btn auth-btn-outline" (click)="loginWithGitHub()">
+        Continue with GitHub
+      </button>
+    </div>
+
+    <p class="auth-footer">
+      New to Code Arena?
+      <a routerLink="/register">Create an account</a>
+    </p>
+  </article>
+</section>

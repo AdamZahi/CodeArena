@@ -1,16 +1,13 @@
-import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
-import { KeycloakService } from './core/auth/keycloak.service';
-
-function initKeycloak(keycloakService: KeycloakService): () => Promise<boolean> {
-  return () => keycloakService.init();
-}
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,11 +15,20 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor, loadingInterceptor])),
     provideAnimations(),
-    {
-      provide: APP_INITIALIZER,
-      multi: true,
-      deps: [KeycloakService],
-      useFactory: initKeycloak
-    }
+    provideAuth0({
+      domain: environment.auth0Domain,
+      clientId: environment.auth0ClientId,
+      authorizationParams: {
+        redirect_uri: window.location.origin,
+        audience: environment.auth0Audience
+      },
+      httpInterceptor: {
+        allowedList: [
+          {
+            uri: `${environment.apiBaseUrl}/*`
+          }
+        ]
+      }
+    })
   ]
 };

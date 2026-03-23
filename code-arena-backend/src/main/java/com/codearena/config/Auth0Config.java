@@ -6,9 +6,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "keycloak")
-public class KeycloakConfig {
-    private String realm;
+@ConfigurationProperties(prefix = "auth0")
+public class Auth0Config {
+    private String domain;
     private String clientId;
-    private String serverUrl;
+    private String clientSecret;
+    private String audience;
+    private String managementApiAudience;
 }

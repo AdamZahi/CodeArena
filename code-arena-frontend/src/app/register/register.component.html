@@ -1,0 +1,28 @@
+<section class="auth-shell register-shell">
+  <article class="auth-card">
+    <p class="auth-kicker">Join Code Arena</p>
+    <h1>Create Your Profile</h1>
+    <p class="auth-subtitle">
+      Start competing in coding battles, track your progress, and unlock coaching challenges.
+    </p>
+
+    <div class="auth-actions">
+      <button type="button" class="auth-btn auth-btn-primary" (click)="registerWithEmail()">
+        Sign Up with Email
+      </button>
+
+      <button type="button" class="auth-btn auth-btn-outline" (click)="registerWithGoogle()">
+        Sign Up with Google
+      </button>
+
+      <button type="button" class="auth-btn auth-btn-outline" (click)="registerWithGitHub()">
+        Sign Up with GitHub
+      </button>
+    </div>
+
+    <p class="auth-footer">
+      Already have an account?
+      <a routerLink="/login">Sign in</a>
+    </p>
+  </article>
+</section>

@@ -10,9 +10,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${JWK_SET_URI}
+          issuer-uri: https://${AUTH0_DOMAIN}/
+          audiences: ${AUTH0_AUDIENCE}
 
-keycloak:
-  realm: ${KEYCLOAK_REALM}
-  client-id: ${KEYCLOAK_CLIENT_ID}
-  server-url: ${KEYCLOAK_SERVER_URL}
+auth0:
+  domain: ${AUTH0_DOMAIN}
+  client-id: ${AUTH0_CLIENT_ID}
+  client-secret: ${AUTH0_CLIENT_SECRET}
+  audience: ${AUTH0_AUDIENCE}
+  management-api-audience: https://${AUTH0_DOMAIN}/api/v2/
