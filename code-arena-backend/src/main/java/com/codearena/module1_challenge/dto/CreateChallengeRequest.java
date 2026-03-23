@@ -5,10 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateChallengeRequest {
-    private String placeholder;
+    private String title;
+    private String description;
+    private String difficulty; // EASY, MEDIUM, HARD
+    private String tags;
+    private String language;
+    private List<TestCaseDto> testCases;
 }

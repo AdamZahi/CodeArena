@@ -1,9 +1,14 @@
 package com.codearena.module1_challenge.service;
 
-public interface ChallengeService {
+import com.codearena.module1_challenge.dto.ChallengeDto;
+import com.codearena.module1_challenge.dto.CreateChallengeRequest;
 
-    /**
-     * Placeholder service method.
-     */
-    void placeholder();
+import java.util.List;
+import java.util.UUID;
+
+public interface ChallengeService {
+    List<ChallengeDto> getAllChallenges();
+    ChallengeDto getChallengeById(Long id);
+    ChallengeDto createChallenge(CreateChallengeRequest request, String authorId);
+    void deleteChallenge(Long id);
 }

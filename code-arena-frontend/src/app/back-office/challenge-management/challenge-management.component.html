@@ -1,0 +1,144 @@
+<div class="admin-container">
+
+  <!-- ======================== LIST VIEW ======================== -->
+  <ng-container *ngIf="!showForm">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">CHALLENGE MANAGEMENT</h1>
+        <p class="page-sub">{{ challenges.length }} challenges available</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-primary" (click)="createChallenge()">
+          + NEW CHALLENGE
+        </button>
+      </div>
+    </div>
+
+    <div class="loading" *ngIf="isLoading">Loading challenges...</div>
+
+    <div class="table-wrapper" *ngIf="!isLoading">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>TITLE</th>
+            <th>DIFFICULTY</th>
+            <th>TAGS</th>
+            <th>TEST CASES</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let challenge of challenges" class="table-row">
+            <td>
+              <span class="product-name">{{ challenge.title }}</span>
+              <span class="product-desc-small">{{ challenge.description | slice:0:50 }}...</span>
+            </td>
+            <td>
+              <span class="category-pill">{{ challenge.difficulty }}</span>
+            </td>
+            <td>
+              <span class="price-text" style="font-size: 11px; color:#64748b;">{{ challenge.tags }}</span>
+            </td>
+            <td>
+              <span class="stock-badge stock-ok">{{ challenge.testCases?.length || 0 }} Cases</span>
+            </td>
+            <td class="actions-cell">
+              <div *ngIf="deleteConfirmId !== challenge.id" class="action-btns">
+                <button class="btn-edit" (click)="editChallenge(challenge)">✏ EDIT</button>
+                <button class="btn-delete" (click)="confirmDelete(challenge.id)">🗑 DELETE</button>
+              </div>
+              <div *ngIf="deleteConfirmId === challenge.id" class="confirm-delete">
+                <span>Are you sure?</span>
+                <button class="btn-confirm" (click)="deleteChallenge(challenge.id)">YES</button>
+                <button class="btn-cancel" (click)="cancelDelete()">NO</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="empty" *ngIf="challenges.length === 0">
+        No challenges yet. Click NEW CHALLENGE to add one.
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ======================== FORM VIEW ======================== -->
+  <ng-container *ngIf="showForm">
+    <div class="page-header">
+      <div>
+        <button class="btn-back" (click)="goBack()">← BACK</button>
+        <h1 class="page-title">{{ isEditMode ? 'EDIT CHALLENGE' : 'NEW CHALLENGE' }}</h1>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form (ngSubmit)="onSubmit()" #challengeForm="ngForm">
+        <div class="form-grid">
+          
+          <div class="form-group full-width">
+            <label class="form-label">CHALLENGE TITLE *</label>
+            <input class="form-input" [class.input-error]="errors['title']" type="text" [(ngModel)]="formData.title" name="title" placeholder="e.g. Two Sum" (input)="clearError('title')" />
+            <span class="error-msg" *ngIf="errors['title']">⚠ {{ errors['title'] }}</span>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">DESCRIPTION *</label>
+            <textarea class="form-input form-textarea" [class.input-error]="errors['description']" [(ngModel)]="formData.description" name="description" placeholder="Problem description..." rows="5" (input)="clearError('description')"></textarea>
+            <span class="error-msg" *ngIf="errors['description']">⚠ {{ errors['description'] }}</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">DIFFICULTY *</label>
+            <select class="form-input form-select" [class.input-error]="errors['difficulty']" [(ngModel)]="formData.difficulty" name="difficulty" (change)="clearError('difficulty')">
+              <option value="">-- SELECT DIFFICULTY --</option>
+              <option value="EASY">EASY</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HARD">HARD</option>
+            </select>
+            <span class="error-msg" *ngIf="errors['difficulty']">⚠ {{ errors['difficulty'] }}</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">TAGS (Comma separated)</label>
+            <input class="form-input" type="text" [(ngModel)]="formData.tags" name="tags" placeholder="e.g. arrays, hashmap" />
+          </div>
+
+          <!-- Test Cases Section -->
+          <div class="form-group full-width" style="margin-top: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="form-label">TEST CASES</label>
+              <button type="button" class="btn-secondary" (click)="addTestCase()">+ ADD TEST CASE</button>
+            </div>
+            
+            <div *ngFor="let tc of formData.testCases; let i = index" class="test-case-box">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                  <label class="form-label">INPUT</label>
+                  <textarea class="form-input" [(ngModel)]="tc.input" [name]="'tcInput'+i" rows="2"></textarea>
+                </div>
+                <div>
+                  <label class="form-label">EXPECTED OUTPUT</label>
+                  <textarea class="form-input" [(ngModel)]="tc.expectedOutput" [name]="'tcOutput'+i" rows="2"></textarea>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                <label style="color:#e2e8f0; font-size:12px; font-family:'Rajdhani', sans-serif;">
+                  <input type="checkbox" [(ngModel)]="tc.isHidden" [name]="'tcHidden'+i" /> Hidden Test Case (Not shown to user)
+                </label>
+                <button type="button" class="btn-delete" (click)="removeTestCase(i)">🗑 REMOVE</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="goBack()">CANCEL</button>
+          <button type="submit" class="btn-submit" [disabled]="isSaving">
+            {{ isSaving ? 'SAVING...' : 'SAVE CHALLENGE' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+</div>

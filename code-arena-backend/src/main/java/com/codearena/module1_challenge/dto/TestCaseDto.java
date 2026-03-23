@@ -11,8 +11,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubmitCodeRequest {
-    private String code;
-    private String language; // ID from Judge0 or standard name e.g. "JAVA" -> "62"
-    private Long challengeId;
+public class TestCaseDto {
+    private Long id;
+    private String input;
+    private String expectedOutput;
+    private Boolean isHidden;
 }
