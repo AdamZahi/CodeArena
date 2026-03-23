@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,19 +24,19 @@ public class Judge0Service {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("source_code", sourceCode);
+        body.put("source_code", Base64.getEncoder().encodeToString(sourceCode.getBytes()));
         body.put("language_id", Integer.parseInt(languageId));
         if (expectedOutput != null && !expectedOutput.isBlank()) {
-            body.put("expected_output", expectedOutput);
+            body.put("expected_output", Base64.getEncoder().encodeToString(expectedOutput.getBytes()));
         }
         if (stdin != null && !stdin.isBlank()) {
-            body.put("stdin", stdin);
+            body.put("stdin", Base64.getEncoder().encodeToString(stdin.getBytes()));
         }
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(baseUrl + "?base64_encoded=false&wait=false", entity, Map.class);
+            ResponseEntity<Map> response = restTemplate.postForEntity(baseUrl + "?base64_encoded=true&wait=false", entity, Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return (String) response.getBody().get("token");
             }
@@ -47,7 +48,7 @@ public class Judge0Service {
 
     public Map<String, Object> getSubmissionStatus(String token) {
         try {
-            ResponseEntity<Map> response = restTemplate.getForEntity(baseUrl + "/" + token + "?base64_encoded=false", Map.class);
+            ResponseEntity<Map> response = restTemplate.getForEntity(baseUrl + "/" + token + "?base64_encoded=true", Map.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
             }
@@ -55,5 +56,14 @@ public class Judge0Service {
             log.error("Failed to get status from Judge0 for token: {}", token, e);
         }
         return null;
+    }
+
+    public String decodeBase64(String encoded) {
+        if (encoded == null) return "";
+        try {
+            return new String(Base64.getDecoder().decode(encoded));
+        } catch (Exception e) {
+            return encoded;
+        }
     }
 }

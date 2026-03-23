@@ -7,18 +7,18 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChallengeDto {
-    private UUID id;
+    private Long id;
     private String title;
     private String description;
     private String difficulty;
     private String tags;
+    private String language;
     private String authorId;
     private Instant createdAt;
     private List<TestCaseDto> testCases;

@@ -13,8 +13,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmissionDto {
-    private UUID id;
-    private UUID challengeId;
+    private Long id;
+    private Long challengeId;
     private String userId;
     private String code;
     private String language;

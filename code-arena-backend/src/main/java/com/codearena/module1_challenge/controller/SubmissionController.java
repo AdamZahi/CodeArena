@@ -9,11 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/submissions")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class SubmissionController {
 
@@ -26,12 +26,12 @@ public class SubmissionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SubmissionDto> getSubmissionStatus(@PathVariable UUID id) {
+    public ResponseEntity<SubmissionDto> getSubmissionStatus(@PathVariable("id") Long id) {
         return ResponseEntity.ok(submissionService.getSubmissionStatus(id));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<SubmissionDto>> getUserSubmissions(@PathVariable String userId) {
+    public ResponseEntity<List<SubmissionDto>> getUserSubmissions(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(submissionService.getUserSubmissions(userId));
     }
 }

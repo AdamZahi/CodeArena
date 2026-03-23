@@ -16,5 +16,6 @@ public class CreateChallengeRequest {
     private String description;
     private String difficulty; // EASY, MEDIUM, HARD
     private String tags;
+    private String language;
     private List<TestCaseDto> testCases;
 }

@@ -14,5 +14,5 @@ import java.util.UUID;
 public class SubmitCodeRequest {
     private String code;
     private String language; // ID from Judge0 or standard name e.g. "JAVA" -> "62"
-    private UUID challengeId;
+    private Long challengeId;
 }

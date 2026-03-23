@@ -14,6 +14,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/challenges")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ChallengeController {
 
@@ -25,7 +26,7 @@ public class ChallengeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ChallengeDto> getChallengeById(@PathVariable UUID id) {
+    public ResponseEntity<ChallengeDto> getChallengeById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(challengeService.getChallengeById(id));
     }
 
@@ -37,7 +38,7 @@ public class ChallengeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteChallenge(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteChallenge(@PathVariable("id") Long id) {
         challengeService.deleteChallenge(id);
         return ResponseEntity.ok().build();
     }

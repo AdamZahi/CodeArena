@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ChallengeService {
     List<ChallengeDto> getAllChallenges();
-    ChallengeDto getChallengeById(UUID id);
+    ChallengeDto getChallengeById(Long id);
     ChallengeDto createChallenge(CreateChallengeRequest request, String authorId);
-    void deleteChallenge(UUID id);
+    void deleteChallenge(Long id);
 }

@@ -1,31 +1,37 @@
 <div class="lc-container">
-  <!-- HEADER BAR -->
+  <!-- HEADER BAR (Cyberpunk Style) -->
   <div class="lc-header">
     <div class="lc-header-left">
-      <span class="lc-logo">⚔️ CODE<span class="accent">ARENA</span></span>
-      <span class="lc-separator">|</span>
+      <span class="lc-logo">
+        <span class="accent">CODE</span>ARENA
+      </span>
       <span class="lc-nav-item active">Problems</span>
     </div>
   </div>
 
-  <!-- TAG BAR -->
+  <!-- TOOLBAR (Search & Chips) -->
   <div class="tag-bar">
-    <div class="tag-list">
-      <button class="tag-chip" [class.active]="selectedDifficulty === ''" (click)="filterByDifficulty('')">All Topics</button>
-      <button class="tag-chip" [class.active]="selectedDifficulty === 'EASY'" (click)="filterByDifficulty('EASY')">Easy</button>
-      <button class="tag-chip" [class.active]="selectedDifficulty === 'MEDIUM'" (click)="filterByDifficulty('MEDIUM')">Medium</button>
-      <button class="tag-chip" [class.active]="selectedDifficulty === 'HARD'" (click)="filterByDifficulty('HARD')">Hard</button>
-    </div>
     <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" placeholder="Search questions" [(ngModel)]="searchTerm" (input)="onSearch()" />
+      <span class="search-icon">⌕</span>
+      <input type="text" 
+             class="search-input" 
+             placeholder="SEARCH CHALLENGES..." 
+             [(ngModel)]="searchTerm" 
+             (input)="onSearch()" />
+    </div>
+    
+    <div class="tag-list">
+      <button class="tag-chip" [class.active]="selectedDifficulty === ''" (click)="filterByDifficulty('')">ALL TOPICS</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'EASY'" (click)="filterByDifficulty('EASY')">EASY</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'MEDIUM'" (click)="filterByDifficulty('MEDIUM')">MEDIUM</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'HARD'" (click)="filterByDifficulty('HARD')">HARD</button>
     </div>
   </div>
 
   <!-- LOADING -->
   <div class="lc-loading" *ngIf="isLoading">
     <div class="spinner"></div>
-    Loading problems...
+    INITIALIZING DATABASE...
   </div>
 
   <!-- PROBLEM TABLE -->
@@ -36,6 +42,7 @@
           <th class="col-status">Status</th>
           <th class="col-title">Title</th>
           <th class="col-acceptance">Tags</th>
+          <th class="col-lang">Language</th>
           <th class="col-difficulty">Difficulty</th>
         </tr>
       </thead>
@@ -54,22 +61,27 @@
           <td class="col-acceptance">
             <span class="tag-mini" *ngFor="let tag of getTags(c.tags)">{{ tag }}</span>
           </td>
+          <td class="col-lang">
+            <span class="lang-text">{{ getLanguageName(c.language) }}</span>
+          </td>
           <td class="col-difficulty">
             <span class="diff-pill"
                   [class.easy]="c.difficulty === 'EASY'"
                   [class.medium]="c.difficulty === 'MEDIUM'"
                   [class.hard]="c.difficulty === 'HARD'">
-              {{ c.difficulty === 'EASY' ? 'Easy' : c.difficulty === 'MEDIUM' ? 'Med.' : 'Hard' }}
+              {{ c.difficulty === 'EASY' ? 'EASY' : c.difficulty === 'MEDIUM' ? 'MED.' : 'HARD' }}
             </span>
           </td>
         </tr>
       </tbody>
     </table>
+    
     <div class="lc-empty" *ngIf="filteredChallenges.length === 0">
-      No problems found.
+      SYSTEM ERROR: NO CHALLENGES FOUND
     </div>
+    
     <div class="lc-footer">
-      <span class="lc-count">{{ filteredChallenges.length }} / {{ challenges.length }} problems</span>
+      <span class="lc-count">LOGGED: {{ filteredChallenges.length }} / {{ challenges.length }} PROBLEMS</span>
     </div>
   </div>
 </div>

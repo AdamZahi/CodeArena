@@ -1,13 +1,7 @@
 package com.codearena.module1_challenge.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.EqualsAndHashCode;
-
-import java.util.UUID;
+import lombok.*;
 
 @Data
 @Builder
@@ -15,9 +9,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @EqualsAndHashCode(exclude = "challenge")
+@ToString(exclude = "challenge")
 public class TestCase {
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "challenge_id", nullable = false)
@@ -30,9 +26,4 @@ public class TestCase {
     private String expectedOutput;
 
     private Boolean isHidden;
-
-    @PrePersist
-    public void prePersist() {
-        if (id == null) id = UUID.randomUUID();
-    }
 }

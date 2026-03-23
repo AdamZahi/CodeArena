@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TestCaseDto {
-    private UUID id;
+    private Long id;
     private String input;
     private String expectedOutput;
     private Boolean isHidden;

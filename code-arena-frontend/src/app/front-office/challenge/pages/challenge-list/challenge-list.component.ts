@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChallengeService } from '../../services/challenge.service';
-import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-challenge-list',
@@ -13,11 +12,11 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./challenge-list.component.css']
 })
 export class ChallengeListComponent implements OnInit {
-  challenges: any[] = [];
-  filteredChallenges: any[] = [];
-  isLoading = true;
-  searchTerm = '';
-  selectedDifficulty = '';
+  public challenges: any[] = [];
+  public filteredChallenges: any[] = [];
+  public isLoading = true;
+  public searchTerm = '';
+  public selectedDifficulty = '';
 
   constructor(
     private challengeService: ChallengeService,
@@ -25,39 +24,62 @@ export class ChallengeListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadChallenges();
+  }
+
+  public loadChallenges(): void {
+    this.isLoading = true;
     this.challengeService.getAll().subscribe({
       next: (data) => {
-        this.challenges = data;
-        this.filteredChallenges = data;
+        this.challenges = data || [];
+        this.applyFilters();
         this.isLoading = false;
       },
-      error: () => this.isLoading = false
+      error: (err) => {
+        console.error('Error loading challenges:', err);
+        this.isLoading = false;
+      }
     });
   }
 
-  goToChallenge(id: string): void {
+  public goToChallenge(id: string): void {
     this.router.navigate(['/challenge', id]);
   }
 
-  filterByDifficulty(diff: string): void {
+  public filterByDifficulty(diff: string): void {
     this.selectedDifficulty = diff;
     this.applyFilters();
   }
 
-  onSearch(): void {
+  public onSearch(): void {
     this.applyFilters();
   }
 
-  applyFilters(): void {
+  public applyFilters(): void {
+    if (!this.challenges) return;
     this.filteredChallenges = this.challenges.filter(c => {
-      const matchesDifficulty = this.selectedDifficulty === '' || c.difficulty === this.selectedDifficulty;
-      const matchesSearch = this.searchTerm === '' || c.title.toLowerCase().includes(this.searchTerm.toLowerCase());
+      const matchesDifficulty = !this.selectedDifficulty || c.difficulty === this.selectedDifficulty;
+      const term = this.searchTerm.toLowerCase();
+      const matchesSearch = !this.searchTerm || 
+        (c.title && c.title.toLowerCase().includes(term)) ||
+        (c.tags && c.tags.toLowerCase().includes(term));
       return matchesDifficulty && matchesSearch;
     });
   }
 
-  getTags(tags: string): string[] {
+  public getTags(tags: string): string[] {
     if (!tags) return [];
-    return tags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0);
+    return tags.split(',').map((t: string) => t.trim()).filter(t => t.length > 0);
+  }
+
+  public getLanguageName(id: string): string {
+    switch (id) {
+      case '62': return 'JAVA (13)';
+      case '71': return 'PYTHON (3.8)';
+      case '50': return 'C (GCC 9.2)';
+      case '54': return 'C++ (GCC 9.2)';
+      case '63': return 'JS (NODE 12)';
+      default: return 'UNKNOWN';
+    }
   }
 }

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
+public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findByUserIdOrderBySubmittedAtDesc(String userId);
-    List<Submission> findByChallengeIdOrderBySubmittedAtDesc(UUID challengeId);
+    List<Submission> findByChallengeIdOrderBySubmittedAtDesc(Long challengeId);
 }

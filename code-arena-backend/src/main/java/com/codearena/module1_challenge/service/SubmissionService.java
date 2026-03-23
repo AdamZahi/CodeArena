@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface SubmissionService {
     SubmissionDto submitCode(SubmitCodeRequest request, String userId);
-    SubmissionDto getSubmissionStatus(UUID submissionId);
+    SubmissionDto getSubmissionStatus(Long submissionId);
     List<SubmissionDto> getUserSubmissions(String userId);
-    List<SubmissionDto> getChallengeSubmissions(UUID challengeId);
+    List<SubmissionDto> getChallengeSubmissions(Long challengeId);
 }

@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,6 +24,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeRepository challengeRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ChallengeDto> getAllChallenges() {
         return challengeRepository.findAll().stream()
                 .map(this::mapToDto)
@@ -32,7 +32,8 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     @Override
-    public ChallengeDto getChallengeById(UUID id) {
+    @Transactional(readOnly = true)
+    public ChallengeDto getChallengeById(Long id) {
         return challengeRepository.findById(id)
                 .map(this::mapToDto)
                 .orElseThrow(() -> new RuntimeException("Challenge not found: " + id));
@@ -46,6 +47,7 @@ public class ChallengeServiceImpl implements ChallengeService {
                 .description(request.getDescription())
                 .difficulty(request.getDifficulty())
                 .tags(request.getTags())
+                .language(request.getLanguage())
                 .authorId(authorId)
                 .createdAt(Instant.now())
                 .testCases(new ArrayList<>())
@@ -68,7 +70,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     @Override
-    public void deleteChallenge(UUID id) {
+    public void deleteChallenge(Long id) {
         challengeRepository.deleteById(id);
     }
 
@@ -79,6 +81,7 @@ public class ChallengeServiceImpl implements ChallengeService {
                 .description(challenge.getDescription())
                 .difficulty(challenge.getDifficulty())
                 .tags(challenge.getTags())
+                .language(challenge.getLanguage())
                 .authorId(challenge.getAuthorId())
                 .createdAt(challenge.getCreatedAt())
                 .testCases(challenge.getTestCases().stream()
