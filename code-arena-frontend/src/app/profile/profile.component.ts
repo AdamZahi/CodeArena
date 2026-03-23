@@ -11,8 +11,9 @@ import { Observable } from 'rxjs';
   template: `
     <section>
       <h1>My Profile</h1>
-      <p *ngIf="user$ | async as user">{{ user?.name ?? 'Anonymous' }}</p>
-      <img *ngIf="user$ | async as user" [src]="user?.avatar" alt="Avatar" width="100" />
+      <h2 *ngIf="user$ | async as user">{{ user?.name ?? 'Anonymous' }}</h2>
+      <p *ngIf="user$ | async as user">{{ user?.email }}</p>
+      <img *ngIf="user$ | async as user" [src]="user?.picture" alt="Avatar" width="100" />
       <form>
         <label>
           Avatar URL
