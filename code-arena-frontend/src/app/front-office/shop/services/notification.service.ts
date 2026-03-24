@@ -8,13 +8,22 @@ export interface OrderNotification {
   message: string;
 }
 
+export interface StockAlert {
+  productId: string;
+  productName: string;
+  stock: number;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
   private client: Client | null = null;
   private notifications$ = new BehaviorSubject<OrderNotification | null>(null);
+  private stockAlerts$ = new BehaviorSubject<StockAlert | null>(null);
 
   notification$ = this.notifications$.asObservable();
+  stockAlert$ = this.stockAlerts$.asObservable();
 
   connect(participantId: string): void {
     if (this.client?.active) return;
@@ -24,11 +33,22 @@ export class NotificationService implements OnDestroy {
       reconnectDelay: 5000,
       onConnect: () => {
         console.log('WebSocket connected');
+
+        // ── ORDER NOTIFICATIONS ──────────────────
         this.client?.subscribe(
           `/topic/orders/${participantId}`,
           (message: IMessage) => {
             const notification: OrderNotification = JSON.parse(message.body);
             this.notifications$.next(notification);
+          }
+        );
+
+        // ── STOCK ALERTS ─────────────────────────
+        this.client?.subscribe(
+          `/topic/stock-alert`,
+          (message: IMessage) => {
+            const alert: StockAlert = JSON.parse(message.body);
+            this.stockAlerts$.next(alert);
           }
         );
       },

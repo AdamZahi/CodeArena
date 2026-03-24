@@ -8,11 +8,11 @@ import { CheckoutRequest }       from '../../models/order.model';
 import { AuthService } from '@auth0/auth0-angular';
 import { take } from 'rxjs/operators';
 import confetti                  from 'canvas-confetti';
-
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css'
 })
@@ -126,13 +126,14 @@ export class CartComponent implements OnInit {
         return;
       }
 
-      const request: CheckoutRequest = {
-        participantId,
-        items: this.cartItems.map(item => ({
-          productId: item.product.id,
-          quantity: item.quantity
-        }))
-      };
+const request: CheckoutRequest = {
+  participantId,
+  couponCode: this.couponApplied ? this.couponCode : undefined, // ← ADD
+  items: this.cartItems.map(item => ({
+    productId: item.product.id,
+    quantity: item.quantity
+  }))
+};
 
       this.shopService.checkout(request).subscribe({
         next: () => this.onSuccess(),
@@ -201,4 +202,60 @@ export class CartComponent implements OnInit {
       });
     }, 1000);
   }
+
+  // ── COUPON ───────────────────────────────────
+couponCode: string = '';
+couponApplied: boolean = false;
+couponDiscount: number = 0;
+couponMessage: string = '';
+couponError: string = '';
+couponLoading: boolean = false;
+
+// ── APPLY COUPON ─────────────────────────────
+applyCoupon(): void {
+  if (!this.couponCode.trim()) return;
+  this.couponLoading = true;
+  this.couponError = '';
+  this.couponMessage = '';
+
+  this.shopService.validateCoupon(this.couponCode).subscribe({
+    next: (res) => {
+      this.couponLoading = false;
+      if (res.data.valid) {
+        this.couponApplied = true;
+        this.couponDiscount = res.data.discountRate;
+        this.couponMessage = res.data.message;
+      } else {
+        this.couponApplied = false;
+        this.couponDiscount = 0;
+        this.couponError = '❌ ' + res.data.message;
+      }
+    },
+    error: () => {
+      this.couponLoading = false;
+      this.couponError = '❌ Failed to validate coupon.';
+    }
+  });
+}
+
+removeCoupon(): void {
+  this.couponCode = '';
+  this.couponApplied = false;
+  this.couponDiscount = 0;
+  this.couponMessage = '';
+  this.couponError = '';
+}
+
+// ── FINAL TOTAL WITH COUPON ───────────────────
+getFinalTotal(): number {
+  const discounted = this.getDiscountedTotal();
+  if (this.couponApplied) {
+    return discounted * (1 - this.couponDiscount);
+  }
+  return discounted;
+}
+
+getCouponSavings(): number {
+  return this.getDiscountedTotal() - this.getFinalTotal();
+}
 }

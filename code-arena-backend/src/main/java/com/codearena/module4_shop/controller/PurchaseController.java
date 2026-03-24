@@ -4,6 +4,7 @@ import com.codearena.module4_shop.dto.ApiResponse;
 import com.codearena.module4_shop.dto.PurchaseRequest;
 import com.codearena.module4_shop.dto.PurchaseResponse;
 import com.codearena.module4_shop.enums.OrderStatus;
+import com.codearena.module4_shop.service.CouponService;
 import com.codearena.module4_shop.service.ExcelService;
 import com.codearena.module4_shop.service.PurchaseService;
 import com.codearena.module4_shop.service.QrCodeService;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -26,6 +28,7 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
     private final QrCodeService qrCodeService;
     private final ExcelService excelService;
+    private final CouponService couponService;
 
 
 
@@ -165,5 +168,24 @@ public class PurchaseController {
                 .header("Content-Disposition", "attachment; filename=orders.xlsx")
                 .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .body(excel);
+    }
+    // ── VALIDATE COUPON ──────────────────────────
+// POST /api/shop/coupons/validate
+    @PostMapping("/coupons/validate")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> validateCoupon(
+            @RequestBody java.util.Map<String, String> body
+    ) {
+        String code = body.get("code");
+        boolean valid = couponService.isValid(code);
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("valid", valid);
+        result.put("code", code != null ? code.toUpperCase() : "");
+        result.put("discountRate", valid ? couponService.getDiscountRate(code) : 0);
+        result.put("message", valid
+                ? "Coupon applied! " + (int)(couponService.getDiscountRate(code) * 100) + "% off"
+                : "Invalid coupon code");
+
+        return ResponseEntity.ok(ApiResponse.success(result, "Coupon checked"));
     }
 }

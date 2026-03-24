@@ -1,0 +1,52 @@
+<div class="wishlist-container">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="page-header">
+    <button class="back-btn" (click)="goToShop()">← BACK TO SHOP</button>
+    <h1 class="page-title">// MY WISHLIST</h1>
+    <button class="clear-btn" *ngIf="items.length > 0" (click)="clearWishlist()">
+      CLEAR ALL
+    </button>
+  </div>
+
+  <!-- ── EMPTY ─────────────────────────────────── -->
+  <div class="empty" *ngIf="items.length === 0">
+    <p>// YOUR WISHLIST IS EMPTY</p>
+    <button class="shop-btn" (click)="goToShop()">BROWSE SHOP</button>
+  </div>
+
+  <!-- ── GRID ──────────────────────────────────── -->
+  <div class="wishlist-grid" *ngIf="items.length > 0">
+    <div class="wishlist-card" *ngFor="let product of items">
+
+      <img [src]="product.imageUrl" [alt]="product.name" class="product-img"/>
+
+      <div class="card-body">
+        <span class="category-badge">{{ product.category }}</span>
+        <h3 class="product-name">{{ product.name }}</h3>
+        <p class="product-desc">{{ product.description | slice:0:60 }}...</p>
+
+        <div class="card-footer">
+          <span class="price">{{ product.price | currency }}</span>
+          <span class="stock" [class.out]="product.stock === 0">
+            {{ product.stock === 0 ? '✕ OUT OF STOCK' : '◆ ' + product.stock + ' IN STOCK' }}
+          </span>
+        </div>
+
+        <div class="card-actions">
+          <button
+            class="btn-cart"
+            (click)="addToCart(product)"
+            [disabled]="product.stock === 0">
+            {{ product.stock === 0 ? 'OUT OF STOCK' : '+ ADD TO CART' }}
+          </button>
+          <button class="btn-remove" (click)="removeFromWishlist(product)">
+            🗑 REMOVE
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

@@ -16,4 +16,18 @@
     <button class="notif-close" (click)="dismiss(notif.id)">✕</button>
 
   </div>
+    <!-- ── STOCK ALERTS ─────────────────────── -->
+  <div
+    *ngFor="let alert of stockAlerts"
+    class="notification-toast notif-stock"
+    [class.visible]="alert.visible"
+    [class.hidden]="!alert.visible">
+    <div class="notif-icon">🔥</div>
+    <div class="notif-body">
+      <div class="notif-title">LOW STOCK ALERT</div>
+      <div class="notif-message">{{ alert.message }}</div>
+    </div>
+    <button class="notif-close" (click)="dismissStock(alert.id)">✕</button>
+  </div>
+
 </div>

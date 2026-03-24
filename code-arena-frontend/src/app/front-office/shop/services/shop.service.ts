@@ -84,4 +84,11 @@ getProductsPaginated(
   );
 }
 
+// ── VALIDATE COUPON ──────────────────────────
+validateCoupon(code: string): Observable<ApiResponse<any>> {
+  return this.http.post<ApiResponse<any>>(
+    `${environment.apiBaseUrl}/api/shop/coupons/validate`,
+    { code }
+  );
+}
 }

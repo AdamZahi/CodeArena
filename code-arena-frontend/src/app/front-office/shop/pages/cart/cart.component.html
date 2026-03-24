@@ -93,6 +93,47 @@
         <span class="savings-amount">{{ getTotalSavings() | currency }}</span>
       </div>
 
+<!-- ── COUPON CODE ───────────────────────── -->
+<div class="coupon-section">
+  <div class="coupon-input-row" *ngIf="!couponApplied">
+    <input
+      class="coupon-input"
+      type="text"
+      placeholder="ENTER PROMO CODE"
+      [(ngModel)]="couponCode"
+      (keyup.enter)="applyCoupon()"/>
+    <button
+      class="btn-apply"
+      (click)="applyCoupon()"
+      [disabled]="couponLoading">
+      {{ couponLoading ? '...' : 'APPLY' }}
+    </button>
+  </div>
+
+  <!-- Success -->
+  <div class="coupon-success" *ngIf="couponApplied">
+    <span>🎟 {{ couponCode.toUpperCase() }} — {{ couponMessage }}</span>
+    <button class="btn-remove-coupon" (click)="removeCoupon()">✕</button>
+  </div>
+
+  <!-- Error -->
+  <div class="coupon-error" *ngIf="couponError">
+    {{ couponError }}
+  </div>
+</div>
+
+<!-- ── COUPON SAVINGS ─────────────────────── -->
+<div class="savings-row" *ngIf="getCouponSavings() > 0">
+  <span>🎟 COUPON SAVINGS</span>
+  <span class="savings-amount">-{{ getCouponSavings() | currency }}</span>
+</div>
+
+<!-- ── FINAL TOTAL ────────────────────────── -->
+<div class="summary-total final-total" *ngIf="couponApplied">
+  <span>FINAL TOTAL</span>
+  <span>{{ getFinalTotal() | currency }}</span>
+</div>
+
       <!-- Checkout error message -->
       <div class="error-msg" *ngIf="checkoutError">
         ⚠ {{ checkoutError }}

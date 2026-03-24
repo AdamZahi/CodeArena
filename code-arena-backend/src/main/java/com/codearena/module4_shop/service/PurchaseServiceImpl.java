@@ -32,6 +32,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final ShopService shopService;
     private final EmailService emailService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final CouponService couponService;
 
     @Value("${app.shop.admin-email}")
     private String adminEmail;
@@ -74,6 +75,12 @@ public class PurchaseServiceImpl implements PurchaseService {
             orderItems.add(item);
         }
 
+// ── APPLY COUPON BEFORE SAVING ────────────────
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            totalPrice = couponService.applyDiscount(totalPrice, request.getCouponCode());
+            log.info("Coupon {} applied, new total: {}", request.getCouponCode(), totalPrice);
+        }
+
         Purchase purchase = Purchase.builder()
                 .participantId(request.getParticipantId())
                 .totalPrice(totalPrice)
@@ -90,6 +97,24 @@ public class PurchaseServiceImpl implements PurchaseService {
             ShopItem product = item.getShopItem();
             product.setStock(product.getStock() - item.getQuantity());
             shopItemRepository.save(product);
+
+// ── STOCK ALERT ───────────────────────────────
+// Notify all clients when stock drops to low level
+            if (product.getStock() <= 5 && product.getStock() > 0) {
+                messagingTemplate.convertAndSend(
+                        "/topic/stock-alert",
+                        new java.util.HashMap<String, Object>() {{
+                            put("productId", product.getId().toString());
+                            put("productName", product.getName());
+                            put("stock", product.getStock());
+                            put("message", "⚠ Only " + product.getStock() + " left of " + product.getName() + "!");
+                        }}
+                );
+            }}
+        // ── APPLY COUPON ──────────────────────────────
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            totalPrice = couponService.applyDiscount(totalPrice, request.getCouponCode());
+            log.info("Coupon {} applied to order", request.getCouponCode());
         }
 
         log.info("Order created successfully: {}", savedPurchase.getId());

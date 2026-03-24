@@ -75,3 +75,13 @@
 }
 
 .notif-close:hover { color: #e2e8f0; }
+.notif-stock {
+  border-color: rgba(245,158,11,0.5);
+  box-shadow: 0 0 20px rgba(245,158,11,0.2);
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(245,158,11,0.5); }
+  50%       { border-color: rgba(245,158,11,1); }
+}
