@@ -52,8 +52,8 @@ export class ShopService extends ApiService {
 
   // Participant: get my order history
 // Participant: get my order history//needs to be fixed once we get user
-getMyOrders(): Observable<ApiResponse<Order[]>> {
-  return this.get<Order[]>('/orders/my/participant-001');
+getMyOrders(participantId: string): Observable<ApiResponse<Order[]>> {
+  return this.get<Order[]>(`/orders/my/${participantId}`);
 }
   // Admin: get all orders
   getAllOrders(): Observable<ApiResponse<Order[]>> {

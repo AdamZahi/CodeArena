@@ -10,7 +10,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
 
   return auth.idTokenClaims$.pipe(
     map((claims) => {
-      const roles = (claims?.['https://codearena.com/roles'] as string[]) ?? [];
+      const roles = ((claims as any)?.['https://codearena.com/roles'] as string[]) ?? [];
       if (requiredRole && roles.includes(requiredRole)) {
         return true;
       }

@@ -5,6 +5,8 @@ import { CartService }           from '../../services/cart.service';
 import { ShopService }           from '../../services/shop.service';
 import { CartItem }              from '../../models/cart.model';
 import { CheckoutRequest }       from '../../models/order.model';
+import { AuthService } from '@auth0/auth0-angular';
+import { take } from 'rxjs/operators';
 import confetti                  from 'canvas-confetti';
 
 @Component({
@@ -29,7 +31,9 @@ export class CartComponent implements OnInit {
   constructor(
     private cartService: CartService,
     private shopService: ShopService,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
+
   ) {}
 
   ngOnInit(): void {
@@ -73,7 +77,6 @@ export class CartComponent implements OnInit {
   const outOfStock = this.cartItems.find(
     item => item.quantity > item.product.stock
   );
-
   if (outOfStock) {
     this.checkoutError = `"${outOfStock.product.name}" only has ${outOfStock.product.stock} in stock.`;
     return;
@@ -81,22 +84,31 @@ export class CartComponent implements OnInit {
 
   this.isCheckingOut = true;
 
-  const request: CheckoutRequest = {
-    // TODO: Replace with real Keycloak user ID later
-    participantId: 'participant-001',
-    items: this.cartItems.map(item => ({
-      productId: item.product.id,
-      quantity: item.quantity
-    }))
-  };
+  this.auth.user$.pipe(take(1)).subscribe(user => {
+    const participantId = user?.sub;
 
-  this.shopService.checkout(request).subscribe({
-    next: () => this.onSuccess(),
-    error: (err) => {
-      console.error('Checkout error:', err);
-      this.checkoutError = 'Checkout failed. Please try again.';
+    if (!participantId) {
+      this.checkoutError = 'Not authenticated. Please log in.';
       this.isCheckingOut = false;
+      return;
     }
+
+    const request: CheckoutRequest = {
+      participantId,
+      items: this.cartItems.map(item => ({
+        productId: item.product.id,
+        quantity: item.quantity
+      }))
+    };
+
+    this.shopService.checkout(request).subscribe({
+      next: () => this.onSuccess(),
+      error: (err) => {
+        console.error('Checkout error:', err);
+        this.checkoutError = 'Checkout failed. Please try again.';
+        this.isCheckingOut = false;
+      }
+    });
   });
 }
   // ── SUCCESS + CONFETTI ───────────────────────

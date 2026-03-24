@@ -3,7 +3,8 @@ import { CommonModule }         from '@angular/common';
 import { Router }               from '@angular/router';
 import { ShopService }          from '../../services/shop.service';
 import { Order, OrderStatus }   from '../../models/order.model';
-
+import { AuthService }          from '@auth0/auth0-angular';
+import { take }                 from 'rxjs/operators';
 @Component({
   selector: 'app-my-inventory',
   standalone: true,
@@ -16,23 +17,28 @@ export class MyInventoryComponent implements OnInit {
   orders: Order[] = [];
   isLoading = true;
   selectedOrder: Order | null = null;
-
-  // TODO: Replace with real participant ID from Keycloak JWT
-  // For now hardcoded for testing
-  participantId = 'participant-001';
+  participantId = '';
+  orderQrCodes: { [orderId: string]: string } = {};
 
   constructor(
     private shopService: ShopService,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+  this.auth.user$.pipe(take(1)).subscribe(user => {
+    const sub = user?.sub;
+    if (!sub) return; // not logged in, do nothing
+    this.participantId = sub;
     this.loadOrders();
-  }
+  });
+}
 
+  // Load orders for this participant
   loadOrders(): void {
     this.isLoading = true;
-    this.shopService.getMyOrders().subscribe({
+    this.shopService.getMyOrders(this.participantId).subscribe({
       next: (res) => {
         this.orders = res.data || [];
         this.isLoading = false;
@@ -44,7 +50,7 @@ export class MyInventoryComponent implements OnInit {
     });
   }
 
-  // Open order detail modal
+  // Open order detail modal + load QR
   viewOrder(order: Order): void {
     this.selectedOrder = order;
     this.loadQrCode(order.id);
@@ -75,29 +81,26 @@ export class MyInventoryComponent implements OnInit {
   getItemTotal(price: number, qty: number): number {
     return price * qty;
   }
+
+  // Cancel order + restore stock
   cancelOrder(orderId: string, event: Event): void {
-  event.stopPropagation(); // don't open modal
-  this.shopService.cancelOrder(orderId).subscribe({
-    next: () => {
-      // Update status locally
-      const order = this.orders.find(o => o.id === orderId);
-      if (order) order.status = OrderStatus.CANCELLED;
-    },
-    error: (err) => console.error('Cancel failed', err)
-  });
-}
-// Add property:
-orderQrCodes: { [orderId: string]: string } = {};
+    event.stopPropagation();
+    this.shopService.cancelOrder(orderId).subscribe({
+      next: () => {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order) order.status = OrderStatus.CANCELLED;
+      },
+      error: (err) => console.error('Cancel failed', err)
+    });
+  }
 
-// Add method:
-loadQrCode(orderId: string): void {
-  if (this.orderQrCodes[orderId]) return; // already loaded
-  this.shopService.getOrderQr(orderId).subscribe({
-    next: (res) => {
-      this.orderQrCodes[orderId] = res.data;
-    }
-  });
-}
-
-
+  // Load QR code for order
+  loadQrCode(orderId: string): void {
+    if (this.orderQrCodes[orderId]) return;
+    this.shopService.getOrderQr(orderId).subscribe({
+      next: (res) => {
+        this.orderQrCodes[orderId] = res.data;
+      }
+    });
+  }
 }
