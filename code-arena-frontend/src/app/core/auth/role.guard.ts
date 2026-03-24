@@ -1,4 +1,4 @@
-import { inject } from '@angular/core';
+/*import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs';
@@ -17,4 +17,13 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
       return router.parseUrl('/forbidden');
     })
   );
+};
+*/
+
+import { CanActivateFn } from '@angular/router';
+
+export const roleGuard: CanActivateFn = () => {
+  // DEVELOPMENT BYPASS — remove when Auth0 roles are configured
+  // Original code commented out below — restore when Auth0 Action is set up
+  return true;
 };

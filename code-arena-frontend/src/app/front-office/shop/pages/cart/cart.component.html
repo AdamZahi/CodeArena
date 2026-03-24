@@ -32,11 +32,23 @@
         <div class="item-info">
           <h3>{{ item.product.name }}</h3>
           <span class="item-category">{{ item.product.category }}</span>
-          <p class="item-price">{{ item.product.price | currency }} each</p>
+
+          <!-- ── DISCOUNT: price row with strikethrough + badge ── -->
+          <div class="price-row">
+            <p class="item-price-original" *ngIf="getDiscountRate(item.quantity) > 0">
+              {{ item.product.price | currency }} each
+            </p>
+            <p class="item-price" [class.discounted]="getDiscountRate(item.quantity) > 0">
+              {{ getDiscountedPrice(item.product.price, item.quantity) | currency }} each
+            </p>
+            <span class="discount-badge" *ngIf="getDiscountLabel(item.quantity)">
+              {{ getDiscountLabel(item.quantity) }}
+            </span>
+          </div>
+          <!-- ── END DISCOUNT ── -->
 
           <!-- Stock warning per item -->
-          <p class="item-stock-warning"
-             *ngIf="item.quantity > item.product.stock">
+          <p class="item-stock-warning" *ngIf="item.quantity > item.product.stock">
             ⚠ Only {{ item.product.stock }} available!
           </p>
         </div>
@@ -47,7 +59,10 @@
           <button class="qty-btn" (click)="increaseQty(item.product.id, item.quantity)">+</button>
         </div>
 
-        <div class="item-total">{{ item.product.price * item.quantity | currency }}</div>
+        <!-- ── DISCOUNT: item total uses discounted price ── -->
+        <div class="item-total">
+          {{ getDiscountedPrice(item.product.price, item.quantity) * item.quantity | currency }}
+        </div>
 
         <button class="remove-btn" (click)="removeItem(item.product.id)">✕</button>
 
@@ -58,16 +73,24 @@
     <div class="order-summary">
       <h2>ORDER SUMMARY</h2>
 
+      <!-- ── DISCOUNT: summary rows use discounted price ── -->
       <div class="summary-row" *ngFor="let item of cartItems">
         <span>{{ item.product.name }} × {{ item.quantity }}</span>
-        <span>{{ item.product.price * item.quantity | currency }}</span>
+        <span>{{ getDiscountedPrice(item.product.price, item.quantity) * item.quantity | currency }}</span>
       </div>
 
       <div class="summary-divider"></div>
 
+      <!-- ── DISCOUNT: total uses discounted total ── -->
       <div class="summary-total">
         <span>TOTAL</span>
-        <span>{{ total | currency }}</span>
+        <span>{{ getDiscountedTotal() | currency }}</span>
+      </div>
+
+      <!-- ── DISCOUNT: show savings if any ── -->
+      <div class="savings-row" *ngIf="getTotalSavings() > 0">
+        <span>YOU SAVE</span>
+        <span class="savings-amount">{{ getTotalSavings() | currency }}</span>
       </div>
 
       <!-- Checkout error message -->

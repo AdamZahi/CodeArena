@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,6 +31,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final ShopItemRepository shopItemRepository;
     private final ShopService shopService;
     private final EmailService emailService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${app.shop.admin-email}")
     private String adminEmail;
@@ -61,12 +62,13 @@ public class PurchaseServiceImpl implements PurchaseService {
                                 ", Requested: " + itemRequest.getQuantity());
             }
 
-            totalPrice += product.getPrice() * itemRequest.getQuantity();
+            double discountedPrice = applyQuantityDiscount(product.getPrice(), itemRequest.getQuantity());
+            totalPrice += discountedPrice * itemRequest.getQuantity();
 
             PurchaseItem item = PurchaseItem.builder()
                     .shopItem(product)
                     .quantity(itemRequest.getQuantity())
-                    .unitPrice(product.getPrice())
+                    .unitPrice(applyQuantityDiscount(product.getPrice(), itemRequest.getQuantity())) // ← discounted
                     .build();
 
             orderItems.add(item);
@@ -139,7 +141,20 @@ public class PurchaseServiceImpl implements PurchaseService {
         Purchase purchase = purchaseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + id));
         purchase.setStatus(status);
-        return toResponse(purchaseRepository.save(purchase), purchase.getItems());
+        PurchaseResponse response = toResponse(purchaseRepository.save(purchase), purchase.getItems());
+
+        // ── WEBSOCKET NOTIFICATION ─────────────────
+        // Push real-time notification to the specific participant
+        messagingTemplate.convertAndSend(
+                "/topic/orders/" + purchase.getParticipantId(),
+                new java.util.HashMap<String, String>() {{
+                    put("orderId", purchase.getId().toString().substring(0, 8).toUpperCase());
+                    put("status", status.name());
+                    put("message", buildStatusMessage(status));
+                }}
+        );
+
+        return response;
     }
 
     @Override
@@ -206,4 +221,27 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .items(itemResponses)
                 .build();
     }
+    // ── WEBSOCKET HELPER ──────────────────────────
+    private String buildStatusMessage(OrderStatus status) {
+        return switch (status) {
+            case CONFIRMED -> "Your order has been confirmed! 🎉";
+            case SHIPPED   -> "Your order is on its way! 🚚";
+            case DELIVERED -> "Your order has been delivered! ✅";
+            case CANCELLED -> "Your order has been cancelled. ❌";
+            default        -> "Your order status has been updated.";
+        };
+    }
+    // ── DISCOUNT ALGORITHM ────────────────────────
+    // Quantity-based tiered discount
+    private double applyQuantityDiscount(double unitPrice, int quantity) {
+        if (quantity >= 5) {
+            return unitPrice * 0.80; // 20% off
+        } else if (quantity >= 3) {
+            return unitPrice * 0.90; // 10% off
+        } else if (quantity >= 2) {
+            return unitPrice * 0.95; // 5% off
+        }
+        return unitPrice; // no discount
+    }
+
 }

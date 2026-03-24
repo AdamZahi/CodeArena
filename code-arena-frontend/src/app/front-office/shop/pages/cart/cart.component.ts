@@ -15,8 +15,6 @@ import confetti                  from 'canvas-confetti';
   imports: [CommonModule],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css'
- 
-
 })
 export class CartComponent implements OnInit {
 
@@ -33,7 +31,6 @@ export class CartComponent implements OnInit {
     private shopService: ShopService,
     private router: Router,
     private auth: AuthService
-
   ) {}
 
   ngOnInit(): void {
@@ -65,52 +62,89 @@ export class CartComponent implements OnInit {
     this.router.navigate(['/shop']);
   }
 
+  // ── DISCOUNT ALGORITHM ────────────────────────
+  // Returns discount rate based on quantity
+  getDiscountRate(quantity: number): number {
+    if (quantity >= 5) return 0.20;
+    if (quantity >= 3) return 0.10;
+    if (quantity >= 2) return 0.05;
+    return 0;
+  }
+
+  // Returns discounted unit price
+  getDiscountedPrice(price: number, quantity: number): number {
+    return price * (1 - this.getDiscountRate(quantity));
+  }
+
+  // Returns discount label string
+  getDiscountLabel(quantity: number): string {
+    if (quantity >= 5) return '20% OFF';
+    if (quantity >= 3) return '10% OFF';
+    if (quantity >= 2) return '5% OFF';
+    return '';
+  }
+
+  // Total with discounts applied
+  getDiscountedTotal(): number {
+    return this.cartItems.reduce((total, item) => {
+      return total + this.getDiscountedPrice(item.product.price, item.quantity) * item.quantity;
+    }, 0);
+  }
+
+  // Total savings amount
+  getTotalSavings(): number {
+    return this.cartItems.reduce((savings, item) => {
+      return savings + (item.product.price - this.getDiscountedPrice(item.product.price, item.quantity)) * item.quantity;
+    }, 0);
+  }
+
   // ── CHECKOUT WITH VALIDATION ─────────────────
- checkout(): void {
-  this.checkoutError = '';
+  checkout(): void {
+    this.checkoutError = '';
 
-  if (this.cartItems.length === 0) {
-    this.checkoutError = 'Your cart is empty!';
-    return;
-  }
-
-  const outOfStock = this.cartItems.find(
-    item => item.quantity > item.product.stock
-  );
-  if (outOfStock) {
-    this.checkoutError = `"${outOfStock.product.name}" only has ${outOfStock.product.stock} in stock.`;
-    return;
-  }
-
-  this.isCheckingOut = true;
-
-  this.auth.user$.pipe(take(1)).subscribe(user => {
-    const participantId = user?.sub;
-
-    if (!participantId) {
-      this.checkoutError = 'Not authenticated. Please log in.';
-      this.isCheckingOut = false;
+    if (this.cartItems.length === 0) {
+      this.checkoutError = 'Your cart is empty!';
       return;
     }
 
-    const request: CheckoutRequest = {
-      participantId,
-      items: this.cartItems.map(item => ({
-        productId: item.product.id,
-        quantity: item.quantity
-      }))
-    };
+    const outOfStock = this.cartItems.find(
+      item => item.quantity > item.product.stock
+    );
+    if (outOfStock) {
+      this.checkoutError = `"${outOfStock.product.name}" only has ${outOfStock.product.stock} in stock.`;
+      return;
+    }
 
-    this.shopService.checkout(request).subscribe({
-      next: () => this.onSuccess(),
-      error: (err) => {
-        console.error('Checkout error:', err);
-        this.checkoutError = 'Checkout failed. Please try again.';
+    this.isCheckingOut = true;
+
+    this.auth.user$.pipe(take(1)).subscribe(user => {
+      const participantId = user?.sub;
+
+      if (!participantId) {
+        this.checkoutError = 'Not authenticated. Please log in.';
         this.isCheckingOut = false;
+        return;
       }
+
+      const request: CheckoutRequest = {
+        participantId,
+        items: this.cartItems.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity
+        }))
+      };
+
+      this.shopService.checkout(request).subscribe({
+        next: () => this.onSuccess(),
+        error: (err) => {
+          console.error('Checkout error:', err);
+          this.checkoutError = 'Checkout failed. Please try again.';
+          this.isCheckingOut = false;
+        }
+      });
     });
-  });
-}
+  }
+
   // ── SUCCESS + CONFETTI ───────────────────────
   onSuccess(): void {
     this.isCheckingOut = false;

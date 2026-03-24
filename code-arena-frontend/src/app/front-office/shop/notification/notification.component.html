@@ -1,0 +1,19 @@
+<div class="notification-container">
+  <div
+    *ngFor="let notif of notifications"
+    class="notification-toast"
+    [class]="getStatusColor(notif.status)"
+    [class.visible]="notif.visible"
+    [class.hidden]="!notif.visible">
+
+    <div class="notif-icon">{{ getStatusIcon(notif.status) }}</div>
+
+    <div class="notif-body">
+      <div class="notif-title">ORDER #{{ notif.orderId }}</div>
+      <div class="notif-message">{{ notif.message }}</div>
+    </div>
+
+    <button class="notif-close" (click)="dismiss(notif.id)">✕</button>
+
+  </div>
+</div>
