@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.codearena.user.repository.UserRepository;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final EmailService emailService;
     private final SimpMessagingTemplate messagingTemplate;
     private final CouponService couponService;
+    private final UserRepository userRepository;
 
     @Value("${app.shop.admin-email}")
     private String adminEmail;
@@ -111,18 +113,25 @@ public class PurchaseServiceImpl implements PurchaseService {
                         }}
                 );
             }}
-        // ── APPLY COUPON ──────────────────────────────
-        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
-            totalPrice = couponService.applyDiscount(totalPrice, request.getCouponCode());
-            log.info("Coupon {} applied to order", request.getCouponCode());
-        }
+
 
         log.info("Order created successfully: {}", savedPurchase.getId());
 
         PurchaseResponse response = toResponse(savedPurchase, orderItems);
 
         try {
-            emailService.sendOrderConfirmation(request.getParticipantId(), response);
+            // ── LOOK UP REAL EMAIL FROM USERS TABLE ───────
+            String participantEmail = userRepository
+                    .findByKeycloakId(request.getParticipantId())
+                    .map(user -> user.getEmail())
+                    .orElse(null);
+
+            if (participantEmail != null) {
+                emailService.sendOrderConfirmation(participantEmail, response);
+                log.info("Confirmation email sent to: {}", participantEmail);
+            } else {
+                log.warn("No email found for participant: {}", request.getParticipantId());
+            }
             emailService.sendAdminOrderAlert(adminEmail, response);
         } catch (Exception e) {
             log.warn("Email failed but order placed: {}", e.getMessage());
