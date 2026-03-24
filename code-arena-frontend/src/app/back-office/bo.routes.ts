@@ -10,6 +10,7 @@ export const BO_ROUTES: Routes = [
       { path: 'users', loadComponent: () => import('./user-management/pages/user-list/user-list.component').then((m) => m.UserListComponent) },
       { path: 'users/:id', loadComponent: () => import('./user-management/pages/user-detail/user-detail.component').then((m) => m.UserDetailComponent) },
       { path: 'challenges', loadComponent: () => import('./challenge-management/challenge-management.component').then((m) => m.ChallengeManagementComponent) },
+      { path: 'problems', loadChildren: () => import('./problem-management/problem-management.routes').then((m) => m.PROBLEM_MANAGEMENT_ROUTES) },
       { path: 'battles', loadComponent: () => import('./battle-management/battle-management.component').then((m) => m.BattleManagementComponent) },
       { path: 'shop', loadChildren: () => import('./shop-management/shop-management.routes').then((m) => m.SHOP_MANAGEMENT_ROUTES) },
       { path: 'reports', loadComponent: () => import('./support-management/support-management.component').then((m) => m.SupportManagementComponent) },

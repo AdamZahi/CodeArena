@@ -1,0 +1,146 @@
+<div class="admin-container">
+
+  <!-- ── SUCCESS TOAST ─────────────────────── -->
+  <div class="success-toast" *ngIf="showSuccess">
+    <span class="success-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <!-- ── HEADER ──────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <button class="btn-back" (click)="goBack()">← BACK TO LIST</button>
+      <h1 class="page-title">{{ isEditMode ? 'EDIT PROBLEM' : 'CREATE NEW PROBLEM' }}</h1>
+      <p class="page-sub">{{ isEditMode ? 'Update challenge details and test cases' : 'Define a new coding challenge' }}</p>
+    </div>
+  </div>
+
+  <!-- ── LOADING ──────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">Loading problem data...</div>
+
+  <!-- ── FORM ─────────────────────────────── -->
+  <div class="form-card" *ngIf="!isLoading">
+    <form (ngSubmit)="onSubmit()" #problemForm="ngForm">
+
+      <!-- General Info Section -->
+      <div class="section-title">
+        <span class="section-icon">📋</span> GENERAL INFORMATION
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group full-width">
+          <label class="form-label">PROBLEM TITLE *</label>
+          <input class="form-input" [class.input-error]="errors['title']" type="text"
+            [(ngModel)]="formData.title" name="title"
+            placeholder="e.g. Two Sum, Binary Search, Linked List Reversal"
+            (input)="clearError('title')" />
+          <span class="error-msg" *ngIf="errors['title']">⚠ {{ errors['title'] }}</span>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">DESCRIPTION *</label>
+          <textarea class="form-input form-textarea" [class.input-error]="errors['description']"
+            [(ngModel)]="formData.description" name="description"
+            placeholder="Describe the problem statement, constraints, and expected I/O format..."
+            rows="6" (input)="clearError('description')"></textarea>
+          <span class="error-msg" *ngIf="errors['description']">⚠ {{ errors['description'] }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">DIFFICULTY *</label>
+          <select class="form-input form-select" [class.input-error]="errors['difficulty']"
+            [(ngModel)]="formData.difficulty" name="difficulty"
+            (change)="clearError('difficulty')">
+            <option value="">-- SELECT DIFFICULTY --</option>
+            <option value="EASY">🟢 EASY</option>
+            <option value="MEDIUM">🟡 MEDIUM</option>
+            <option value="HARD">🔴 HARD</option>
+          </select>
+          <span class="error-msg" *ngIf="errors['difficulty']">⚠ {{ errors['difficulty'] }}</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">PROGRAMMING LANGUAGE</label>
+          <select class="form-input form-select"
+            [(ngModel)]="formData.language" name="language">
+            <option value="">-- ANY LANGUAGE --</option>
+            <option value="Java">Java</option>
+            <option value="Python">Python</option>
+            <option value="C++">C++</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="TypeScript">TypeScript</option>
+            <option value="Go">Go</option>
+            <option value="Rust">Rust</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">TAGS (comma separated)</label>
+          <input class="form-input" type="text"
+            [(ngModel)]="formData.tags" name="tags"
+            placeholder="e.g. arrays, hashmap, dynamic-programming, trees" />
+          <span class="hint-text">Tags help users discover and filter challenges</span>
+        </div>
+
+      </div>
+
+      <!-- Test Cases Section -->
+      <div class="section-title" style="margin-top: 32px;">
+        <span class="section-icon">🧪</span> TEST CASES
+        <button type="button" class="btn-add-tc" (click)="addTestCase()">+ ADD TEST CASE</button>
+      </div>
+
+      <div class="test-cases-empty" *ngIf="formData.testCases.length === 0">
+        No test cases added yet. Click + ADD TEST CASE to define input/output pairs.
+      </div>
+
+      <div *ngFor="let tc of formData.testCases; let i = index" class="test-case-box">
+        <div class="tc-header">
+          <span class="tc-number">TEST CASE #{{ i + 1 }}</span>
+          <button type="button" class="btn-remove-tc" (click)="removeTestCase(i)">✕ REMOVE</button>
+        </div>
+        <div class="tc-grid">
+          <div class="form-group">
+            <label class="form-label">INPUT</label>
+            <textarea class="form-input" [(ngModel)]="tc.input" [name]="'tcInput'+i" rows="3"
+              [class.input-error]="errors['tc_input_'+i]"
+              (input)="clearError('tc_input_'+i)"
+              placeholder="e.g. [2, 7, 11, 15], target = 9"></textarea>
+            <span class="error-msg" *ngIf="errors['tc_input_'+i]">⚠ {{ errors['tc_input_'+i] }}</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">EXPECTED OUTPUT</label>
+            <textarea class="form-input" [(ngModel)]="tc.expectedOutput" [name]="'tcOutput'+i" rows="3"
+              [class.input-error]="errors['tc_output_'+i]"
+              (input)="clearError('tc_output_'+i)"
+              placeholder="e.g. [0, 1]"></textarea>
+            <span class="error-msg" *ngIf="errors['tc_output_'+i]">⚠ {{ errors['tc_output_'+i] }}</span>
+          </div>
+        </div>
+        <div class="tc-footer">
+          <label class="hidden-check">
+            <input type="checkbox" [(ngModel)]="tc.isHidden" [name]="'tcHidden'+i" />
+            <span>Hidden test case</span>
+            <span class="hidden-hint">(Not visible to users during submission)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Submit Error -->
+      <div class="submit-error" *ngIf="errors['submit']">
+        ⚠ {{ errors['submit'] }}
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="goBack()">CANCEL</button>
+        <button type="submit" class="btn-submit" [disabled]="isSaving">
+          {{ isSaving ? 'SAVING...' : (isEditMode ? 'UPDATE PROBLEM' : 'CREATE PROBLEM') }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

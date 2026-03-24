@@ -24,6 +24,10 @@ export class ChallengeService {
     return this.http.post<any>(this.baseUrl, challenge);
   }
 
+  updateChallenge(id: string, challenge: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/${id}`, challenge);
+  }
+
   deleteChallenge(id: string): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/${id}`);
   }
