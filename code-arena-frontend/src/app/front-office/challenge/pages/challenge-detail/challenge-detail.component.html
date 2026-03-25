@@ -3,10 +3,17 @@
   <!-- ═══ TOP TOOLBAR ═══ -->
   <div class="lc-toolbar">
     <div class="toolbar-left">
-      <button class="toolbar-btn" routerLink="/challenge">← SYSTEM_BACK</button>
+      <button class="toolbar-btn" routerLink="/">🏚 HOME</button>
+      <button class="toolbar-btn" routerLink="/challenge">← SYSTEM_LIST</button>
       <span class="toolbar-title" *ngIf="challenge">{{ challenge.title }}</span>
     </div>
     <div class="toolbar-right">
+      <!-- USER PROFILE -->
+      <div class="toolbar-user-profile" *ngIf="auth.user$ | async as user">
+        <img [src]="user.picture" class="tb-user-avatar" [alt]="user.name" />
+        <span class="tb-user-name">{{ user.nickname || user.name }}</span>
+      </div>
+
       <button class="toolbar-sound-btn" (click)="toggleSound()" [title]="isMuted ? 'Unmute Sounds' : 'Mute Sounds'">
         <span *ngIf="!isMuted">🔊</span>
         <span *ngIf="isMuted">🔇</span>
@@ -33,7 +40,7 @@
       <div class="lc-tab-body" *ngIf="activeTab === 'description'">
         <div class="lc-loading-inner" *ngIf="isLoading">CONNECTING...</div>
 
-        <div *ngIf="!isLoading && challenge" class="desc-content">
+        <div *ngIf="!isLoading && challenge" class="desc-content" (copy)="$event.preventDefault()" (contextmenu)="$event.preventDefault()">
           <!-- HACKER HEALTH BAR -->
           <div class="hacker-health-container">
             <div class="health-label">
@@ -54,6 +61,15 @@
               LEVEL: {{ challenge.difficulty }}
             </span>
             <span class="tag-pill" *ngFor="let tag of getTags(challenge.tags)">{{ tag }}</span>
+            
+            <div class="vote-buttons">
+              <button class="vote-btn up" [class.active]="userVote === 'UPVOTE'" (click)="upvote()">
+                👍 {{ upvotes }}
+              </button>
+              <button class="vote-btn down" [class.active]="userVote === 'DOWNVOTE'" (click)="downvote()">
+                👎 {{ downvotes }}
+              </button>
+            </div>
           </div>
 
           <div class="desc-body" [innerHTML]="formatDescription(challenge.description)"></div>
@@ -154,12 +170,36 @@
               <div class="acc-header" (click)="discussionOpen = !discussionOpen" [class.active]="discussionOpen">
                 <div class="acc-title-group">
                   <i class="acc-icon chat-icon">💬</i>
-                  <span class="acc-label">Discussion (1.2K)</span>
+                  <span class="acc-label">Discussion ({{ comments.length }})</span>
                 </div>
                 <div class="acc-chevron" [class.rotated]="discussionOpen"></div>
               </div>
               <div class="acc-body" *ngIf="discussionOpen">
-                <div class="empty-state">No discussions yet. Start the conversation!</div>
+                
+                <!-- Post Comment -->
+                <div class="post-comment-box" *ngIf="auth.isAuthenticated$ | async">
+                  <textarea [(ngModel)]="newCommentContent" placeholder="Post a comment hacker..."></textarea>
+                  <button (click)="postComment()" [disabled]="!newCommentContent.trim() || isAddingComment">
+                    {{ isAddingComment ? 'UPLOADING...' : 'POST_COMMENT' }}
+                  </button>
+                </div>
+                <div class="login-prompt" *ngIf="(auth.isAuthenticated$ | async) === false">
+                  Please log in to participate in the discussion.
+                </div>
+
+                <!-- Comments List -->
+                <div class="comments-list">
+                  <div class="comment-item" *ngFor="let comment of comments">
+                    <div class="comment-header">
+                      <span class="comment-user">{{ comment.userName }}</span>
+                      <span class="comment-date">{{ comment.createdAt | date:'short' }}</span>
+                      <button class="delete-btn" *ngIf="comment.userId === currentUserSub" (click)="deleteComment(comment.id)">Delete</button>
+                    </div>
+                    <div class="comment-content">{{ comment.content }}</div>
+                  </div>
+                  <div class="empty-state" *ngIf="comments.length === 0">No discussions yet. Start the conversation!</div>
+                </div>
+
               </div>
             </div>
 
@@ -215,6 +255,10 @@
           [(ngModel)]="code"
           (input)="onCodeInput()"
           (keydown)="handleTab($event)"
+          (copy)="$event.preventDefault()"
+          (paste)="$event.preventDefault()"
+          (cut)="$event.preventDefault()"
+          (contextmenu)="$event.preventDefault()"
           [disabled]="isGameOver"
         ></textarea>
 
