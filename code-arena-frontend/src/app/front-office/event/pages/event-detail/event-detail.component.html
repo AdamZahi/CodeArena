@@ -1,0 +1,234 @@
+<div class="shop-container">
+
+
+  <div class="detail-toolbar">
+    <button class="back-btn" (click)="goBack()">← BACK TO EVENTS</button>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">LOADING EVENT...</div>
+  <div class="empty" *ngIf="!isLoading && !event">/ NO EVENT FOUND /</div>
+
+  <div class="event-detail-card" *ngIf="!isLoading && event">
+    <!-- ── HEADER ─────────────────────────────────────── -->
+    <div class="detail-header">
+      <span class="category-badge"
+        [ngClass]="(event.type === 'OPEN' || event.eventType === 'OPEN') ? 'badge-open' : 'badge-exclusive'">
+        {{ event.type || event.eventType }}
+      </span>
+      <span class="event-status-badge" [ngClass]="getEventStatusClass()">
+        {{ getEventStatusLabel() }}
+      </span>
+
+      <h1 class="detail-title">{{ event.title }}</h1>
+    </div>
+
+    <!-- ── INFO ───────────────────────────────────────── -->
+    <div class="section-label">EVENT INTEL</div>
+    <div class="info-grid">
+      <div class="info-left">
+        <p class="event-description">{{ event.description }}</p>
+
+        <div class="meta-row">
+          <span class="meta-label">ORGANIZER</span>
+          <span class="meta-value">{{ event.organizerName }}</span>
+        </div>
+
+        <div class="meta-row">
+          <span class="meta-label">DATES</span>
+          <span class="meta-value">
+            {{ formatDateTime(event.startDate) }} → {{ formatDateTime(event.endDate) }}
+          </span>
+        </div>
+
+        <div class="meta-row">
+          <span class="meta-label">CATEGORY</span>
+          <span class="meta-value">
+            <span class="category-badge small-badge">{{ event.category }}</span>
+          </span>
+        </div>
+
+        <div class="meta-row">
+          <span class="meta-label">LOCATION</span>
+          <span class="meta-value">
+            <span class="meta-icon">📍</span> {{ event.location || 'CODEARENA HQ' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PARTICIPANTS ──────────────────────────────── -->
+    <div class="section-label">PARTICIPANTS STATUS</div>
+    <div class="participants-section">
+      <div class="participants-top">
+        {{ event.currentParticipants }}/{{ event.maxParticipants }} PARTICIPANTS
+      </div>
+      <div class="participants-progress">
+        <div class="participants-progress-fill"
+          [ngClass]="(event.type === 'OPEN' || event.eventType === 'OPEN') ? 'participants-open' : 'participants-exclusive'"
+          [style.width.%]="getParticipantsPercent()"></div>
+      </div>
+      <div class="places-left">
+        {{ getPlacesLeft() }} PLACES LEFT
+      </div>
+    </div>
+
+    <!-- ── COUNTDOWN ──────────────────────────────────── -->
+    <div class="section-label">COUNTDOWN</div>
+    <div class="countdown-large" [class.ended]="countdownEnded">{{ countdownText }}</div>
+
+    <!-- ── ACTIONS ─────────────────────────────────────── -->
+    <div class="section-label">ACTIONS</div>
+    <div class="action-section">
+      <div class="mock-success-banner" *ngIf="mockSuccessMessage"
+        [ngClass]="mockSuccessVariant === 'green' ? 'success-green' : 'success-purple'">
+        {{ mockSuccessMessage }}
+      </div>
+
+      <!-- OPEN -->
+      <ng-container *ngIf="isOpenEvent()">
+        <!-- CONFIRMED -->
+        <ng-container *ngIf="myRegistration?.status === 'CONFIRMED'; else openNotConfirmed">
+          <div class="reg-state-box reg-confirmed">
+            <div class="reg-badge reg-badge-green">✅ YOU ARE REGISTERED</div>
+
+            <div class="reg-meta">
+              <div class="reg-line">📅 {{ formatDateTime(event.startDate) }} → {{ formatDateTime(event.endDate) }}</div>
+              <div class="reg-line">📍 CODEARENA</div>
+              <div class="reg-line">🏷 <span class="category-badge small-badge">{{ event.category }}</span></div>
+            </div>
+
+            <div class="qr-box" *ngIf="event.qrCode">
+              {{ event.qrCode }}
+            </div>
+
+            <button class="checkout-btn btn-danger" (click)="cancelRegistration()">
+              [ CANCEL REGISTRATION ]
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #openNotConfirmed>
+          <!-- WAITLIST -->
+          <ng-container *ngIf="myRegistration?.status === 'WAITLIST'; else openCancelledOrNone">
+            <div class="reg-state-box reg-waitlist">
+              <div class="reg-badge reg-badge-orange">⏳ YOU ARE ON WAITLIST</div>
+            </div>
+          </ng-container>
+
+          <ng-template #openCancelledOrNone>
+            <!-- CANCELLED -->
+            <ng-container *ngIf="myRegistration?.status === 'CANCELLED'; else openNone">
+              <div class="reg-state-box reg-cancelled">
+                <div class="reg-badge reg-badge-red">✕ REGISTRATION CANCELLED</div>
+                <button class="checkout-btn auto btn-open-detail" (click)="joinEvent()">
+                  [ RE-JOIN EVENT ]
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- NOT REGISTERED -->
+            <ng-template #openNone>
+              <button class="checkout-btn auto btn-open-detail" (click)="joinEvent()">
+                [ JOIN EVENT ]
+              </button>
+            </ng-template>
+          </ng-template>
+        </ng-template>
+      </ng-container>
+
+      <!-- EXCLUSIVE -->
+      <ng-container *ngIf="isExclusiveEvent()">
+        <!-- CONFIRMED (ONLY when registration is confirmed) -->
+        <ng-container *ngIf="myRegistration?.status === 'CONFIRMED'; else exclusiveNotConfirmed">
+          <div class="reg-state-box reg-confirmed">
+            <div class="reg-badge reg-badge-green">✅ YOU ARE REGISTERED</div>
+            <div class="qr-box" *ngIf="event.qrCode">
+              {{ event.qrCode }}
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #exclusiveNotConfirmed>
+          <!-- INVITATION -->
+          <ng-container *ngIf="exclusiveInvitation; else exclusiveNoInvitation">
+            <ng-container *ngIf="exclusiveInvitation.status === 'PENDING'">
+              <div class="reg-state-box vip-invite-box">
+                <div class="reg-badge vip-title">⭐ VIP INVITATION PENDING</div>
+                <div class="exclusive-actions">
+                  <button class="checkout-btn auto btn-open-detail" (click)="acceptInvitation()">
+                    [ ACCEPT INVITATION ]
+                  </button>
+                  <button class="checkout-btn auto btn-neutral" (click)="declineInvitation()">
+                    [ DECLINE ]
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="exclusiveInvitation.status === 'DECLINED'">
+              <div class="reg-state-box reg-cancelled">
+                <div class="reg-badge reg-badge-red">YOU DECLINED THIS INVITATION</div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="exclusiveInvitation.status === 'ACCEPTED'">
+              <div class="reg-state-box reg-waitlist">
+                <div class="reg-badge reg-badge-orange">INVITATION ACCEPTED. WAITING FOR CONFIRMATION.</div>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- NO INVITATION → CANDIDATURE -->
+          <ng-template #exclusiveNoInvitation>
+            <div class="loading" *ngIf="exclusiveLoading">LOADING CANDIDATURE...</div>
+
+            <ng-container *ngIf="!exclusiveLoading">
+              <ng-container *ngIf="exclusiveCandidature; else exclusiveCandidatureForm">
+                <ng-container *ngIf="exclusiveCandidature.status === 'PENDING'">
+                  <div class="reg-state-box reg-waitlist">
+                    <div class="reg-badge reg-badge-orange">⏳ YOUR CANDIDATURE IS UNDER REVIEW</div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="exclusiveCandidature.status === 'REJECTED'">
+                  <div class="reg-state-box reg-cancelled">
+                    <div class="reg-badge reg-badge-red">✕ YOUR CANDIDATURE WAS REJECTED</div>
+                  </div>
+                </ng-container>
+
+                <ng-container *ngIf="exclusiveCandidature.status === 'ACCEPTED'">
+                  <div class="reg-state-box reg-waitlist">
+                    <div class="reg-badge reg-badge-orange">CANDIDATURE ACCEPTED. WAITING FOR CONFIRMATION.</div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <ng-template #exclusiveCandidatureForm>
+                <label class="form-label" for="motivation">MOTIVATION</label>
+                <textarea id="motivation" class="event-textarea" [(ngModel)]="motivationText" rows="6"
+                  placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
+                <button class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+                  [ SUBMIT CANDIDATURE ]
+                </button>
+              </ng-template>
+            </ng-container>
+          </ng-template>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <!-- ── MY REGISTRATION CARD ───────────────────────── -->
+    <div class="my-registration-card"
+      *ngIf="myRegistration?.status === 'CONFIRMED' && !(isOpenEvent() && hasConfirmedRegistration())">
+      <div class="status-badge"
+        [ngClass]="myRegistration?.status === 'CONFIRMED' ? 'status-confirmed' : 'status-waitlist'">
+        {{ myRegistration?.status }}
+      </div>
+      <div class="qr-box" *ngIf="event.qrCode">
+        {{ event.qrCode }}
+      </div>
+    </div>
+
+    <div class="search-error" *ngIf="error">{{ error }}</div>
+  </div>
+</div>

@@ -31,7 +31,7 @@ export const FO_ROUTES: Routes = [
         loadChildren: () => import('./support/support.routes').then((m) => m.SUPPORT_ROUTES)
       },
       {
-        path: 'event',
+        path: 'events',
         loadChildren: () => import('./event/event.routes').then((m) => m.EVENT_ROUTES)
       },
       {

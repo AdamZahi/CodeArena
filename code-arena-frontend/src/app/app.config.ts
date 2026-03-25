@@ -18,11 +18,13 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor, loadingInterceptor])),
     provideAnimations(),
+    /*
     {
       provide: APP_INITIALIZER,
       multi: true,
       deps: [KeycloakService],
       useFactory: initKeycloak
     }
+    */
   ]
 };

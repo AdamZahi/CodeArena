@@ -1,0 +1,116 @@
+<div class="shop-container">
+  <div class="shop-header">
+    <div class="shop-title">
+      <h1>⚔ CODEARENA EVENTS</h1>
+      <p>// DISCOVER · JOIN · DOMINATE</p>
+    </div>
+    <div class="header-actions">
+      <button class="header-action-btn" (click)="openMyRegistrations()">[ MY REGISTRATIONS ]</button>
+      <button class="header-action-btn" (click)="openMyInvitations()">[ MY INVITATIONS ] ⭐</button>
+    </div>
+  </div>
+
+  <!-- ── SEARCH ───────────────────────────────── -->
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="SEARCH EVENTS..."
+      [(ngModel)]="searchText"
+      (input)="onSearch()"
+      class="search-input"
+    />
+  </div>
+
+  <!-- ── FILTERS ────────────────────────────────────── -->
+  <div class="category-filters">
+    <button
+      class="filter-btn"
+      [class.active]="selectedType === 'ALL'"
+      (click)="setFilter('ALL')"
+    >
+      [ ALL ]
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="selectedType === 'OPEN'"
+      (click)="setFilter('OPEN')"
+    >
+      [ OPEN ]
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="selectedType === 'EXCLUSIVE'"
+      (click)="setFilter('EXCLUSIVE')"
+    >
+      [ EXCLUSIVE ]
+    </button>
+  </div>
+
+  <!-- ── LOADING ────────────────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">LOADING EVENTS...</div>
+
+  <!-- ── EMPTY ─────────────────────────────────────── -->
+  <div class="empty" *ngIf="!isLoading && filteredEvents.length === 0">
+    <p>// NO EVENTS FOUND</p>
+  </div>
+
+  <!-- ── EVENTS GRID ────────────────────────────────── -->
+  <div class="product-grid" *ngIf="!isLoading && filteredEvents.length > 0">
+    <div
+      class="product-card"
+      *ngFor="let ev of filteredEvents"
+      (click)="openDetail(ev.id)"
+    >
+      <div class="event-image">
+        <div class="event-image-overlay"></div>
+        <div class="event-image-placeholder">CODEARENA</div>
+      </div>
+
+      <span
+        class="category-badge"
+        [style.color]="getTypeColor(ev.type || ev.eventType)"
+      >
+        {{ ev.type || ev.eventType }}
+      </span>
+
+      <div class="product-info">
+        <h3>{{ ev.title }}</h3>
+        
+        <div style="margin-bottom: 8px;">
+          <span class="event-status-badge" [ngClass]="getStatusBadgeClass(ev.status)">
+            {{ ev.status }}
+          </span>
+        </div>
+
+        <p class="product-desc" style="margin-bottom: 8px; font-style: italic;">
+          {{ (ev.description?.length > 80) ? (ev.description | slice:0:80) + '...' : ev.description }}
+        </p>
+
+        <p class="product-desc">
+          <span class="meta-icon">📍</span>
+          {{ ev.location || 'CODEARENA HQ' }}<br>
+          <span class="meta-icon">📅</span>
+          {{ formatDate(ev.startDate) }}
+        </p>
+
+        <div class="participants-wrap">
+          <div class="participants-top">
+            {{ ev.currentParticipants || 0 }}/{{ ev.maxParticipants || 1 }} PARTICIPANTS
+          </div>
+          <div class="participants-progress">
+            <div
+              class="participants-progress-fill"
+              [style.background]="getTypeColor(ev.type || ev.eventType)"
+              [style.width.%]="getProgressPercent(ev)"
+            ></div>
+          </div>
+        </div>
+
+        <div class="event-countdown">{{ getCountdownShort(ev.startDate) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-error" *ngIf="actionError">{{ actionError }}</div>
+</div>
+
