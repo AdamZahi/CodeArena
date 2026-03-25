@@ -91,4 +91,15 @@ validateCoupon(code: string): Observable<ApiResponse<any>> {
     { code }
   );
 }
+// ── LOYALTY POINTS ───────────────────────────
+getLoyaltyPoints(participantId: string): Observable<ApiResponse<any>> {
+  return this.get<any>(`/loyalty/${participantId}`);
+}
+
+redeemPoints(participantId: string, points: number): Observable<ApiResponse<any>> {
+  return this.http.post<ApiResponse<any>>(
+    `${environment.apiBaseUrl}/api/shop/loyalty/redeem`,
+    { participantId, points }
+  );
+}
 }

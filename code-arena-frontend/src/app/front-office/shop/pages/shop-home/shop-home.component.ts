@@ -7,6 +7,9 @@ import { CartService }               from '../../services/cart.service';
 import { Product, ProductCategory }  from '../../models/product.model';
 import { WishlistService } from '../../services/wishlist.service';
 import { SoundService } from '../../services/sound.service';
+import { NotificationService, PriceUpdate } from '../../services/notification.service';
+import { AuthService } from '@auth0/auth0-angular';
+import { take } from 'rxjs/operators';
 @Component({
   selector: 'app-shop-home',
   standalone: true,
@@ -55,18 +58,37 @@ export class ShopHomeComponent implements OnInit {
     private cartService: CartService,
     public wishlistService: WishlistService,
     private soundService: SoundService,
+    private notificationService: NotificationService,
+    private auth: AuthService,
     private router: Router
+
   ) {}
 
   // Runs when the page loads
-  ngOnInit(): void {
-    this.loadProducts();
+ngOnInit(): void {
+  this.loadProducts();
 
-    // Subscribe to cart changes to update badge
-    this.cartService.cartItems$.subscribe(() => {
-      this.cartCount = this.cartService.getItemCount();
+  // Subscribe to cart changes to update badge
+  this.cartService.cartItems$.subscribe(() => {
+    this.cartCount = this.cartService.getItemCount();
+  });
+
+  // ── ENSURE WEBSOCKET IS CONNECTED ────────────
+  // Safe to call multiple times — has internal guard
+  this.auth.user$.pipe(take(1)).subscribe(user => {
+    if (user?.sub) {
+      this.notificationService.connect(user.sub);
+    }
+  });
+
+  // ── SUBSCRIBE TO PRICE UPDATES ────────────────
+  this.notificationService.priceUpdates$.subscribe(updates => {
+    if (!updates) return;
+    updates.forEach(update => {
+      this.dynamicPrices[update.productId] = update;
     });
-  }
+  });
+}
 
   // ── LOAD PRODUCTS (paginated) ─────────────────────────────────────
   loadProducts(): void {
@@ -220,4 +242,25 @@ goToWishlist(): void {
 cartToast: string = '';
 wishlistToast: string = '';
 animatingProductId: string = '';
+
+goToOrders(): void {
+  this.router.navigate(['/shop/inventory']);
+}
+// ── DYNAMIC PRICING ───────────────────────────
+dynamicPrices: { [productId: string]: PriceUpdate } = {};
+// ── GET DYNAMIC PRICE ─────────────────────────
+getDynamicPrice(product: Product): number {
+  const update = this.dynamicPrices[product.id];
+  return update ? update.dynamicPrice : product.price;
+}
+
+getDynamicIndicator(product: Product): string {
+  const update = this.dynamicPrices[product.id];
+  return update ? update.indicator : '';
+}
+
+isPriceChanged(product: Product): boolean {
+  const update = this.dynamicPrices[product.id];
+  return update ? update.changed : false;
+}
 }

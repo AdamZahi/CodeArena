@@ -9,6 +9,9 @@
 
     <!-- ── WISHLIST + CART grouped together ── -->
     <div class="header-actions">
+      <button class="orders-header-btn" (click)="goToOrders()">
+  📦 MY ORDERS
+</button>
       <button class="wishlist-header-btn" (click)="goToWishlist()">
         ❤️ WISHLIST
         <span class="wishlist-badge" *ngIf="wishlistService.getCount() > 0">
@@ -108,7 +111,18 @@
         <h3 (click)="viewProduct(product)">{{ product.name }}</h3>
         <p class="product-desc">{{ product.description }}</p>
 
-        <span class="price">{{ product.price | currency }}</span>
+       <!-- ── DYNAMIC PRICE ── -->
+<div class="price-container">
+  <span class="price" [class.price-changed]="isPriceChanged(product)">
+    {{ getDynamicPrice(product) | currency }}
+  </span>
+  <span class="price-original" *ngIf="isPriceChanged(product)">
+    {{ product.price | currency }}
+  </span>
+  <span class="price-indicator" *ngIf="getDynamicIndicator(product)">
+    {{ getDynamicIndicator(product) }}
+  </span>
+</div>
 
         <p class="stock" [class.out-of-stock]="product.stock === 0">
           {{ product.stock > 0 ? '◆ ' + product.stock + ' IN STOCK' : '✕ OUT OF STOCK' }}

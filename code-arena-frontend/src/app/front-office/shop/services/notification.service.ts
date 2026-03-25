@@ -15,16 +15,27 @@ export interface StockAlert {
   message: string;
 }
 
+export interface PriceUpdate {
+  productId: string;
+  originalPrice: number;
+  dynamicPrice: number;
+  indicator: string;
+  changed: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
   private client: Client | null = null;
   private notifications$ = new BehaviorSubject<OrderNotification | null>(null);
   private stockAlerts$ = new BehaviorSubject<StockAlert | null>(null);
+  private priceUpdatesSubject$ = new BehaviorSubject<PriceUpdate[] | null>(null);
+
 
   notification$ = this.notifications$.asObservable();
   stockAlert$ = this.stockAlerts$.asObservable();
-
+  // ── PRICE UPDATES ─────────────────────────────
+  priceUpdates$ = this.priceUpdatesSubject$.asObservable();
   connect(participantId: string): void {
     if (this.client?.active) return;
 
@@ -49,6 +60,15 @@ export class NotificationService implements OnDestroy {
           (message: IMessage) => {
             const alert: StockAlert = JSON.parse(message.body);
             this.stockAlerts$.next(alert);
+          }
+        );
+
+        // ── PRICE UPDATES ─────────────────────────
+        this.client?.subscribe(
+          `/topic/price-updates`,
+          (message: IMessage) => {
+            const updates: PriceUpdate[] = JSON.parse(message.body);
+            this.priceUpdatesSubject$.next(updates);
           }
         );
       },

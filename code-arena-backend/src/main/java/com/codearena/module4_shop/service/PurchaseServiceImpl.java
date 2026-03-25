@@ -35,6 +35,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final SimpMessagingTemplate messagingTemplate;
     private final CouponService couponService;
     private final UserRepository userRepository;
+    private final LoyaltyService loyaltyService;
 
     @Value("${app.shop.admin-email}")
     private String adminEmail;
@@ -136,6 +137,16 @@ public class PurchaseServiceImpl implements PurchaseService {
         } catch (Exception e) {
             log.warn("Email failed but order placed: {}", e.getMessage());
         }
+
+        // ── EARN LOYALTY POINTS ───────────────────────
+        // 1 point per $1 spent
+        try {
+            int earned = loyaltyService.earnPoints(request.getParticipantId(), totalPrice);
+            log.info("Participant earned {} loyalty points", earned);
+        } catch (Exception e) {
+            log.warn("Loyalty points failed but order placed: {}", e.getMessage());
+        }
+
 
         return response;
     }

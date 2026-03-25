@@ -134,6 +134,44 @@
   <span>{{ getFinalTotal() | currency }}</span>
 </div>
 
+<!-- ── LOYALTY POINTS ─────────────────────── -->
+<div class="loyalty-section" *ngIf="loyaltyPoints > 0 || loyaltyApplied">
+
+  <div class="loyalty-header">
+    <span class="loyalty-title">⭐ LOYALTY POINTS</span>
+    <span class="loyalty-balance">{{ loyaltyPoints }} pts</span>
+  </div>
+
+  <!-- Can redeem -->
+  <div class="loyalty-redeem" *ngIf="loyaltyRedeemableValue > 0 && !loyaltyApplied">
+    <p class="loyalty-hint">
+      Redeem {{ Math.floor(loyaltyPoints / 100) * 100 }} points for
+      <strong>${{ loyaltyRedeemableValue.toFixed(2) }} off</strong>
+    </p>
+    <button class="btn-redeem" (click)="applyLoyaltyPoints()">
+      USE POINTS
+    </button>
+  </div>
+
+  <!-- Applied -->
+  <div class="loyalty-applied" *ngIf="loyaltyApplied">
+    <span>{{ loyaltyMessage }}</span>
+    <button class="btn-remove-loyalty" (click)="removeLoyaltyDiscount()">✕</button>
+  </div>
+
+  <!-- Not enough points -->
+  <p class="loyalty-hint muted" *ngIf="loyaltyPoints < 100 && !loyaltyApplied">
+    Earn {{ 100 - loyaltyPoints }} more points to unlock a reward!
+  </p>
+
+</div>
+
+<!-- ── LOYALTY SAVINGS ROW ───────────────── -->
+<div class="savings-row" *ngIf="loyaltyApplied">
+  <span>⭐ POINTS SAVINGS</span>
+  <span class="savings-amount">-{{ loyaltyDiscount | currency }}</span>
+</div>
+
       <!-- Checkout error message -->
       <div class="error-msg" *ngIf="checkoutError">
         ⚠ {{ checkoutError }}

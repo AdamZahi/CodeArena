@@ -14,10 +14,11 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.css'
+  styleUrl: './cart.component.css',
 })
 export class CartComponent implements OnInit {
 
+    Math = Math;
   cartItems: CartItem[] = [];
   total = 0;
   isCheckingOut = false;
@@ -33,12 +34,29 @@ export class CartComponent implements OnInit {
     private auth: AuthService
   ) {}
 
-  ngOnInit(): void {
-    this.cartService.cartItems$.subscribe(items => {
-      this.cartItems = items;
-      this.total = this.cartService.getTotal();
-    });
-  }
+ngOnInit(): void {
+  this.cartService.cartItems$.subscribe(items => {
+    this.cartItems = items;
+    this.total = this.cartService.getTotal();
+  });
+
+  // ── LOAD LOYALTY POINTS ──────────────────────
+  this.auth.user$.pipe(take(1)).subscribe(user => {
+    if (user?.sub) {
+      this.participantId = user.sub;
+      this.loadLoyaltyPoints();
+    }
+  });
+}
+
+loadLoyaltyPoints(): void {
+  this.shopService.getLoyaltyPoints(this.participantId).subscribe({
+    next: (res) => {
+      this.loyaltyPoints = res.data.points;
+      this.loyaltyRedeemableValue = res.data.redeemableValue;
+    }
+  });
+}
 
   removeItem(productId: string): void {
     this.cartService.removeFromCart(productId);
@@ -246,16 +264,50 @@ removeCoupon(): void {
   this.couponError = '';
 }
 
-// ── FINAL TOTAL WITH COUPON ───────────────────
+// ── FINAL TOTAL WITH COUPON and loyalty ───────────────────
+// ── UPDATE FINAL TOTAL TO INCLUDE LOYALTY ────
 getFinalTotal(): number {
-  const discounted = this.getDiscountedTotal();
-  if (this.couponApplied) {
-    return discounted * (1 - this.couponDiscount);
-  }
-  return discounted;
+  let total = this.getDiscountedTotal();
+  if (this.couponApplied) total = total * (1 - this.couponDiscount);
+  if (this.loyaltyApplied) total = total - this.loyaltyDiscount;
+  return Math.max(0, total);
 }
 
 getCouponSavings(): number {
   return this.getDiscountedTotal() - this.getFinalTotal();
 }
+// ── LOYALTY POINTS ───────────────────────────
+loyaltyPoints: number = 0;
+loyaltyRedeemableValue: number = 0;
+loyaltyApplied: boolean = false;
+loyaltyDiscount: number = 0;
+loyaltyMessage: string = '';
+participantId: string = '';
+// ── REDEEM LOYALTY POINTS ────────────────────
+applyLoyaltyPoints(): void {
+  if (!this.loyaltyRedeemableValue || this.loyaltyApplied) return;
+
+  const pointsToRedeem = Math.floor(this.loyaltyPoints / 100) * 100;
+
+  this.shopService.redeemPoints(this.participantId, pointsToRedeem).subscribe({
+    next: (res) => {
+      this.loyaltyApplied = true;
+      this.loyaltyDiscount = res.data.discount;
+      this.loyaltyPoints = res.data.remainingPoints;
+      this.loyaltyRedeemableValue = 0;
+      this.loyaltyMessage = `✅ ${pointsToRedeem} points redeemed for $${res.data.discount.toFixed(2)} off!`;
+    },
+    error: (err) => console.error('Redeem failed', err)
+  });
+}
+
+removeLoyaltyDiscount(): void {
+  // Note: points already deducted from DB, reload to get current balance
+  this.loyaltyApplied = false;
+  this.loyaltyDiscount = 0;
+  this.loyaltyMessage = '';
+  this.loadLoyaltyPoints();
+}
+
+
 }
