@@ -79,7 +79,7 @@
     <!-- ── ACTIONS ─────────────────────────────────────── -->
     <div class="section-label">ACTIONS</div>
     <div class="action-section">
-      <div class="mock-success-banner success-green" *ngIf="successMsg">
+      <div class="mock-success-banner success-green" *ngIf="successMsg && myRegistration?.status === 'CONFIRMED'">
         {{ successMsg }}
       </div>
       <div class="search-error" *ngIf="errorMsg">
@@ -102,6 +102,16 @@
           <ng-container *ngIf="myRegistration?.status === 'WAITLIST'; else openCancelledOrNone">
             <div class="reg-state-box reg-waitlist">
               <div class="reg-badge reg-badge-orange">⏳ YOU ARE ON WAITLIST</div>
+
+              <div class="waitlist-position-box">
+                <div class="position-number">#{{ waitlistPosition }}</div>
+                <div class="position-label">YOUR POSITION</div>
+              </div>
+              <p class="waitlist-hint">
+                {{ waitlistPosition === 1 ? '🔥 You are NEXT in line!' : 
+                   waitlistPosition === 2 ? '⚡ Almost there!' : 
+                   '⏳ Keep waiting...' }}
+              </p>
             </div>
           </ng-container>
 
@@ -110,7 +120,7 @@
             <ng-container *ngIf="myRegistration?.status === 'CANCELLED'; else openNone">
               <div class="reg-state-box reg-cancelled">
                 <div class="reg-badge reg-badge-red">✕ REGISTRATION CANCELLED</div>
-                <button class="checkout-btn auto btn-open-detail" (click)="joinEvent()">
+                <button class="checkout-btn auto btn-open-detail" (click)="register()">
                   [ RE-JOIN EVENT ]
                 </button>
               </div>
@@ -118,7 +128,7 @@
 
             <!-- NOT REGISTERED -->
             <ng-template #openNone>
-              <button class="checkout-btn auto btn-open-detail" (click)="joinEvent()">
+              <button class="checkout-btn auto btn-open-detail" (click)="register()">
                 [ JOIN EVENT ]
               </button>
             </ng-template>
@@ -208,7 +218,7 @@
 
     <!-- ── MY REGISTRATION CARD ───────────────────────── -->
     <div class="my-registration-card"
-      *ngIf="myRegistration?.status === 'CONFIRMED' && !(isOpenEvent() && hasConfirmedRegistration())">
+      *ngIf="myRegistration?.status === 'CONFIRMED'">
       <div class="status-badge"
         [ngClass]="myRegistration?.status === 'CONFIRMED' ? 'status-confirmed' : 'status-waitlist'">
         {{ myRegistration?.status }}
@@ -221,7 +231,7 @@
     <div class="search-error" *ngIf="error">{{ error }}</div>
   </div>
 
-  <div class="qr-overlay" *ngIf="showQROverlay">
+  <div class="qr-overlay" *ngIf="showQROverlay && myRegistration?.status === 'CONFIRMED'">
     <div class="qr-success-card">
       <h2>✅ REGISTRATION CONFIRMED</h2>
       <p>{{ event?.title }}</p>

@@ -804,6 +804,42 @@
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.12);
 }
 
+.waitlist-position-box {
+  background: var(--dark);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px auto;
+  max-width: 150px;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+}
+.position-number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #f59e0b;
+  animation: pulse-amber 1.5s ease-in-out infinite;
+}
+.position-label {
+  font-family: 'Rajdhani', sans-serif;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  margin-top: 8px;
+}
+.waitlist-hint {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  color: #f59e0b;
+  letter-spacing: 1px;
+  margin-top: 12px;
+}
+@keyframes pulse-amber {
+  0%, 100% { text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+  50% { text-shadow: 0 0 30px rgba(245, 158, 11, 0.9); }
+}
+
+
 .section-label {
   margin-top: 10px;
   margin-bottom: 8px;

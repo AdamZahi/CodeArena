@@ -24,6 +24,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   eventId: string | null = null;
 
   isLoading = true;
+  registering = false;
   error: string | null = null;
   private errorTimeoutId: number | null = null;
 
@@ -31,6 +32,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   errorMsg = '';
 
   myRegistration: EventRegistration | null = null;
+  waitlistPosition: number = 0;
   myInvitation: EventInvitation | null = null;
   motivationText = '';
 
@@ -91,14 +93,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     return this.myRegistration?.status === 'WAITLIST';
   }
 
-  getWaitlistPosition(): number {
-    // Backend does not expose an explicit waitlist rank.
-    // We use a reasonable derived position from occupancy.
-    const max = this.event?.maxParticipants ?? 0;
-    const cur = this.event?.currentParticipants ?? 0;
-    if (max <= 0) return 1;
-    return cur + 1;
-  }
+
 
   formatDateTime(isoLike: string): string {
     const date = new Date(isoLike);
@@ -214,25 +209,29 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     ];
   }
 
-  async joinEvent(): Promise<void> {
-    if (!this.eventId) return;
-    if (this.myRegistration && this.myRegistration.status !== 'CANCELLED') return;
+  register(): void {
+    if (this.registering) return;
+    this.registering = true;
     this.errorMsg = '';
-
-    const sub = this.eventService.register(this.eventId).subscribe({
+    this.eventService.register(this.event.id).subscribe({
       next: async () => {
-        this.loadMyRegistration();
-        this.successMsg = 'Registration confirmed!';
+        // Reload event to get updated currentParticipants
+        this.eventService.getEventById(this.event.id).subscribe(updated => {
+          this.event = updated;
+        });
+        // Reload registration status
+        await this.loadMyRegistration();
         await this.generateQR();
         this.showQROverlay = true;
+        this.successMsg = 'Registration confirmed!';
+        this.registering = false;
       },
       error: (err) => {
-        console.error('Registration failed', err);
-        this.setErrorTemporarily('Registration failed. Please try again.');
-        this.errorMsg = 'Registration failed: ' + (err?.error?.message || err?.status || 'unknown error');
+        this.errorMsg = 'Registration failed. Please try again.';
+        console.error('Register error:', err);
+        this.registering = false;
       }
     });
-    this.subs.add(sub);
   }
 
   cancelRegistration(): void {
@@ -337,20 +336,33 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(invSub);
   }
 
-  loadMyRegistration(): void {
-    if (!this.eventId) return;
-    const sub = this.eventService.getParticipants(this.eventId).subscribe({
-      next: async (participants: any[]) => {
-        this.myRegistration = participants.find((p: any) => p.participantId === 'mock-player-1') || null;
-        if (this.myRegistration?.status === 'CONFIRMED') {
-          await this.generateQR();
-        }
-      },
-      error: (err) => {
-        console.error('Failed to load registrations', err);
-      }
+  async loadMyRegistration(): Promise<void> {
+    return new Promise((resolve) => {
+      this.eventService.getParticipants(this.event.id).subscribe({
+        next: (participants: any[]) => {
+          this.myRegistration = participants.find(
+            p => p.participantId === 'mock-player-1'
+          ) || null;
+          this.loadWaitlistPosition();
+          resolve();
+        },
+        error: () => resolve()
+      });
     });
-    this.subs.add(sub);
+  }
+
+  loadWaitlistPosition(): void {
+    if (this.myRegistration?.status !== 'WAITLIST') return;
+    this.eventService.getParticipants(this.event.id).subscribe({
+      next: (participants: any[]) => {
+        const waitlist = participants.filter(p => p.status === 'WAITLIST');
+        const myIndex = waitlist.findIndex(
+          p => p.participantId === 'mock-player-1'
+        );
+        this.waitlistPosition = myIndex !== -1 ? myIndex + 1 : 0;
+      },
+      error: (err) => console.error('Waitlist error:', err)
+    });
   }
 
   private refreshEventAndUserState(): void {
