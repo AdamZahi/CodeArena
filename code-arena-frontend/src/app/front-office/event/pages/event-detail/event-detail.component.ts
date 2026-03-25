@@ -27,27 +27,24 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   error: string | null = null;
   private errorTimeoutId: number | null = null;
 
-  mockSuccessMessage: string | null = null;
-  mockSuccessVariant: 'green' | 'purple' = 'green';
+  successMsg = '';
+  errorMsg = '';
 
   myRegistration: EventRegistration | null = null;
   myInvitation: EventInvitation | null = null;
-
   motivationText = '';
 
-  // QR image + overlay
-  qrCodeImageUrl = '';
-  showQROverlay = false;
-
-  // EXCLUSIVE state
   exclusiveInvitation: EventInvitation | null = null;
   exclusiveCandidature: EventCandidature | null = null;
   exclusiveLoading = false;
 
-  countdownText = '—';
+  countdownDisplay = '';
   countdownEnded = false;
+  private countdownInterval: any;
 
-  private countdownIntervalId: number | null = null;
+  showQROverlay = false;
+  qrCodeImageUrl = '';
+
   private subs = new Subscription();
 
   constructor(
@@ -67,9 +64,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.countdownIntervalId != null) {
-      window.clearInterval(this.countdownIntervalId);
-    }
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
     if (this.errorTimeoutId != null) {
       window.clearTimeout(this.errorTimeoutId);
     }
@@ -147,24 +142,24 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(sub);
   }
 
-  async generateQRImage(qrCodeString: string): Promise<void> {
+  async generateQR(): Promise<void> {
+    const data = this.event?.qrCode || this.event?.id || 'CODEARENA';
     try {
-      this.qrCodeImageUrl = await QRCode.toDataURL(qrCodeString, {
-        width: 250,
+      const QRCode = await import('qrcode');
+      this.qrCodeImageUrl = await QRCode.toDataURL(String(data), {
+        width: 200,
         margin: 2,
-        color: {
-          dark: '#8b5cf6',
-          light: '#0d0d15'
-        }
+        color: { dark: '#8b5cf6', light: '#0d0d15' }
       });
-    } catch (err) {
-      console.error('QR generation error:', err);
+    } catch (e) {
+      console.error('QR failed', e);
+      this.qrCodeImageUrl = '';
     }
   }
 
   downloadQR(): void {
     const link = document.createElement('a');
-    link.download = 'codearena-event-qr.png';
+    link.download = 'codearena-qr.png';
     link.href = this.qrCodeImageUrl;
     link.click();
   }
@@ -219,40 +214,44 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     ];
   }
 
-  joinEvent(): void {
+  async joinEvent(): Promise<void> {
     if (!this.eventId) return;
     if (this.myRegistration && this.myRegistration.status !== 'CANCELLED') return;
-    this.error = null;
+    this.errorMsg = '';
 
     const sub = this.eventService.register(this.eventId).subscribe({
-      next: () => {
+      next: async () => {
         this.loadMyRegistration();
-        this.mockSuccessMessage = 'Registration confirmed!';
+        this.successMsg = 'Registration confirmed!';
+        await this.generateQR();
+        this.showQROverlay = true;
       },
       error: (err) => {
         console.error('Registration failed', err);
         this.setErrorTemporarily('Registration failed. Please try again.');
+        this.errorMsg = 'Registration failed: ' + (err?.error?.message || err?.status || 'unknown error');
       }
     });
     this.subs.add(sub);
   }
 
   cancelRegistration(): void {
-    if (!this.eventId) return;
-    if (!this.myRegistration) return;
-    this.error = null;
-
-    const sub = this.eventService.cancelRegistration(this.eventId).subscribe({
+    this.eventService.cancelRegistration(this.event.id).subscribe({
       next: () => {
-        this.loadMyRegistration();
-        this.mockSuccessMessage = 'Registration cancelled.';
+        this.successMsg = 'Registration cancelled.';
+        this.errorMsg = '';
+        this.qrCodeImageUrl = '';
+        this.showQROverlay = false;
+        this.myRegistration = null;
+        this.eventService.getEventById(this.event.id).subscribe(updated => {
+          this.event = updated;
+        });
       },
       error: (err) => {
-        console.error('Cancel registration failed', err);
-        this.setErrorTemporarily('Could not cancel registration.');
+        console.error('Cancel error full:', err);
+        this.errorMsg = 'Cancel failed: ' + (err?.error?.message || err?.status || 'unknown error');
       }
     });
-    this.subs.add(sub);
   }
 
   submitCandidature(): void {
@@ -287,8 +286,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       window.clearTimeout(this.errorTimeoutId);
       this.errorTimeoutId = null;
     }
-    this.mockSuccessMessage = null;
-    this.mockSuccessVariant = 'green';
+    this.successMsg = '';
     this.event = null;
     this.myRegistration = null;
     this.myInvitation = null;
@@ -299,14 +297,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.exclusiveCandidature = null;
     this.exclusiveLoading = false;
 
-    if (this.countdownIntervalId != null) {
-      window.clearInterval(this.countdownIntervalId);
-    }
-
-    this.updateCountdown();
-    this.countdownIntervalId = window.setInterval(() => {
-      this.updateCountdown();
-    }, 1000);
+    this.startCountdown();
 
     const eventSub = this.eventService.getEventById(id).subscribe({
       next: (ev) => {
@@ -326,6 +317,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       },
       complete: () => {
         this.isLoading = false;
+        this.startCountdown();
       }
     });
     this.subs.add(eventSub);
@@ -348,8 +340,11 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   loadMyRegistration(): void {
     if (!this.eventId) return;
     const sub = this.eventService.getParticipants(this.eventId).subscribe({
-      next: (participants: any[]) => {
+      next: async (participants: any[]) => {
         this.myRegistration = participants.find((p: any) => p.participantId === 'mock-player-1') || null;
+        if (this.myRegistration?.status === 'CONFIRMED') {
+          await this.generateQR();
+        }
       },
       error: (err) => {
         console.error('Failed to load registrations', err);
@@ -380,15 +375,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(invSub);
   }
 
-  private onRegistrationChanged(): void {
-    // Generate QR image whenever we have a confirmed registration
-    if (this.myRegistration?.status === 'CONFIRMED' && this.myRegistration.qrCode) {
-      void this.generateQRImage(this.myRegistration.qrCode);
-    } else {
-      this.qrCodeImageUrl = '';
-      this.showQROverlay = false;
-    }
-  }
+
 
   private loadExclusiveState(eventId: string): void {
     if (this.event?.eventType !== 'EXCLUSIVE' && this.event?.type !== 'EXCLUSIVE') return;
@@ -417,45 +404,30 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(sub);
   }
 
-  private updateCountdown(): void {
-    if (!this.event) {
-      this.countdownText = '—';
-      this.countdownEnded = false;
-      return;
-    }
-
-    const start = new Date(this.event.startDate).getTime();
-    const end = new Date(this.event.endDate).getTime();
-    if (Number.isNaN(start) || Number.isNaN(end)) {
-      this.countdownText = '—';
-      this.countdownEnded = false;
-      return;
-    }
-
-    const now = Date.now();
-    if (now >= end) {
-      this.countdownText = 'EVENT ENDED';
-      this.countdownEnded = true;
-      return;
-    }
-
-    const target = now < start ? start : end;
-    const remainingMs = Math.max(0, target - now);
-    const totalSeconds = Math.floor(remainingMs / 1000);
-
-    const days = Math.floor(totalSeconds / (3600 * 24));
-    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    this.countdownText = `${this.pad2(days)}D : ${this.pad2(hours)}H : ${this.pad2(
-      minutes
-    )}M : ${this.pad2(seconds)}S`;
-    this.countdownEnded = false;
+  startCountdown(): void {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.updateCountdown();
+    this.countdownInterval = setInterval(() => this.updateCountdown(), 1000);
   }
 
-  private pad2(n: number): string {
-    return n < 10 ? `0${n}` : `${n}`;
+  updateCountdown(): void {
+    if (!this.event?.startDate) return;
+    const now = new Date().getTime();
+    const target = new Date(this.event.startDate).getTime();
+    const diff = target - now;
+    if (diff <= 0) {
+      this.countdownDisplay = 'EVENT ENDED';
+      this.countdownEnded = true;
+      clearInterval(this.countdownInterval);
+      return;
+    }
+    this.countdownEnded = false;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    this.countdownDisplay =
+      `${String(days).padStart(2,'0')}D : ${String(hours).padStart(2,'0')}H : ${String(minutes).padStart(2,'0')}M : ${String(seconds).padStart(2,'0')}S`;
   }
 
   getParticipantsPercent(): number {

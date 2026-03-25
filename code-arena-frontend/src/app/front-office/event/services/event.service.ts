@@ -36,7 +36,12 @@ export class EventService {
   }
 
   cancelRegistration(eventId: string): Observable<any> {
-    return this.http.delete<any>(`${this.baseUrl}/${eventId}/participants/${this.participantId}`);
+    return this.http.delete(
+      `http://localhost:8080/api/events/${eventId}/register`,
+      {
+        params: { participantId: 'mock-player-1' }
+      }
+    );
   }
 
   getParticipants(eventId: string): Observable<any[]> {
