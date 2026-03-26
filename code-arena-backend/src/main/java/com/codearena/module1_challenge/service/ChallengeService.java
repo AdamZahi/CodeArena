@@ -10,5 +10,6 @@ public interface ChallengeService {
     List<ChallengeDto> getAllChallenges();
     ChallengeDto getChallengeById(Long id);
     ChallengeDto createChallenge(CreateChallengeRequest request, String authorId);
+    ChallengeDto updateChallenge(Long id, CreateChallengeRequest request);
     void deleteChallenge(Long id);
 }

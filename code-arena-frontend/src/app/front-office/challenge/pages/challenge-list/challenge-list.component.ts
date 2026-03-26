@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChallengeService } from '../../services/challenge.service';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-challenge-list',
@@ -20,7 +21,8 @@ export class ChallengeListComponent implements OnInit {
 
   constructor(
     private challengeService: ChallengeService,
-    private router: Router
+    private router: Router,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {

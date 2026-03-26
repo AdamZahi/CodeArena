@@ -24,7 +24,37 @@ export class ChallengeService {
     return this.http.post<any>(this.baseUrl, challenge);
   }
 
+  updateChallenge(id: string, challenge: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/${id}`, challenge);
+  }
+
   deleteChallenge(id: string): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/${id}`);
+  }
+
+  // Discussion & Comments
+  getComments(challengeId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/${challengeId}/comments`);
+  }
+
+  addComment(challengeId: number, content: string, userName?: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/${challengeId}/comments`, { content, userName });
+  }
+
+  deleteComment(commentId: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/comments/${commentId}`);
+  }
+
+  // Voting
+  getVotes(challengeId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/${challengeId}/votes`);
+  }
+
+  upvote(challengeId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/${challengeId}/upvote`, {});
+  }
+
+  downvote(challengeId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/${challengeId}/downvote`, {});
   }
 }

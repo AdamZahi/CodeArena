@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -41,5 +40,10 @@ public class ChallengeController {
     public ResponseEntity<Void> deleteChallenge(@PathVariable("id") Long id) {
         challengeService.deleteChallenge(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ChallengeDto> updateChallenge(@PathVariable("id") Long id, @RequestBody CreateChallengeRequest request) {
+        return ResponseEntity.ok(challengeService.updateChallenge(id, request));
     }
 }

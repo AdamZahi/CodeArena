@@ -1,0 +1,161 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ──────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">PROBLEM MANAGEMENT</h1>
+      <p class="page-sub">{{ filteredChallenges.length }} problems found</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="goToDashboard()">
+        📊 DASHBOARD
+      </button>
+      <button class="btn-primary" (click)="createChallenge()">
+        + NEW PROBLEM
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STATS CARDS ───────────────────────── -->
+  <div class="stats-row">
+    <div class="stat-card" [class.active]="filterDifficulty === ''" (click)="onFilterDifficulty('')">
+      <span class="stat-number">{{ challenges.length }}</span>
+      <span class="stat-label">TOTAL</span>
+    </div>
+    <div class="stat-card stat-easy" [class.active]="filterDifficulty === 'EASY'" (click)="onFilterDifficulty('EASY')">
+      <span class="stat-number">{{ totalEasy }}</span>
+      <span class="stat-label">EASY</span>
+    </div>
+    <div class="stat-card stat-medium" [class.active]="filterDifficulty === 'MEDIUM'" (click)="onFilterDifficulty('MEDIUM')">
+      <span class="stat-number">{{ totalMedium }}</span>
+      <span class="stat-label">MEDIUM</span>
+    </div>
+    <div class="stat-card stat-hard" [class.active]="filterDifficulty === 'HARD'" (click)="onFilterDifficulty('HARD')">
+      <span class="stat-number">{{ totalHard }}</span>
+      <span class="stat-label">HARD</span>
+    </div>
+  </div>
+
+  <!-- ── SEARCH BAR ───────────────────────── -->
+  <div class="search-bar">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="🔍 Search by title, tags or language..."
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  <!-- ── LOADING ───────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">Loading problems...</div>
+
+  <!-- ── TABLE ────────────────────────────── -->
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>TITLE</th>
+          <th>DIFFICULTY</th>
+          <th>LANGUAGE</th>
+          <th>TAGS</th>
+          <th>TEST CASES</th>
+          <th>CREATED</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let challenge of paginatedChallenges" class="table-row">
+
+          <!-- ID -->
+          <td>
+            <span class="id-badge">#{{ challenge.id }}</span>
+          </td>
+
+          <!-- Title -->
+          <td>
+            <span class="product-name">{{ challenge.title }}</span>
+            <span class="product-desc-small">{{ challenge.description | slice:0:60 }}...</span>
+          </td>
+
+          <!-- Difficulty -->
+          <td>
+            <span class="difficulty-pill" [ngClass]="getDifficultyClass(challenge.difficulty)">
+              {{ challenge.difficulty }}
+            </span>
+          </td>
+
+          <!-- Language -->
+          <td>
+            <span class="lang-badge" *ngIf="challenge.language">{{ challenge.language }}</span>
+            <span class="lang-badge lang-none" *ngIf="!challenge.language">—</span>
+          </td>
+
+          <!-- Tags -->
+          <td>
+            <span class="tag-text">{{ challenge.tags || '—' }}</span>
+          </td>
+
+          <!-- Test Cases -->
+          <td>
+            <span class="stock-badge stock-ok">{{ challenge.testCases?.length || 0 }} Cases</span>
+          </td>
+
+          <!-- Created -->
+          <td>
+            <span class="date-text">{{ challenge.createdAt | date:'MMM d, yyyy' }}</span>
+          </td>
+
+          <!-- Actions -->
+          <td class="actions-cell">
+            <div *ngIf="deleteConfirmId !== challenge.id" class="action-btns">
+              <button class="btn-edit" (click)="editChallenge(challenge.id)">
+                ✏ EDIT
+              </button>
+              <button class="btn-delete" (click)="confirmDelete(challenge.id)">
+                🗑 DELETE
+              </button>
+            </div>
+
+            <!-- Confirm delete -->
+            <div *ngIf="deleteConfirmId === challenge.id" class="confirm-delete">
+              <span>Are you sure?</span>
+              <button class="btn-confirm" (click)="deleteChallenge(challenge.id)">YES</button>
+              <button class="btn-cancel-sm" (click)="cancelDelete()">NO</button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty state -->
+    <div class="empty" *ngIf="filteredChallenges.length === 0">
+      No problems found. Click + NEW PROBLEM to create one.
+    </div>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <span class="page-info">
+      Showing {{ currentPage * pageSize + 1 }}–{{ (currentPage + 1) * pageSize > filteredChallenges.length ? filteredChallenges.length : (currentPage + 1) * pageSize }}
+      of {{ filteredChallenges.length }} problems
+    </span>
+    <div class="page-controls">
+      <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 0">
+        ← PREV
+      </button>
+      <button
+        *ngFor="let page of pages"
+        class="page-btn"
+        [class.active]="page === currentPage"
+        (click)="goToPage(page)">
+        {{ page + 1 }}
+      </button>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">
+        NEXT →
+      </button>
+    </div>
+  </div>
+
+</div>

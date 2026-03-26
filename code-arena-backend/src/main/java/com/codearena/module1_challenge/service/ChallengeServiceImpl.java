@@ -74,6 +74,35 @@ public class ChallengeServiceImpl implements ChallengeService {
         challengeRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional
+    public ChallengeDto updateChallenge(Long id, CreateChallengeRequest request) {
+        Challenge challenge = challengeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Challenge not found: " + id));
+
+        challenge.setTitle(request.getTitle());
+        challenge.setDescription(request.getDescription());
+        challenge.setDifficulty(request.getDifficulty());
+        challenge.setTags(request.getTags());
+        challenge.setLanguage(request.getLanguage());
+
+        challenge.getTestCases().clear();
+        if (request.getTestCases() != null) {
+            for (TestCaseDto tcDto : request.getTestCases()) {
+                TestCase tc = TestCase.builder()
+                        .input(tcDto.getInput())
+                        .expectedOutput(tcDto.getExpectedOutput())
+                        .isHidden(tcDto.getIsHidden())
+                        .challenge(challenge)
+                        .build();
+                challenge.getTestCases().add(tc);
+            }
+        }
+
+        challenge = challengeRepository.save(challenge);
+        return mapToDto(challenge);
+    }
+
     private ChallengeDto mapToDto(Challenge challenge) {
         return ChallengeDto.builder()
                 .id(challenge.getId())
