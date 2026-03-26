@@ -1,6 +1,8 @@
 package com.codearena.shared.exception;
 
 import com.codearena.shared.response.ApiResponse;
+import com.codearena.shared.response.ApiException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
