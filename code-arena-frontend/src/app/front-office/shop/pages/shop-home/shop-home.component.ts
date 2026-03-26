@@ -5,7 +5,11 @@ import { Router }                    from '@angular/router';
 import { ShopService }               from '../../services/shop.service';
 import { CartService }               from '../../services/cart.service';
 import { Product, ProductCategory }  from '../../models/product.model';
-
+import { WishlistService } from '../../services/wishlist.service';
+import { SoundService } from '../../services/sound.service';
+import { NotificationService, PriceUpdate } from '../../services/notification.service';
+import { AuthService } from '@auth0/auth0-angular';
+import { take } from 'rxjs/operators';
 @Component({
   selector: 'app-shop-home',
   standalone: true,
@@ -52,18 +56,39 @@ export class ShopHomeComponent implements OnInit {
   constructor(
     private shopService: ShopService,
     private cartService: CartService,
+    public wishlistService: WishlistService,
+    private soundService: SoundService,
+    private notificationService: NotificationService,
+    private auth: AuthService,
     private router: Router
+
   ) {}
 
   // Runs when the page loads
-  ngOnInit(): void {
-    this.loadProducts();
+ngOnInit(): void {
+  this.loadProducts();
 
-    // Subscribe to cart changes to update badge
-    this.cartService.cartItems$.subscribe(() => {
-      this.cartCount = this.cartService.getItemCount();
+  // Subscribe to cart changes to update badge
+  this.cartService.cartItems$.subscribe(() => {
+    this.cartCount = this.cartService.getItemCount();
+  });
+
+  // ── ENSURE WEBSOCKET IS CONNECTED ────────────
+  // Safe to call multiple times — has internal guard
+  this.auth.user$.pipe(take(1)).subscribe(user => {
+    if (user?.sub) {
+      this.notificationService.connect(user.sub);
+    }
+  });
+
+  // ── SUBSCRIBE TO PRICE UPDATES ────────────────
+  this.notificationService.priceUpdates$.subscribe(updates => {
+    if (!updates) return;
+    updates.forEach(update => {
+      this.dynamicPrices[update.productId] = update;
     });
-  }
+  });
+}
 
   // ── LOAD PRODUCTS (paginated) ─────────────────────────────────────
   loadProducts(): void {
@@ -140,10 +165,18 @@ export class ShopHomeComponent implements OnInit {
   // ── CART ──────────────────────────────────────────────────────────
 
   // Add product to cart
-  addToCart(product: Product): void {
-    if (product.stock === 0) return;
-    this.cartService.addToCart(product, 1);
-  }
+addToCart(product: Product): void {
+  if (product.stock === 0) return;
+  this.cartService.addToCart(product, 1);
+
+  // ── SOUND + ANIMATION + TOAST ─────────────────
+  this.soundService.playCartPop();
+  this.animatingProductId = product.id;
+  setTimeout(() => this.animatingProductId = '', 600);
+
+  this.cartToast = `✅ ${product.name} added to cart!`;
+  setTimeout(() => this.cartToast = '', 3000);
+}
 
   // Go to cart
   goToCart(): void {
@@ -190,4 +223,44 @@ export class ShopHomeComponent implements OnInit {
   min(a: number, b: number): number {
     return Math.min(a, b);
   }
+toggleWishlist(product: Product): void {
+  this.wishlistService.toggle(product);
+  const isNowWishlisted = this.wishlistService.isWishlisted(product.id);
+
+  // ── SOUND + TOAST ─────────────────────────────
+  if (isNowWishlisted) {
+    this.soundService.playWishlistPop();
+    this.wishlistToast = `❤️ ${product.name} added to wishlist!`;
+    setTimeout(() => this.wishlistToast = '', 3000);
+  }
+}
+
+goToWishlist(): void {
+  this.router.navigate(['/shop/wishlist']);
+}
+// Toasts and animation state for cart/wishlist actions
+cartToast: string = '';
+wishlistToast: string = '';
+animatingProductId: string = '';
+
+goToOrders(): void {
+  this.router.navigate(['/shop/inventory']);
+}
+// ── DYNAMIC PRICING ───────────────────────────
+dynamicPrices: { [productId: string]: PriceUpdate } = {};
+// ── GET DYNAMIC PRICE ─────────────────────────
+getDynamicPrice(product: Product): number {
+  const update = this.dynamicPrices[product.id];
+  return update ? update.dynamicPrice : product.price;
+}
+
+getDynamicIndicator(product: Product): string {
+  const update = this.dynamicPrices[product.id];
+  return update ? update.indicator : '';
+}
+
+isPriceChanged(product: Product): boolean {
+  const update = this.dynamicPrices[product.id];
+  return update ? update.changed : false;
+}
 }

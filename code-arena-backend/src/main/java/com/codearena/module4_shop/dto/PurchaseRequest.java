@@ -24,4 +24,7 @@ public class PurchaseRequest {
     @NotEmpty(message = "Cart cannot be empty")
     @Valid
     private List<PurchaseItemRequest> items;
+    // ── COUPON CODE (optional) ────────────────────
+    private String couponCode;
+
 }

@@ -4,9 +4,7 @@ import com.codearena.module4_shop.dto.ApiResponse;
 import com.codearena.module4_shop.dto.PurchaseRequest;
 import com.codearena.module4_shop.dto.PurchaseResponse;
 import com.codearena.module4_shop.enums.OrderStatus;
-import com.codearena.module4_shop.service.ExcelService;
-import com.codearena.module4_shop.service.PurchaseService;
-import com.codearena.module4_shop.service.QrCodeService;
+import com.codearena.module4_shop.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -26,6 +25,9 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
     private final QrCodeService qrCodeService;
     private final ExcelService excelService;
+    private final CouponService couponService;
+    private final LoyaltyService loyaltyService;
+
 
 
 
@@ -165,5 +167,58 @@ public class PurchaseController {
                 .header("Content-Disposition", "attachment; filename=orders.xlsx")
                 .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .body(excel);
+    }
+    // ── VALIDATE COUPON ──────────────────────────
+// POST /api/shop/coupons/validate
+    @PostMapping("/coupons/validate")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> validateCoupon(
+            @RequestBody java.util.Map<String, String> body
+    ) {
+        String code = body.get("code");
+        boolean valid = couponService.isValid(code);
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("valid", valid);
+        result.put("code", code != null ? code.toUpperCase() : "");
+        result.put("discountRate", valid ? couponService.getDiscountRate(code) : 0);
+        result.put("message", valid
+                ? "Coupon applied! " + (int)(couponService.getDiscountRate(code) * 100) + "% off"
+                : "Invalid coupon code");
+
+        return ResponseEntity.ok(ApiResponse.success(result, "Coupon checked"));
+    }
+    // ── GET LOYALTY POINTS ───────────────────────
+// GET /api/shop/loyalty/{participantId}
+    @GetMapping("/loyalty/{participantId}")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getLoyaltyPoints(
+            @PathVariable String participantId
+    ) {
+        int points = loyaltyService.getPoints(participantId);
+        double redeemableValue = loyaltyService.getRedeemableValue(participantId);
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("points", points);
+        result.put("redeemableValue", redeemableValue);
+        result.put("canRedeem", loyaltyService.canRedeem(participantId));
+
+        return ResponseEntity.ok(ApiResponse.success(result, "Points fetched"));
+    }
+
+    // ── REDEEM POINTS ────────────────────────────
+// POST /api/shop/loyalty/redeem
+    @PostMapping("/loyalty/redeem")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> redeemPoints(
+            @RequestBody java.util.Map<String, Object> body
+    ) {
+        String participantId = (String) body.get("participantId");
+        int pointsToRedeem = (Integer) body.get("points");
+
+        double discount = loyaltyService.redeemPoints(participantId, pointsToRedeem);
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("discount", discount);
+        result.put("remainingPoints", loyaltyService.getPoints(participantId));
+
+        return ResponseEntity.ok(ApiResponse.success(result, "Points redeemed successfully"));
     }
 }

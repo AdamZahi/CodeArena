@@ -52,8 +52,8 @@ export class ShopService extends ApiService {
 
   // Participant: get my order history
 // Participant: get my order history//needs to be fixed once we get user
-getMyOrders(): Observable<ApiResponse<Order[]>> {
-  return this.get<Order[]>('/orders/my/participant-001');
+getMyOrders(participantId: string): Observable<ApiResponse<Order[]>> {
+  return this.get<Order[]>(`/orders/my/${participantId}`);
 }
   // Admin: get all orders
   getAllOrders(): Observable<ApiResponse<Order[]>> {
@@ -84,4 +84,22 @@ getProductsPaginated(
   );
 }
 
+// ── VALIDATE COUPON ──────────────────────────
+validateCoupon(code: string): Observable<ApiResponse<any>> {
+  return this.http.post<ApiResponse<any>>(
+    `${environment.apiBaseUrl}/api/shop/coupons/validate`,
+    { code }
+  );
+}
+// ── LOYALTY POINTS ───────────────────────────
+getLoyaltyPoints(participantId: string): Observable<ApiResponse<any>> {
+  return this.get<any>(`/loyalty/${participantId}`);
+}
+
+redeemPoints(participantId: string, points: number): Observable<ApiResponse<any>> {
+  return this.http.post<ApiResponse<any>>(
+    `${environment.apiBaseUrl}/api/shop/loyalty/redeem`,
+    { participantId, points }
+  );
+}
 }

@@ -400,3 +400,233 @@
   color: var(--muted);
   cursor: not-allowed;
 }
+/* ── DISCOUNT STYLES ─────────────────────── */
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item-price-original {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: line-through;
+  margin: 0;
+}
+
+.item-price.discounted {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.discount-badge {
+  background: rgba(16,185,129,0.15);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.4);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.savings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px dashed rgba(16,185,129,0.3);
+  margin-top: 8px;
+}
+
+.savings-row span:first-child {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: #10b981;
+  letter-spacing: 1px;
+}
+
+.savings-amount {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #10b981;
+  text-shadow: 0 0 10px rgba(16,185,129,0.4);
+}
+/* ── COUPON SECTION ──────────────────────── */
+.coupon-section {
+  margin: 16px 0;
+  padding: 16px 0;
+  border-top: 1px dashed #1a1a2e;
+}
+
+.coupon-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.coupon-input {
+  flex: 1;
+  background: #0a0a0f;
+  border: 1px solid #1a1a2e;
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #e2e8f0;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  transition: border-color 0.2s;
+}
+
+.coupon-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.coupon-input::placeholder { color: #334155; }
+
+.btn-apply {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #8b5cf6;
+  color: #8b5cf6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.btn-apply:hover:not(:disabled) { background: #8b5cf6; color: white; }
+.btn-apply:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.coupon-success {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #10b981;
+  letter-spacing: 1px;
+}
+
+.btn-remove-coupon {
+  background: none;
+  border: none;
+  color: #10b981;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.coupon-error {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #ef4444;
+  letter-spacing: 1px;
+  margin-top: 8px;
+}
+
+.final-total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #8b5cf6;
+}
+
+.final-total span:last-child {
+  font-size: 26px !important;
+  color: #10b981 !important;
+  text-shadow: 0 0 15px rgba(16,185,129,0.5);
+}
+/* ── LOYALTY POINTS ──────────────────────── */
+.loyalty-section {
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(139,92,246,0.05);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 8px;
+}
+
+.loyalty-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.loyalty-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b5cf6;
+  letter-spacing: 1.5px;
+}
+
+.loyalty-balance {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 900;
+  color: #f59e0b;
+}
+
+.loyalty-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.loyalty-hint strong { color: #10b981; }
+
+.loyalty-hint.muted { color: #64748b; font-size: 11px; margin: 0; }
+
+.btn-redeem {
+  width: 100%;
+  padding: 10px;
+  background: rgba(139,92,246,0.1);
+  border: 1.5px solid #8b5cf6;
+  color: #8b5cf6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+.btn-redeem:hover { background: #8b5cf6; color: white; }
+
+.loyalty-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #10b981;
+  letter-spacing: 1px;
+}
+
+.btn-remove-loyalty {
+  background: none;
+  border: none;
+  color: #10b981;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.loyalty-redeem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.loyalty-redeem p { margin: 0; }

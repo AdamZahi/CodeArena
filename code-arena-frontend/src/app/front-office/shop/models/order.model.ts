@@ -34,8 +34,10 @@ export interface Order {
 // What Angular sends to backend when participant clicks "Acheter"
 export interface CheckoutRequest {
   participantId: string;
+  couponCode?: string; // ← ADD THIS
   items: {
     productId: string;
     quantity: number;
   }[];
+
 }
