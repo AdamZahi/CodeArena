@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -34,9 +33,9 @@ public class EventController {
     private final InvitationService invitationService;
 
     @GetMapping
-    public ResponseEntity<?> getEvents(@RequestParam Optional<EventType> type) {
-        if (type.isPresent()) {
-            List<EventDto> list = eventService.getAllEventsByType(type.get());
+    public ResponseEntity<?> getEvents(@RequestParam(name = "type", required = false) EventType type) {
+        if (type != null) {
+            List<EventDto> list = eventService.getAllEventsByType(type);
             return ResponseEntity.ok(list);
         }
         List<EventDto> list = eventService.getAllEvents();

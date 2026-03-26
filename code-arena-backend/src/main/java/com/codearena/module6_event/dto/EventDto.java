@@ -19,6 +19,7 @@ public class EventDto {
     private UUID id;
     private String title;
     private String description;
+    private String location;
     private String organizerId;
     private String status;
     private LocalDateTime startDate;

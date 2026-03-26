@@ -37,6 +37,9 @@ public class ProgrammingEvent {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "location", length = 255)
+    private String location;
+
     @Column(name = "organizer_id", nullable = false)
     private String organizerId;
 

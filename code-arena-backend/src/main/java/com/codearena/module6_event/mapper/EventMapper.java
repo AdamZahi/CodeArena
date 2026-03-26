@@ -16,11 +16,13 @@ public interface EventMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "currentParticipants", constant = "0")
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "location", source = "location")
     ProgrammingEvent toEntity(CreateEventRequest dto);
 
     @Mapping(target = "availablePlaces", ignore = true)
     @Mapping(target = "isFull", ignore = true)
     @Mapping(target = "fillRate", ignore = true)
+    @Mapping(target = "location", source = "location")
     EventDto toResponseDTO(ProgrammingEvent event);
 
     @AfterMapping

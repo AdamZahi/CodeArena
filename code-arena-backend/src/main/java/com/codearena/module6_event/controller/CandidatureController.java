@@ -31,7 +31,7 @@ public class CandidatureController {
     @PostMapping("/{id}/candidature")
     public ResponseEntity<CandidatureResponseDTO> submitCandidature(
             @PathVariable("id") UUID eventId,
-            @RequestParam String participantId,
+            @RequestParam(name = "participantId") String participantId,
             @RequestBody CandidatureRequestDTO dto) {
         CandidatureResponseDTO created =
                 candidatureService.submitCandidature(eventId, participantId, dto.getMotivation());

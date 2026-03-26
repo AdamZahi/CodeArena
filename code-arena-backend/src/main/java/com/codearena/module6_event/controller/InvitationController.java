@@ -24,21 +24,21 @@ public class InvitationController {
     private final InvitationService invitationService;
 
     @GetMapping("/me/invitations")
-    public ResponseEntity<?> getMyInvitations(@RequestParam String participantId) {
+    public ResponseEntity<?> getMyInvitations(@RequestParam(name = "participantId") String participantId) {
         return ResponseEntity.ok(invitationService.getMyInvitations(participantId));
     }
 
     @PutMapping("/{id}/invitation/accept")
     public ResponseEntity<RegistrationResponseDTO> acceptInvitation(
             @PathVariable("id") UUID eventId,
-            @RequestParam String participantId) {
+            @RequestParam(name = "participantId") String participantId) {
         return ResponseEntity.ok(invitationService.acceptInvitation(eventId, participantId));
     }
 
     @PutMapping("/{id}/invitation/decline")
     public ResponseEntity<InvitationResponseDTO> declineInvitation(
             @PathVariable("id") UUID eventId,
-            @RequestParam String participantId) {
+            @RequestParam(name = "participantId") String participantId) {
         return ResponseEntity.ok(invitationService.declineInvitation(eventId, participantId));
     }
 }

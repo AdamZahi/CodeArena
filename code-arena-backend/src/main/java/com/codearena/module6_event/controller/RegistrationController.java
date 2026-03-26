@@ -28,7 +28,7 @@ public class RegistrationController {
     @PostMapping("/{id}/register")
     public ResponseEntity<?> register(
             @PathVariable("id") UUID eventId,
-            @RequestParam String participantId) {
+            @RequestParam(name = "participantId") String participantId) {
         RegistrationResponseDTO dto = registrationService.register(eventId, participantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -36,7 +36,7 @@ public class RegistrationController {
     @DeleteMapping("/{id}/register")
     public ResponseEntity<?> cancelRegistration(
             @PathVariable("id") UUID eventId,
-            @RequestParam String participantId) {
+            @RequestParam(name = "participantId") String participantId) {
         registrationService.cancelRegistration(eventId, participantId);
         return ResponseEntity.noContent().build();
     }
@@ -48,7 +48,7 @@ public class RegistrationController {
     }
 
     @GetMapping("/me/registrations")
-    public ResponseEntity<?> getMyRegistrations(@RequestParam String participantId) {
+    public ResponseEntity<?> getMyRegistrations(@RequestParam(name = "participantId") String participantId) {
         List<RegistrationResponseDTO> list = registrationService.getMyRegistrations(participantId);
         return ResponseEntity.ok(list);
     }
