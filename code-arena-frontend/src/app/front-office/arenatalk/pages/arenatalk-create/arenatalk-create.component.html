@@ -1,0 +1,48 @@
+<div class="create-page">
+  <div class="bg-glow bg-glow-left"></div>
+  <div class="bg-glow bg-glow-right"></div>
+  <div class="bg-glow bg-glow-bottom"></div>
+
+  <section class="create-card">
+    <p class="eyebrow">CODE ARENA</p>
+    <h1>Create Your Hub</h1>
+    <p class="subtitle">
+      Build your own gaming and programming community space inside ArenaTalk.
+    </p>
+
+    <div class="form-group">
+      <label>Hub Name</label>
+      <input
+        type="text"
+        [(ngModel)]="newHub.name"
+        placeholder="Ex: Code Warriors"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea
+        [(ngModel)]="newHub.description"
+        placeholder="Describe your hub..."
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Banner URL</label>
+      <input
+        type="text"
+        [(ngModel)]="newHub.bannerUrl"
+        placeholder="Paste an image URL"
+      />
+    </div>
+
+    <p class="error-text" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <div class="actions">
+      <button class="secondary-btn" routerLink="/arenatalk/start">Back</button>
+      <button class="primary-btn" (click)="createHub()" [disabled]="loading">
+        {{ loading ? 'Creating...' : 'Create Hub' }}
+      </button>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,148 @@
+:host {
+  display: block;
+}
+
+.start-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(20, 167, 255, 0.35), transparent 25%),
+    radial-gradient(circle at 80% 20%, rgba(36, 212, 110, 0.28), transparent 25%),
+    radial-gradient(circle at 50% 95%, rgba(255, 115, 0, 0.3), transparent 20%),
+    linear-gradient(135deg, #03111f 0%, #020b16 45%, #05111d 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  color: #f5f7fb;
+  font-family: Arial, sans-serif;
+}
+
+.bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.bg-glow-left {
+  width: 320px;
+  height: 320px;
+  left: -60px;
+  top: 90px;
+  background: rgba(28, 175, 255, 0.35);
+}
+
+.bg-glow-right {
+  width: 360px;
+  height: 360px;
+  right: -80px;
+  top: 70px;
+  background: rgba(35, 214, 111, 0.28);
+}
+
+.bg-glow-bottom {
+  width: 320px;
+  height: 320px;
+  bottom: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 119, 0, 0.3);
+}
+
+.start-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 760px;
+  background: rgba(2, 10, 22, 0.82);
+  border: 1px solid rgba(130, 180, 255, 0.14);
+  border-radius: 28px;
+  padding: 42px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: #44e3da;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+}
+
+.start-card h1 {
+  margin: 0 0 18px;
+  font-size: 54px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.subtitle {
+  margin: 0 0 30px;
+  color: #b8c2d1;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.choice-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(130, 180, 255, 0.12);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.choice-card:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(68, 227, 218, 0.28);
+}
+
+.choice-card h3 {
+  margin: 0 0 8px;
+  font-size: 26px;
+}
+
+.choice-card p {
+  margin: 0;
+  color: #b8c2d1;
+  line-height: 1.5;
+}
+
+.choice-card span {
+  font-size: 34px;
+  color: #44e3da;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .start-card {
+    padding: 28px;
+  }
+
+  .start-card h1 {
+    font-size: 40px;
+  }
+
+  .subtitle {
+    font-size: 18px;
+  }
+
+  .choice-card h3 {
+    font-size: 22px;
+  }
+}

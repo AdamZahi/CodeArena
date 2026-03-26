@@ -1,0 +1,73 @@
+<div class="workspace-page">
+  <div class="bg-glow bg-glow-left"></div>
+  <div class="bg-glow bg-glow-right"></div>
+  <div class="bg-glow bg-glow-bottom"></div>
+
+  <div class="workspace-shell">
+    <aside class="hubs-panel">
+      <div class="panel-title">ArenaTalk</div>
+
+      <div
+        class="hub-item"
+        [class.active]="selectedHub?.id === hub.id"
+        *ngFor="let hub of hubs"
+        (click)="selectHub(hub)"
+      >
+        <div class="hub-avatar">{{ hub.name.charAt(0) }}</div>
+        <span>{{ hub.name }}</span>
+      </div>
+    </aside>
+
+    <section class="channels-panel">
+      <div class="panel-title">Channels</div>
+
+      <ng-container *ngIf="selectedHub; else noHubSelected">
+        <div
+          class="channel-item"
+          [class.active]="selectedChannel?.id === channel.id"
+          *ngFor="let channel of channels"
+          (click)="selectChannel(channel)"
+        >
+          # {{ channel.name }}
+        </div>
+      </ng-container>
+
+      <ng-template #noHubSelected>
+        <p class="empty-text">Select a hub first</p>
+      </ng-template>
+    </section>
+
+    <main class="chat-panel">
+      <div class="chat-header" *ngIf="selectedChannel; else noChannelSelected">
+        <h2># {{ selectedChannel.name }}</h2>
+        <p>{{ selectedChannel.topic }}</p>
+      </div>
+
+      <ng-template #noChannelSelected>
+        <div class="empty-state">
+          <h3>Select a channel</h3>
+          <p>Choose a hub and a channel to enter the ArenaTalk zone.</p>
+        </div>
+      </ng-template>
+
+      <div class="messages-area" *ngIf="selectedChannel">
+        <div class="message-card" *ngFor="let message of messages">
+          <div class="message-avatar">{{ message.senderName.charAt(0) }}</div>
+          <div class="message-content">
+            <strong>{{ message.senderName }}</strong>
+            <p>{{ message.content }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-bar" *ngIf="selectedChannel">
+        <input
+          type="text"
+          [(ngModel)]="newMessage"
+          placeholder="Type your message..."
+        />
+        <button (click)="sendMessage()">Send</button>
+      </div>
+    </main>
+  </div>
+</div>

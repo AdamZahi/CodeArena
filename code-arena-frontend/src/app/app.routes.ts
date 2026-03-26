@@ -30,5 +30,6 @@ export const routes: Routes = [
   {
     path: 'forbidden',
     loadComponent: () => import('./forbidden/forbidden.component').then((m) => m.ForbiddenComponent)
-  }
+  },
+  
 ];

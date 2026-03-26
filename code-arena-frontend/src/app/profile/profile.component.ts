@@ -9,25 +9,29 @@ import { Observable } from 'rxjs';
   standalone: true,
   imports: [AsyncPipe, NgIf],
   template: `
-    <section>
+    <section *ngIf="user$ | async as user">
       <h1>My Profile</h1>
-      <p *ngIf="user$ | async as user">{{ user?.name ?? 'Anonymous' }}</p>
-      <img *ngIf="user$ | async as user" [src]="user?.avatar" alt="Avatar" width="100" />
+      <h2>{{ user['name'] ?? 'User' }}</h2>
+      <p>{{ user['email'] }}</p>
+      <img *ngIf="user['picture']" [src]="user['picture']" alt="Profile picture" width="120" />
+
       <form>
         <label>
           Avatar URL
           <input type="text" name="avatarUrl" />
         </label>
+
         <label>
           Bio
           <textarea name="bio"></textarea>
         </label>
+
         <button type="submit">Save</button>
       </form>
     </section>
   `
 })
 export class ProfileComponent {
-  private readonly auth = inject(AuthService);
-  readonly user$: Observable<User | null | undefined> = this.auth.user$;
+  private auth = inject(AuthService);
+  user$: Observable<User | null | undefined> = this.auth.user$;
 }

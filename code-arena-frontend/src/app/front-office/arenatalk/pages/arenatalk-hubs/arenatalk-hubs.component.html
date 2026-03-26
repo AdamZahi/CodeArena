@@ -1,0 +1,72 @@
+<div class="hubs-page">
+  <div class="bg-glow bg-glow-left"></div>
+  <div class="bg-glow bg-glow-right"></div>
+  <div class="bg-glow bg-glow-bottom"></div>
+
+  <section class="hubs-shell">
+    <div class="hero-block">
+      <p class="eyebrow">CODE ARENA</p>
+      <h1>Explore Hubs</h1>
+      <p class="subtitle">
+        Discover gaming communities, create your own space, and enter ArenaTalk with purpose.
+      </p>
+    </div>
+
+    <div class="top-bar">
+      <input
+        type="text"
+        [(ngModel)]="search"
+        placeholder="Search hubs..."
+      />
+    </div>
+
+    <div class="content-grid">
+      <div class="hub-list-card">
+        <h2>Available Hubs</h2>
+
+        <div class="hub-list" *ngIf="filteredHubs.length > 0; else noResults">
+          <div class="hub-card" *ngFor="let hub of filteredHubs">
+            <div>
+              <h3>{{ hub.name }}</h3>
+              <p>{{ hub.description }}</p>
+              <small>{{ hub.createdAt || 'New community' }}</small>
+            </div>
+
+            <button (click)="openWorkspace(hub)">Enter</button>
+          </div>
+        </div>
+
+        <ng-template #noResults>
+          <div class="empty-state">
+            <h3>No hubs found</h3>
+            <p>Try another search or create a new hub below.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="create-card">
+        <h2>Create a Hub</h2>
+        <p>Start your own gaming community inside ArenaTalk.</p>
+
+        <input
+          type="text"
+          [(ngModel)]="newHub.name"
+          placeholder="Hub name"
+        />
+
+        <textarea
+          [(ngModel)]="newHub.description"
+          placeholder="Hub description"
+        ></textarea>
+
+        <input
+          type="text"
+          [(ngModel)]="newHub.bannerUrl"
+          placeholder="Banner URL"
+        />
+
+        <button class="create-btn" (click)="createHub()">Create Hub</button>
+      </div>
+    </div>
+  </section>
+</div>

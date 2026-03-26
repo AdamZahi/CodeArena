@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 import { FoShellComponent } from './fo-shell.component';
-
+import { ArenaTalkHomeComponent } from './arenatalk/pages/arenatalk-home/arenatalk-home.component';
+import { ArenaTalkWorkspaceComponent } from './arenatalk/pages/arenatalk-workspace/arenatalk-workspace.component';
+import { ArenaTalkHubsComponent } from './arenatalk/pages/arenatalk-hubs/arenatalk-hubs.component';
+import { ArenaTalkStartComponent } from './arenatalk/pages/arenatalk-start/arenatalk-start.component';
+import { ArenaTalkCreateComponent } from './arenatalk/pages/arenatalk-create/arenatalk-create.component';
 export const FO_ROUTES: Routes = [
   {
     path: '',
@@ -37,7 +41,28 @@ export const FO_ROUTES: Routes = [
       {
         path: 'coaching-quiz',
         loadChildren: () => import('./coaching-quiz/coaching.routes').then((m) => m.COACHING_ROUTES)
-      }
+      },
+      {
+  path: 'arenatalk/workspace',
+  component: ArenaTalkWorkspaceComponent
+},
+{
+  path: 'arenatalk/hubs',
+  component: ArenaTalkHubsComponent
+},
+{
+  path: 'arenatalk/start',
+  component: ArenaTalkStartComponent
+},
+{
+  path: 'arenatalk/create',
+  component: ArenaTalkCreateComponent
+},
+{
+  path: 'arenatalk',
+  component: ArenaTalkHomeComponent,
+  pathMatch: 'full'
+}
     ]
   }
 ];
