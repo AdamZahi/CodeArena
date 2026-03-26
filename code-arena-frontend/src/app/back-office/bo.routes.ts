@@ -6,6 +6,7 @@ export const BO_ROUTES: Routes = [
     path: '',
     component: BoShellComponent,
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then((m) => m.DashboardComponent) },
       { path: 'users', loadComponent: () => import('./user-management/pages/user-list/user-list.component').then((m) => m.UserListComponent) },
       { path: 'users/:id', loadComponent: () => import('./user-management/pages/user-detail/user-detail.component').then((m) => m.UserDetailComponent) },

@@ -80,13 +80,4 @@
 
   </section>
 
-  <!-- 👤 AUTH FOOTER (IF LOGGED IN) -->
-  <footer class="home-footer" *ngIf="isAuthenticated$ | async">
-    <div class="user-pill" (click)="navigate('/profile')">
-      <img [src]="(user$ | async)?.picture" alt="Avatar" class="mini-avatar">
-      <span>ACCESS PROFILE</span>
-    </div>
-    <button class="logout-link" (click)="logout()">// SIGN OUT</button>
-  </footer>
-
 </div>
