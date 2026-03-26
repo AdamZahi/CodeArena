@@ -36,17 +36,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getCurrentUser() {
-        Jwt jwt = getCurrentJwt();
+        Jwt jwt = getCurrentJwtOrNull();
+        if (jwt == null) {
+            return buildAnonymousUser();
+        }
         User user = userRepository.findByKeycloakId(jwt.getSubject())
-            .orElseThrow(() -> new IllegalStateException("User not found for current token"));
+            .orElse(null);
+        if (user == null) {
+            return buildAnonymousUser();
+        }
         return userMapper.toResponse(user);
     }
 
     @Override
     public UserResponseDTO updateCurrentUser(ProfileUpdateDTO request) {
-        Jwt jwt = getCurrentJwt();
+        Jwt jwt = getCurrentJwtOrNull();
+        if (jwt == null) {
+            return buildAnonymousUser();
+        }
         User user = userRepository.findByKeycloakId(jwt.getSubject())
-            .orElseThrow(() -> new IllegalStateException("User not found for current token"));
+            .orElse(null);
+        if (user == null) {
+            return buildAnonymousUser();
+        }
         userMapper.updateProfile(request, user);
         return userMapper.toResponse(userRepository.save(user));
     }
@@ -142,11 +154,22 @@ public class UserServiceImpl implements UserService {
         return AuthProvider.LOCAL;
     }
 
-    private Jwt getCurrentJwt() {
+    private Jwt getCurrentJwtOrNull() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken token) {
             return token.getToken();
         }
-        throw new IllegalStateException("Missing JWT authentication");
+        return null;
+    }
+
+    private UserResponseDTO buildAnonymousUser() {
+        return UserResponseDTO.builder()
+            .email("guest@local")
+            .firstName("Guest")
+            .lastName("User")
+            .role(Role.PARTICIPANT)
+            .authProvider(AuthProvider.LOCAL)
+            .isActive(true)
+            .build();
     }
 }
