@@ -26,6 +26,12 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   countdowns: Record<string, string> = {};
 
+  currentPage = 0;
+  pageSize = 6;
+  totalPages = 0;
+  pages: number[] = [];
+  pagedEvents: any[] = [];
+
   private countdownIntervalId: number | null = null;
   private subs = new Subscription();
 
@@ -56,13 +62,29 @@ export class EventListComponent implements OnInit, OnDestroy {
   }
 
   private applyFilters(): void {
+    this.currentPage = 0;
     const q = this.searchText.trim().toLowerCase();
     this.filteredEvents = this.events.filter((e) => {
       const matchesType = this.selectedType === 'ALL' ? true : (e.type === this.selectedType || e.eventType === this.selectedType);
       const matchesTitle = q ? e.title.toLowerCase().includes(q) : true;
       return matchesType && matchesTitle;
     });
+    this.updatePagination();
   }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredEvents.length / this.pageSize);
+    this.pages = Array.from({length: this.totalPages}, (_, i) => i);
+    this.pagedEvents = this.filteredEvents.slice(
+      this.currentPage * this.pageSize,
+      (this.currentPage + 1) * this.pageSize
+    );
+  }
+
+  goToPage(page: number): void { this.currentPage = page; this.updatePagination(); }
+  nextPage(): void { if (this.currentPage < this.totalPages - 1) { this.currentPage++; this.updatePagination(); } }
+  prevPage(): void { if (this.currentPage > 0) { this.currentPage--; this.updatePagination(); } }
+  minVal(a: number, b: number): number { return Math.min(a, b); }
 
   openDetail(id: string): void {
     this.router.navigate(['/events', id]);
@@ -131,6 +153,7 @@ export class EventListComponent implements OnInit, OnDestroy {
       next: (events) => {
         this.events = events;
         this.applyFilters();
+        this.updatePagination();
         this.isLoading = false;
       },
       error: (err) => {

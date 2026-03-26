@@ -50,10 +50,16 @@
         <div class="meta-row">
           <span class="meta-label">LOCATION</span>
           <span class="meta-value">
-            <span class="meta-icon">📍</span> {{ event.location || 'CODEARENA HQ' }}
+            <span class="meta-icon">📍</span> {{ event?.location || 'CODEARENA HQ' }}
           </span>
         </div>
       </div>
+    </div>
+
+    <!-- ── MAP SECTION ────────────────────────────────── -->
+    <div class="map-section" *ngIf="event?.location">
+      <div class="section-label">LOCATION MAP</div>
+      <div id="event-map" class="map-container"></div>
     </div>
 
     <!-- ── PARTICIPANTS ──────────────────────────────── -->

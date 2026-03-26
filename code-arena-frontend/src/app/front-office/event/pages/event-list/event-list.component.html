@@ -58,7 +58,7 @@
   <div class="product-grid" *ngIf="!isLoading && filteredEvents.length > 0">
     <div
       class="product-card"
-      *ngFor="let ev of filteredEvents"
+      *ngFor="let ev of pagedEvents"
       (click)="openDetail(ev.id)"
     >
       <div class="event-image">
@@ -108,6 +108,18 @@
 
         <div class="event-countdown">{{ getCountdownShort(ev.startDate) }}</div>
       </div>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <span class="page-info">
+      {{ currentPage * pageSize + 1 }}–{{ minVal((currentPage + 1) * pageSize, filteredEvents.length) }}
+      of {{ filteredEvents.length }} events
+    </span>
+    <div class="page-controls">
+      <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 0">←</button>
+      <button *ngFor="let page of pages" class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">{{ page + 1 }}</button>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">→</button>
     </div>
   </div>
 

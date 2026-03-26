@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { EventService } from '../../services/event.service';
 import QRCode from 'qrcode';
+import * as L from 'leaflet';
 import {
   EventCandidature,
   EventInvitation,
@@ -22,6 +23,7 @@ import {
 export class EventDetailComponent implements OnInit, OnDestroy {
   event: any = null;
   eventId: string | null = null;
+  map: any = null;
 
   isLoading = true;
   registering = false;
@@ -65,6 +67,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       next: async (event) => {
         this.event = event;
         this.isLoading = false;
+        this.initMap();
         this.startCountdown();
         await this.loadMyRegistration();
 
@@ -95,6 +98,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     if (this.errorTimeoutId != null) {
       window.clearTimeout(this.errorTimeoutId);
     }
+    if (this.map) { this.map.remove(); this.map = null; }
     this.subs.unsubscribe();
   }
 
@@ -445,5 +449,38 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     if (status === 'ACTIVE') return 'ACTIVE';
     if (status === 'COMPLETED') return 'COMPLETED';
     return 'UPCOMING';
+  }
+
+  initMap(): void {
+    if (!this.event?.location) return;
+    setTimeout(() => {
+      const location = this.event.location;
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || data.length === 0) return;
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          if (this.map) { this.map.remove(); this.map = null; }
+          this.map = L.map('event-map').setView([lat, lon], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+          }).addTo(this.map);
+          const icon = L.icon({
+            iconUrl: 'assets/marker-icon.png',
+            iconRetinaUrl: 'assets/marker-icon-2x.png',
+            shadowUrl: 'assets/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+          });
+          L.marker([lat, lon], { icon })
+            .addTo(this.map)
+            .bindPopup(`📍 ${location}`)
+            .openPopup();
+        })
+        .catch(err => console.error('Map error:', err));
+    }, 300);
   }
 }
