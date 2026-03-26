@@ -14,4 +14,6 @@ export class PurchaseService extends ApiService {
     // TODO: GET /api/purchases
     return this.get<unknown>('');
   }
+
 }
+//testing
