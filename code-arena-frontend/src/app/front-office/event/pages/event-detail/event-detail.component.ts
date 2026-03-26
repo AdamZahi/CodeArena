@@ -56,13 +56,38 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    const sub = this.route.paramMap.subscribe((params) => {
-      const id = params.get('id');
-      if (!id) return;
-      this.eventId = id;
-      this.loadAll(id);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) return;
+    this.eventId = id;
+    this.successMsg = '';
+    this.isLoading = true;
+    this.eventService.getEventById(id).subscribe({
+      next: async (event) => {
+        this.event = event;
+        this.isLoading = false;
+        this.startCountdown();
+        await this.loadMyRegistration();
+
+        // Load invitations for exclusive events
+        const invSub = this.eventService.getMyInvitations().subscribe({
+          next: (inv) => {
+            this.myInvitation = inv.find((i) => i.eventId === id) ?? null;
+            this.exclusiveInvitation = this.myInvitation;
+            this.loadExclusiveState(id);
+          },
+          error: (err) => console.error('Failed to load invitations', err)
+        });
+        this.subs.add(invSub);
+      },
+      error: () => {
+        this.isLoading = false;
+        // Fallback to mock data if needed
+        const mock = this.getMockEvents().find((e) => e.id === id) ?? null;
+        if (mock) {
+          this.event = mock;
+        }
+      }
     });
-    this.subs.add(sub);
   }
 
   ngOnDestroy(): void {
@@ -278,71 +303,22 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(sub);
   }
 
-  private loadAll(id: string): void {
-    this.isLoading = true;
-    this.error = null;
-    if (this.errorTimeoutId != null) {
-      window.clearTimeout(this.errorTimeoutId);
-      this.errorTimeoutId = null;
-    }
-    this.successMsg = '';
-    this.event = null;
-    this.myRegistration = null;
-    this.myInvitation = null;
-    this.motivationText = '';
-    this.qrCodeImageUrl = '';
-    this.showQROverlay = false;
-    this.exclusiveInvitation = null;
-    this.exclusiveCandidature = null;
-    this.exclusiveLoading = false;
 
-    this.startCountdown();
-
-    const eventSub = this.eventService.getEventById(id).subscribe({
-      next: (ev) => {
-        this.event = ev;
-      },
-      error: (err) => {
-        console.error('Failed to load event', err);
-        // Fallback to mock data if backend is down
-        const mock = this.getMockEvents().find((e) => e.id === id) ?? null;
-        if (mock) {
-          this.event = mock;
-          this.isLoading = false;
-        } else {
-          this.setErrorTemporarily('FAILED TO LOAD EVENT.');
-          this.isLoading = false;
-        }
-      },
-      complete: () => {
-        this.isLoading = false;
-        this.startCountdown();
-      }
-    });
-    this.subs.add(eventSub);
-
-    this.loadMyRegistration();
-
-    const invSub = this.eventService.getMyInvitations().subscribe({
-      next: (inv) => {
-        this.myInvitation = inv.find((i) => i.eventId === id) ?? null;
-        this.exclusiveInvitation = this.myInvitation;
-        this.loadExclusiveState(id);
-      },
-      error: (err) => {
-        console.error('Failed to load invitations', err);
-      }
-    });
-    this.subs.add(invSub);
-  }
 
   async loadMyRegistration(): Promise<void> {
     return new Promise((resolve) => {
+      if (!this.event?.id) {
+        resolve();
+        return;
+      }
       this.eventService.getParticipants(this.event.id).subscribe({
-        next: (participants: any[]) => {
+        next: async (participants: any[]) => {
           this.myRegistration = participants.find(
             p => p.participantId === 'mock-player-1'
           ) || null;
+          if (this.myRegistration?.status === 'CONFIRMED') {
+            await this.generateQR();
+          }
           this.loadWaitlistPosition();
           resolve();
         },

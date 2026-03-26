@@ -217,16 +217,7 @@
     </div>
 
     <!-- ── MY REGISTRATION CARD ───────────────────────── -->
-    <div class="my-registration-card"
-      *ngIf="myRegistration?.status === 'CONFIRMED'">
-      <div class="status-badge"
-        [ngClass]="myRegistration?.status === 'CONFIRMED' ? 'status-confirmed' : 'status-waitlist'">
-        {{ myRegistration?.status }}
-      </div>
-      <div class="qr-box" *ngIf="event.qrCode">
-        {{ event.qrCode }}
-      </div>
-    </div>
+
 
     <div class="search-error" *ngIf="error">{{ error }}</div>
   </div>
