@@ -91,6 +91,7 @@
   letter-spacing: 3px;
   animation: neon-flicker 4s infinite;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
 .lc-logo .accent {
@@ -107,11 +108,59 @@
   color: var(--muted);
   text-transform: uppercase;
   margin-left: 20px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.lc-nav-item:hover {
+  color: var(--neon2);
 }
 
 .lc-nav-item.active {
   color: var(--neon);
   text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+/* ── USER PROFILE ── */
+.lc-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 4px;
+  transition: all 0.3s;
+  cursor: pointer;
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+}
+
+.user-profile:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: var(--neon);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--neon2);
+  object-fit: cover;
+}
+
+.user-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 /* ── TOOLBAR (SEARCH & FILTERS) ─────────────────── */

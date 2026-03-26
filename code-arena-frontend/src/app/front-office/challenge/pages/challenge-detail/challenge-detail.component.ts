@@ -5,7 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { ChallengeService } from '../../services/challenge.service';
 import { SubmissionService } from '../../services/submission.service';
 import { Subscription, interval } from 'rxjs';
-import { switchMap, takeWhile } from 'rxjs/operators';
+import { switchMap, takeWhile, take } from 'rxjs/operators';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-challenge-detail',
@@ -51,10 +52,20 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public isGameOver = false;
   public isMuted = false;
 
+  // Discussion & Voting
+  public comments: any[] = [];
+  public newCommentContent = '';
+  public isAddingComment = false;
+  public upvotes = 0;
+  public downvotes = 0;
+  public userVote: string | null = null;
+  public currentUserSub: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private challengeService: ChallengeService,
-    private submissionService: SubmissionService
+    private submissionService: SubmissionService,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -67,6 +78,12 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.loadHealthState();
       this.loadChallenge();
       this.loadMySubmissions();
+      this.loadVotes();
+      this.loadComments();
+
+      this.auth.user$.subscribe(user => {
+        if (user) this.currentUserSub = user.sub || null;
+      });
     }
   }
 
@@ -342,5 +359,71 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       case '63': return '// Read input from stdin\nconst input = require("fs").readFileSync("/dev/stdin", "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nconsole.log(lines[0]);';
       default: return '// Write your solution here\n// Read from stdin, print to stdout\n';
     }
+  }
+
+  // --- Voting Methods ---
+  public loadVotes(): void {
+    this.challengeService.getVotes(+this.challengeId).subscribe({
+      next: (res) => {
+        this.upvotes = res.upvotes;
+        this.downvotes = res.downvotes;
+        this.userVote = res.userVote;
+      }
+    });
+  }
+
+  public upvote(): void {
+    this.challengeService.upvote(+this.challengeId).subscribe({
+      next: (res) => {
+        this.upvotes = res.upvotes;
+        this.downvotes = res.downvotes;
+        this.userVote = res.userVote;
+      }
+    });
+  }
+
+  public downvote(): void {
+    this.challengeService.downvote(+this.challengeId).subscribe({
+      next: (res) => {
+        this.upvotes = res.upvotes;
+        this.downvotes = res.downvotes;
+        this.userVote = res.userVote;
+      }
+    });
+  }
+
+  // --- Discussion Methods ---
+  public loadComments(): void {
+    this.challengeService.getComments(+this.challengeId).subscribe({
+      next: (res) => this.comments = res
+    });
+  }
+
+  public postComment(): void {
+    if (!this.newCommentContent.trim() || this.isAddingComment) return;
+    this.isAddingComment = true;
+
+    // Get the display name from Auth0 (same as in header profile)
+    this.auth.user$.pipe(take(1)).subscribe((user: any) => {
+      const displayName = user?.nickname || user?.name || 'User';
+      
+      this.challengeService.addComment(+this.challengeId, this.newCommentContent, displayName).subscribe({
+        next: (res) => {
+          this.comments.unshift(res);
+          this.newCommentContent = '';
+          this.isAddingComment = false;
+        },
+        error: () => this.isAddingComment = false
+      });
+    });
+  }
+
+  public deleteComment(commentId: number): void {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    this.challengeService.deleteComment(commentId).subscribe({
+      next: () => {
+        this.comments = this.comments.filter(c => c.id !== commentId);
+      }
+    });
   }
 }
