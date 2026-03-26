@@ -1,0 +1,143 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ──────────────────────────── -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">PRODUCT MANAGEMENT</h1>
+    <p class="page-sub">{{ products.length }} products in store</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="router.navigate(['/admin/shop/orders'])">
+       ORDERS
+    </button>
+    <button class="btn-primary" (click)="createProduct()">
+      + NEW PRODUCT
+    </button>
+    <button class="btn-secondary" (click)="router.navigate(['/admin/shop/dashboard'])">
+  📊 DASHBOARD
+</button>
+<button class="btn-export" (click)="exportProducts()">
+  📥 EXPORT XLSX
+</button>
+  </div>
+</div>
+  
+
+  <!-- ── LOADING ───────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">Loading products...</div>
+
+  <!-- ── TABLE ────────────────────────────── -->
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>IMAGE</th>
+          <th>NAME</th>
+          <th>CATEGORY</th>
+          <th>PRICE</th>
+          <th>STOCK</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products" class="table-row">
+
+          <!-- Image -->
+          <td>
+            <img
+              [src]="product.imageUrl"
+              [alt]="product.name"
+              class="product-thumb"
+            />
+          </td>
+
+          <!-- Name -->
+          <td>
+            <span class="product-name">{{ product.name }}</span>
+            <span class="product-desc-small">{{ product.description | slice:0:50 }}...</span>
+          </td>
+
+          <!-- Category -->
+          <td>
+            <span class="category-pill">{{ product.category }}</span>
+          </td>
+
+          <!-- Price -->
+          <td>
+            <span class="price-text">{{ product.price | currency }}</span>
+          </td>
+
+          <!-- Stock -->
+          <td>
+            <span class="stock-badge"
+              [class.stock-ok]="getStockStatus(product.stock) === 'ok'"
+              [class.stock-low]="getStockStatus(product.stock) === 'low'"
+              [class.stock-out]="getStockStatus(product.stock) === 'out'">
+              {{ product.stock === 0 ? 'OUT' : product.stock }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="actions-cell">
+            <div *ngIf="deleteConfirmId !== product.id" class="action-btns">
+              <button class="btn-edit" (click)="editProduct(product.id)">
+                ✏ EDIT
+              </button>
+              <button class="btn-delete" (click)="confirmDelete(product.id)">
+                🗑 DELETE
+              </button>
+            </div>
+
+            <!-- Confirm delete -->
+            <div *ngIf="deleteConfirmId === product.id" class="confirm-delete">
+              <span>Are you sure?</span>
+              <button class="btn-confirm" (click)="deleteProduct(product.id)">YES</button>
+              <button class="btn-cancel" (click)="cancelDelete()">NO</button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty state -->
+    <div class="empty" *ngIf="products.length === 0">
+      No products yet. Click NEW PRODUCT to add one.
+    </div>
+  </div>
+<!-- PAGINATION -->
+<div class="pagination" *ngIf="totalPages > 1">
+
+  <span class="page-info">
+    Showing {{ currentPage * pageSize + 1 }}–{{ (currentPage + 1) * pageSize > totalItems ? totalItems : (currentPage + 1) * pageSize }}
+    of {{ totalItems }} products
+  </span>
+
+  <div class="page-controls">
+
+    <button
+      class="page-btn"
+      (click)="prevPage()"
+      [disabled]="currentPage === 0">
+      ← PREV
+    </button>
+
+    <button
+      *ngFor="let page of pages"
+      class="page-btn"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)">
+      {{ page + 1 }}
+    </button>
+
+    <button
+      class="page-btn"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages - 1">
+      NEXT →
+    </button>
+
+  </div>
+
+</div>
+</div>

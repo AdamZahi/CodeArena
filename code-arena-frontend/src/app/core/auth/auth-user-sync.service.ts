@@ -1,28 +1,44 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '@auth0/auth0-angular';
-import { EMPTY, Subscription } from 'rxjs';
-import { catchError, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, EMPTY, Subscription } from 'rxjs';
+import { catchError, distinctUntilChanged, filter, switchMap, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+
+export interface CurrentUser {
+  id?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthUserSyncService {
+  private readonly auth = inject(AuthService);
+  private readonly http = inject(HttpClient);
   private readonly subscription: Subscription;
+  private readonly currentUserSubject = new BehaviorSubject<CurrentUser | null>(null);
+  readonly currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private readonly auth: AuthService, private readonly http: HttpClient) {
-    // Trigger one authenticated backend call after login so UserSyncFilter persists the user.
+  constructor() {
     this.subscription = this.auth.isAuthenticated$
       .pipe(
         distinctUntilChanged(),
         filter((isAuthenticated) => isAuthenticated),
         switchMap(() =>
-          this.http.get(`${environment.apiBaseUrl}/api/users/me`).pipe(catchError(() => EMPTY))
+          this.http.get<CurrentUser>(`${environment.apiBaseUrl}/api/users/me`)
+            .pipe(
+              tap((user) => this.currentUserSubject.next(user)),
+              catchError(() => {
+                this.currentUserSubject.next(null);
+                return EMPTY;
+              })
+            )
         )
       )
       .subscribe();
   }
 
-  keepAlive(): void {
-    // Intentionally empty. Injecting this service activates the sync subscription.
-  }
+  keepAlive(): void {}
 }

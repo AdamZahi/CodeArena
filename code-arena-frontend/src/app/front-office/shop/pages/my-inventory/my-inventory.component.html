@@ -1,0 +1,131 @@
+<div class="inventory-container">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="page-header">
+    <button class="back-btn" (click)="goToShop()">← BACK TO SHOP</button>
+    <h1 class="page-title">// MY ORDERS</h1>
+    <span class="order-count">{{ orders.length }} orders</span>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">LOADING ORDERS...</div>
+
+  <!-- ── EMPTY ─────────────────────────────────── -->
+  <div class="empty" *ngIf="!isLoading && orders.length === 0">
+    <p>// NO ORDERS YET</p>
+    <button class="shop-btn" (click)="goToShop()">START SHOPPING</button>
+  </div>
+
+  <!-- ── ORDERS LIST ───────────────────────────── -->
+  <div class="orders-list" *ngIf="!isLoading && orders.length > 0">
+    <div
+      class="order-card"
+      *ngFor="let order of orders"
+      (click)="viewOrder(order)">
+
+      <!-- Order Header -->
+      <div class="order-header">
+        <div class="order-id">
+          <span class="order-label">ORDER</span>
+          <span class="order-num">#{{ order.id | slice:0:8 | uppercase }}</span>
+        </div>
+        <span class="status-badge" [class]="getStatusColor(order.status)">
+          {{ order.status }}
+        </span>
+      </div>
+
+      <!-- Order Info -->
+      <div class="order-info">
+        <div class="order-meta">
+          <span class="meta-label">DATE</span>
+          <span class="meta-value">{{ order.createdAt | date:'dd MMM yyyy' }}</span>
+        </div>
+        <div class="order-meta">
+          <span class="meta-label">ITEMS</span>
+          <span class="meta-value">{{ order.items?.length || 0 }} products</span>
+        </div>
+        <div class="order-meta">
+          <span class="meta-label">TOTAL</span>
+          <span class="meta-total">{{ order.totalPrice | currency }}</span>
+        </div>
+      </div>
+
+      <!-- Items Preview -->
+      <div class="items-preview" *ngIf="order.items && order.items.length > 0">
+        <img
+          *ngFor="let item of order.items | slice:0:3"
+          [src]="item.product?.imageUrl"
+          [alt]="item.product?.name"
+          class="item-thumb"
+        />
+        <span class="more-items" *ngIf="order.items.length > 3">
+          +{{ order.items.length - 3 }} more
+        </span>
+      </div>
+
+      <div class="view-hint">Click to view details →</div>
+      <button 
+  class="cancel-btn"
+  *ngIf="order.status === 'PENDING'"
+  (click)="cancelOrder(order.id, $event)">
+  CANCEL ORDER
+</button>
+    </div>
+  </div>
+
+  <!-- ── ORDER DETAIL MODAL ────────────────────── -->
+  <div class="modal-overlay" *ngIf="selectedOrder" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+
+      <button class="modal-close" (click)="closeModal()">✕</button>
+
+      <div class="modal-header">
+        <h2>ORDER #{{ selectedOrder.id | slice:0:8 | uppercase }}</h2>
+        <span class="status-badge" [class]="getStatusColor(selectedOrder.status)">
+          {{ selectedOrder.status }}
+        </span>
+      </div>
+
+      <div class="modal-meta">
+        <span>📅 {{ selectedOrder.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+      </div>
+
+      <!-- Items List -->
+      <div class="modal-items">
+        <div class="modal-item" *ngFor="let item of selectedOrder.items">
+          <img
+            [src]="item.product?.imageUrl"
+            [alt]="item.product?.name"
+            class="modal-item-img"
+          />
+          <div class="modal-item-info">
+            <span class="modal-item-name">{{ item.product?.name }}</span>
+            <span class="modal-item-cat">{{ item.product?.category }}</span>
+          </div>
+          <div class="modal-item-qty"> {{ item.quantity }}</div>
+          <div class="modal-item-price">
+            {{ getItemTotal(item.unitPrice, item.quantity) | currency }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="modal-total">
+        <span>TOTAL</span>
+        <span class="total-amount">{{ selectedOrder.totalPrice | currency }}</span>
+      </div>
+      <!-- QR Code -->
+<div class="qr-section" *ngIf="orderQrCodes[selectedOrder.id]">
+  <p class="qr-label">// ORDER QR CODE</p>
+  <img
+    [src]="orderQrCodes[selectedOrder.id]"
+    alt="Order QR"
+    class="qr-image"
+  />
+  <p class="qr-hint">Scan to verify order details</p>
+</div>
+
+    </div>
+  </div>
+
+</div>

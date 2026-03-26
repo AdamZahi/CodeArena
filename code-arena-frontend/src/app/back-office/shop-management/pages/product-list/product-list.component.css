@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+/* ════════════════════════════════════════════════════════════════
+   PRODUCT LIST — Admin Panel
+   Dark professional theme consistent with CodeArena design system
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── CONTAINER ───────────────────────────────────────────────── */
+.admin-container {
+  min-height: 100vh;
+  background: #0a0a0f;
+  padding: 32px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #e2e8f0;
+}
+
+/* ── HEADER ──────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.page-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+.page-sub {
+  color: #64748b;
+  font-size: 13px;
+  margin: 4px 0 0;
+  letter-spacing: 1px;
+}
+
+/* ── HEADER ACTIONS ──────────────────────────────────────────── */
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ── SHARED BUTTON BASE ──────────────────────────────────────── */
+.btn-primary,
+.btn-secondary,
+.btn-export {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Purple — primary action */
+.btn-primary {
+  background: #8b5cf6;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #7c3aed;
+  box-shadow: 0 0 20px rgba(139,92,246,0.4);
+  transform: translateY(-1px);
+}
+
+/* Cyan — secondary navigation */
+.btn-secondary {
+  background: transparent;
+  color: #06b6d4;
+  border: 1.5px solid #06b6d4;
+}
+
+.btn-secondary:hover {
+  background: #06b6d4;
+  color: white;
+}
+
+/* Green — export action */
+.btn-export {
+  background: transparent;
+  color: #10b981;
+  border: 1.5px solid #10b981;
+}
+
+.btn-export:hover {
+  background: #10b981;
+  color: white;
+}
+
+/* ── TABLE WRAPPER ───────────────────────────────────────────── */
+.table-wrapper {
+  background: #0d0d15;
+  border: 1px solid #1a1a2e;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.product-table thead tr {
+  background: #12121e;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.product-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 2px;
+}
+
+.table-row {
+  border-bottom: 1px solid #1a1a2e;
+  transition: background 0.2s;
+}
+
+.table-row:hover { background: #12121e; }
+.table-row:last-child { border-bottom: none; }
+
+.product-table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+/* ── PRODUCT THUMBNAIL ───────────────────────────────────────── */
+.product-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #1a1a2e;
+}
+
+/* ── PRODUCT NAME + DESC ─────────────────────────────────────── */
+.product-name {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: #e2e8f0;
+  margin-bottom: 2px;
+}
+
+.product-desc-small {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ── CATEGORY PILL ───────────────────────────────────────────── */
+.category-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(139,92,246,0.1);
+  color: #8b5cf6;
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ── PRICE ───────────────────────────────────────────────────── */
+.price-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+
+/* ── STOCK BADGES ────────────────────────────────────────────── */
+.stock-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Orbitron', monospace;
+}
+
+.stock-ok  { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+.stock-low { background: rgba(245,158,11,0.1);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+.stock-out { background: rgba(239,68,68,0.1);   color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+/* ── ACTION BUTTONS ──────────────────────────────────────────── */
+.actions-cell { display: flex; gap: 8px; align-items: center; }
+.action-btns  { display: flex; gap: 8px; }
+
+.btn-edit,
+.btn-delete,
+.btn-confirm,
+.btn-cancel {
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-edit    { background: rgba(6,182,212,0.1);  color: #06b6d4; border: 1px solid rgba(6,182,212,0.2); }
+.btn-edit:hover    { background: #06b6d4; color: white; }
+
+.btn-delete  { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+.btn-delete:hover  { background: #ef4444; color: white; }
+
+.btn-confirm { background: #ef4444; color: white; }
+.btn-cancel  { background: #1a1a2e; color: #e2e8f0; }
+
+.confirm-delete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #ef4444;
+}
+
+/* ── PAGINATION ──────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  border-top: 1px solid #1a1a2e;
+}
+
+.page-info {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #64748b;
+  letter-spacing: 1px;
+}
+
+.page-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.page-btn {
+  min-width: 40px;
+  height: 36px;
+  padding: 0 12px;
+  background: #0d0d15;
+  border: 1px solid #1a1a2e;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.page-btn.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 12px rgba(139,92,246,0.4);
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── LOADING / EMPTY ─────────────────────────────────────────── */
+.loading,
+.empty {
+  text-align: center;
+  padding: 60px;
+  color: #64748b;
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+}

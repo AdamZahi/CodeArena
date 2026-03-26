@@ -1,32 +1,18 @@
 import { Component, inject } from '@angular/core';
-import { AuthService } from '@auth0/auth0-angular';
-import { environment } from '../../../environments/environment';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  template: `
-    <section style="padding: 1.5rem; display: grid; gap: 0.75rem; max-width: 540px;">
-      <p>Home works</p>
-      <button
-        type="button"
-        (click)="logout()"
-        style="width: fit-content; padding: 0.6rem 1rem; border: 0; border-radius: 8px; cursor: pointer; background: #ef4444; color: #fff; font-weight: 600;"
-      >
-        Logout (test)
-      </button>
-    </section>
-  `
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css',
+  imports: [CommonModule]
 })
 export class HomeComponent {
-  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
-  logout(): void {
-    void this.auth.logout({
-      logoutParams: {
-        returnTo: window.location.origin,
-        client_id: environment.auth0ClientId
-      }
-    });
+  navigate(path: string): void {
+    this.router.navigate([path]);
   }
 }

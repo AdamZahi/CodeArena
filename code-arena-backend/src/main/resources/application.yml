@@ -2,37 +2,40 @@ server:
   port: 8080
 
 spring:
-  config:
-    import:
-      - optional:file:.env[.properties]
-      - optional:file:code-arena-backend/.env[.properties]
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/code_arena_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/codearena?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ""
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: islemazzouz04@gmail.com
+    password: ycsm qcyo tqfk hlbd
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   jpa:
     hibernate:
       ddl-auto: update
-    open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: true
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://${AUTH0_DOMAIN}/
-          audiences: ${AUTH0_AUDIENCE}
+          issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
+          jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
 
-auth0:
-  domain: ${AUTH0_DOMAIN}
-  client-id: ${AUTH0_CLIENT_ID}
-  client-secret: ${AUTH0_CLIENT_SECRET}
-  audience: ${AUTH0_AUDIENCE}
-  management-api-audience: https://${AUTH0_DOMAIN}/api/v2/
+keycloak:
+  realm: code-arena
+  client-id: code-arena-backend
+  server-url: http://localhost:8081
 
 app:
   cors:
     allowed-origins:
       - http://localhost:4200
+  shop:
+    admin-email: islemazzouz04@gmail.com

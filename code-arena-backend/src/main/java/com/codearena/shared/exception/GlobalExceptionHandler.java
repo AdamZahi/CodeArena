@@ -42,4 +42,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.<Void>builder()
             .success(false).message("Access denied").timestamp(Instant.now()).build());
     }
+    /*for validation errors shop*/
+
 }

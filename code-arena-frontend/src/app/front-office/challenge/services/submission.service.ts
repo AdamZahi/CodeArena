@@ -1,17 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../core/services/api.service';
-import { ApiResponse } from '../../../core/models/api-response.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class SubmissionService extends ApiService {
-  constructor(http: HttpClient) {
-    super(http, '/api/submissions');
+export class SubmissionService {
+  private baseUrl = `${environment.apiBaseUrl}/api/submissions`;
+
+  constructor(private http: HttpClient) {}
+
+  submitCode(payload: { code: string, language: string, challengeId: string }): Observable<any> {
+    return this.http.post<any>(this.baseUrl, payload);
   }
 
-  getAll(): Observable<ApiResponse<unknown>> {
-    // TODO: GET /api/submissions
-    return this.get<unknown>('');
+  getSubmissionStatus(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/${id}`);
+  }
+
+  getUserSubmissions(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/user/${userId}`);
   }
 }
