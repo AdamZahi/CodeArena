@@ -28,7 +28,7 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a routerLink="/reward-profile" routerLinkActive="active">
           <span class="link-label">REWARDS</span>
         </a>
-        <a *ngIf="(currentUser$ | async)?.role === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
+        <a *ngIf="(currentUser$ | async) as user" [style.display]="user.role === 'ADMIN' ? 'flex' : 'none'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
           <span class="link-label">BACKOFFICE</span>
         </a>
       </nav>
@@ -39,7 +39,7 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <ng-container *ngIf="isAuthenticated$ | async">
           <div class="user-info" *ngIf="currentUser$ | async as user">
              <span class="user-role">{{ user.role }}</span>
-             <span class="user-name">{{ user.nickname || 'OPERATOR' }}</span>
+             <span class="user-name">{{ user.firstName || user.email || 'OPERATOR' }}</span>
           </div>
           <button class="btn secondary profile-btn" (click)="goProfile()">PROFILE</button>
           <button class="btn danger logout-btn" (click)="logout()">LOGOUT</button>

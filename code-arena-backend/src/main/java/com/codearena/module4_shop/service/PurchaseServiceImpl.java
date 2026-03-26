@@ -117,7 +117,19 @@ public class PurchaseServiceImpl implements PurchaseService {
 
 
         log.info("Order created successfully: {}", savedPurchase.getId());
+        // ── ADMIN NEW ORDER NOTIFICATION ─────────────
+// Notify admin in real time when a new order is placed
+        messagingTemplate.convertAndSend(
+                "/topic/admin/new-order",
+                new java.util.HashMap<String, Object>() {{
+                    put("orderId", savedPurchase.getId().toString().substring(0, 8).toUpperCase());
+                    put("participantId", savedPurchase.getParticipantId());
+                    put("total", savedPurchase.getTotalPrice());
+                    put("message", "New order placed! $" + String.format("%.2f", savedPurchase.getTotalPrice()));
+                }}
+        );
 
+        //
         PurchaseResponse response = toResponse(savedPurchase, orderItems);
 
         try {
