@@ -1,92 +1,375 @@
-<div class="home-shell">
-  <!-- 🛰️ BACKGROUND GRID & GLOWS -->
-  <div class="grid-overlay"></div>
-  <div class="glow glow-top"></div>
-  <div class="glow glow-bottom"></div>
+<canvas id="ca"></canvas>
 
-  <!-- 🚀 HERO SECTION -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <p class="hero-kicker">// ARENA IS OPEN</p>
-      <h1 class="hero-title">
-        CODE <span class="highlight">ARENA</span>
+<!-- ═══════ NAV ═══════ -->
+<nav class="nav" [class.scrolled]="navScrolled" [class.hide]="navHidden">
+  <div class="nav-inner">
+
+    <a class="logo" routerLink="/">
+      <span class="lw">CODE</span><span class="lb">ARENA</span>
+    </a>
+
+    <!-- DESKTOP LINKS -->
+    <div class="nav-links">
+      <a routerLink="/challenge" class="nl">
+        <span class="nl-icon">&#9876;</span>Challenges
+      </a>
+      <a routerLink="/battle" class="nl">
+        <span class="nl-icon">&#9876;</span>Battles
+      </a>
+      <a routerLink="/event" class="nl">
+        <span class="nl-icon">&#9878;</span>Events
+      </a>
+      <a routerLink="/coaching-quiz" class="nl">
+        <span class="nl-icon">&#9733;</span>Coaching
+      </a>
+      <a routerLink="/shop" class="nl">
+        <span class="nl-icon">&#9670;</span>Shop
+      </a>
+      <a href="#about" class="nl">About</a>
+    </div>
+
+    <div class="nav-actions">
+      <a routerLink="/auth/login" class="n-login">Log In</a>
+      <a routerLink="/auth/register" class="n-join">
+        <span class="n-join-play">&#9654;</span> Start Playing
+      </a>
+      <button class="n-logout" (click)="logout()" title="Logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+      <button class="hamburger" (click)="toggleSidebar()">
+        <span [class.o]="sidebarOpen"></span>
+        <span [class.o]="sidebarOpen"></span>
+        <span [class.o]="sidebarOpen"></span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-line" [style.width.%]="scrollProgress"></div>
+</nav>
+
+<!-- ═══════ SIDEBAR ═══════ -->
+<div class="sb-veil" [class.on]="sidebarOpen" (click)="closeSidebar()"></div>
+<aside class="sidebar" [class.open]="sidebarOpen">
+  <div class="sb-top">
+    <span class="lw">CODE</span><span class="lb">ARENA</span>
+    <button class="sb-close" (click)="closeSidebar()">&#x2715;</button>
+  </div>
+  <nav class="sb-body">
+    <a routerLink="/challenge" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#38bdf8"></div>
+      <div><strong>Challenges</strong><span>Solve problems and earn XP</span></div>
+    </a>
+    <a routerLink="/battle" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#818cf8"></div>
+      <div><strong>Battles</strong><span>1v1 real-time duels</span></div>
+    </a>
+    <a routerLink="/reward-profile" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#f59e0b"></div>
+      <div><strong>Rewards</strong><span>Your rank and profile</span></div>
+    </a>
+    <a routerLink="/shop" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#34d399"></div>
+      <div><strong>Shop</strong><span>Dev merch and gear</span></div>
+    </a>
+    <a routerLink="/event" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#f472b6"></div>
+      <div><strong>Events</strong><span>Hackathons and contests</span></div>
+    </a>
+    <a routerLink="/coaching-quiz" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#4ade80"></div>
+      <div><strong>Coaching</strong><span>Sessions and quizzes</span></div>
+    </a>
+    <a href="#about" class="sb-item" (click)="closeSidebar()">
+      <div class="sbi-dot" style="background:#94a3b8"></div>
+      <div><strong>About Us</strong><span>Our story and mission</span></div>
+    </a>
+  </nav>
+  <a routerLink="/auth/register" class="sb-cta" (click)="closeSidebar()">
+    <span class="n-join-play">&#9654;</span> Start Playing Free
+  </a>
+</aside>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+
+  <!-- Layered atmospheric background -->
+  <div class="atm atm1"></div>
+  <div class="atm atm2"></div>
+  <div class="atm atm3"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-grid-lines"></div>
+
+  <!-- Orbs -->
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+
+  <div class="hero-layout" [class.in]="heroLoaded">
+
+    <!-- CHARACTER — mascot style like CodinGame yellow guy but blue/purple -->
+    <div class="mascot-wrap">
+      <!-- Glow ring behind mascot -->
+      <div class="mascot-ring"></div>
+      <div class="mascot-shadow"></div>
+
+      <svg class="mascot" viewBox="0 0 280 340" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Body glow -->
+        <ellipse cx="140" cy="200" rx="70" ry="75" fill="url(#bodygrad)" class="body-glow"/>
+
+        <!-- BODY - rounded blob like CodinGame mascot -->
+        <ellipse cx="140" cy="205" rx="62" ry="68" fill="url(#bodygrad)"/>
+
+        <!-- Belly highlight -->
+        <ellipse cx="140" cy="195" rx="36" ry="40" fill="rgba(255,255,255,0.07)"/>
+
+        <!-- ARMS - short and round like the yellow guy -->
+        <!-- Left arm raised up (waving) -->
+        <ellipse cx="74" cy="165" rx="22" ry="14" fill="url(#bodygrad)" transform="rotate(-40,74,165)" class="arm-wave"/>
+        <ellipse cx="58" cy="145" rx="16" ry="11" fill="url(#bodygrad)" transform="rotate(-55,58,145)" class="arm-wave"/>
+        <!-- Left hand (round) -->
+        <circle cx="48" cy="130" r="14" fill="url(#bodygrad)" class="arm-wave"/>
+
+        <!-- Right arm resting -->
+        <ellipse cx="206" cy="175" rx="22" ry="13" fill="url(#bodygrad)" transform="rotate(25,206,175)"/>
+        <circle cx="222" cy="190" r="13" fill="url(#bodygrad)"/>
+
+        <!-- LEGS -->
+        <ellipse cx="118" cy="265" rx="24" ry="18" fill="url(#leggrad)"/>
+        <ellipse cx="162" cy="265" rx="24" ry="18" fill="url(#leggrad)"/>
+        <!-- Feet -->
+        <ellipse cx="112" cy="278" rx="28" ry="14" fill="url(#footgrad)"/>
+        <ellipse cx="168" cy="278" rx="28" ry="14" fill="url(#footgrad)"/>
+
+        <!-- NECK -->
+        <ellipse cx="140" cy="138" rx="22" ry="16" fill="url(#bodygrad)"/>
+
+        <!-- HEAD - big round like CodinGame mascot -->
+        <circle cx="140" cy="105" r="72" fill="url(#headgrad)"/>
+
+        <!-- Head highlight -->
+        <ellipse cx="118" cy="80" rx="28" ry="22" fill="rgba(255,255,255,0.1)" transform="rotate(-20,118,80)"/>
+
+        <!-- ANTENNA - the little bump on top -->
+        <ellipse cx="140" cy="35" rx="10" ry="14" fill="url(#bodygrad)"/>
+        <circle cx="140" cy="22" r="12" fill="#38bdf8" class="antenna-glow"/>
+        <circle cx="140" cy="22" r="8" fill="#7dd3fc"/>
+        <circle cx="137" cy="19" r="3" fill="white" opacity="0.7"/>
+
+        <!-- EYES - big expressive like CodinGame -->
+        <!-- Eye whites -->
+        <ellipse cx="115" cy="100" rx="22" ry="24" fill="white"/>
+        <ellipse cx="165" cy="100" rx="22" ry="24" fill="white"/>
+        <!-- Pupils -->
+        <circle cx="117" cy="102" r="14" fill="#1e3a5f" class="pupil"/>
+        <circle cx="167" cy="102" r="14" fill="#1e3a5f" class="pupil"/>
+        <!-- Iris -->
+        <circle cx="117" cy="102" r="9" fill="#0ea5e9"/>
+        <circle cx="167" cy="102" r="9" fill="#0ea5e9"/>
+        <!-- Inner iris -->
+        <circle cx="117" cy="102" r="5" fill="#0284c7"/>
+        <circle cx="167" cy="102" r="5" fill="#0284c7"/>
+        <!-- Eye shine -->
+        <circle cx="110" cy="95" r="5" fill="white" opacity="0.9"/>
+        <circle cx="160" cy="95" r="5" fill="white" opacity="0.9"/>
+        <circle cx="122" cy="107" r="2" fill="white" opacity="0.5"/>
+        <circle cx="172" cy="107" r="2" fill="white" opacity="0.5"/>
+
+        <!-- GLASSES (CodinGame style) - thin wire frames -->
+        <rect x="95" y="88" width="44" height="28" rx="10" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+        <rect x="143" y="88" width="44" height="28" rx="10" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+        <line x1="139" y1="102" x2="143" y2="102" stroke="#38bdf8" stroke-width="2.5"/>
+        <line x1="78" y1="102" x2="95" y2="102" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+        <line x1="187" y1="102" x2="204" y2="102" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+        <!-- Lens tint -->
+        <rect x="96" y="89" width="42" height="26" rx="9" fill="#38bdf8" opacity="0.06"/>
+        <rect x="144" y="89" width="42" height="26" rx="9" fill="#38bdf8" opacity="0.06"/>
+
+        <!-- SMILE - big happy curve -->
+        <path d="M120 125 Q140 142 160 125" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Cheek blush -->
+        <ellipse cx="98" cy="118" rx="12" ry="7" fill="#818cf8" opacity="0.3"/>
+        <ellipse cx="182" cy="118" rx="12" ry="7" fill="#818cf8" opacity="0.3"/>
+
+        <!-- Floating sparkles around mascot -->
+        <circle cx="52" cy="90" r="4" fill="#38bdf8" opacity="0.8" class="spark sp1"/>
+        <circle cx="228" cy="80" r="3" fill="#818cf8" opacity="0.8" class="spark sp2"/>
+        <circle cx="240" cy="160" r="5" fill="#38bdf8" opacity="0.6" class="spark sp3"/>
+        <circle cx="42" cy="220" r="3" fill="#a78bfa" opacity="0.7" class="spark sp4"/>
+        <circle cx="230" cy="240" r="4" fill="#7dd3fc" opacity="0.7" class="spark sp5"/>
+        <circle cx="100" cy="305" r="3" fill="#818cf8" opacity="0.5" class="spark sp6"/>
+        <circle cx="180" cy="310" r="4" fill="#38bdf8" opacity="0.5" class="spark sp7"/>
+
+        <!-- GRADIENT DEFS -->
+        <defs>
+          <radialGradient id="bodygrad" cx="35%" cy="30%">
+            <stop offset="0%" stop-color="#818cf8"/>
+            <stop offset="60%" stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#4f46e5"/>
+          </radialGradient>
+          <radialGradient id="headgrad" cx="35%" cy="30%">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="55%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#6d28d9"/>
+          </radialGradient>
+          <linearGradient id="leggrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4f46e5"/>
+            <stop offset="100%" stop-color="#3730a3"/>
+          </linearGradient>
+          <linearGradient id="footgrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3730a3"/>
+            <stop offset="100%" stop-color="#312e81"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <!-- Language bubbles floating around -->
+      <div class="lang-bubble lb1">Python</div>
+      <div class="lang-bubble lb2">Java</div>
+      <div class="lang-bubble lb3">JS</div>
+      <div class="lang-bubble lb4">C++</div>
+      <div class="lang-bubble lb5">Rust</div>
+    </div>
+
+    <!-- HERO TEXT -->
+    <div class="hero-copy">
+      <div class="hero-tag">
+        <span class="ht-dot"></span>
+        The gamified code platform
+      </div>
+
+      <h1 class="hero-h1">
+        Fight.<br>
+        <span class="h1-grad">Code.</span><br>
+        Conquer.
       </h1>
-      <p class="hero-subtitle">
-        The ultimate playground for elite developers. Compete in real-time battles, 
-        solve complex challenges, and gear up with exclusive items.
+
+      <p class="hero-p">
+        Coding doesn't have to be hard or lonely.
+        Solve challenges, win 1v1 battles, climb leaderboards —
+        and actually <strong>love</strong> learning to code.
       </p>
-      
-      <div class="hero-actions">
-        <button class="btn-primary" (click)="navigate('/challenge')">ENTER TRAINING</button>
-        <button class="btn-outline" (click)="navigate('/battle')">JOIN BATTLE</button>
+
+      <a routerLink="/auth/register" class="hero-cta">
+        <span class="cta-play">&#9654;</span>
+        Start Playing Free
+      </a>
+
+      <div class="hero-proof">
+        <div class="proof-item" *ngFor="let s of stats">
+          <span class="proof-num">{{ s.display }}</span>
+          <span class="proof-label">{{ s.label }}</span>
+        </div>
       </div>
     </div>
-  </section>
 
-  <!-- 📊 STATS ROW -->
-  <section class="stats-ticker">
-    <div class="stat-item">
-      <span class="stat-value">2.4k</span>
-      <span class="stat-label">ACTIVE DUELISTS</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">150+</span>
-      <span class="stat-label">CHALLENGES</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">12</span>
-      <span class="stat-label">OPEN TOURNAMENTS</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">98ms</span>
-      <span class="stat-label">AVG LATENCY</span>
-    </div>
-  </section>
+  </div>
+</section>
 
-  <!-- 🎮 MODULE CARDS -->
-  <section class="modules-grid">
-    
-    <!-- Battle Card -->
-    <div class="mod-card" (click)="navigate('/battle')">
-      <div class="mod-icon">⚔️</div>
-      <h3>ARENA BATTLES</h3>
-      <p>Challenge other developers in real-time coding duels. Fastest solution wins.</p>
-      <div class="mod-footer">RANKED MATCHMAKING AVAILABLE</div>
+<!-- ═══════ HOW IT WORKS ═══════ -->
+<section class="section how-sec">
+  <p class="eyebrow">How it works</p>
+  <h2 class="sec-h2">Learn by doing. <span class="g">Win by coding.</span></h2>
+  <p class="sec-p">No boring lectures. Real challenges, real battles, real rewards — every single day.</p>
+  <div class="steps">
+    <div class="step-item" *ngFor="let s of steps; let i=index; let last=last">
+      <div class="si-num">0{{ i+1 }}</div>
+      <div class="si-title">{{ s.title }}</div>
+      <div class="si-desc">{{ s.desc }}</div>
+      <div class="si-line" *ngIf="!last"></div>
     </div>
+  </div>
+</section>
 
-    <!-- Challenges Card -->
-    <div class="mod-card highlight-card" (click)="navigate('/challenge')">
-      <div class="mod-icon">🧠</div>
-      <h3>TRAINING HUB</h3>
-      <p>Master your skills with curated coding problems from Easy to Hard-Core.</p>
-      <div class="mod-footer">NEW CHALLENGES WEEKLY</div>
+<!-- ═══════ MODULES ═══════ -->
+<section class="section mods-sec" id="features">
+  <p class="eyebrow">Platform modules</p>
+  <h2 class="sec-h2">Everything a dev <span class="g">could want</span></h2>
+  <p class="sec-p">8 powerful modules built to take you from beginner to arena champion.</p>
+  <div class="mods-grid">
+    <a [routerLink]="m.route" class="mod" *ngFor="let m of modules" [style.--c]="m.color">
+      <div class="mod-shine"></div>
+      <div class="mod-num">{{ m.num }}</div>
+      <div class="mod-name">{{ m.name }}</div>
+      <div class="mod-desc">{{ m.desc }}</div>
+      <div class="mod-go">Explore &#8594;</div>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════ ABOUT ═══════ -->
+<section class="section about-sec" id="about">
+  <div class="about-wrap">
+    <div class="about-left">
+      <p class="eyebrow">About CodeArena</p>
+      <h2 class="sec-h2">We make coding <span class="g">addictive.</span></h2>
+      <p class="about-p">Too many people drop out because coding feels isolating and unrewarding. We built CodeArena to flip that — every problem solved, every battle won, every line written moves you forward.</p>
+      <p class="about-p">From beginners booking their first coaching session to seasoned devs competing in live events — there's a place for <strong>everyone</strong> in the arena.</p>
+      <ul class="perks">
+        <li *ngFor="let p of perks">
+          <span class="pk-dot" [style.background]="p.color"></span>{{ p.text }}
+        </li>
+      </ul>
     </div>
-
-    <!-- Shop Card -->
-    <div class="mod-card" (click)="navigate('/shop')">
-      <div class="mod-icon">🛒</div>
-      <h3>TECH SHOP</h3>
-      <p>Spend your hard-earned Arena Coins on exclusive gear and profile boosts.</p>
-      <div class="mod-footer">LIMITED TIME OFFERS</div>
+    <div class="about-right">
+      <div class="about-card">
+        <div class="ac-orb"></div>
+        <div class="ac-num">12K<span>+</span></div>
+        <div class="ac-label">Coders worldwide</div>
+        <div class="ac-divider"></div>
+        <div class="ac-tags">
+          <span *ngFor="let t of aboutTags" class="ac-tag" [style.color]="t.color" [style.border-color]="t.color+'44'" [style.background]="t.color+'11'">{{ t.label }}</span>
+        </div>
+        <div class="ac-built">Built with Spring Boot + Angular</div>
+      </div>
     </div>
+  </div>
+</section>
 
-    <!-- Leaderboard Card -->
-    <div class="mod-card" (click)="navigate('/reward-profile')">
-      <div class="mod-icon">🏆</div>
-      <h3>LEADERBOARD</h3>
-      <p>Track your progress and see where you stand among the world's best.</p>
-      <div class="mod-footer">TOP 10% GET REWARDS</div>
+<!-- ═══════ CTA ═══════ -->
+<section class="section cta-sec">
+  <div class="cta-wrap">
+    <div class="cta-orb1"></div>
+    <div class="cta-orb2"></div>
+    <p class="eyebrow" style="color:#7dd3fc">Free to join</p>
+    <h2 class="cta-h2">Ready to enter the arena?</h2>
+    <p class="cta-p">Join thousands of coders who stopped watching tutorials<br>and started actually competing.</p>
+    <a routerLink="/auth/register" class="hero-cta" style="margin:0 auto">
+      <span class="cta-play">&#9654;</span>Start Playing Free
+    </a>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer class="footer">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <div class="logo" style="font-size:18px;margin-bottom:10px"><span class="lw">CODE</span><span class="lb">ARENA</span></div>
+      <p class="foot-tag">Sharpen your coding skills.<br>Compete. Level up.</p>
     </div>
-
-  </section>
-
-  <!-- 👤 AUTH FOOTER (IF LOGGED IN) -->
-  <footer class="home-footer" *ngIf="isAuthenticated$ | async">
-    <div class="user-pill" (click)="navigate('/profile')">
-      <img [src]="(user$ | async)?.picture" alt="Avatar" class="mini-avatar">
-      <span>ACCESS PROFILE</span>
+    <div class="foot-col"><h5>Platform</h5>
+      <a routerLink="/challenge">Challenges</a>
+      <a routerLink="/battle">Battles</a>
+      <a routerLink="/event">Events</a>
+      <a routerLink="/coaching-quiz">Coaching</a>
     </div>
-    <button class="logout-link" (click)="logout()">// SIGN OUT</button>
-  </footer>
-
-</div>
+    <div class="foot-col"><h5>Community</h5>
+      <a href="#">Arena Hubs</a>
+      <a routerLink="/reward-profile">Leaderboard</a>
+      <a routerLink="/shop">Shop</a>
+    </div>
+    <div class="foot-col"><h5>Support</h5>
+      <a href="#">Help Center</a>
+      <a href="#">Submit Ticket</a>
+      <a href="#about">About Us</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>&#169; 2025 CodeArena. All rights reserved.</span>
+    <div class="foot-pills"><span>Spring Boot</span><span>Angular</span><span>Gamified</span></div>
+  </div>
+</footer>
