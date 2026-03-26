@@ -14,32 +14,27 @@ import org.springframework.web.bind.annotation.*;
 public class ChallengeVoteController {
 
     private final ChallengeVoteService challengeVoteService;
+    private static final String ANONYMOUS_USER_ID = "anonymous";
 
     @PostMapping("/upvote")
     public ResponseEntity<ChallengeVoteResponseDto> upvote(@PathVariable("challengeId") Long challengeId, Authentication authentication) {
-        return ResponseEntity.ok(challengeVoteService.upvote(challengeId, getUserId(authentication)));
+        return ResponseEntity.ok(challengeVoteService.upvote(challengeId, resolveUserId(authentication)));
     }
 
     @PostMapping("/downvote")
     public ResponseEntity<ChallengeVoteResponseDto> downvote(@PathVariable("challengeId") Long challengeId, Authentication authentication) {
-        return ResponseEntity.ok(challengeVoteService.downvote(challengeId, getUserId(authentication)));
+        return ResponseEntity.ok(challengeVoteService.downvote(challengeId, resolveUserId(authentication)));
     }
 
     @GetMapping("/votes")
     public ResponseEntity<ChallengeVoteResponseDto> getVotes(@PathVariable("challengeId") Long challengeId, Authentication authentication) {
-        String userId = null;
-        try {
-            userId = getUserId(authentication);
-        } catch (Exception e) {
-            // Unauthenticated user can still see vote counts
-        }
-        return ResponseEntity.ok(challengeVoteService.getVotes(challengeId, userId));
+        return ResponseEntity.ok(challengeVoteService.getVotes(challengeId, resolveUserId(authentication)));
     }
 
-    private String getUserId(Authentication authentication) {
+    private String resolveUserId(Authentication authentication) {
         if (authentication instanceof JwtAuthenticationToken token) {
             return token.getToken().getSubject();
         }
-        throw new IllegalStateException("Authentication required");
+        return ANONYMOUS_USER_ID;
     }
 }

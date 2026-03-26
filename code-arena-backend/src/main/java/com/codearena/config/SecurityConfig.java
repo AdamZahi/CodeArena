@@ -32,13 +32,13 @@ public class SecurityConfig {
     }*/
 
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // TODO: Re-enable Keycloak when auth server is running
-        // DEVELOPMENT BYPASS
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))
                 .build();
     }
 
