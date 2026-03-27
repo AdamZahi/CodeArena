@@ -8,6 +8,7 @@ import com.codearena.module6_event.service.InvitationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,24 +55,28 @@ public class EventController {
         return ResponseEntity.ok(stats);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> createEvent(@RequestBody CreateEventRequest dto) {
         EventDto created = eventService.createEvent(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateEvent(@PathVariable UUID id, @RequestBody CreateEventRequest dto) {
         EventDto updated = eventService.updateEvent(id, dto);
         return ResponseEntity.ok(updated);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEvent(@PathVariable UUID id) {
         eventService.deleteEvent(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/invite-top10")
     public ResponseEntity<?> inviteTop10(@PathVariable UUID id) {
         int sentCount = invitationService.inviteTop10Players(id);

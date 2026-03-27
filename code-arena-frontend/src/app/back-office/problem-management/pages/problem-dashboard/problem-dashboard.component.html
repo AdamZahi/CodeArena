@@ -1,0 +1,132 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ──────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">PROBLEM DASHBOARD</h1>
+      <p class="page-sub">Analytics &amp; insights for your challenge bank</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="goToList()">← BACK TO LIST</button>
+    </div>
+  </div>
+
+  <!-- ── LOADING ──────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">Loading dashboard data...</div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- ── MAIN STATS ROW ──────────────────── -->
+    <div class="stats-row">
+      <div class="stat-card stat-total">
+        <span class="stat-icon">📦</span>
+        <span class="stat-number">{{ total }}</span>
+        <span class="stat-label">TOTAL PROBLEMS</span>
+      </div>
+      <div class="stat-card stat-easy">
+        <span class="stat-icon">🟢</span>
+        <span class="stat-number">{{ totalEasy }}</span>
+        <span class="stat-label">EASY</span>
+        <div class="stat-bar"><div class="stat-bar-fill easy-fill" [style.width.%]="getDifficultyPercent('EASY')"></div></div>
+      </div>
+      <div class="stat-card stat-medium">
+        <span class="stat-icon">🟡</span>
+        <span class="stat-number">{{ totalMedium }}</span>
+        <span class="stat-label">MEDIUM</span>
+        <div class="stat-bar"><div class="stat-bar-fill medium-fill" [style.width.%]="getDifficultyPercent('MEDIUM')"></div></div>
+      </div>
+      <div class="stat-card stat-hard">
+        <span class="stat-icon">🔴</span>
+        <span class="stat-number">{{ totalHard }}</span>
+        <span class="stat-label">HARD</span>
+        <div class="stat-bar"><div class="stat-bar-fill hard-fill" [style.width.%]="getDifficultyPercent('HARD')"></div></div>
+      </div>
+    </div>
+
+    <!-- ── SECONDARY STATS ─────────────────── -->
+    <div class="stats-row-secondary">
+      <div class="stat-card-sm">
+        <span class="stat-number-sm">{{ totalTestCases }}</span>
+        <span class="stat-label-sm">TOTAL TEST CASES</span>
+      </div>
+      <div class="stat-card-sm">
+        <span class="stat-number-sm">{{ avgTestCases }}</span>
+        <span class="stat-label-sm">AVG TESTS/PROBLEM</span>
+      </div>
+      <div class="stat-card-sm" [class.alert-card]="noTestCaseChallenges.length > 0">
+        <span class="stat-number-sm">{{ noTestCaseChallenges.length }}</span>
+        <span class="stat-label-sm">WITHOUT TESTS ⚠</span>
+      </div>
+      <div class="stat-card-sm">
+        <span class="stat-number-sm">{{ languageStats.length }}</span>
+        <span class="stat-label-sm">LANGUAGES</span>
+      </div>
+    </div>
+
+    <!-- ── TWO COLUMN LAYOUT ───────────────── -->
+    <div class="dashboard-grid">
+
+      <!-- LANGUAGE BREAKDOWN -->
+      <div class="panel">
+        <h2 class="panel-title">💻 LANGUAGE BREAKDOWN</h2>
+        <div class="lang-list">
+          <div *ngFor="let lang of languageStats" class="lang-item">
+            <div class="lang-header">
+              <span class="lang-name">{{ lang.name }}</span>
+              <span class="lang-count">{{ lang.count }} <span class="lang-percent">({{ lang.percent }}%)</span></span>
+            </div>
+            <div class="lang-bar">
+              <div class="lang-bar-fill" [style.width.%]="lang.percent"></div>
+            </div>
+          </div>
+          <div class="empty-panel" *ngIf="languageStats.length === 0">No language data available</div>
+        </div>
+      </div>
+
+      <!-- TOP TAGS -->
+      <div class="panel">
+        <h2 class="panel-title">🏷️ TOP TAGS</h2>
+        <div class="tags-cloud">
+          <span *ngFor="let tag of tagStats" class="tag-chip">
+            {{ tag.name }}
+            <span class="tag-count">{{ tag.count }}</span>
+          </span>
+          <div class="empty-panel" *ngIf="tagStats.length === 0">No tags available</div>
+        </div>
+      </div>
+
+      <!-- RECENT PROBLEMS -->
+      <div class="panel">
+        <h2 class="panel-title">🕐 RECENT PROBLEMS</h2>
+        <div class="recent-list">
+          <div *ngFor="let c of recentChallenges" class="recent-item" (click)="editChallenge(c.id)">
+            <div class="recent-info">
+              <span class="recent-title">{{ c.title }}</span>
+              <span class="recent-date">{{ c.createdAt | date:'MMM d, yyyy' }}</span>
+            </div>
+            <span class="difficulty-mini" [ngClass]="{
+              'mini-easy': c.difficulty === 'EASY',
+              'mini-medium': c.difficulty === 'MEDIUM',
+              'mini-hard': c.difficulty === 'HARD'
+            }">{{ c.difficulty }}</span>
+          </div>
+          <div class="empty-panel" *ngIf="recentChallenges.length === 0">No problems yet</div>
+        </div>
+      </div>
+
+      <!-- PROBLEMS WITHOUT TEST CASES -->
+      <div class="panel" *ngIf="noTestCaseChallenges.length > 0">
+        <h2 class="panel-title panel-title-alert">⚠ MISSING TEST CASES</h2>
+        <p class="alert-desc">These problems have no test cases defined and cannot be properly evaluated.</p>
+        <div class="alert-list">
+          <div *ngFor="let c of noTestCaseChallenges" class="alert-item" (click)="editChallenge(c.id)">
+            <span class="alert-title">{{ c.title }}</span>
+            <span class="alert-action">+ ADD TESTS →</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+</div>

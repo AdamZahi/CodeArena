@@ -1,0 +1,83 @@
+<div class="home-shell">
+  <!-- 🛰️ BACKGROUND GRID & GLOWS -->
+  <div class="grid-overlay"></div>
+  <div class="glow glow-top"></div>
+  <div class="glow glow-bottom"></div>
+
+  <!-- 🚀 HERO SECTION -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <p class="hero-kicker">// ARENA IS OPEN</p>
+      <h1 class="hero-title">
+        CODE <span class="highlight">ARENA</span>
+      </h1>
+      <p class="hero-subtitle">
+        The ultimate playground for elite developers. Compete in real-time battles, 
+        solve complex challenges, and gear up with exclusive items.
+      </p>
+      
+      <div class="hero-actions">
+        <button class="btn-primary" (click)="navigate('/challenge')">ENTER TRAINING</button>
+        <button class="btn-outline" (click)="navigate('/battle')">JOIN BATTLE</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 📊 STATS ROW -->
+  <section class="stats-ticker">
+    <div class="stat-item">
+      <span class="stat-value">2.4k</span>
+      <span class="stat-label">ACTIVE DUELISTS</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">150+</span>
+      <span class="stat-label">CHALLENGES</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">12</span>
+      <span class="stat-label">OPEN TOURNAMENTS</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">98ms</span>
+      <span class="stat-label">AVG LATENCY</span>
+    </div>
+  </section>
+
+  <!-- 🎮 MODULE CARDS -->
+  <section class="modules-grid">
+    
+    <!-- Battle Card -->
+    <div class="mod-card" (click)="navigate('/battle')">
+      <div class="mod-icon">⚔️</div>
+      <h3>ARENA BATTLES</h3>
+      <p>Challenge other developers in real-time coding duels. Fastest solution wins.</p>
+      <div class="mod-footer">RANKED MATCHMAKING AVAILABLE</div>
+    </div>
+
+    <!-- Challenges Card -->
+    <div class="mod-card highlight-card" (click)="navigate('/challenge')">
+      <div class="mod-icon">🧠</div>
+      <h3>TRAINING HUB</h3>
+      <p>Master your skills with curated coding problems from Easy to Hard-Core.</p>
+      <div class="mod-footer">NEW CHALLENGES WEEKLY</div>
+    </div>
+
+    <!-- Shop Card -->
+    <div class="mod-card" (click)="navigate('/shop')">
+      <div class="mod-icon">🛒</div>
+      <h3>TECH SHOP</h3>
+      <p>Spend your hard-earned Arena Coins on exclusive gear and profile boosts.</p>
+      <div class="mod-footer">LIMITED TIME OFFERS</div>
+    </div>
+
+    <!-- Leaderboard Card -->
+    <div class="mod-card" (click)="navigate('/reward-profile')">
+      <div class="mod-icon">🏆</div>
+      <h3>LEADERBOARD</h3>
+      <p>Track your progress and see where you stand among the world's best.</p>
+      <div class="mod-footer">TOP 10% GET REWARDS</div>
+    </div>
+
+  </section>
+
+</div>

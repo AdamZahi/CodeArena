@@ -5,13 +5,14 @@ import com.codearena.module6_event.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,7 +29,8 @@ public class RegistrationController {
     @PostMapping("/{id}/register")
     public ResponseEntity<?> register(
             @PathVariable("id") UUID eventId,
-            @RequestParam(name = "participantId") String participantId) {
+            @AuthenticationPrincipal Jwt jwt) {
+        String participantId = jwt.getSubject();
         RegistrationResponseDTO dto = registrationService.register(eventId, participantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
@@ -36,7 +38,8 @@ public class RegistrationController {
     @DeleteMapping("/{id}/register")
     public ResponseEntity<?> cancelRegistration(
             @PathVariable("id") UUID eventId,
-            @RequestParam(name = "participantId") String participantId) {
+            @AuthenticationPrincipal Jwt jwt) {
+        String participantId = jwt.getSubject();
         registrationService.cancelRegistration(eventId, participantId);
         return ResponseEntity.noContent().build();
     }
@@ -48,8 +51,13 @@ public class RegistrationController {
     }
 
     @GetMapping("/me/registrations")
-    public ResponseEntity<?> getMyRegistrations(@RequestParam(name = "participantId") String participantId) {
+    public ResponseEntity<?> getMyRegistrations(@AuthenticationPrincipal Jwt jwt) {
+        String participantId = jwt.getSubject();
         List<RegistrationResponseDTO> list = registrationService.getMyRegistrations(participantId);
         return ResponseEntity.ok(list);
+    }
+
+    private String getCurrentUserId(@AuthenticationPrincipal Jwt jwt) {
+        return jwt.getSubject();
     }
 }

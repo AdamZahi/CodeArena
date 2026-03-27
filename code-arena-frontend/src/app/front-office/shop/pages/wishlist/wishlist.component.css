@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+.wishlist-container {
+  min-height: 100vh;
+  background: #0a0a0f;
+  padding: 32px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #e2e8f0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1a1a2e;
+}
+
+.page-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid #1a1a2e;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  transition: all 0.2s;
+}
+
+.back-btn:hover { border-color: #8b5cf6; color: #8b5cf6; }
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover { background: rgba(239,68,68,0.1); }
+
+.empty {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.empty p {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  color: #64748b;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+
+.shop-btn {
+  background: transparent;
+  border: 1.5px solid #8b5cf6;
+  color: #8b5cf6;
+  padding: 12px 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+.shop-btn:hover { background: #8b5cf6; color: white; }
+
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.wishlist-card {
+  background: #0d0d15;
+  border: 1px solid #1a1a2e;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.wishlist-card:hover {
+  border-color: rgba(139,92,246,0.4);
+  box-shadow: 0 0 20px rgba(139,92,246,0.1);
+  transform: translateY(-4px);
+}
+
+.product-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-body { padding: 16px; }
+
+.category-badge {
+  display: inline-block;
+  font-size: 9px;
+  padding: 2px 8px;
+  background: rgba(139,92,246,0.1);
+  color: #8b5cf6;
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 3px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.product-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 4px 0;
+}
+
+.product-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.price {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #8b5cf6;
+}
+
+.stock { font-size: 11px; color: #10b981; }
+.stock.out { color: #ef4444; }
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-cart {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1.5px solid #8b5cf6;
+  color: #8b5cf6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+
+.btn-cart:hover:not(:disabled) { background: #8b5cf6; color: white; }
+.btn-cart:disabled { border-color: #1a1a2e; color: #64748b; cursor: not-allowed; }
+
+.btn-remove {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #ef4444;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.btn-remove:hover { background: rgba(239,68,68,0.1); }

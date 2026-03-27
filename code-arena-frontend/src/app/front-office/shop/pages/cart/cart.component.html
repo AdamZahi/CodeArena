@@ -1,0 +1,190 @@
+<div class="cart-container">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="cart-header">
+    <button class="back-btn" (click)="continueShopping()">← BACK TO SHOP</button>
+    <h1>⚔ YOUR CART</h1>
+    <button class="clear-btn" (click)="clearCart()" *ngIf="cartItems.length > 0">
+      CLEAR ALL
+    </button>
+  </div>
+
+  <!-- ── SUCCESS ──────────────────────────────── -->
+  <div class="success-msg" *ngIf="checkoutSuccess">
+    🎉 ORDER PLACED! THANK YOU FOR YOUR PURCHASE!
+  </div>
+
+  <!-- ── EMPTY ────────────────────────────────── -->
+  <div class="empty-cart" *ngIf="cartItems.length === 0 && !checkoutSuccess">
+    <p>// CART IS EMPTY</p>
+    <button class="shop-btn" (click)="continueShopping()">BROWSE SHOP</button>
+  </div>
+
+  <!-- ── CART CONTENT ─────────────────────────── -->
+  <div class="cart-content" *ngIf="cartItems.length > 0">
+
+    <!-- Items -->
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of cartItems">
+
+        <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image"/>
+
+        <div class="item-info">
+          <h3>{{ item.product.name }}</h3>
+          <span class="item-category">{{ item.product.category }}</span>
+
+          <!-- ── DISCOUNT: price row with strikethrough + badge ── -->
+          <div class="price-row">
+            <p class="item-price-original" *ngIf="getDiscountRate(item.quantity) > 0">
+              {{ item.product.price | currency }} each
+            </p>
+            <p class="item-price" [class.discounted]="getDiscountRate(item.quantity) > 0">
+              {{ getDiscountedPrice(item.product.price, item.quantity) | currency }} each
+            </p>
+            <span class="discount-badge" *ngIf="getDiscountLabel(item.quantity)">
+              {{ getDiscountLabel(item.quantity) }}
+            </span>
+          </div>
+          <!-- ── END DISCOUNT ── -->
+
+          <!-- Stock warning per item -->
+          <p class="item-stock-warning" *ngIf="item.quantity > item.product.stock">
+            ⚠ Only {{ item.product.stock }} available!
+          </p>
+        </div>
+
+        <div class="qty-controls">
+          <button class="qty-btn" (click)="decreaseQty(item.product.id, item.quantity)">−</button>
+          <span class="qty-display">{{ item.quantity }}</span>
+          <button class="qty-btn" (click)="increaseQty(item.product.id, item.quantity)">+</button>
+        </div>
+
+        <!-- ── DISCOUNT: item total uses discounted price ── -->
+        <div class="item-total">
+          {{ getDiscountedPrice(item.product.price, item.quantity) * item.quantity | currency }}
+        </div>
+
+        <button class="remove-btn" (click)="removeItem(item.product.id)">✕</button>
+
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="order-summary">
+      <h2>ORDER SUMMARY</h2>
+
+      <!-- ── DISCOUNT: summary rows use discounted price ── -->
+      <div class="summary-row" *ngFor="let item of cartItems">
+        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+        <span>{{ getDiscountedPrice(item.product.price, item.quantity) * item.quantity | currency }}</span>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <!-- ── DISCOUNT: total uses discounted total ── -->
+      <div class="summary-total">
+        <span>TOTAL</span>
+        <span>{{ getDiscountedTotal() | currency }}</span>
+      </div>
+
+      <!-- ── DISCOUNT: show savings if any ── -->
+      <div class="savings-row" *ngIf="getTotalSavings() > 0">
+        <span>YOU SAVE</span>
+        <span class="savings-amount">{{ getTotalSavings() | currency }}</span>
+      </div>
+
+<!-- ── COUPON CODE ───────────────────────── -->
+<div class="coupon-section">
+  <div class="coupon-input-row" *ngIf="!couponApplied">
+    <input
+      class="coupon-input"
+      type="text"
+      placeholder="ENTER PROMO CODE"
+      [(ngModel)]="couponCode"
+      (keyup.enter)="applyCoupon()"/>
+    <button
+      class="btn-apply"
+      (click)="applyCoupon()"
+      [disabled]="couponLoading">
+      {{ couponLoading ? '...' : 'APPLY' }}
+    </button>
+  </div>
+
+  <!-- Success -->
+  <div class="coupon-success" *ngIf="couponApplied">
+    <span>🎟 {{ couponCode.toUpperCase() }} — {{ couponMessage }}</span>
+    <button class="btn-remove-coupon" (click)="removeCoupon()">✕</button>
+  </div>
+
+  <!-- Error -->
+  <div class="coupon-error" *ngIf="couponError">
+    {{ couponError }}
+  </div>
+</div>
+
+<!-- ── COUPON SAVINGS ─────────────────────── -->
+<div class="savings-row" *ngIf="getCouponSavings() > 0">
+  <span>🎟 COUPON SAVINGS</span>
+  <span class="savings-amount">-{{ getCouponSavings() | currency }}</span>
+</div>
+
+<!-- ── FINAL TOTAL ────────────────────────── -->
+<div class="summary-total final-total" *ngIf="couponApplied">
+  <span>FINAL TOTAL</span>
+  <span>{{ getFinalTotal() | currency }}</span>
+</div>
+
+<!-- ── LOYALTY POINTS ─────────────────────── -->
+<div class="loyalty-section" *ngIf="loyaltyPoints > 0 || loyaltyApplied">
+
+  <div class="loyalty-header">
+    <span class="loyalty-title">⭐ LOYALTY POINTS</span>
+    <span class="loyalty-balance">{{ loyaltyPoints }} pts</span>
+  </div>
+
+  <!-- Can redeem -->
+  <div class="loyalty-redeem" *ngIf="loyaltyRedeemableValue > 0 && !loyaltyApplied">
+    <p class="loyalty-hint">
+      Redeem {{ Math.floor(loyaltyPoints / 100) * 100 }} points for
+      <strong>${{ loyaltyRedeemableValue.toFixed(2) }} off</strong>
+    </p>
+    <button class="btn-redeem" (click)="applyLoyaltyPoints()">
+      USE POINTS
+    </button>
+  </div>
+
+  <!-- Applied -->
+  <div class="loyalty-applied" *ngIf="loyaltyApplied">
+    <span>{{ loyaltyMessage }}</span>
+    <button class="btn-remove-loyalty" (click)="removeLoyaltyDiscount()">✕</button>
+  </div>
+
+  <!-- Not enough points -->
+  <p class="loyalty-hint muted" *ngIf="loyaltyPoints < 100 && !loyaltyApplied">
+    Earn {{ 100 - loyaltyPoints }} more points to unlock a reward!
+  </p>
+
+</div>
+
+<!-- ── LOYALTY SAVINGS ROW ───────────────── -->
+<div class="savings-row" *ngIf="loyaltyApplied">
+  <span>⭐ POINTS SAVINGS</span>
+  <span class="savings-amount">-{{ loyaltyDiscount | currency }}</span>
+</div>
+
+      <!-- Checkout error message -->
+      <div class="error-msg" *ngIf="checkoutError">
+        ⚠ {{ checkoutError }}
+      </div>
+
+      <button
+        class="checkout-btn"
+        (click)="checkout()"
+        [disabled]="isCheckingOut">
+        {{ isCheckingOut ? 'PROCESSING...' : '[ CHECKOUT ]' }}
+      </button>
+
+    </div>
+  </div>
+
+</div>

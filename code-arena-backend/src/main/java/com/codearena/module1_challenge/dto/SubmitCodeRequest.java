@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitCodeRequest {
-    private String userId;
-    private String challengeId;
     private String code;
-    private String language;
+    private String language; // ID from Judge0 or standard name e.g. "JAVA" -> "62"
+    private Long challengeId;
 }

@@ -1,0 +1,276 @@
+<div class="lc-detail-container">
+
+  <!-- ═══ TOP TOOLBAR ═══ -->
+  <div class="lc-toolbar">
+    <div class="toolbar-left">
+      <button class="toolbar-btn" routerLink="/">🏚 HOME</button>
+      <button class="toolbar-btn" routerLink="/challenge">← SYSTEM_LIST</button>
+      <span class="toolbar-title" *ngIf="challenge">{{ challenge.title }}</span>
+    </div>
+    <div class="toolbar-right">
+      <!-- USER PROFILE -->
+      <div class="toolbar-user-profile" *ngIf="auth.user$ | async as user">
+        <img [src]="user.picture" class="tb-user-avatar" [alt]="user.name" />
+        <span class="tb-user-name">{{ user.nickname || user.name }}</span>
+      </div>
+
+      <button class="toolbar-sound-btn" (click)="toggleSound()" [title]="isMuted ? 'Unmute Sounds' : 'Mute Sounds'">
+        <span *ngIf="!isMuted">🔊</span>
+        <span *ngIf="isMuted">🔇</span>
+      </button>
+      <button class="toolbar-run" (click)="submitCode()" [disabled]="isSubmitting">
+        <span *ngIf="!isSubmitting">▶ EXECUTE_CODE</span>
+        <span *ngIf="isSubmitting">⏳ COMPILING...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ SPLIT PANELS ═══ -->
+  <div class="lc-split">
+
+    <!-- LEFT: Problem Description -->
+    <div class="lc-left">
+      <!-- Tabs -->
+      <div class="lc-tabs">
+        <button class="lc-tab" [class.active]="activeTab === 'description'" (click)="activeTab = 'description'">💾 MISSION_BRIEF</button>
+        <button class="lc-tab" [class.active]="activeTab === 'submissions'" (click)="viewSubmissions()">📂 LOGS</button>
+      </div>
+
+      <!-- Description Content -->
+      <div class="lc-tab-body" *ngIf="activeTab === 'description'">
+        <div class="lc-loading-inner" *ngIf="isLoading">CONNECTING...</div>
+
+        <div *ngIf="!isLoading && challenge" class="desc-content" (copy)="$event.preventDefault()" (contextmenu)="$event.preventDefault()">
+          <!-- HACKER HEALTH BAR -->
+          <div class="hacker-health-container">
+            <div class="health-label">
+              <span>HACKER_NEURAL_LINK</span>
+              <span>{{ trialsLeft }} / {{ maxTrials }} TRIALS</span>
+            </div>
+            <div class="health-bar-bg">
+              <div class="health-bar-fill" [style.width.%]="healthPercent" [class.low]="healthPercent < 30"></div>
+            </div>
+          </div>
+
+          <h1 class="desc-title">{{ challenge.title }}</h1>
+          <div class="desc-meta">
+            <span class="diff-badge"
+                  [class.easy]="challenge.difficulty === 'EASY'"
+                  [class.medium]="challenge.difficulty === 'MEDIUM'"
+                  [class.hard]="challenge.difficulty === 'HARD'">
+              LEVEL: {{ challenge.difficulty }}
+            </span>
+            <span class="tag-pill" *ngFor="let tag of getTags(challenge.tags)">{{ tag }}</span>
+            
+            <div class="vote-buttons">
+              <button class="vote-btn up" [class.active]="userVote === 'UPVOTE'" (click)="upvote()">
+                👍 {{ upvotes }}
+              </button>
+              <button class="vote-btn down" [class.active]="userVote === 'DOWNVOTE'" (click)="downvote()">
+                👎 {{ downvotes }}
+              </button>
+            </div>
+          </div>
+
+          <div class="desc-body" [innerHTML]="formatDescription(challenge.description)"></div>
+
+          <!-- Example Test Cases -->
+          <div class="examples-section" *ngIf="challenge.testCases && getVisibleTestCases().length > 0">
+            <div class="example-block" *ngFor="let tc of getVisibleTestCases(); let i = index">
+              <h4 class="example-title">CORE_TEST_{{ i + 1 }}:</h4>
+              <div class="example-io">
+                <div class="io-row">
+                  <span class="io-label">INPUT:</span>
+                  <code class="io-value"> {{ tc.input }}</code>
+                </div>
+                <div class="io-row">
+                  <span class="io-label">OUTPUT:</span>
+                  <code class="io-value"> {{ tc.expectedOutput }}</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ LUXURY LEETCODE ACCORDION ═══ -->
+          <div class="lc-premium-accordion">
+
+            <!-- Section: Topics -->
+            <div class="acc-box" *ngIf="getTags(challenge.tags).length > 0">
+              <div class="acc-header" (click)="topicsOpen = !topicsOpen" [class.active]="topicsOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon tag-icon">🏷️</i>
+                  <span class="acc-label">Topics</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="topicsOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="topicsOpen">
+                <div class="pill-cloud">
+                  <span class="topic-neon-pill" *ngFor="let tag of getTags(challenge.tags)">{{ tag }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: Companies (LeetCode Style) -->
+            <div class="acc-box">
+              <div class="acc-header" (click)="companiesOpen = !companiesOpen" [class.active]="companiesOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon lock-icon">🔒</i>
+                  <span class="acc-label">Companies</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="companiesOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="companiesOpen">
+                <div class="locked-container">
+                  <div class="locked-msg">Upgrade to Premium to view company tags.</div>
+                  <div class="pill-cloud blurred">
+                    <span class="topic-neon-pill">Google</span>
+                    <span class="topic-neon-pill">Amazon</span>
+                    <span class="topic-neon-pill">Meta</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: Hint -->
+            <div class="acc-box" *ngIf="challenge.difficulty !== 'EASY'">
+              <div class="acc-header" (click)="hintsOpen = !hintsOpen" [class.active]="hintsOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon hint-icon">💡</i>
+                  <span class="acc-label">Hint</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="hintsOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="hintsOpen">
+                <div class="hint-card">
+                  <p>Analyzing the constraints is key. Can you find a solution with O(N) complexity using a hash table to store indices?</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: Similar Questions -->
+            <div class="acc-box">
+              <div class="acc-header" (click)="similarOpen = !similarOpen" [class.active]="similarOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon list-icon">📋</i>
+                  <span class="acc-label">Similar Questions</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="similarOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="similarOpen">
+                <div class="similar-links">
+                  <a class="sim-link">3Sum <span class="sim-diff medium">Medium</span></a>
+                  <a class="sim-link">4Sum <span class="sim-diff medium">Medium</span></a>
+                  <a class="sim-link">Two Sum II - Input Array Is Sorted <span class="sim-diff easy">Easy</span></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: Discussion -->
+            <div class="acc-box">
+              <div class="acc-header" (click)="discussionOpen = !discussionOpen" [class.active]="discussionOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon chat-icon">💬</i>
+                  <span class="acc-label">Discussion ({{ comments.length }})</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="discussionOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="discussionOpen">
+                
+                <!-- Post Comment -->
+                <div class="post-comment-box" *ngIf="auth.isAuthenticated$ | async">
+                  <textarea [(ngModel)]="newCommentContent" placeholder="Post a comment hacker..."></textarea>
+                  <button (click)="postComment()" [disabled]="!newCommentContent.trim() || isAddingComment">
+                    {{ isAddingComment ? 'UPLOADING...' : 'POST_COMMENT' }}
+                  </button>
+                </div>
+                <div class="login-prompt" *ngIf="(auth.isAuthenticated$ | async) === false">
+                  Please log in to participate in the discussion.
+                </div>
+
+                <!-- Comments List -->
+                <div class="comments-list">
+                  <div class="comment-item" *ngFor="let comment of comments">
+                    <div class="comment-header">
+                      <span class="comment-user">{{ comment.userName }}</span>
+                      <span class="comment-date">{{ comment.createdAt | date:'short' }}</span>
+                      <button class="delete-btn" *ngIf="comment.userId === currentUserSub" (click)="deleteComment(comment.id)">Delete</button>
+                    </div>
+                    <div class="comment-content">{{ comment.content }}</div>
+                  </div>
+                  <div class="empty-state" *ngIf="comments.length === 0">No discussions yet. Start the conversation!</div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Submissions Content -->
+      <div class="lc-tab-body" *ngIf="activeTab === 'submissions'">
+        <div class="result-card" *ngIf="submissionResult">
+          <div class="result-status"
+               [class.accepted]="submissionResult.status === 'ACCEPTED'"
+               [class.failed]="submissionResult.status !== 'ACCEPTED' && submissionResult.status !== 'PENDING'">
+            STATUS: {{ submissionResult.status }}
+          </div>
+          <div class="history-list">
+             <div class="history-row" *ngIf="submissionResult.status === 'ACCEPTED'">
+                <span>RUNTIME: {{ submissionResult.executionTime || 0 }}s</span>
+                <span>MEMORY: {{ submissionResult.memoryUsed || 0 }} KB</span>
+             </div>
+             <pre class="result-error" *ngIf="submissionResult.errorOutput">{{ submissionResult.errorOutput }}</pre>
+          </div>
+        </div>
+
+        <h3 class="history-title">SUBMISSION_HISTORY</h3>
+        <div class="history-list">
+          <div class="history-row" *ngFor="let sub of mySubmissions">
+            <span class="history-status" [class.ac]="sub.status === 'ACCEPTED'">{{ sub.status }}</span>
+            <span class="history-lang">{{ getLanguageName(sub.language) }}</span>
+            <span class="history-time">{{ sub.submittedAt | date:'HH:mm:ss' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Code Editor -->
+    <div class="lc-right">
+      <div class="editor-topbar">
+        <span class="editor-label">TERMINAL_v1.0</span>
+        <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
+          <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+        </select>
+      </div>
+
+      <div class="editor-body">
+        <div class="line-numbers">
+          <span *ngFor="let line of getLineNumbers()">{{ line }}</span>
+        </div>
+        <textarea
+          class="code-area"
+          spellcheck="false"
+          [(ngModel)]="code"
+          (input)="onCodeInput()"
+          (keydown)="handleTab($event)"
+          (copy)="$event.preventDefault()"
+          (paste)="$event.preventDefault()"
+          (cut)="$event.preventDefault()"
+          (contextmenu)="$event.preventDefault()"
+          [disabled]="isGameOver"
+        ></textarea>
+
+        <!-- Game Over Overlay -->
+        <div class="game-over-overlay" *ngIf="isGameOver">
+          <div class="glitch-wrapper">
+             <div class="glitch-text" data-text="LINK_SEVERED">LINK_SEVERED</div>
+             <button class="retry-btn" onclick="location.reload()">RE-ESTABLISH_CONNECTION</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

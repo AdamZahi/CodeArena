@@ -8,6 +8,7 @@
 !**/.env.example
 !**/.env.template
 !**/.env.sample
+.env.example
 
 # Local secret overrides
 **/*secret*.yml
@@ -33,11 +34,6 @@
 # Secret directories
 **/secrets/
 **/.secrets/
-
-# Keycloak local exports/backups (keep tracked stub realm-export.json)
-keycloak/*.backup.json
-keycloak/*-private*.json
-keycloak/realm-export.local.json
 
 # Build outputs and dependencies (monorepo safety)
 **/target/

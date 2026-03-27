@@ -1,2 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600&display=swap');
+/*code for style of islem's shop */
+/* ADD THESE LINES to your existing styles.css */
+/* This makes the whole app dark, removes white sides */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #0a0a0f !important;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0f; }
+::-webkit-scrollbar-thumb { 
+  background: #8b5cf6; 
+  border-radius: 3px; 
+}
+::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+/* ── PRODUCT style finished here  ───────────────────────────────── */

@@ -1,0 +1,183 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ──────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <button class="btn-back" (click)="goToProducts()">← PRODUCTS</button>
+      <h1 class="page-title">ORDER MANAGEMENT</h1>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill pending">
+        {{ countByStatus('PENDING') }} PENDING
+      </div>
+      <div class="stat-pill shipped">
+        {{ countByStatus('SHIPPED') }} SHIPPED
+      </div>
+      <div class="stat-pill delivered">
+        {{ countByStatus('DELIVERED') }} DELIVERED
+      </div>
+      <button class="btn-export" (click)="exportOrders()">
+  📥 EXPORT ORDERS
+</button>
+    </div>
+  </div>
+
+  <!-- ── FILTER ────────────────────────────── -->
+  <div class="filter-bar">
+    <select class="filter-select" [(ngModel)]="selectedStatus" (change)="filterByStatus()">
+      <option value="">ALL ORDERS</option>
+      <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+    </select>
+    <span class="filter-count">{{ filteredOrders.length }} orders</span>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────── -->
+  <div class="loading" *ngIf="isLoading">Loading orders...</div>
+
+  <!-- ── TABLE ────────────────────────────── -->
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table class="order-table">
+      <thead>
+        <tr>
+          <th>ORDER ID</th>
+          <th>PARTICIPANT</th>
+          <th>ITEMS</th>
+          <th>TOTAL</th>
+          <th>DATE</th>
+          <th>STATUS</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="table-row"
+          *ngFor="let order of filteredOrders"
+          (click)="viewOrder(order)">
+
+          <!-- Order ID -->
+          <td>
+            <span class="order-id">
+              #{{ order.id | slice:0:8 | uppercase }}
+            </span>
+          </td>
+
+          <!-- Participant -->
+          <td>
+            <span class="participant-id">{{ order.participantId }}</span>
+          </td>
+
+          <!-- Items count -->
+          <td>
+            <span class="items-count">
+              {{ order.items.length || 0 }} items
+            </span>
+          </td>
+
+          <!-- Total -->
+          <td>
+            <span class="price-text">{{ order.totalPrice | currency }}</span>
+          </td>
+
+          <!-- Date -->
+          <td>
+            <span class="date-text">
+              {{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-badge" [class]="getStatusColor(order.status)">
+              {{ order.status }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="actions-cell" (click)="$event.stopPropagation()">
+            <button
+              class="btn-advance"
+              *ngIf="canAdvance(order.status)"
+              (click)="advanceStatus(order, $event)">
+              {{ getNextLabel(order.status) }}
+            </button>
+            <button
+              class="btn-cancel"
+              *ngIf="order.status === 'PENDING' || order.status === 'CONFIRMED'"
+              (click)="cancelOrder(order, $event)">
+              CANCEL
+            </button>
+            <span
+              class="final-status"
+              *ngIf="order.status === 'DELIVERED' || order.status === 'CANCELLED'">
+              {{ order.status === 'DELIVERED' ? '✅ DONE' : '❌ CANCELLED' }}
+            </span>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="empty" *ngIf="filteredOrders.length === 0">
+      No orders found.
+    </div>
+  </div>
+
+  <!-- ── ORDER DETAIL MODAL ────────────────── -->
+  <div class="modal-overlay" *ngIf="selectedOrder" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+
+      <button class="modal-close" (click)="closeModal()">✕</button>
+
+      <div class="modal-header">
+        <h2>ORDER #{{ selectedOrder.id | slice:0:8 | uppercase }}</h2>
+        <span class="status-badge" [class]="getStatusColor(selectedOrder.status)">
+          {{ selectedOrder.status }}
+        </span>
+      </div>
+
+      <div class="modal-meta">
+        <span>👤 {{ selectedOrder.participantId }}</span>
+        <span>📅 {{ selectedOrder.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="modal-items">
+        <div class="modal-item" *ngFor="let item of selectedOrder.items">
+          <img [src]="item.product.imageUrl" class="modal-item-img"/>
+          <div class="modal-item-info">
+            <span class="modal-item-name">{{ item.product.name }}</span>
+            <span class="modal-item-cat">{{ item.product.category }}</span>
+          </div>
+          <span class="modal-item-qty">×{{ item.quantity }}</span>
+          <span class="modal-item-price">
+            {{ item.unitPrice * item.quantity | currency }}
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-total">
+        <span>TOTAL</span>
+        <span class="total-amount">{{ selectedOrder.totalPrice | currency }}</span>
+      </div>
+      <!-- QR Code -->
+<div class="qr-section" *ngIf="orderQrCodes[selectedOrder.id]">
+  <p class="qr-label">// ORDER QR CODE</p>
+  <img
+    [src]="orderQrCodes[selectedOrder.id]"
+    alt="Order QR"
+    class="qr-image"
+  />
+  <p class="qr-hint">Scan to verify order at delivery</p>
+</div>
+      <!-- Quick actions in modal -->
+      <div class="modal-actions" *ngIf="canAdvance(selectedOrder.status)">
+        <button
+          class="btn-advance-modal"
+          (click)="advanceStatus(selectedOrder, $event)">
+          {{ getNextLabel(selectedOrder.status) }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

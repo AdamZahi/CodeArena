@@ -1,15 +1,3 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { KeycloakService } from '../auth/keycloak.service';
+import { authHttpInterceptorFn } from '@auth0/auth0-angular';
 
-export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const keycloak = inject(KeycloakService);
-  const token = keycloak.getToken();
-
-  // TODO: Skip auth header for public endpoints if needed.
-  const authReq = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
-
-  return next(authReq);
-};
+export const jwtInterceptor = authHttpInterceptorFn;

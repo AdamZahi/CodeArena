@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-shop-management',
   standalone: true,
-  template: '<p>Shop management placeholder</p>'
+  imports: [RouterOutlet],
+  template: '<router-outlet />'
 })
 export class ShopManagementComponent {}
