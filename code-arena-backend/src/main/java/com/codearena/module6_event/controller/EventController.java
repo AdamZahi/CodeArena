@@ -44,13 +44,13 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getEventById(@PathVariable UUID id) {
+    public ResponseEntity<?> getEventById(@PathVariable("id") UUID id) {
         EventDto dto = eventService.getEventById(id);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/stats")
-    public ResponseEntity<?> getEventStats(@PathVariable UUID id) {
+    public ResponseEntity<?> getEventStats(@PathVariable("id") UUID id) {
         Map<String, Object> stats = eventService.getEventStats(id);
         return ResponseEntity.ok(stats);
     }
@@ -64,21 +64,21 @@ public class EventController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateEvent(@PathVariable UUID id, @RequestBody CreateEventRequest dto) {
+    public ResponseEntity<?> updateEvent(@PathVariable("id") UUID id, @RequestBody CreateEventRequest dto) {
         EventDto updated = eventService.updateEvent(id, dto);
         return ResponseEntity.ok(updated);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEvent(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteEvent(@PathVariable("id") UUID id) {
         eventService.deleteEvent(id);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/invite-top10")
-    public ResponseEntity<?> inviteTop10(@PathVariable UUID id) {
+    public ResponseEntity<?> inviteTop10(@PathVariable("id") UUID id) {
         int sentCount = invitationService.inviteTop10Players(id);
         return ResponseEntity.ok(sentCount);
     }
