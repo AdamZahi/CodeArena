@@ -1,6 +1,5 @@
 package com.codearena.user.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -46,9 +45,7 @@ public class User {
     private String avatarUrl;
     private String bio;
 
-    @Column(name = "is_active")
-    @JsonProperty("active")
-    private boolean active;
+    private boolean isActive;
 
     @CreationTimestamp
     private Instant createdAt;

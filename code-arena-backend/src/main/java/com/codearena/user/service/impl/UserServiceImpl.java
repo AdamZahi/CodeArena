@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
             return buildAnonymousUser();
         }
         User user = userRepository.findByKeycloakId(jwt.getSubject())
-                .orElse(null);
+            .orElse(null);
         if (user == null) {
             return buildAnonymousUser();
         }
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
             return buildAnonymousUser();
         }
         User user = userRepository.findByKeycloakId(jwt.getSubject())
-                .orElse(null);
+            .orElse(null);
         if (user == null) {
             return buildAnonymousUser();
         }
@@ -66,13 +66,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getById(UUID id) {
         return userRepository.findById(id).map(userMapper::toResponse)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @Override
     public UserResponseDTO updateRole(UUID id, Role role) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setRole(role);
         User saved = userRepository.save(user);
         auth0ManagementService.updateUserRole(user.getKeycloakId(), role.name());
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void softDelete(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setActive(false);
         userRepository.save(user);
     }
@@ -92,14 +92,14 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
         if (user == null) {
             user = User.builder()
-                    .keycloakId(jwt.getSubject())
-                    .email(jwt.getClaimAsString("email"))
-                    .firstName(jwt.getClaimAsString("given_name"))
-                    .lastName(jwt.getClaimAsString("family_name"))
-                    .role(resolveRole(jwt))
-                    .authProvider(resolveAuthProvider(jwt))
-                    .active(true)
-                    .build();
+                .keycloakId(jwt.getSubject())
+                .email(jwt.getClaimAsString("email"))
+                .firstName(jwt.getClaimAsString("given_name"))
+                .lastName(jwt.getClaimAsString("family_name"))
+                .role(resolveRole(jwt))
+                .authProvider(resolveAuthProvider(jwt))
+                .isActive(true)
+                .build();
             userRepository.save(user);
             return;
         }
@@ -146,10 +146,10 @@ public class UserServiceImpl implements UserService {
             return AuthProvider.LOCAL;
         }
         if (sub.startsWith("google-oauth2|")) {
-            return AuthProvider.GOOGLE;
+                return AuthProvider.GOOGLE;
         }
         if (sub.startsWith("github|")) {
-            return AuthProvider.GITHUB;
+                return AuthProvider.GITHUB;
         }
         return AuthProvider.LOCAL;
     }
@@ -164,12 +164,12 @@ public class UserServiceImpl implements UserService {
 
     private UserResponseDTO buildAnonymousUser() {
         return UserResponseDTO.builder()
-                .email("guest@local")
-                .firstName("Guest")
-                .lastName("User")
-                .role(Role.PARTICIPANT)
-                .authProvider(AuthProvider.LOCAL)
-                .active(true)
-                .build();
+            .email("guest@local")
+            .firstName("Guest")
+            .lastName("User")
+            .role(Role.PARTICIPANT)
+            .authProvider(AuthProvider.LOCAL)
+            .isActive(true)
+            .build();
     }
 }

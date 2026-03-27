@@ -24,7 +24,6 @@ public class UserResponseDTO {
     private AuthProvider authProvider;
     private String avatarUrl;
     private String bio;
-    @com.fasterxml.jackson.annotation.JsonProperty("active")
-    private boolean active;
+    private boolean isActive;
     private Instant createdAt;
 }
