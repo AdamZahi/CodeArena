@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import {
   EventCandidature,
   EventInvitation,
@@ -12,8 +13,7 @@ import {
 export class EventService {
   private readonly http = inject(HttpClient);
 
-  private readonly baseUrl = 'http://localhost:8080/api/events';
-  private readonly participantId = 'mock-player-1';
+  private readonly baseUrl = `${environment.apiBaseUrl}/api/events`;
 
   getEvents(): Observable<any[]> {
     return this.http.get<any[]>(this.baseUrl);
@@ -30,17 +30,13 @@ export class EventService {
   register(eventId: string): Observable<any> {
     return this.http.post<any>(
       `${this.baseUrl}/${eventId}/register`,
-      {},
-      { params: { participantId: this.participantId } }
+      {}
     );
   }
 
   cancelRegistration(eventId: string): Observable<any> {
     return this.http.delete(
-      `http://localhost:8080/api/events/${eventId}/register`,
-      {
-        params: { participantId: 'mock-player-1' }
-      }
+      `${this.baseUrl}/${eventId}/register`
     );
   }
 
@@ -49,9 +45,7 @@ export class EventService {
   }
 
   getMyRegistrations(): Observable<EventRegistration[]> {
-    return this.http.get<EventRegistration[]>(`${this.baseUrl}/me/registrations`, {
-      params: { participantId: this.participantId }
-    });
+    return this.http.get<EventRegistration[]>(`${this.baseUrl}/me/registrations`);
   }
 
   getEventParticipants(eventId: string): Observable<EventRegistration[]> {
@@ -59,32 +53,26 @@ export class EventService {
   }
 
   getMyInvitations(): Observable<EventInvitation[]> {
-    return this.http.get<EventInvitation[]>(`${this.baseUrl}/me/invitations`, {
-      params: { participantId: this.participantId }
-    });
+    return this.http.get<EventInvitation[]>(`${this.baseUrl}/me/invitations`);
   }
 
   acceptInvitation(eventId: string): Observable<any> {
     return this.http.put(
       `${this.baseUrl}/${eventId}/invitation/accept`,
-      {},
-      { params: { participantId: this.participantId } }
+      {}
     );
   }
 
   declineInvitation(eventId: string): Observable<any> {
     return this.http.put(
       `${this.baseUrl}/${eventId}/invitation/decline`,
-      {},
-      { params: { participantId: this.participantId } }
+      {}
     );
   }
 
   submitCandidature(eventId: string, motivation: string): Observable<any> {
     const body = { motivation };
-    return this.http.post<any>(`${this.baseUrl}/${eventId}/candidature`, body, {
-      params: { participantId: this.participantId }
-    });
+    return this.http.post<any>(`${this.baseUrl}/${eventId}/candidature`, body);
   }
 
   getCandidaturesByEvent(eventId: string): Observable<EventCandidature[]> {

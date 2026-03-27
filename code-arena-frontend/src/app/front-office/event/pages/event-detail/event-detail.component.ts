@@ -12,6 +12,7 @@ import {
   EventRegistration,
   ProgrammingEvent
 } from '../../models/event.model';
+import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-event-detail',
@@ -54,7 +55,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly auth: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -317,14 +319,17 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       }
       this.eventService.getParticipants(this.event.id).subscribe({
         next: async (participants: any[]) => {
-          this.myRegistration = participants.find(
-            p => p.participantId === 'mock-player-1'
-          ) || null;
-          if (this.myRegistration?.status === 'CONFIRMED') {
-            await this.generateQR();
-          }
-          this.loadWaitlistPosition();
-          resolve();
+          this.auth.user$.subscribe(user => {
+            const userId = user?.sub;
+            this.myRegistration = participants.find(
+              p => p.participantId === userId
+            ) || null;
+            if (this.myRegistration?.status === 'CONFIRMED') {
+              this.generateQR();
+            }
+            this.loadWaitlistPosition();
+            resolve();
+          });
         },
         error: () => resolve()
       });
@@ -336,10 +341,13 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.eventService.getParticipants(this.event.id).subscribe({
       next: (participants: any[]) => {
         const waitlist = participants.filter(p => p.status === 'WAITLIST');
-        const myIndex = waitlist.findIndex(
-          p => p.participantId === 'mock-player-1'
-        );
-        this.waitlistPosition = myIndex !== -1 ? myIndex + 1 : 0;
+        this.auth.user$.subscribe(user => {
+          const userId = user?.sub;
+          const myIndex = waitlist.findIndex(
+            p => p.participantId === userId
+          );
+          this.waitlistPosition = myIndex !== -1 ? myIndex + 1 : 0;
+        });
       },
       error: (err) => console.error('Waitlist error:', err)
     });
@@ -383,9 +391,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     this.exclusiveLoading = true;
     const sub = this.eventService.getCandidaturesByEvent(eventId).subscribe({
       next: (list) => {
-        this.exclusiveCandidature =
-          list.find((c) => c.participantId === 'mock-player-1') ?? null;
-        this.exclusiveLoading = false;
+        this.auth.user$.subscribe(user => {
+          const userId = user?.sub;
+          this.exclusiveCandidature =
+            list.find((c) => c.participantId === userId) ?? null;
+          this.exclusiveLoading = false;
+        });
       },
       error: (err) => {
         console.error('Failed to load candidatures', err);

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-footer',
   standalone: true,
+  imports: [CommonModule],
   template: `
     <footer class="footer">
       <div class="footer-line"></div>
@@ -15,7 +16,7 @@ import { Component } from '@angular/core';
           <span class="tagline">BUILD. COMPETE. IMPROVE.</span>
         </div>
         <div class="footer-right">
-          <span class="timestamp">{{ today | date:'yyyy.MM.dd | HH:mm' }}</span>
+          <span class="timestamp">{{ today | date:'yyyy.MM.dd HH:mm' }}</span>
         </div>
       </div>
     </footer>
