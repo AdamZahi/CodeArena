@@ -63,6 +63,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
     this.eventId = id;
+    const savedCandidature = sessionStorage.getItem(
+      `candidature_${this.eventId}`
+    );
+    if (savedCandidature === 'PENDING') {
+      this.exclusiveCandidature = { status: 'PENDING' } as any;
+    }
     this.successMsg = '';
     this.isLoading = true;
     this.eventService.getEventById(id).subscribe({
@@ -114,6 +120,11 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   isExclusiveEvent(): boolean {
     return this.event?.type === 'EXCLUSIVE' || this.event?.eventType === 'EXCLUSIVE';
+  }
+
+  hasSavedPendingCandidature(): boolean {
+    if (!this.eventId) return false;
+    return sessionStorage.getItem(`candidature_${this.eventId}`) === 'PENDING';
   }
 
   hasConfirmedRegistration(): boolean {
@@ -266,20 +277,19 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   }
 
   cancelRegistration(): void {
-    this.eventService.cancelRegistration(this.event.id).subscribe({
+    if (!this.eventId) return;
+    this.eventService.cancelRegistration(this.eventId).subscribe({
       next: () => {
-        this.successMsg = 'Registration cancelled.';
-        this.errorMsg = '';
+        this.myRegistration = null;
         this.qrCodeImageUrl = '';
         this.showQROverlay = false;
-        this.myRegistration = null;
-        this.eventService.getEventById(this.event.id).subscribe(updated => {
-          this.event = updated;
-        });
+        this.successMsg = 'Registration cancelled.';
+        this.eventService.getEventById(this.eventId!).subscribe(
+          updated => this.event = updated
+        );
       },
       error: (err) => {
-        console.error('Cancel error full:', err);
-        this.errorMsg = 'Cancel failed: ' + (err?.error?.message || err?.status || 'unknown error');
+        this.errorMsg = 'Cancel failed.';
       }
     });
   }
@@ -288,6 +298,12 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     if (!this.eventId) return;
     if (!this.event) return;
     if (this.exclusiveCandidature?.status === 'PENDING') return;
+    if (
+      this.hasSavedPendingCandidature() &&
+      this.exclusiveCandidature?.status !== 'REJECTED'
+    ) {
+      return;
+    }
 
     const motivation = this.motivationText.trim();
     if (!motivation) {
@@ -296,40 +312,45 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     }
 
     this.error = null;
-    const sub = this.eventService.submitCandidature(this.eventId, motivation).subscribe({
-      next: () => {
+    this.eventService.submitCandidature(this.eventId, motivation).subscribe({
+      next: (response) => {
+        this.exclusiveCandidature = response;
+        sessionStorage.setItem(`candidature_${this.eventId}`, 'PENDING');
         this.motivationText = '';
-        this.loadExclusiveState(this.eventId!);
+        this.error = null;
+        this.successMsg = '⏳ YOUR CANDIDATURE IS UNDER REVIEW';
       },
       error: (err) => {
-        console.error('Candidature submit failed', err);
-        this.setErrorTemporarily('Candidature failed');
+        if (err.status === 400) {
+          sessionStorage.setItem(`candidature_${this.eventId}`, 'PENDING');
+          this.exclusiveCandidature = { status: 'PENDING' } as any;
+          this.motivationText = '';
+          this.error = null;
+          this.successMsg = '⏳ YOUR CANDIDATURE IS UNDER REVIEW';
+        } else {
+          this.setErrorTemporarily('Candidature submission failed.');
+        }
       }
     });
-    this.subs.add(sub);
   }
 
 
 
   async loadMyRegistration(): Promise<void> {
     return new Promise((resolve) => {
-      if (!this.event?.id) {
-        resolve();
-        return;
-      }
-      this.eventService.getParticipants(this.event.id).subscribe({
-        next: async (participants: any[]) => {
-          this.auth.user$.subscribe(user => {
-            const userId = user?.sub;
-            this.myRegistration = participants.find(
-              p => p.participantId === userId
-            ) || null;
-            if (this.myRegistration?.status === 'CONFIRMED') {
-              this.generateQR();
-            }
-            this.loadWaitlistPosition();
-            resolve();
-          });
+      this.eventService.getMyRegistrations().subscribe({
+        next: async (registrations) => {
+          console.log('REGISTRATIONS:', registrations);
+          const myReg = registrations.find(r =>
+            String(r.eventId) === String(this.eventId) ||
+            String(r.eventId) === String(this.event?.id)
+          );
+          this.myRegistration = myReg || null;
+          if (this.myRegistration?.status === 'CONFIRMED') {
+            await this.generateQR();
+          }
+          this.loadWaitlistPosition();
+          resolve();
         },
         error: () => resolve()
       });
@@ -378,9 +399,9 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
 
   private loadExclusiveState(eventId: string): void {
-    if (this.event?.eventType !== 'EXCLUSIVE' && this.event?.type !== 'EXCLUSIVE') return;
+    if (this.event?.eventType !== 'EXCLUSIVE' &&
+      this.event?.type !== 'EXCLUSIVE') return;
 
-    // If invitation exists, candidature UI depends on invitation status.
     if (this.exclusiveInvitation) {
       if (this.exclusiveInvitation.status === 'PENDING') {
         this.exclusiveCandidature = null;
@@ -388,23 +409,13 @@ export class EventDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.exclusiveLoading = true;
-    const sub = this.eventService.getCandidaturesByEvent(eventId).subscribe({
-      next: (list) => {
-        this.auth.user$.subscribe(user => {
-          const userId = user?.sub;
-          this.exclusiveCandidature =
-            list.find((c) => c.participantId === userId) ?? null;
-          this.exclusiveLoading = false;
-        });
-      },
-      error: (err) => {
-        console.error('Failed to load candidatures', err);
-        this.exclusiveCandidature = null;
-        this.exclusiveLoading = false;
-      }
-    });
-    this.subs.add(sub);
+    this.exclusiveLoading = false;
+    const saved = sessionStorage.getItem(`candidature_${eventId}`);
+    if (saved === 'PENDING') {
+      this.exclusiveCandidature = { status: 'PENDING' } as any;
+    } else {
+      this.exclusiveCandidature = null;
+    }
   }
 
   startCountdown(): void {

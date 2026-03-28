@@ -95,11 +95,13 @@
       <!-- OPEN -->
       <ng-container *ngIf="isOpenEvent()">
         <!-- CONFIRMED -->
-        <ng-container *ngIf="myRegistration?.status === 'CONFIRMED'; else openNotConfirmed">
+        <ng-container *ngIf="hasConfirmedRegistration(); else openNotConfirmed">
           <div class="reg-state-box reg-confirmed">
             <div class="confirmed-badge">✅ YOU ARE REGISTERED</div>
             <button class="view-qr-btn" (click)="showQROverlay = true">[ VIEW QR CODE ]</button>
-            <button class="cancel-btn" (click)="cancelRegistration()">[ CANCEL REGISTRATION ]</button>
+            <button class="cancel-btn" (click)="cancelRegistration()">
+              [ CANCEL REGISTRATION ]
+            </button>
           </div>
         </ng-container>
 
@@ -142,82 +144,66 @@
         </ng-template>
       </ng-container>
 
-      <!-- EXCLUSIVE -->
+      <!-- EXCLUSIVE: 6 mutually exclusive states -->
       <ng-container *ngIf="isExclusiveEvent()">
-        <!-- CONFIRMED (ONLY when registration is confirmed) -->
-        <ng-container *ngIf="myRegistration?.status === 'CONFIRMED'; else exclusiveNotConfirmed">
+        <ng-container *ngIf="myRegistration?.status === 'CONFIRMED'; else exclusiveState2">
           <div class="reg-state-box reg-confirmed">
-            <div class="confirmed-badge">✅ YOU ARE REGISTERED</div>
+            <div class="confirmed-badge">✅ CONFIRMED</div>
             <button class="view-qr-btn" (click)="showQROverlay = true">[ VIEW QR CODE ]</button>
-            <button class="cancel-btn" (click)="cancelRegistration()">[ CANCEL REGISTRATION ]</button>
+            <button class="cancel-btn" (click)="cancelRegistration()">
+      [ CANCEL REGISTRATION ]
+    </button>
           </div>
         </ng-container>
-
-        <ng-template #exclusiveNotConfirmed>
-          <!-- INVITATION -->
-          <ng-container *ngIf="exclusiveInvitation; else exclusiveNoInvitation">
-            <ng-container *ngIf="exclusiveInvitation.status === 'PENDING'">
-              <div class="reg-state-box vip-invite-box">
-                <div class="reg-badge vip-title">⭐ VIP INVITATION PENDING</div>
-                <div class="exclusive-actions">
-                  <button class="checkout-btn auto btn-open-detail" (click)="acceptInvitation()">
-                    [ ACCEPT INVITATION ]
-                  </button>
-                  <button class="checkout-btn auto btn-neutral" (click)="declineInvitation()">
-                    [ DECLINE ]
-                  </button>
-                </div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="exclusiveInvitation.status === 'DECLINED'">
-              <div class="reg-state-box reg-cancelled">
-                <div class="reg-badge reg-badge-red">YOU DECLINED THIS INVITATION</div>
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="exclusiveInvitation.status === 'ACCEPTED'">
-              <div class="reg-state-box reg-waitlist">
-                <div class="reg-badge reg-badge-orange">INVITATION ACCEPTED. WAITING FOR CONFIRMATION.</div>
-              </div>
-            </ng-container>
+        <ng-template #exclusiveState2>
+          <ng-container *ngIf="myRegistration?.status === 'WAITLIST'; else exclusiveState3">
+            <div class="reg-state-box reg-waitlist">
+              <div class="reg-badge reg-badge-orange">⏳ ON WAITLIST</div>
+            </div>
           </ng-container>
-
-          <!-- NO INVITATION → CANDIDATURE -->
-          <ng-template #exclusiveNoInvitation>
-            <div class="loading" *ngIf="exclusiveLoading">LOADING CANDIDATURE...</div>
-
-            <ng-container *ngIf="!exclusiveLoading">
-              <ng-container *ngIf="exclusiveCandidature; else exclusiveCandidatureForm">
-                <ng-container *ngIf="exclusiveCandidature.status === 'PENDING'">
-                  <div class="reg-state-box reg-waitlist">
-                    <div class="reg-badge reg-badge-orange">⏳ YOUR CANDIDATURE IS UNDER REVIEW</div>
-                  </div>
-                </ng-container>
-
-                <ng-container *ngIf="exclusiveCandidature.status === 'REJECTED'">
-                  <div class="reg-state-box reg-cancelled">
-                    <div class="reg-badge reg-badge-red">✕ YOUR CANDIDATURE WAS REJECTED</div>
-                  </div>
-                </ng-container>
-
-                <ng-container *ngIf="exclusiveCandidature.status === 'ACCEPTED'">
-                  <div class="reg-state-box reg-waitlist">
-                    <div class="reg-badge reg-badge-orange">CANDIDATURE ACCEPTED. WAITING FOR CONFIRMATION.</div>
-                  </div>
-                </ng-container>
-              </ng-container>
-
-              <ng-template #exclusiveCandidatureForm>
-                <label class="form-label" for="motivation">MOTIVATION</label>
-                <textarea id="motivation" class="event-textarea" [(ngModel)]="motivationText" rows="6"
-                  placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
-                <button class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
-                  [ SUBMIT CANDIDATURE ]
+        </ng-template>
+        <ng-template #exclusiveState3>
+          <ng-container *ngIf="exclusiveInvitation?.status === 'PENDING'; else exclusiveState4">
+            <div class="reg-state-box vip-invite-box">
+              <div class="reg-badge vip-title">⭐ VIP INVITATION</div>
+              <div class="exclusive-actions">
+                <button class="checkout-btn auto btn-open-detail" (click)="acceptInvitation()">
+                  [ ACCEPT ]
                 </button>
-              </ng-template>
-            </ng-container>
-          </ng-template>
+                <button class="checkout-btn auto btn-neutral" (click)="declineInvitation()">
+                  [ DECLINE ]
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-template>
+        <ng-template #exclusiveState4>
+          <ng-container *ngIf="exclusiveCandidature?.status === 'PENDING' || (hasSavedPendingCandidature() && exclusiveCandidature?.status !== 'REJECTED'); else exclusiveState5">
+            <div class="reg-state-box reg-waitlist">
+              <div class="reg-badge reg-badge-orange">⏳ YOUR CANDIDATURE IS UNDER REVIEW</div>
+            </div>
+          </ng-container>
+        </ng-template>
+        <ng-template #exclusiveState5>
+          <ng-container *ngIf="exclusiveCandidature?.status === 'REJECTED'; else exclusiveState6">
+            <div class="reg-state-box reg-cancelled">
+              <div class="reg-badge reg-badge-red">✕ YOUR CANDIDATURE WAS REJECTED</div>
+            </div>
+            <label class="form-label" for="motivation-reapply">MOTIVATION</label>
+            <textarea id="motivation-reapply" class="event-textarea" [(ngModel)]="motivationText" rows="6"
+              placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
+            <button class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+              [ SUBMIT CANDIDATURE ]
+            </button>
+          </ng-container>
+        </ng-template>
+        <ng-template #exclusiveState6>
+          <label class="form-label" for="motivation">MOTIVATION</label>
+          <textarea id="motivation" class="event-textarea" [(ngModel)]="motivationText" rows="6"
+            placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
+          <button class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+            [ SUBMIT CANDIDATURE ]
+          </button>
         </ng-template>
       </ng-container>
     </div>
@@ -236,6 +222,7 @@
       <p class="qr-instruction">SHOW THIS QR CODE AT THE EVENT ENTRANCE</p>
       <button class="download-btn" (click)="downloadQR()">[ DOWNLOAD QR CODE ]</button>
       <button class="close-overlay-btn" (click)="showQROverlay = false">[ CLOSE ]</button>
+      
     </div>
   </div>
 </div>
