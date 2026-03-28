@@ -1,39 +1,111 @@
-<div class="page">
-  <div class="header">
-    <h1>⚔ ADMIN EVENT MANAGEMENT</h1>
-    <button class="btn btn-create" (click)="goCreate()">[ CREATE EVENT ]</button>
+<div class="shop-container">
+  <!-- HEADER -->
+  <div class="shop-header">
+    <div>
+      <h1 class="shop-title">EVENT MANAGEMENT</h1>
+      <p class="shop-subtitle">{{ totalEvents }} events in system</p>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" (click)="toggleDashboard()">
+        📊 DASHBOARD
+      </button>
+      <button class="header-btn btn-create" (click)="goCreate()">
+        + CREATE EVENT
+      </button>
+    </div>
   </div>
 
-  <div class="loading" *ngIf="isLoading">LOADING EVENTS...</div>
-  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="loading" *ngIf="isLoading" style="color: var(--muted); font-family: 'Orbitron', monospace; margin-bottom: 20px;">LOADING EVENTS...</div>
+  <div class="error" *ngIf="errorMessage" style="color: #ef4444; margin-bottom: 20px;">{{ errorMessage }}</div>
 
-  <div class="table-wrap" *ngIf="!isLoading">
-    <table class="events-table">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Type</th>
-          <th>Category</th>
-          <th>Date</th>
-          <th>Participants</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ev of events">
-          <td>{{ ev.title }}</td>
-          <td>{{ ev.type }}</td>
-          <td>{{ ev.category }}</td>
-          <td>{{ ev.startDate | date:'short' }}</td>
-          <td>{{ ev.currentParticipants }}/{{ ev.maxParticipants }}</td>
-          <td>{{ ev.status }}</td>
-          <td>
-            <button class="btn btn-view" (click)="viewEvent(ev.id)">[ VIEW ]</button>
-            <button class="btn btn-delete" (click)="deleteEvent(ev.id)">[ DELETE ]</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <ng-container *ngIf="!isLoading">
+  <!-- DASHBOARD SECTION (toggle) -->
+  <div class="dashboard-section" *ngIf="showDashboard">
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-number">{{ totalEvents }}</div>
+        <div class="stat-label">TOTAL EVENTS</div>
+      </div>
+      <div class="stat-card stat-open">
+        <div class="stat-number">{{ openEvents }}</div>
+        <div class="stat-label">OPEN</div>
+      </div>
+      <div class="stat-card stat-exclusive">
+        <div class="stat-number">{{ exclusiveEvents }}</div>
+        <div class="stat-label">EXCLUSIVE</div>
+      </div>
+      <div class="stat-card stat-upcoming">
+        <div class="stat-number">{{ upcomingEvents }}</div>
+        <div class="stat-label">UPCOMING</div>
+      </div>
+      <div class="stat-card stat-active">
+        <div class="stat-number">{{ activeEvents }}</div>
+        <div class="stat-label">ACTIVE</div>
+      </div>
+      <div class="stat-card stat-completed">
+        <div class="stat-number">{{ completedEvents }}</div>
+        <div class="stat-label">COMPLETED</div>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">EVENT TYPES</div>
+        <canvas id="donutChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">PARTICIPANTS PER EVENT</div>
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
   </div>
+
+  <!-- TABLE -->
+  <table class="events-table">
+    <thead>
+      <tr>
+        <th>TITLE</th>
+        <th>TYPE</th>
+        <th>CATEGORY</th>
+        <th>DATE</th>
+        <th>PARTICIPANTS</th>
+        <th>STATUS</th>
+        <th>ACTIONS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let event of events">
+        <td>
+          <div class="event-name">{{ event.title }}</div>
+          <div class="event-desc">
+            {{ event.description | slice:0:40 }}...
+          </div>
+        </td>
+        <td>
+          <span [class]="event.type === 'OPEN' ? 
+            'badge-open' : 'badge-exclusive'">
+            {{ event.type }}
+          </span>
+        </td>
+        <td>{{ event.category }}</td>
+        <td>{{ event.startDate | date:'M/d/yy, h:mm a' }}</td>
+        <td>
+          {{ event.currentParticipants }}/{{ event.maxParticipants }}
+        </td>
+        <td>{{ event.status }}</td>
+        <td class="actions-cell">
+          <button class="btn-view" (click)="viewEvent(event.id)">
+            👁 VIEW
+          </button>
+          <button class="btn-edit" (click)="router.navigate(['/admin/events', event.id, 'edit'])">
+            ✎ EDIT
+          </button>
+          <button class="btn-delete-table"
+                  (click)="deleteEvent(event.id)">
+            🗑 DELETE
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </ng-container>
 </div>

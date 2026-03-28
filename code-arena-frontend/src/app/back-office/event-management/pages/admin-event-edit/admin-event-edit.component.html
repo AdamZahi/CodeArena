@@ -1,8 +1,8 @@
 <div class="shop-container">
   <div class="shop-header">
     <div class="shop-title">
-      <h1>⚔ CREATE EVENT</h1>
-      <p>// BUILD YOUR NEXT CHALLENGE</p>
+      <h1>✎ EDIT EVENT</h1>
+      <p>// MODIFY EVENT DETAILS</p>
     </div>
   </div>
 
@@ -28,7 +28,6 @@
       rows="5"
       required
     ></textarea>
-
 
     <!-- Location -->
     <label class="form-label">LOCATION</label>
@@ -126,8 +125,7 @@
 
     <!-- Submit -->
     <button class="checkout-btn" type="submit" [disabled]="isSubmitting">
-      {{ isSubmitting ? 'CREATING...' : '[ CREATE EVENT ]' }}
+      {{ isSubmitting ? 'UPDATING...' : '[ UPDATE EVENT ]' }}
     </button>
   </form>
 </div>
-
