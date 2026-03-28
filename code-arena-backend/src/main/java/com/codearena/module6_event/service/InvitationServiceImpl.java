@@ -111,7 +111,10 @@ public class InvitationServiceImpl implements InvitationService {
         if (existingRegistration.isPresent()) {
             EventRegistration existing = existingRegistration.get();
             if (existing.getStatus() != EventStatus.CANCELLED) {
-                // Already confirmed; avoid double-incrementing and return the existing record.
+                if (existing.getQrCode() == null || existing.getQrCode().isBlank()) {
+                    existing.setQrCode(qrCode);
+                    registrationRepository.save(existing);
+                }
                 return eventMapper.toRegistrationResponseDTO(existing);
             }
 
