@@ -176,7 +176,7 @@ public class CustomizationServiceImpl implements CustomizationService {
 
         // Grant items by XP threshold
         List<CustomizationItem> xpItems = itemRepo
-                .findByUnlockTypeAndUnlockThresholdLessThanEqual("XP", user.getTotalXp().intValue());
+                .findByUnlockTypeAndUnlockThresholdLessThanEqual("XP", (user.getTotalXp() != null ? user.getTotalXp().intValue() : 0));
         grantItems(keycloakId, xpItems, "XP_MILESTONE");
 
         log.info("Checked and granted unlocks for user {}", keycloakId);
