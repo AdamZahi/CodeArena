@@ -45,6 +45,9 @@ import { FooterComponent } from '../shared/layout/footer.component';
             <a routerLink="/admin/coaching" routerLinkActive="active">
               <span class="icon">🎓</span> COACHING
             </a>
+            <a routerLink="/admin/terminal-quest" routerLinkActive="active">
+              <span class="icon">⌨</span> TERMINAL QUEST
+            </a>
           </div>
           <div class="sidebar-footer">
             <span class="v-status">SYSTEM SECURE_</span>
