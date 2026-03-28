@@ -25,6 +25,9 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a routerLink="/shop" routerLinkActive="active">
           <span class="link-label">GEAR SHOP</span>
         </a>
+        <a routerLink="/events" routerLinkActive="active">
+          <span class="link-label">EVENTS</span>
+        </a>
         <a *ngIf="(currentUser$ | async)?.role === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
           <span class="link-label">BACKOFFICE</span>
         </a>
@@ -36,7 +39,12 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <ng-container *ngIf="isAuthenticated$ | async">
           <div class="profile-container" *ngIf="user$ | async as user" (click)="goProfile()">
             <div class="avatar">
-              <span class="avatar-text">{{ getInitials(user.nickname || user.name || 'OP') }}</span>
+              <img *ngIf="(currentUser$ | async)?.activeIconId" 
+                   [src]="'https://api.dicebear.com/7.x/bottts/svg?seed=' + (currentUser$ | async)?.activeIconId?.replace('icon_', '')" 
+                   class="avatar-img-navbar" />
+              <span *ngIf="!(currentUser$ | async)?.activeIconId" class="avatar-text">
+                {{ getInitials(user.nickname || user.name || 'OP') }}
+              </span>
             </div>
             <span class="user-nickname">{{ (user.nickname || user.name || 'OPERATOR') | uppercase }}</span>
           </div>
@@ -213,6 +221,13 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
       font-size: 12px;
       font-weight: 700;
       font-family: 'Orbitron', monospace;
+    }
+
+    .avatar-img-navbar {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
     }
 
     .user-nickname {
