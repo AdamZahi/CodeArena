@@ -1,0 +1,39 @@
+<div class="page">
+  <div class="header">
+    <h1>⚔ ADMIN EVENT MANAGEMENT</h1>
+    <button class="btn btn-create" (click)="goCreate()">[ CREATE EVENT ]</button>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">LOADING EVENTS...</div>
+  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="table-wrap" *ngIf="!isLoading">
+    <table class="events-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Participants</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ev of events">
+          <td>{{ ev.title }}</td>
+          <td>{{ ev.type }}</td>
+          <td>{{ ev.category }}</td>
+          <td>{{ ev.startDate | date:'short' }}</td>
+          <td>{{ ev.currentParticipants }}/{{ ev.maxParticipants }}</td>
+          <td>{{ ev.status }}</td>
+          <td>
+            <button class="btn btn-view" (click)="viewEvent(ev.id)">[ VIEW ]</button>
+            <button class="btn btn-delete" (click)="deleteEvent(ev.id)">[ DELETE ]</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

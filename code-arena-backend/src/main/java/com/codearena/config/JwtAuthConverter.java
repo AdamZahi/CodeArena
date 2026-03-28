@@ -1,22 +1,42 @@
 package com.codearena.config;
 
+import com.codearena.user.entity.User;
+import com.codearena.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Collections;
+
 @Component
+@RequiredArgsConstructor
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-    /**
-     * Converts JWT claims into authentication token.
-     *
-     * @param source JWT source
-     * @return authentication token
-     */
+    private final UserRepository userRepository;
+
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
-        // TODO: Extract realm_access roles and map to authorities.
-        return null;
+        Collection<GrantedAuthority> authorities = extractAuthorities(source);
+        return new JwtAuthenticationToken(source, authorities);
+    }
+
+    private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
+        String sub = jwt.getSubject();
+        if (sub == null) {
+            return Collections.emptySet();
+        }
+
+        return userRepository.findByKeycloakId(sub)
+                .map(User::getRole)
+                .map(role -> (Collection<GrantedAuthority>) java.util.Set.<GrantedAuthority>of(
+                        new SimpleGrantedAuthority("ROLE_" + role.name())
+                ))
+                .orElse(Collections.emptySet());
     }
 }

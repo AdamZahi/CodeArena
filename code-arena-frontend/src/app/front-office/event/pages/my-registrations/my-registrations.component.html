@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="qr-overlay" *ngIf="showQROverlay">
+    <div class="qr-success-card">
+      <h2>✅ REGISTRATION CONFIRMED</h2>
+      <p>{{ activeEventTitle }}</p>
+      <img [src]="activeQRImageUrl" alt="QR Code" class="qr-image" />
+      <p class="qr-instruction">SHOW THIS QR CODE AT THE EVENT ENTRANCE</p>
+      <button class="btn btn-view" (click)="downloadQR()">[ DOWNLOAD QR CODE ]</button>
+      <button class="btn btn-decline" (click)="showQROverlay = false">[ CLOSE ]</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="back-btn" (click)="goBack()">← BACK TO EVENTS</button>
+  </div>
+
+  <div class="header">
+    <h1>🎟 MY REGISTRATIONS</h1>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">LOADING REGISTRATIONS...</div>
+  <div class="empty" *ngIf="!isLoading && cards.length === 0">// NO REGISTRATIONS YET</div>
+  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="cards" *ngIf="!isLoading && cards.length > 0">
+    <div class="card" *ngFor="let card of cards">
+      <div class="title">{{ card.event?.title || card.registration.eventId }}</div>
+      <div class="meta">{{ card.event ? (card.event.startDate | date:'medium') : 'Date unavailable' }}</div>
+
+      <div class="badge status accepted" *ngIf="card.registration.status === 'CONFIRMED'">✅ CONFIRMED</div>
+      <div class="badge status waitlist" *ngIf="card.registration.status === 'WAITLIST'">⏳ WAITLIST</div>
+      <div class="badge status cancelled" *ngIf="card.registration.status === 'CANCELLED'">✕ CANCELLED</div>
+
+      <button
+        class="btn btn-view"
+        *ngIf="card.registration.status === 'CONFIRMED'"
+        (click)="openQR(card)"
+      >
+        [ VIEW QR CODE ]
+      </button>
+
+      <div class="note" *ngIf="card.registration.status === 'WAITLIST'">You are on the waitlist</div>
+
+      <button class="btn btn-open" (click)="viewEvent(card.registration.eventId)">[ VIEW EVENT ]</button>
+    </div>
+  </div>
+</div>

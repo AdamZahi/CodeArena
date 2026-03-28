@@ -1,0 +1,44 @@
+<div class="page">
+  <button class="btn" (click)="goBack()">← BACK TO EVENT LIST</button>
+
+  <h1>⚔ ADMIN EVENT DETAIL</h1>
+
+  <div class="message" *ngIf="message">{{ message }}</div>
+  <div class="error" *ngIf="error">{{ error }}</div>
+
+  <div class="panel" *ngIf="event">
+    <h2>{{ event.title }}</h2>
+    <p>{{ event.description }}</p>
+    <p><strong>Type:</strong> {{ event.type }} | <strong>Category:</strong> {{ event.category }}</p>
+    <p><strong>Date:</strong> {{ event.startDate | date:'medium' }} → {{ event.endDate | date:'medium' }}</p>
+    <button class="btn btn-invite" (click)="inviteTop10()">[ INVITE TOP 10 ]</button>
+  </div>
+
+  <div class="panel">
+    <h3>Participants</h3>
+    <div class="row" *ngFor="let p of participants">
+      <span>{{ p.participantId }}</span>
+      <span class="badge">{{ p.status }}</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Candidatures</h3>
+    <div class="row" *ngFor="let c of candidatures">
+      <span>{{ c.participantId }} - {{ c.status }}</span>
+      <span>
+        <button class="btn btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
+        <button class="btn btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
+      </span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Invitations</h3>
+    <div class="row" *ngFor="let i of invitations">
+      <span>{{ i.participantId }}</span>
+      <span class="badge">{{ i.status }}</span>
+    </div>
+    <div class="muted" *ngIf="invitations.length === 0">No invitations available.</div>
+  </div>
+</div>

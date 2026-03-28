@@ -1,0 +1,51 @@
+<div class="page">
+  <div class="toolbar">
+    <button class="back-btn" (click)="goBack()">← BACK TO EVENTS</button>
+  </div>
+
+  <div class="header">
+    <h1>⭐ MY VIP INVITATIONS</h1>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">LOADING INVITATIONS...</div>
+  <div class="empty" *ngIf="!isLoading && cards.length === 0">// NO INVITATIONS YET</div>
+  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+
+  <div class="cards" *ngIf="!isLoading && cards.length > 0">
+    <div class="card" *ngFor="let card of cards">
+      <div class="title">{{ card.event?.title || card.invitation.eventId }}</div>
+      <div class="meta">
+        <span>{{ card.event ? (card.event.startDate | date:'mediumDate') : 'Date unavailable' }}</span>
+        <span class="badge category" *ngIf="card.event">{{ card.event.category }}</span>
+      </div>
+
+      <div class="badge status pending" *ngIf="card.invitation.status === 'PENDING'">
+        ⭐ VIP INVITATION
+      </div>
+      <div class="badge status accepted" *ngIf="card.invitation.status === 'ACCEPTED'">
+        ✅ ACCEPTED
+      </div>
+      <div class="badge status declined" *ngIf="card.invitation.status === 'DECLINED'">
+        ✕ DECLINED
+      </div>
+
+      <div class="actions" *ngIf="card.invitation.status === 'PENDING'">
+        <button class="btn btn-accept" (click)="accept(card.invitation.eventId)">[ ACCEPT ]</button>
+        <button class="btn btn-decline" (click)="decline(card.invitation.eventId)">[ DECLINE ]</button>
+      </div>
+
+      <button
+        class="btn btn-view"
+        *ngIf="card.invitation.status === 'ACCEPTED'"
+        (click)="viewEvent(card.invitation.eventId)"
+      >
+        [ VIEW EVENT ]
+      </button>
+
+      <div class="note" *ngIf="card.invitation.status === 'DECLINED'">
+        You declined this invitation
+      </div>
+    </div>
+  </div>
+</div>

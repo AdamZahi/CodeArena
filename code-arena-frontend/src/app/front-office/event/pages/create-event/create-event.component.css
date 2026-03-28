@@ -1,0 +1,311 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:host {
+  --neon: #8b5cf6;
+  --neon2: #06b6d4;
+  --neon3: #10b981;
+  --dark: #0a0a0f;
+  --card: #0d0d15;
+  --card2: #12121e;
+  --border: #1a1a2e;
+  --text: #e2e8f0;
+  --muted: #64748b;
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes neon-flicker {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  24%,
+  55% {
+    opacity: 0.6;
+  }
+}
+
+/* ── CONTAINER ──────────────────────────────────── */
+.shop-container {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--dark);
+  padding: 28px 32px;
+  font-family: 'Rajdhani', sans-serif;
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+}
+
+.shop-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon), transparent);
+  animation: scan-line 4s linear infinite;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.shop-container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ─────────────────────────────────────── */
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.shop-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 260px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon), var(--neon2), transparent);
+}
+
+.shop-title h1 {
+  margin: 0;
+  font-family: 'Orbitron', monospace;
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4, #8b5cf6);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+  animation: neon-flicker 5s infinite;
+}
+
+.shop-title p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* ── FORM CARD ──────────────────────────────────── */
+.create-card {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.create-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon), var(--neon2));
+  opacity: 0.85;
+}
+
+.section-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.form-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+/* ── INPUTS (same style as shop search-input) ── */
+.event-input,
+.event-select,
+.event-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+.event-select {
+  cursor: pointer;
+}
+
+.event-input:focus,
+.event-select:focus,
+.event-textarea:focus {
+  outline: none;
+  border-color: var(--neon);
+  background: var(--card2);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15), inset 0 0 20px rgba(139, 92, 246, 0.05);
+}
+
+.event-textarea {
+  resize: vertical;
+}
+
+/* ── TYPE TOGGLE ───────────────────────────────── */
+.type-toggle {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.type-toggle-btn {
+  padding: 11px 22px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  transition: all 0.2s;
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+}
+
+.type-toggle-btn:hover {
+  border-color: var(--neon);
+  color: var(--neon);
+}
+
+.type-toggle-btn.active {
+  background: transparent;
+  box-shadow: none;
+}
+
+.type-toggle-btn.open-active {
+  border-color: var(--neon3);
+  color: var(--neon3);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.18);
+}
+
+.type-toggle-btn.exclusive-active {
+  border-color: var(--neon);
+  color: var(--neon);
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.18);
+}
+
+.exclusive-note {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--neon);
+  margin-top: -4px;
+}
+
+.success-msg {
+  color: var(--neon3);
+  font-size: 11px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 1px;
+  margin: 4px 0 -2px;
+  padding-left: 4px;
+}
+
+/* ── SUBMIT BTN ────────────────────────────────── */
+.checkout-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: var(--neon);
+  border: 1.5px solid var(--neon);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+}
+
+.checkout-btn:hover:not(:disabled) {
+  background: var(--neon);
+  color: white;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+}
+
+.checkout-btn:disabled {
+  border-color: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* ── SEARCH/ERROR MESSAGE ─────────────────────── */
+.search-error {
+  color: #ef4444;
+  font-size: 11px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 1px;
+  margin: 4px 0 -2px;
+  padding-left: 4px;
+}
+
+/* ── DATES GRID ─────────────────────────────────── */
+.dates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+

@@ -1,4 +1,4 @@
-package com.codearena.shared.exception;
+package com.codearena.shared.response;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -10,5 +10,10 @@ public class ApiException extends RuntimeException {
     public ApiException(HttpStatus status, String message) {
         super(message);
         this.status = status;
+    }
+
+    public ApiException(String message) {
+        super(message);
+        this.status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 }
