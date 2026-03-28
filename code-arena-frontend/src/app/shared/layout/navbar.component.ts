@@ -34,17 +34,11 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a *ngIf="!(isAuthenticated$ | async)" class="btn auth-btn" routerLink="/login">LOGIN_</a>
         
         <ng-container *ngIf="isAuthenticated$ | async">
-<<<<<<< HEAD
           <div class="profile-container" *ngIf="user$ | async as user" (click)="goProfile()">
             <div class="avatar">
               <span class="avatar-text">{{ getInitials(user.nickname || user.name || 'OP') }}</span>
             </div>
             <span class="user-nickname">{{ (user.nickname || user.name || 'OPERATOR') | uppercase }}</span>
-=======
-          <div class="user-info" *ngIf="currentUser$ | async as user">
-             <span class="user-role">{{ user.role }}</span>
-             <span class="user-name">{{  'OPERATOR' }}</span>
->>>>>>> origin/main
           </div>
           <button class="btn danger logout-btn" (click)="logout()">LOGOUT</button>
         </ng-container>
