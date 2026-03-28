@@ -1,0 +1,76 @@
+<div class="map-container">
+
+  <!-- ── NAV ───────────────────────────────────────── -->
+  <div class="page-nav">
+    <a routerLink="/terminal-quest" class="back-btn">← TERMINAL QUEST</a>
+  </div>
+
+  <!-- ── HEADER ────────────────────────────────────── -->
+  <div class="page-header">
+    <span class="kicker">STORY MODE</span>
+    <h1 class="page-title">CHAPTER <span class="accent">MAP</span></h1>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING CHAPTERS...</span>
+  </div>
+
+  <!-- ── EMPTY ─────────────────────────────────────── -->
+  <div class="empty-state" *ngIf="!isLoading && chapters.length === 0">
+    <span class="empty-icon">📭</span>
+    <p>No chapters available yet.</p>
+  </div>
+
+  <!-- ── CHAPTERS ──────────────────────────────────── -->
+  <div class="chapters-list" *ngIf="!isLoading && chapters.length > 0">
+
+    <div class="chapter-card" *ngFor="let chapter of chapters">
+
+      <!-- Chapter header -->
+      <div class="chapter-header">
+        <div class="chapter-number">CH.{{ chapter.orderIndex }}</div>
+        <div class="chapter-info">
+          <h2 class="chapter-title">{{ chapter.title }}</h2>
+          <p class="chapter-desc">{{ chapter.description }}</p>
+        </div>
+        <span class="locked-badge" *ngIf="chapter.isLocked">🔒 LOCKED</span>
+      </div>
+
+      <!-- Levels grid -->
+      <div class="levels-grid">
+        <div
+          class="level-card"
+          *ngFor="let level of chapter.levels"
+          [class.completed]="isCompleted(level)"
+          [class.locked]="chapter.isLocked"
+          (click)="navigateToLevel(level, chapter)">
+
+          <!-- Boss banner -->
+          <div class="boss-banner" *ngIf="level.isBoss">⚔ BOSS FIGHT</div>
+
+          <div class="level-top">
+            <span class="level-title">{{ level.title }}</span>
+            <span class="diff-badge" [ngClass]="'diff-' + level.difficulty.toLowerCase()">
+              {{ level.difficulty }}
+            </span>
+          </div>
+
+          <div class="level-stars">
+            <span
+              *ngFor="let n of starRange"
+              class="star"
+              [class.filled]="n <= getStars(level)">
+              {{ n <= getStars(level) ? '★' : '☆' }}
+            </span>
+          </div>
+
+          <div class="level-xp">+{{ level.xpReward }} XP</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
