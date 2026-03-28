@@ -1,34 +1,106 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TerminalQuestService } from '../../services/terminal-quest.service';
+import { StoryLevel, SubmitAnswerResponse } from '../../models/terminal-quest.model';
+
+interface TerminalLine {
+  text: string;
+  type: 'input' | 'success' | 'error' | 'info';
+}
 
 @Component({
   selector: 'app-level-play',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
-    <div class="page">
-      <div class="header">
-        <span class="kicker">STORY MODE</span>
-        <h1 class="title">LEVEL <span class="accent">PLAY</span></h1>
-      </div>
-      <div class="placeholder">
-        <span class="icon">⌨</span>
-        <p>Terminal challenge — coming soon</p>
-        <a routerLink="/terminal-quest/story" class="back">← BACK TO MAP</a>
-      </div>
-    </div>
-  `,
-  styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-    .page { padding: 40px; font-family: 'Rajdhani', sans-serif; }
-    .kicker { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 4px; color: #06b6d4; }
-    .title { font-family: 'Orbitron', monospace; font-size: 32px; font-weight: 900; color: #e2e8f0; margin: 8px 0 40px; }
-    .accent { color: #8b5cf6; }
-    .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; border: 1px solid #1a1a2e; border-radius: 8px; color: #64748b; font-size: 16px; }
-    .icon { font-size: 48px; }
-    .back { font-family: 'Orbitron', monospace; font-size: 11px; color: #8b5cf6; text-decoration: none; letter-spacing: 1px; }
-    .back:hover { text-decoration: underline; }
-  `]
+  imports: [CommonModule, FormsModule],
+  templateUrl: './level-play.component.html',
+  styleUrl: './level-play.component.css'
 })
-export class LevelPlayComponent {}
+export class LevelPlayComponent implements OnInit {
+  @ViewChild('terminalOutput') terminalOutput!: ElementRef<HTMLDivElement>;
+
+  level: StoryLevel | null = null;
+  commandHistory: TerminalLine[] = [];
+  currentCommand = '';
+  isCorrect: boolean | null = null;
+  result: SubmitAnswerResponse | null = null;
+  showHint = false;
+  isLoading = true;
+  isSubmitting = false;
+
+  readonly userId = 'test-user-001';
+  private levelId = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private tqService: TerminalQuestService
+  ) {}
+
+  ngOnInit(): void {
+    this.levelId = this.route.snapshot.paramMap.get('levelId') ?? '';
+    if (!this.levelId) { this.isLoading = false; return; }
+
+    this.tqService.getLevelById(this.levelId).subscribe({
+      next: (level) => {
+        this.level = level;
+        this.isLoading = false;
+        this.addLine('System ready. Type your command below.', 'info');
+      },
+      error: () => {
+        this.isLoading = false;
+        this.addLine('Failed to load level.', 'error');
+      }
+    });
+  }
+
+  executeCommand(): void {
+    const cmd = this.currentCommand.trim();
+    if (!cmd || this.isSubmitting || !this.level || this.isCorrect === true) return;
+
+    this.addLine(`$ ${cmd}`, 'input');
+    this.currentCommand = '';
+    this.isSubmitting = true;
+    this.scrollTerminal();
+
+    this.tqService.submitAnswer(this.levelId, this.userId, cmd).subscribe({
+      next: (res) => {
+        this.result = res;
+        this.isCorrect = res.correct;
+        this.isSubmitting = false;
+        this.addLine(res.correct ? `✓ ${res.message}` : `✗ ${res.message}`, res.correct ? 'success' : 'error');
+        this.scrollTerminal();
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.addLine('✗ Connection error. Try again.', 'error');
+        this.scrollTerminal();
+      }
+    });
+  }
+
+  toggleHint(): void {
+    this.showHint = !this.showHint;
+  }
+
+  backToMap(): void {
+    this.router.navigate(['/terminal-quest/story']);
+  }
+
+  getStarDisplay(stars: number): string[] {
+    return [1, 2, 3].map(i => i <= stars ? '★' : '☆');
+  }
+
+  private addLine(text: string, type: TerminalLine['type']): void {
+    this.commandHistory.push({ text, type });
+  }
+
+  private scrollTerminal(): void {
+    setTimeout(() => {
+      if (this.terminalOutput?.nativeElement) {
+        this.terminalOutput.nativeElement.scrollTop = this.terminalOutput.nativeElement.scrollHeight;
+      }
+    }, 50);
+  }
+}

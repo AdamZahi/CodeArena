@@ -1,0 +1,102 @@
+<div class="play-container">
+
+  <!-- ── NAV ───────────────────────────────────────── -->
+  <div class="page-nav">
+    <button class="back-btn" (click)="backToMap()">&#8592; BACK TO MAP</button>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING LEVEL...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading && level">
+
+    <!-- ── LEVEL HEADER ──────────────────────────────── -->
+    <div class="level-header">
+      <h1 class="level-title">{{ level.title }}</h1>
+      <div class="level-badges">
+        <span class="diff-badge" [ngClass]="'diff-' + level.difficulty.toLowerCase()">{{ level.difficulty }}</span>
+        <span class="boss-badge" *ngIf="level.isBoss">&#9876; BOSS FIGHT</span>
+        <span class="xp-badge">+{{ level.xpReward }} XP</span>
+      </div>
+    </div>
+
+    <!-- ── SCENARIO ──────────────────────────────────── -->
+    <div class="scenario-block">
+      <div class="scenario-label">// MISSION BRIEFING</div>
+      <p class="scenario-text">{{ level.scenario }}</p>
+    </div>
+
+    <!-- ── HINT ──────────────────────────────────────── -->
+    <div class="hint-section">
+      <button class="hint-btn" (click)="toggleHint()">
+        {{ showHint ? '&#9660; HIDE HINT' : '&#9654; SHOW HINT' }}
+      </button>
+      <div class="hint-block" *ngIf="showHint">
+        &#128161; {{ level.hint || 'No hint available for this level.' }}
+      </div>
+    </div>
+
+    <!-- ── TERMINAL ───────────────────────────────────── -->
+    <div class="terminal-wrapper">
+
+      <div class="terminal-titlebar">
+        <div class="terminal-dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <span class="terminal-title">terminal&#64;codearena:~$</span>
+      </div>
+
+      <div class="terminal-output" #terminalOutput>
+        <div
+          *ngFor="let line of commandHistory"
+          class="terminal-line"
+          [ngClass]="'line-' + line.type">{{ line.text }}</div>
+        <div class="terminal-processing" *ngIf="isSubmitting">
+          <span class="blink">&#9608;</span> processing...
+        </div>
+      </div>
+
+      <div class="terminal-input-row" *ngIf="isCorrect !== true">
+        <span class="input-prompt">$&nbsp;</span>
+        <input
+          type="text"
+          class="terminal-input"
+          [(ngModel)]="currentCommand"
+          (keyup.enter)="executeCommand()"
+          [disabled]="isSubmitting"
+          placeholder="type your command here..."
+          autocomplete="off"
+          spellcheck="false" />
+        <button
+          class="execute-btn"
+          (click)="executeCommand()"
+          [disabled]="isSubmitting || !currentCommand.trim()">
+          EXECUTE
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ── SUCCESS BLOCK ──────────────────────────────── -->
+    <div class="success-block" *ngIf="isCorrect === true && result">
+      <div class="success-title">&#10003; COMMAND ACCEPTED</div>
+      <div class="success-stars">
+        <span
+          *ngFor="let s of getStarDisplay(result.starsEarned)"
+          class="success-star"
+          [class.filled]="s === '&#9733;'">{{ s }}</span>
+      </div>
+      <div class="success-xp">+{{ result.xpEarned }} XP EARNED</div>
+      <div class="success-actions">
+        <button class="btn-primary" (click)="backToMap()">&#8592; BACK TO MAP</button>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>
