@@ -475,19 +475,29 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   initMap(): void {
     if (!this.event?.location) return;
+    const location = this.event.location;
+    
     setTimeout(() => {
-      const location = this.event.location;
+      const mapEl = document.getElementById('event-map');
+      if (!mapEl) return;
+      
+      if (this.map) { 
+        this.map.remove(); 
+        this.map = null; 
+      }
+
       fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`)
         .then(res => res.json())
         .then(data => {
-          if (!data || data.length === 0) return;
-          const lat = parseFloat(data[0].lat);
-          const lon = parseFloat(data[0].lon);
-          if (this.map) { this.map.remove(); this.map = null; }
-          this.map = L.map('event-map').setView([lat, lon], 15);
+          const lat = data?.[0] ? parseFloat(data[0].lat) : 36.8;
+          const lon = data?.[0] ? parseFloat(data[0].lon) : 10.1;
+          
+          this.map = L.map('event-map').setView([lat, lon], 13);
+          
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
           }).addTo(this.map);
+
           const icon = L.icon({
             iconUrl: 'assets/marker-icon.png',
             iconRetinaUrl: 'assets/marker-icon-2x.png',
@@ -497,12 +507,24 @@ export class EventDetailComponent implements OnInit, OnDestroy {
             popupAnchor: [1, -34],
             shadowSize: [41, 41]
           });
+
           L.marker([lat, lon], { icon })
             .addTo(this.map)
             .bindPopup(`📍 ${location}`)
             .openPopup();
+
+          setTimeout(() => {
+            this.map.invalidateSize();
+          }, 200);
         })
-        .catch(err => console.error('Map error:', err));
-    }, 300);
+        .catch(err => {
+          console.error('Map error:', err);
+          // Show default Tunisia map if location not found
+          this.map = L.map('event-map').setView([36.8, 10.1], 8);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+          }).addTo(this.map);
+        });
+    }, 500);
   }
 }
