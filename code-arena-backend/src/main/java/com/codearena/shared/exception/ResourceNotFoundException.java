@@ -1,6 +1,8 @@
 package com.codearena.shared.exception;
 
 import org.springframework.http.HttpStatus;
+import com.codearena.shared.response.ApiException;
+
 
 public class ResourceNotFoundException extends ApiException {
     public ResourceNotFoundException(String message) {

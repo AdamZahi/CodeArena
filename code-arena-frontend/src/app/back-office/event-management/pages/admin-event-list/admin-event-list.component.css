@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+:host { --neon:#8b5cf6; --neon2:#06b6d4; --neon3:#10b981; --dark:#0a0a0f; --card:#0d0d15; --border:#1a1a2e; --text:#e2e8f0; --muted:#64748b; }
+.page { min-height: 100vh; background: var(--dark); color: var(--text); padding: 24px; font-family: 'Rajdhani', sans-serif; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+h1 { font-family: 'Orbitron', monospace; letter-spacing: 2px; color: var(--neon2); margin: 0; }
+.table-wrap { border: 1px solid var(--border); background: var(--card); border-radius: 10px; overflow: hidden; }
+.events-table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left; }
+th { font-family: 'Orbitron', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+.btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Orbitron', monospace; font-size: 10px; border-radius: 6px; padding: 8px 10px; cursor: pointer; margin-right: 8px; }
+.btn-create { border-color: var(--neon3); color: var(--neon3); }
+.btn-view { border-color: var(--neon); color: var(--neon); }
+.btn-delete { border-color: #ef4444; color: #ef4444; }
+.loading { color: var(--muted); font-family: 'Orbitron', monospace; }
+.error { color: #ef4444; margin-bottom: 10px; }

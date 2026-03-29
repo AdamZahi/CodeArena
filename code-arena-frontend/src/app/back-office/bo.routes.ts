@@ -15,7 +15,7 @@ export const BO_ROUTES: Routes = [
       { path: 'battles', loadComponent: () => import('./battle-management/battle-management.component').then((m) => m.BattleManagementComponent) },
       { path: 'shop', loadChildren: () => import('./shop-management/shop-management.routes').then((m) => m.SHOP_MANAGEMENT_ROUTES) },
       { path: 'reports', loadComponent: () => import('./support-management/support-management.component').then((m) => m.SupportManagementComponent) },
-      { path: 'events', loadComponent: () => import('./event-management/event-management.component').then((m) => m.EventManagementComponent) },
+      { path: 'events', loadChildren: () => import('./event-management/event-management.routes').then((m) => m.EVENT_MANAGEMENT_ROUTES) },
       { path: 'coaching', loadComponent: () => import('./coaching-management/coaching-management.component').then((m) => m.CoachingManagementComponent) }
     ]
   }

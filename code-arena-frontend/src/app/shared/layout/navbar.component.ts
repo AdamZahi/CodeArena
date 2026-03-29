@@ -25,10 +25,10 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a routerLink="/shop" routerLinkActive="active">
           <span class="link-label">GEAR SHOP</span>
         </a>
-        <a routerLink="/reward-profile" routerLinkActive="active">
-          <span class="link-label">REWARDS</span>
+        <a routerLink="/events" routerLinkActive="active">
+          <span class="link-label">EVENTS</span>
         </a>
-        <a *ngIf="(currentUser$ | async) as user" [style.display]="user.role === 'ADMIN' ? 'flex' : 'none'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
+        <a *ngIf="(currentUser$ | async)?.role === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
           <span class="link-label">BACKOFFICE</span>
         </a>
       </nav>
@@ -37,11 +37,17 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a *ngIf="!(isAuthenticated$ | async)" class="btn auth-btn" routerLink="/login">LOGIN_</a>
         
         <ng-container *ngIf="isAuthenticated$ | async">
-          <div class="user-info" *ngIf="currentUser$ | async as user">
-             <span class="user-role">{{ user.role }}</span>
-             <span class="user-name">{{ user.firstName || user.email || 'OPERATOR' }}</span>
+          <div class="profile-container" *ngIf="user$ | async as user" (click)="goProfile()">
+            <div class="avatar">
+              <img *ngIf="(currentUser$ | async)?.activeIconId" 
+                   [src]="'https://api.dicebear.com/7.x/bottts/svg?seed=' + (currentUser$ | async)?.activeIconId?.replace('icon_', '')" 
+                   class="avatar-img-navbar" />
+              <span *ngIf="!(currentUser$ | async)?.activeIconId" class="avatar-text">
+                {{ getInitials(user.nickname || user.name || 'OP') }}
+              </span>
+            </div>
+            <span class="user-nickname">{{ (user.nickname || user.name || 'OPERATOR') | uppercase }}</span>
           </div>
-          <button class="btn secondary profile-btn" (click)="goProfile()">PROFILE</button>
           <button class="btn danger logout-btn" (click)="logout()">LOGOUT</button>
         </ng-container>
       </div>
@@ -178,6 +184,60 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
       font-weight: 600;
     }
 
+    .profile-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 20px 6px 12px;
+      background: rgba(13, 13, 21, 0.6);
+      border: 1px solid #8b5cf6;
+      border-radius: 4px;
+      clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-right: 8px;
+    }
+
+    .profile-container:hover {
+      background: rgba(139, 92, 246, 0.1);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      background: #f472b6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #22d3ee;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+    }
+
+    .avatar-text {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Orbitron', monospace;
+    }
+
+    .avatar-img-navbar {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    .user-nickname {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
     .btn {
       background: transparent;
       border: 1px solid #1a1a2e;
@@ -210,7 +270,13 @@ export class NavbarComponent {
   private readonly authUserSync = inject(AuthUserSyncService);
 
   readonly isAuthenticated$ = this.auth.isAuthenticated$;
+  readonly user$ = this.auth.user$;
   readonly currentUser$ = this.authUserSync.currentUser$;
+
+  getInitials(name: string): string {
+    if (!name) return 'OP';
+    return name.substring(0, 2).toUpperCase();
+  }
 
   goProfile(): void {
     void this.router.navigate(['/profile']);

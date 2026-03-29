@@ -31,12 +31,16 @@ export const FO_ROUTES: Routes = [
         loadChildren: () => import('./support/support.routes').then((m) => m.SUPPORT_ROUTES)
       },
       {
-        path: 'event',
+        path: 'events',
         loadChildren: () => import('./event/event.routes').then((m) => m.EVENT_ROUTES)
       },
       {
         path: 'coaching-quiz',
         loadChildren: () => import('./coaching-quiz/coaching.routes').then((m) => m.COACHING_ROUTES)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./reward-profile/pages/my-profile/my-profile.component').then((m) => m.MyProfileComponent)
       }
     ]
   }

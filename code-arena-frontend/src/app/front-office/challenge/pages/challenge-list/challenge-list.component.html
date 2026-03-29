@@ -1,23 +1,4 @@
 <div class="lc-container">
-  <!-- HEADER BAR (Cyberpunk Style) -->
-  <div class="lc-header">
-    <div class="lc-header-left">
-      <span class="lc-logo" routerLink="/">
-        <span class="accent">CODE</span>ARENA
-      </span>
-      <span class="lc-nav-item" routerLink="/">Home</span>
-      <span class="lc-nav-item active">Problems</span>
-    </div>
-
-    <!-- USER PROFILE SECTION -->
-    <div class="lc-header-right" *ngIf="auth.user$ | async as user">
-      <div class="user-profile">
-        <img [src]="user.picture" class="user-avatar" [alt]="user.name" />
-        <span class="user-name">{{ user.nickname || user.name }}</span>
-      </div>
-    </div>
-  </div>
-
   <!-- TOOLBAR (Search & Chips) -->
   <div class="tag-bar">
     <div class="search-box">
