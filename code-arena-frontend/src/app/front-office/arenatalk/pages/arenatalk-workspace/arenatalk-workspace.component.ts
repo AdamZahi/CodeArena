@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Hub, TextChannel, Message } from '../../models/arenatalk.model';
+import { ArenatalkService } from '../../services/arenatalk.service';
+
+type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
   selector: 'app-arenatalk-workspace',
@@ -21,8 +24,25 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   messages: Message[] = [];
   newMessage = '';
 
+  showCreateChannelForm = false;
+  newChannel: TextChannel = {
+    name: '',
+    topic: ''
+  };
+
+  // delete modal
+  showDeleteModal = false;
+  deleteTargetType: DeleteTargetType = null;
+  deleteTargetId: number | null = null;
+  deleteMessageText = '';
+
+  // edit message
+  editingMessageId: number | null = null;
+  editedMessageContent = '';
+
   constructor(
-    private router: Router
+    private router: Router,
+    private arenaService: ArenatalkService
   ) {}
 
   ngOnInit(): void {
@@ -44,28 +64,243 @@ export class ArenatalkWorkspaceComponent implements OnInit {
         this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
 
       this.selectedChannel = generalChannel;
+
+      if (this.selectedChannel?.id) {
+        this.loadMessagesByChannel(this.selectedChannel.id);
+      } else {
+        this.messages = [];
+      }
     }
   }
 
   selectHub(hub: Hub): void {
     this.selectedHub = hub;
+
+    if (hub.id) {
+      this.arenaService.getChannelsByHub(hub.id).subscribe({
+        next: (data) => {
+          this.channels = data;
+
+          const generalChannel =
+            this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
+
+          this.selectedChannel = generalChannel || null;
+
+          if (this.selectedChannel?.id) {
+            this.loadMessagesByChannel(this.selectedChannel.id);
+          } else {
+            this.messages = [];
+          }
+        },
+        error: (err) => {
+          console.error('Error loading channels', err);
+          this.channels = [];
+          this.selectedChannel = null;
+          this.messages = [];
+        }
+      });
+    }
   }
 
   selectChannel(channel: TextChannel): void {
     this.selectedChannel = channel;
+    this.cancelEditMessage();
+
+    if (channel.id) {
+      this.loadMessagesByChannel(channel.id);
+    } else {
+      this.messages = [];
+    }
+  }
+
+  loadMessagesByChannel(channelId: number): void {
+    this.arenaService.getMessagesByChannel(channelId).subscribe({
+      next: (data) => {
+        this.messages = data;
+      },
+      error: (err) => {
+        console.error('Error loading messages', err);
+        this.messages = [];
+      }
+    });
   }
 
   sendMessage(): void {
-    if (!this.newMessage.trim() || !this.selectedChannel) return;
+    if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
 
     const message: Message = {
-      content: this.newMessage,
-      senderName: 'You',
-      sentAt: new Date().toISOString()
+      content: this.newMessage.trim(),
+      senderName: 'You'
     };
 
-    this.messages.push(message);
-    this.newMessage = '';
+    this.arenaService.sendMessage(this.selectedChannel.id, message).subscribe({
+      next: (savedMessage) => {
+        this.messages.push(savedMessage);
+        this.newMessage = '';
+      },
+      error: (err) => {
+        console.error('Error sending message', err);
+      }
+    });
+  }
+
+  // ---------- create channel ----------
+  openCreateChannelForm(): void {
+    this.showCreateChannelForm = true;
+  }
+
+  closeCreateChannelForm(): void {
+    this.showCreateChannelForm = false;
+    this.newChannel = {
+      name: '',
+      topic: ''
+    };
+  }
+
+  createChannel(): void {
+    if (!this.selectedHub?.id || !this.newChannel.name.trim()) return;
+
+    this.arenaService.createChannel(this.selectedHub.id, this.newChannel).subscribe({
+      next: (createdChannel) => {
+        this.channels.push(createdChannel);
+        this.selectedChannel = createdChannel;
+        this.messages = [];
+        this.closeCreateChannelForm();
+      },
+      error: (err) => {
+        console.error('Error creating channel', err);
+      }
+    });
+  }
+
+  // ---------- delete modal ----------
+  openDeleteModal(type: DeleteTargetType, id?: number): void {
+    if (!id) return;
+
+    this.deleteTargetType = type;
+    this.deleteTargetId = id;
+    this.showDeleteModal = true;
+
+    if (type === 'hub') {
+      this.deleteMessageText = 'Are you sure you want to delete this community?';
+    } else if (type === 'channel') {
+      this.deleteMessageText = 'Are you sure you want to delete this channel?';
+    } else {
+      this.deleteMessageText = 'Are you sure you want to delete this message?';
+    }
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.deleteTargetType = null;
+    this.deleteTargetId = null;
+    this.deleteMessageText = '';
+  }
+
+  confirmDelete(): void {
+    if (!this.deleteTargetType || !this.deleteTargetId) return;
+
+    if (this.deleteTargetType === 'hub') {
+      this.deleteHubConfirmed(this.deleteTargetId);
+    } else if (this.deleteTargetType === 'channel') {
+      this.deleteChannelConfirmed(this.deleteTargetId);
+    } else if (this.deleteTargetType === 'message') {
+      this.deleteMessageConfirmed(this.deleteTargetId);
+    }
+  }
+
+  deleteHubConfirmed(hubId: number): void {
+    this.arenaService.deleteHub(hubId).subscribe({
+      next: () => {
+        this.hubs = this.hubs.filter(hub => hub.id !== hubId);
+
+        if (this.selectedHub?.id === hubId) {
+          this.selectedHub = this.hubs[0] || null;
+          this.channels = [];
+          this.selectedChannel = null;
+          this.messages = [];
+
+          if (this.selectedHub) {
+            this.selectHub(this.selectedHub);
+          } else {
+            this.router.navigate(['/arenatalk']);
+          }
+        }
+
+        this.closeDeleteModal();
+      },
+      error: (err) => {
+        console.error('Error deleting hub', err);
+      }
+    });
+  }
+
+  deleteChannelConfirmed(channelId: number): void {
+    this.arenaService.deleteChannel(channelId).subscribe({
+      next: () => {
+        this.channels = this.channels.filter(channel => channel.id !== channelId);
+
+        if (this.selectedChannel?.id === channelId) {
+          this.selectedChannel = this.channels[0] || null;
+
+          if (this.selectedChannel?.id) {
+            this.loadMessagesByChannel(this.selectedChannel.id);
+          } else {
+            this.messages = [];
+          }
+        }
+
+        this.closeDeleteModal();
+      },
+      error: (err) => {
+        console.error('Error deleting channel', err);
+      }
+    });
+  }
+
+  deleteMessageConfirmed(messageId: number): void {
+    this.arenaService.deleteMessage(messageId).subscribe({
+      next: () => {
+        this.messages = this.messages.filter(msg => msg.id !== messageId);
+        this.closeDeleteModal();
+      },
+      error: (err) => {
+        console.error('Error deleting message', err);
+      }
+    });
+  }
+
+  // ---------- edit message ----------
+  startEditMessage(message: Message): void {
+    if (!message.id) return;
+    this.editingMessageId = message.id;
+    this.editedMessageContent = message.content;
+  }
+
+  cancelEditMessage(): void {
+    this.editingMessageId = null;
+    this.editedMessageContent = '';
+  }
+
+  saveEditedMessage(message: Message): void {
+    if (!message.id || !this.editedMessageContent.trim()) return;
+
+    const updatedMessage: Message = {
+      ...message,
+      content: this.editedMessageContent.trim()
+    };
+
+    this.arenaService.updateMessage(message.id, updatedMessage).subscribe({
+      next: (savedMessage) => {
+        this.messages = this.messages.map(msg =>
+          msg.id === savedMessage.id ? savedMessage : msg
+        );
+        this.cancelEditMessage();
+      },
+      error: (err) => {
+        console.error('Error updating message', err);
+      }
+    });
   }
 
   get hasMessages(): boolean {

@@ -279,4 +279,256 @@
   .welcome-grid {
     grid-template-columns: 1fr;
   }
+  
+}
+.with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.primary-mini-btn,
+.ghost-mini-btn,
+.danger-mini-btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.primary-mini-btn {
+  background: linear-gradient(90deg, #8d63ff, #22c7ff);
+  color: white;
+}
+
+.ghost-mini-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: white;
+}
+
+.danger-mini-btn {
+  background: rgba(255, 70, 70, 0.15);
+  border: 1px solid rgba(255, 70, 70, 0.35);
+  color: #ff8f8f;
+}
+
+.create-channel-box {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #0f1222;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.create-channel-box input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #121526;
+  color: white;
+  outline: none;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.channel-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.danger-icon-btn {
+  min-width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 70, 70, 0.25);
+  background: rgba(255, 70, 70, 0.08);
+  color: #ff8f8f;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.message-card {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.primary-mini-btn,
+.ghost-mini-btn,
+.danger-mini-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.primary-mini-btn {
+  background: linear-gradient(90deg, #8d63ff, #22c7ff);
+  color: white;
+}
+
+.ghost-mini-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: white;
+}
+
+.danger-mini-btn {
+  background: rgba(255, 70, 70, 0.12);
+  border: 1px solid rgba(255, 70, 70, 0.28);
+  color: #ff9ea8;
+}
+
+.create-channel-box {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #0f1222;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.create-channel-box input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #121526;
+  color: white;
+  outline: none;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.channel-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.channel-text {
+  flex: 1;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-size: 16px;
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px);
+}
+
+.edit-btn {
+  border-color: rgba(34, 199, 255, 0.25);
+  color: #7bdfff;
+}
+
+.delete-btn {
+  border-color: rgba(255, 70, 70, 0.25);
+  color: #ff9ea8;
+}
+
+.message-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.message-main {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+}
+
+.message-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-message-box {
+  margin-top: 10px;
+}
+
+.edit-message-box textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #121526;
+  color: white;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 14, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  background: #0f1222;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+.modal-card h3 {
+  margin: 0 0 12px;
+  font-size: 24px;
+}
+
+.modal-card p {
+  margin: 0 0 20px;
+  color: #9aa4c7;
+  line-height: 1.7;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }

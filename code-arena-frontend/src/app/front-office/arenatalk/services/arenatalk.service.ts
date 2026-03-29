@@ -50,4 +50,15 @@ export class ArenatalkService {
   deleteMessage(messageId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}`);
   }
+  updateHub(id: number, hub: Hub) {
+  return this.http.put<Hub>(`${this.apiUrl}/hubs/${id}`, hub);
+}
+
+updateChannel(channelId: number, channel: TextChannel) {
+  return this.http.put<TextChannel>(`${this.apiUrl}/channels/${channelId}`, channel);
+}
+
+updateMessage(messageId: number, message: Message) {
+  return this.http.put<Message>(`${this.apiUrl}/messages/${messageId}`, message);
+}
 }
