@@ -1,0 +1,105 @@
+<div class="survival-container">
+
+  <!-- ── STATUS BAR ──────────────────────────────────── -->
+  <div class="status-bar">
+    <div class="lives-group" [class.shake]="heartsShake">
+      <span *ngFor="let n of heartRange" class="heart" [class.lost]="n > lives">
+        {{ n <= lives ? '&#10084;&#65039;' : '&#128420;' }}
+      </span>
+    </div>
+    <div class="wave-display">WAVE {{ wave }}</div>
+    <div class="score-display">SCORE: {{ score }}</div>
+    <button class="abandon-btn" (click)="abandon()" [disabled]="gameOver || isLoading">
+      ABANDON
+    </button>
+  </div>
+
+  <!-- ── LOADING ─────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">STARTING SESSION...</span>
+  </div>
+
+  <!-- ── MAIN CONTENT ───────────────────────────────── -->
+  <div class="main-content" *ngIf="!isLoading && !gameOver">
+
+    <!-- Scenario -->
+    <div class="scenario-block" *ngIf="currentChallenge; else noChallenge">
+      <div class="scenario-label">// MISSION BRIEFING</div>
+      <p class="scenario-text">{{ currentChallenge.scenario }}</p>
+    </div>
+    <ng-template #noChallenge>
+      <div class="no-challenge">No challenge available. Check back later.</div>
+    </ng-template>
+
+    <!-- Terminal -->
+    <div class="terminal-wrapper" *ngIf="currentChallenge">
+
+      <div class="terminal-titlebar">
+        <div class="terminal-dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <span class="terminal-title">terminal&#64;survival:~$</span>
+        <span class="diff-badge" [ngClass]="'diff-' + currentChallenge.difficulty.toLowerCase()">
+          {{ currentChallenge.difficulty }}
+        </span>
+      </div>
+
+      <div class="terminal-output" #terminalOutput>
+        <div
+          *ngFor="let line of commandHistory"
+          class="terminal-line"
+          [ngClass]="'line-' + line.type">{{ line.text }}</div>
+        <div class="terminal-processing" *ngIf="isSubmitting">
+          <span class="blink">&#9608;</span> processing...
+        </div>
+      </div>
+
+      <div class="terminal-input-row">
+        <span class="input-prompt">$&nbsp;</span>
+        <input
+          type="text"
+          class="terminal-input"
+          [(ngModel)]="currentCommand"
+          (keyup.enter)="executeCommand()"
+          [disabled]="isSubmitting"
+          placeholder="type your command..."
+          autocomplete="off"
+          spellcheck="false" />
+        <button
+          class="execute-btn"
+          (click)="executeCommand()"
+          [disabled]="isSubmitting || !currentCommand.trim()">
+          EXECUTE
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── GAME OVER OVERLAY ──────────────────────────── -->
+  <div class="game-over-overlay" *ngIf="gameOver && gameOverStats">
+    <div class="game-over-card">
+      <div class="go-title">GAME OVER</div>
+      <div class="go-skull">&#128128;</div>
+      <div class="go-stats">
+        <div class="go-stat">
+          <span class="go-stat-label">WAVE REACHED</span>
+          <span class="go-stat-value">{{ gameOverStats.wave }}</span>
+        </div>
+        <div class="go-stat">
+          <span class="go-stat-label">FINAL SCORE</span>
+          <span class="go-stat-value cyan">{{ gameOverStats.score }}</span>
+        </div>
+      </div>
+      <p class="go-message">{{ gameOverStats.message }}</p>
+      <div class="go-actions">
+        <button class="btn-primary" (click)="playAgain()">&#9654; PLAY AGAIN</button>
+        <button class="btn-secondary" (click)="goToLeaderboard()">&#127942; LEADERBOARD</button>
+      </div>
+    </div>
+  </div>
+
+</div>

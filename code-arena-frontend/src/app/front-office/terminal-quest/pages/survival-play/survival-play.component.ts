@@ -1,38 +1,188 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { TerminalQuestService } from '../../services/terminal-quest.service';
+import { SurvivalSession, StoryLevel } from '../../models/terminal-quest.model';
+
+interface TerminalLine {
+  text: string;
+  type: 'input' | 'success' | 'error' | 'info';
+}
 
 @Component({
   selector: 'app-survival-play',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
-    <div class="page">
-      <div class="header">
-        <span class="kicker">SURVIVAL MODE</span>
-        <h1 class="title">SURVIVAL <span class="accent">ARENA</span></h1>
-      </div>
-      <div class="placeholder">
-        <span class="icon">💀</span>
-        <p>Endless wave challenge — coming soon</p>
-        <div class="links">
-          <a routerLink="/terminal-quest/survival/leaderboard" class="back">LEADERBOARD →</a>
-          <a routerLink="/terminal-quest" class="back">← HOME</a>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-    .page { padding: 40px; font-family: 'Rajdhani', sans-serif; }
-    .kicker { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 4px; color: #06b6d4; }
-    .title { font-family: 'Orbitron', monospace; font-size: 32px; font-weight: 900; color: #e2e8f0; margin: 8px 0 40px; }
-    .accent { color: #8b5cf6; }
-    .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; border: 1px solid #1a1a2e; border-radius: 8px; color: #64748b; font-size: 16px; }
-    .icon { font-size: 48px; }
-    .links { display: flex; gap: 24px; }
-    .back { font-family: 'Orbitron', monospace; font-size: 11px; color: #8b5cf6; text-decoration: none; letter-spacing: 1px; }
-    .back:hover { text-decoration: underline; }
-  `]
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './survival-play.component.html',
+  styleUrls: ['./survival-play.component.css']
 })
-export class SurvivalPlayComponent {}
+export class SurvivalPlayComponent implements OnInit {
+  @ViewChild('terminalOutput') terminalOutput!: ElementRef<HTMLDivElement>;
+
+  session: SurvivalSession | null = null;
+  currentChallenge: StoryLevel | null = null;
+  commandHistory: TerminalLine[] = [];
+  currentCommand = '';
+  lives = 3;
+  wave = 1;
+  score = 0;
+  gameOver = false;
+  isSubmitting = false;
+  isLoading = true;
+  heartsShake = false;
+  gameOverStats: { wave: number; score: number; message: string } | null = null;
+
+  readonly userId = 'test-user-001';
+  readonly heartRange = [1, 2, 3];
+
+  constructor(
+    private tqService: TerminalQuestService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    console.log('ngOnInit called');
+    this.startGame();
+  }
+
+  private startGame(): void {
+    this.isLoading = true;
+    console.log('starting session...');
+    this.tqService.startSurvivalSession(this.userId).subscribe({
+      next: (session) => {
+        console.log('session started:', session);
+        this.session = session;
+        this.lives = session.livesRemaining;
+        this.wave = session.waveReached;
+        this.score = session.score;
+        this.loadFirstChallenge();
+      },
+      error: (err) => {
+        console.log('error:', err);
+        this.isLoading = false;
+        this.addLine('Failed to start session. Try again.', 'error');
+      }
+    });
+  }
+
+  private loadFirstChallenge(): void {
+    this.tqService.getChapters().subscribe({
+      next: (chapters) => {
+        console.log('chapters loaded:', chapters);
+        const allLevels = chapters.flatMap(c => c.levels || []);
+        console.log('allLevels:', allLevels);
+        if (allLevels.length > 0) {
+          this.currentChallenge = allLevels[Math.floor(Math.random() * allLevels.length)];
+        }
+        this.isLoading = false;
+        this.addLine('Session started — 3 lives remaining. Good luck.', 'info');
+      },
+      error: (err) => {
+        console.log('chapters error:', err);
+        this.isLoading = false;
+        this.addLine('Session started. Type your command.', 'info');
+      }
+    });
+  }
+
+  executeCommand(): void {
+    const cmd = this.currentCommand.trim();
+    if (!cmd || this.isSubmitting || !this.session || !this.currentChallenge || this.gameOver) return;
+
+    this.addLine(`$ ${cmd}`, 'input');
+    this.currentCommand = '';
+    this.isSubmitting = true;
+    this.scrollTerminal();
+
+    this.tqService.submitSurvivalAnswer(this.session.id, this.userId, this.currentChallenge.id, cmd).subscribe({
+      next: (res) => {
+        this.lives = res.livesRemaining;
+        this.wave = res.waveReached;
+        this.score = res.score;
+        this.isSubmitting = false;
+
+        if (res.correct) {
+          const pts = res.waveReached * 10;
+          this.addLine(`✓ Correct! +${pts} pts — Wave ${res.waveReached}`, 'success');
+          this.scrollTerminal();
+          setTimeout(() => {
+            this.commandHistory = [];
+            this.currentChallenge = res.nextChallenge;
+            if (this.currentChallenge) {
+              this.addLine('New challenge. Type your command.', 'info');
+            }
+          }, 900);
+        } else {
+          this.addLine('✗ Wrong answer! −1 life', 'error');
+          this.triggerHeartShake();
+          this.scrollTerminal();
+          if (res.gameOver) {
+            setTimeout(() => {
+              this.gameOverStats = {
+                wave: res.waveReached,
+                score: res.score,
+                message: `You reached wave ${res.waveReached}!`
+              };
+              this.gameOver = true;
+            }, 600);
+          }
+        }
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.addLine('Connection error. Try again.', 'error');
+        this.scrollTerminal();
+      }
+    });
+  }
+
+  abandon(): void {
+    if (!this.session) return;
+    this.tqService.endSurvivalSession(this.session.id).subscribe({
+      next: (ended) => {
+        this.gameOverStats = { wave: ended.waveReached, score: ended.score, message: 'Session abandoned.' };
+        this.gameOver = true;
+      },
+      error: () => {
+        this.gameOverStats = { wave: this.wave, score: this.score, message: 'Session abandoned.' };
+        this.gameOver = true;
+      }
+    });
+  }
+
+  playAgain(): void {
+    this.session = null;
+    this.currentChallenge = null;
+    this.commandHistory = [];
+    this.currentCommand = '';
+    this.lives = 3;
+    this.wave = 1;
+    this.score = 0;
+    this.gameOver = false;
+    this.gameOverStats = null;
+    this.heartsShake = false;
+    this.startGame();
+  }
+
+  goToLeaderboard(): void {
+    this.router.navigate(['/terminal-quest/survival/leaderboard']);
+  }
+
+  private addLine(text: string, type: TerminalLine['type']): void {
+    this.commandHistory.push({ text, type });
+  }
+
+  private triggerHeartShake(): void {
+    this.heartsShake = true;
+    setTimeout(() => { this.heartsShake = false; }, 500);
+  }
+
+  private scrollTerminal(): void {
+    setTimeout(() => {
+      if (this.terminalOutput?.nativeElement) {
+        this.terminalOutput.nativeElement.scrollTop = this.terminalOutput.nativeElement.scrollHeight;
+      }
+    }, 50);
+  }
+}
