@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { EventService } from '../../services/event.service';
+import { EventService } from '../../../../front-office/event/services/event.service';
 
 @Component({
   selector: 'app-create-event',
@@ -79,7 +79,7 @@ export class CreateEventComponent {
           this.router.navigate(['/events']);
         }, 2000);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Failed to create event', err);
         this.isSubmitting = false;
         this.errorMessage = 'EVENT CREATION FAILED.';

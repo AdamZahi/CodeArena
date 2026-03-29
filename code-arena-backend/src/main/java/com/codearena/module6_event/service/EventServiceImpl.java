@@ -100,6 +100,9 @@ public class EventServiceImpl implements EventService {
         if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
             event.setStatus(dto.getStatus());
         }
+        if (dto.getLocation() != null) {
+            event.setLocation(dto.getLocation());
+        }
         ProgrammingEvent saved = eventRepository.save(event);
         return eventMapper.toResponseDTO(saved);
     }
