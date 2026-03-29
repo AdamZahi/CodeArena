@@ -7,7 +7,7 @@ import { Hub, TextChannel, Message } from '../models/arenatalk.model';
   providedIn: 'root'
 })
 export class ArenaTalkService {
-  private apiUrl = 'http://localhost:8080/api/arenatalk';
+  private apiUrl = '/api/arenatalk';
 
   constructor(private http: HttpClient) {}
 
