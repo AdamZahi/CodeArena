@@ -1,34 +1,117 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { AdminTqService } from '../../services/admin-tq.service';
 
 @Component({
   selector: 'app-level-form',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
-    <div class="page">
-      <div class="page-header">
-        <span class="kicker">TERMINAL QUEST</span>
-        <h1 class="title">LEVEL <span class="accent">FORM</span></h1>
-      </div>
-      <div class="placeholder">
-        <span class="icon">✏️</span>
-        <p>Create / Edit level — coming soon</p>
-        <a routerLink="/admin/terminal-quest/chapters" class="back">← BACK TO CHAPTERS</a>
-      </div>
-    </div>
-  `,
-  styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-    .page { font-family: 'Rajdhani', sans-serif; }
-    .kicker { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 4px; color: #06b6d4; }
-    .title { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900; color: #e2e8f0; margin: 8px 0 40px; }
-    .accent { color: #8b5cf6; }
-    .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; border: 1px solid #1a1a2e; border-radius: 8px; color: #64748b; font-size: 16px; }
-    .icon { font-size: 48px; }
-    .back { font-family: 'Orbitron', monospace; font-size: 11px; color: #8b5cf6; text-decoration: none; letter-spacing: 1px; }
-    .back:hover { text-decoration: underline; }
-  `]
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './level-form.component.html',
+  styleUrls: ['./level-form.component.css']
 })
-export class LevelFormComponent {}
+export class LevelFormComponent implements OnInit {
+  form!: FormGroup;
+  chapterId = '';
+  levelId: string | null = null;
+  isEditMode = false;
+  isLoading = false;
+  isSaving = false;
+  errorMsg = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private adminTqService: AdminTqService
+  ) {}
+
+  ngOnInit(): void {
+    this.chapterId = this.route.snapshot.paramMap.get('chapterId') || '';
+    this.levelId   = this.route.snapshot.paramMap.get('id');
+
+    this.form = this.fb.group({
+      title:           ['', Validators.required],
+      scenario:        ['', Validators.required],
+      acceptedAnswers: ['', Validators.required],
+      hint:            [''],
+      orderIndex:      [1, [Validators.required, Validators.min(1)]],
+      difficulty:      ['EASY', Validators.required],
+      isBoss:          [false],
+      xpReward:        [100, [Validators.required, Validators.min(1)]]
+    });
+
+    if (this.levelId) {
+      this.isEditMode = true;
+      this.isLoading = true;
+      // acceptedAnswers is not returned by the API — admin must re-enter it when editing
+      this.form.get('acceptedAnswers')!.clearValidators();
+      this.form.get('acceptedAnswers')!.updateValueAndValidity();
+
+      this.adminTqService.getLevelById(this.levelId).subscribe({
+        next: (level) => {
+          this.form.patchValue({
+            title:      level.title,
+            scenario:   level.scenario,
+            hint:       level.hint || '',
+            orderIndex: level.orderIndex,
+            difficulty: level.difficulty,
+            isBoss:     level.isBoss,
+            xpReward:   level.xpReward
+          });
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Failed to load level:', err);
+          this.errorMsg = 'Failed to load level.';
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  save(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.isSaving = true;
+    this.errorMsg = '';
+    const v = this.form.value;
+
+    const payload: Record<string, unknown> = {
+      chapterId:  this.chapterId,
+      title:      v.title,
+      scenario:   v.scenario,
+      hint:       v.hint,
+      orderIndex: v.orderIndex,
+      difficulty: v.difficulty,
+      isBoss:     v.isBoss,
+      xpReward:   v.xpReward
+    };
+    if (v.acceptedAnswers?.trim()) {
+      payload['acceptedAnswers'] = v.acceptedAnswers.trim();
+    }
+
+    const req = this.isEditMode
+      ? this.adminTqService.updateLevel(this.levelId!, payload as never)
+      : this.adminTqService.createLevel(payload as never);
+
+    req.subscribe({
+      next: () => {
+        this.router.navigate(['/admin/terminal-quest/levels', this.chapterId]);
+      },
+      error: (err) => {
+        console.error('Save failed:', err);
+        this.errorMsg = 'Failed to save level. Check that acceptedAnswers is valid JSON.';
+        this.isSaving = false;
+      }
+    });
+  }
+
+  isInvalid(field: string): boolean {
+    const c = this.form.get(field);
+    return !!(c && c.invalid && c.touched);
+  }
+}

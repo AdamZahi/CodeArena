@@ -1,34 +1,89 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { AdminTqService } from '../../services/admin-tq.service';
 
 @Component({
   selector: 'app-chapter-form',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
-    <div class="page">
-      <div class="page-header">
-        <span class="kicker">TERMINAL QUEST</span>
-        <h1 class="title">CHAPTER <span class="accent">FORM</span></h1>
-      </div>
-      <div class="placeholder">
-        <span class="icon">✏️</span>
-        <p>Create / Edit chapter — coming soon</p>
-        <a routerLink="/admin/terminal-quest/chapters" class="back">← BACK TO CHAPTERS</a>
-      </div>
-    </div>
-  `,
-  styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-    .page { font-family: 'Rajdhani', sans-serif; }
-    .kicker { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 4px; color: #06b6d4; }
-    .title { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900; color: #e2e8f0; margin: 8px 0 40px; }
-    .accent { color: #8b5cf6; }
-    .placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 16px; border: 1px solid #1a1a2e; border-radius: 8px; color: #64748b; font-size: 16px; }
-    .icon { font-size: 48px; }
-    .back { font-family: 'Orbitron', monospace; font-size: 11px; color: #8b5cf6; text-decoration: none; letter-spacing: 1px; }
-    .back:hover { text-decoration: underline; }
-  `]
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './chapter-form.component.html',
+  styleUrls: ['./chapter-form.component.css']
 })
-export class ChapterFormComponent {}
+export class ChapterFormComponent implements OnInit {
+  form!: FormGroup;
+  isEditMode = false;
+  chapterId: string | null = null;
+  isLoading = false;
+  isSaving = false;
+  errorMsg = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private adminTqService: AdminTqService
+  ) {}
+
+  ngOnInit(): void {
+    this.form = this.fb.group({
+      title:       ['', Validators.required],
+      description: ['', Validators.required],
+      orderIndex:  [1, [Validators.required, Validators.min(1)]],
+      isLocked:    [false]
+    });
+
+    this.chapterId = this.route.snapshot.paramMap.get('id');
+    if (this.chapterId) {
+      this.isEditMode = true;
+      this.isLoading = true;
+      this.adminTqService.getChapterById(this.chapterId).subscribe({
+        next: (chapter) => {
+          this.form.patchValue({
+            title:       chapter.title,
+            description: chapter.description,
+            orderIndex:  chapter.orderIndex,
+            isLocked:    chapter.isLocked
+          });
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Failed to load chapter:', err);
+          this.errorMsg = 'Failed to load chapter.';
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  save(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.isSaving = true;
+    this.errorMsg = '';
+    const payload = this.form.value;
+
+    const req = this.isEditMode
+      ? this.adminTqService.updateChapter(this.chapterId!, payload)
+      : this.adminTqService.createChapter(payload);
+
+    req.subscribe({
+      next: () => {
+        this.router.navigate(['/admin/terminal-quest/chapters']);
+      },
+      error: (err) => {
+        console.error('Save failed:', err);
+        this.errorMsg = 'Failed to save chapter. Please try again.';
+        this.isSaving = false;
+      }
+    });
+  }
+
+  isInvalid(field: string): boolean {
+    const c = this.form.get(field);
+    return !!(c && c.invalid && c.touched);
+  }
+}

@@ -1,0 +1,72 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <a routerLink="/admin/terminal-quest" class="back-btn">&#8592; DASHBOARD</a>
+      <h1 class="page-title">CHAPTERS <span class="accent">MANAGEMENT</span></h1>
+    </div>
+    <a routerLink="/admin/terminal-quest/chapters/new" class="btn-primary">+ NEW CHAPTER</a>
+  </div>
+
+  <!-- ── ERROR ──────────────────────────────────────── -->
+  <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- ── LOADING ────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING CHAPTERS...</span>
+  </div>
+
+  <!-- ── TABLE ──────────────────────────────────────── -->
+  <div class="table-wrapper" *ngIf="!isLoading && chapters.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="center">#ORDER</th>
+          <th>TITLE</th>
+          <th>DESCRIPTION</th>
+          <th class="center">LOCKED</th>
+          <th class="center">LEVELS</th>
+          <th class="right">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let chapter of chapters">
+          <td class="center order-cell">{{ chapter.orderIndex }}</td>
+          <td class="title-cell">{{ chapter.title }}</td>
+          <td class="desc-cell">{{ chapter.description }}</td>
+          <td class="center">
+            <span class="badge" [class.badge-locked]="chapter.isLocked" [class.badge-open]="!chapter.isLocked">
+              {{ chapter.isLocked ? 'LOCKED' : 'OPEN' }}
+            </span>
+          </td>
+          <td class="center">
+            <a [routerLink]="['/admin/terminal-quest/levels', chapter.id]" class="levels-link">
+              {{ levelCount(chapter) }} levels
+            </a>
+          </td>
+          <td class="right">
+            <div class="action-btns">
+              <a [routerLink]="['/admin/terminal-quest/chapters/edit', chapter.id]" class="btn-edit">EDIT</a>
+              <button
+                class="btn-delete"
+                (click)="confirmDelete(chapter)"
+                [disabled]="deletingId === chapter.id">
+                {{ deletingId === chapter.id ? '...' : 'DELETE' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── EMPTY STATE ────────────────────────────────── -->
+  <div class="empty-state" *ngIf="!isLoading && chapters.length === 0">
+    <span class="empty-icon">&#128218;</span>
+    <p>No chapters yet.</p>
+    <a routerLink="/admin/terminal-quest/chapters/new" class="btn-primary">CREATE FIRST CHAPTER</a>
+  </div>
+
+</div>

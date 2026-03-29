@@ -1,0 +1,74 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <a routerLink="/admin/terminal-quest/chapters" class="back-btn">&#8592; CHAPTERS</a>
+      <h1 class="page-title">
+        LEVELS
+        <span class="accent" *ngIf="chapter"> — {{ chapter.title }}</span>
+      </h1>
+    </div>
+    <a [routerLink]="['/admin/terminal-quest/levels', chapterId, 'new']" class="btn-primary">+ NEW LEVEL</a>
+  </div>
+
+  <!-- ── ERROR ──────────────────────────────────────── -->
+  <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- ── LOADING ────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING LEVELS...</span>
+  </div>
+
+  <!-- ── TABLE ──────────────────────────────────────── -->
+  <div class="table-wrapper" *ngIf="!isLoading && levels.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="center">#ORDER</th>
+          <th>TITLE</th>
+          <th class="center">DIFFICULTY</th>
+          <th class="center">BOSS</th>
+          <th class="center">XP</th>
+          <th class="right">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let level of levels">
+          <td class="center order-cell">{{ level.orderIndex }}</td>
+          <td class="title-cell">{{ level.title }}</td>
+          <td class="center">
+            <span class="diff-badge" [ngClass]="diffClass(level.difficulty)">
+              {{ level.difficulty }}
+            </span>
+          </td>
+          <td class="center">
+            <span class="boss-badge" *ngIf="level.isBoss">BOSS</span>
+            <span class="no-badge" *ngIf="!level.isBoss">—</span>
+          </td>
+          <td class="center xp-cell">{{ level.xpReward }}</td>
+          <td class="right">
+            <div class="action-btns">
+              <a [routerLink]="['/admin/terminal-quest/levels', chapterId, 'edit', level.id]" class="btn-edit">EDIT</a>
+              <button
+                class="btn-delete"
+                (click)="confirmDelete(level)"
+                [disabled]="deletingId === level.id">
+                {{ deletingId === level.id ? '...' : 'DELETE' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── EMPTY STATE ────────────────────────────────── -->
+  <div class="empty-state" *ngIf="!isLoading && levels.length === 0">
+    <span class="empty-icon">&#127919;</span>
+    <p>No levels in this chapter yet.</p>
+    <a [routerLink]="['/admin/terminal-quest/levels', chapterId, 'new']" class="btn-primary">CREATE FIRST LEVEL</a>
+  </div>
+
+</div>
