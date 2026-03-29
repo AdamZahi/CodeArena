@@ -1,0 +1,130 @@
+<section class="workspace-page">
+  <div class="workspace-shell">
+
+    <!-- LEFT SIDEBAR: HUBS -->
+    <aside class="sidebar hubs-sidebar">
+      <div class="sidebar-header">
+        <p class="sidebar-kicker">COMMUNITIES</p>
+        <h2>My Hubs</h2>
+      </div>
+
+      <div class="hub-list" *ngIf="hubs.length > 0; else noHubs">
+        <div
+          class="hub-card"
+          *ngFor="let hub of hubs"
+          [class.active]="selectedHub?.id === hub.id"
+          (click)="selectHub(hub)"
+        >
+          <div class="hub-avatar">
+            {{ hub.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="hub-info">
+            <h3>{{ hub.name }}</h3>
+            <p>{{ hub.category }}</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noHubs>
+        <div class="empty-box">
+          <p>No communities yet.</p>
+        </div>
+      </ng-template>
+    </aside>
+
+    <!-- MIDDLE SIDEBAR: CHANNELS -->
+    <aside class="sidebar channels-sidebar">
+      <div class="sidebar-header">
+        <p class="sidebar-kicker">CHANNELS</p>
+        <h2>{{ selectedHub?.name || 'No Hub Selected' }}</h2>
+      </div>
+
+      <div class="channel-list" *ngIf="channels.length > 0; else noChannels">
+        <div
+          class="channel-card"
+          *ngFor="let channel of channels"
+          [class.active]="selectedChannel?.id === channel.id"
+          (click)="selectChannel(channel)"
+        >
+          <div>
+            <h3># {{ channel.name }}</h3>
+            <p>{{ channel.topic }}</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noChannels>
+        <div class="empty-box">
+          <p>No channels available.</p>
+        </div>
+      </ng-template>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <main class="main-panel">
+      <div class="main-header" *ngIf="selectedChannel">
+        <div>
+          <p class="channel-badge">{{ categoryLabel }}</p>
+          <h1># {{ selectedChannel.name }}</h1>
+          <p class="channel-topic">{{ selectedChannel.topic }}</p>
+        </div>
+      </div>
+
+      <!-- WELCOME STATE -->
+      <div class="welcome-state" *ngIf="selectedChannel && !hasMessages">
+        <div class="welcome-card">
+          <p class="eyebrow">// COMMUNITY READY</p>
+          <h2>Welcome to {{ selectedHub?.name }}</h2>
+          <p class="welcome-text">
+            Your community has been created successfully. This workspace is now ready for
+            discussions, announcements, collaboration, and team coordination.
+          </p>
+
+          <div class="welcome-grid">
+            <div class="mini-card">
+              <h3>Start the conversation</h3>
+              <p>Send your first message in <strong>#{{ selectedChannel.name }}</strong>.</p>
+            </div>
+
+            <div class="mini-card">
+              <h3>Organize your space</h3>
+              <p>Use the created channels to structure discussions by topic.</p>
+            </div>
+
+            <div class="mini-card">
+              <h3>Build your community</h3>
+              <p>Turn this hub into a strong collaborative space for gaming and programming.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="messages-panel" *ngIf="selectedChannel && hasMessages">
+        <div class="message-card" *ngFor="let msg of messages">
+          <div class="message-avatar">
+            {{ msg.senderName.charAt(0).toUpperCase() }}
+          </div>
+          <div class="message-content">
+            <div class="message-meta">
+              <strong>{{ msg.senderName }}</strong>
+              <span>{{ msg.sentAt | date:'short' }}</span>
+            </div>
+            <p>{{ msg.content }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT -->
+      <div class="message-input-bar" *ngIf="selectedChannel">
+        <input
+          type="text"
+          [(ngModel)]="newMessage"
+          placeholder="Send a message to #{{ selectedChannel.name }}"
+          (keyup.enter)="sendMessage()"
+        />
+        <button (click)="sendMessage()">Send</button>
+      </div>
+    </main>
+  </div>
+</section>

@@ -1,0 +1,189 @@
+<section class="create-page">
+  <div class="header">
+    <p class="eyebrow">COMMUNITY ARENA //</p>
+    <h1>Create Your Community</h1>
+    <p class="header-text">
+      Build a community space for gaming, programming, teamwork, and collaboration inside CodeArena.
+    </p>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-pill" [class.active]="step === 1">1. Choose Type</div>
+    <div class="step-pill" [class.active]="step === 2">2. Define Identity</div>
+    <div class="step-pill" [class.active]="step === 3">3. Set Visibility</div>
+    <div class="step-pill" [class.active]="step === 4">4. Select Channels</div>
+    <div class="step-pill" [class.active]="step === 5">5. Review & Create</div>
+  </div>
+
+  <div class="wizard-card">
+    <div *ngIf="step === 1">
+      <div class="section-title">
+        <h2>Choose Community Type</h2>
+        <p>Select the type that best matches your community’s purpose.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div
+          *ngFor="let cat of categories"
+          class="select-card"
+          [class.active]="selectedCategory === cat.key"
+          (click)="selectCategory(cat.key)"
+        >
+          <h3>{{ cat.label }}</h3>
+          <p>{{ cat.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="step === 2">
+      <div class="section-title">
+        <h2>Define Identity</h2>
+        <p>Give your community a strong identity and visual presence.</p>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Community Name</label>
+          <input
+            type="text"
+            [(ngModel)]="hubData.name"
+            placeholder="Ex: Code Warriors"
+          />
+        </div>
+
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea
+            [(ngModel)]="hubData.description"
+            placeholder="Describe your community..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Banner URL</label>
+          <input
+            type="text"
+            [(ngModel)]="hubData.bannerUrl"
+            placeholder="Paste a banner image URL"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Icon URL</label>
+          <input
+            type="text"
+            [(ngModel)]="hubData.iconUrl"
+            placeholder="Paste an icon image URL"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="step === 3">
+      <div class="section-title">
+        <h2>Set Visibility</h2>
+        <p>Choose who can access your community.</p>
+      </div>
+
+      <div class="cards-grid two-columns">
+        <div
+          *ngFor="let vis of visibilities"
+          class="select-card"
+          [class.active]="selectedVisibility === vis.key"
+          (click)="selectVisibility(vis.key)"
+        >
+          <h3>{{ vis.label }}</h3>
+          <p>{{ vis.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="step === 4">
+      <div class="section-title">
+        <h2>Select Default Channels</h2>
+        <p>Choose the channels that should be created automatically.</p>
+      </div>
+
+      <div class="channels-grid">
+        <div
+          *ngFor="let channel of channelOptions"
+          class="channel-card"
+          [class.active]="channel.selected"
+          (click)="toggleChannel(channel)"
+        >
+          <div class="channel-top">
+            <h3># {{ channel.name }}</h3>
+            <span>{{ channel.selected ? 'Selected' : 'Optional' }}</span>
+          </div>
+          <p>{{ channel.topic }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="step === 5">
+      <div class="section-title">
+        <h2>Review & Create</h2>
+        <p>Check your setup before launching the community.</p>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-row">
+          <span>Type</span>
+          <strong>{{ selectedCategory }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Name</span>
+          <strong>{{ hubData.name }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Description</span>
+          <strong>{{ hubData.description }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Visibility</span>
+          <strong>{{ selectedVisibility }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Banner</span>
+          <strong>{{ hubData.bannerUrl || 'Not provided' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Icon</span>
+          <strong>{{ hubData.iconUrl || 'Not provided' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Channels</span>
+          <strong>{{ selectedChannelsCount }} selected</strong>
+        </div>
+      </div>
+    </div>
+
+    <p class="error-text" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <div class="actions" [class.dual]="step > 1">
+      <button class="back-btn" *ngIf="step > 1" (click)="prevStep()">← Back</button>
+
+      <button
+        class="next-btn"
+        *ngIf="step < 5"
+        [disabled]="
+          (step === 1 && !selectedCategory) ||
+          (step === 2 && (!hubData.name.trim() || !hubData.description.trim())) ||
+          (step === 3 && !selectedVisibility)
+        "
+        (click)="nextStep()"
+      >
+        Next →
+      </button>
+
+      <button
+        class="create-btn"
+        *ngIf="step === 5"
+        [disabled]="loading"
+        (click)="createCommunity()"
+      >
+        {{ loading ? 'Creating...' : 'Create Community' }}
+      </button>
+    </div>
+  </div>
+</section>
