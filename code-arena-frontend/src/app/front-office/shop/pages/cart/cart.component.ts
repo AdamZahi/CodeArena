@@ -9,16 +9,18 @@ import { AuthService } from '@auth0/auth0-angular';
 import { take } from 'rxjs/operators';
 import confetti                  from 'canvas-confetti';
 import { FormsModule } from '@angular/forms';
+import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
+import { GeminiService } from '../../services/gemini.service';
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaymentModalComponent],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css',
 })
 export class CartComponent implements OnInit {
 
-    Math = Math;
+  Math = Math;
   cartItems: CartItem[] = [];
   total = 0;
   isCheckingOut = false;
@@ -27,36 +29,61 @@ export class CartComponent implements OnInit {
   // ── VALIDATION ERRORS ────────────────────────
   checkoutError: string = '';
 
+  // ── PAYMENT MODAL ─────────────────────────────
+  showPaymentModal = false;
+
+  // ── COUPON ────────────────────────────────────
+  couponCode: string = '';
+  couponApplied: boolean = false;
+  couponDiscount: number = 0;
+  couponMessage: string = '';
+  couponError: string = '';
+  couponLoading: boolean = false;
+
+  // ── LOYALTY POINTS ────────────────────────────
+  loyaltyPoints: number = 0;
+  loyaltyRedeemableValue: number = 0;
+  loyaltyApplied: boolean = false;
+  loyaltyDiscount: number = 0;
+  loyaltyMessage: string = '';
+  participantId: string = '';
+
   constructor(
     private cartService: CartService,
     private shopService: ShopService,
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private geminiService: GeminiService
   ) {}
 
-ngOnInit(): void {
-  this.cartService.cartItems$.subscribe(items => {
-    this.cartItems = items;
-    this.total = this.cartService.getTotal();
-  });
+  //adding ai property 
+  // ── AI MESSAGE ────────────────────────────────
+aiOrderMessage: string = '';
+isLoadingAiMessage: boolean = false;
+//
+  ngOnInit(): void {
+    this.cartService.cartItems$.subscribe(items => {
+      this.cartItems = items;
+      this.total = this.cartService.getTotal();
+    });
 
-  // ── LOAD LOYALTY POINTS ──────────────────────
-  this.auth.user$.pipe(take(1)).subscribe(user => {
-    if (user?.sub) {
-      this.participantId = user.sub;
-      this.loadLoyaltyPoints();
-    }
-  });
-}
+    // ── LOAD LOYALTY POINTS ──────────────────────
+    this.auth.user$.pipe(take(1)).subscribe(user => {
+      if (user?.sub) {
+        this.participantId = user.sub;
+        this.loadLoyaltyPoints();
+      }
+    });
+  }
 
-loadLoyaltyPoints(): void {
-  this.shopService.getLoyaltyPoints(this.participantId).subscribe({
-    next: (res) => {
-      this.loyaltyPoints = res.data.points;
-      this.loyaltyRedeemableValue = res.data.redeemableValue;
-    }
-  });
-}
+  loadLoyaltyPoints(): void {
+    this.shopService.getLoyaltyPoints(this.participantId).subscribe({
+      next: (res) => {
+        this.loyaltyPoints = res.data.points;
+        this.loyaltyRedeemableValue = res.data.redeemableValue;
+      }
+    });
+  }
 
   removeItem(productId: string): void {
     this.cartService.removeFromCart(productId);
@@ -116,7 +143,9 @@ loadLoyaltyPoints(): void {
     }, 0);
   }
 
-  // ── CHECKOUT WITH VALIDATION ─────────────────
+  // ── CHECKOUT WITH VALIDATION ──────────────────
+  // Opens payment modal instead of directly checking out
+  // Order is only created AFTER payment is confirmed by Stripe
   checkout(): void {
     this.checkoutError = '';
 
@@ -133,6 +162,16 @@ loadLoyaltyPoints(): void {
       return;
     }
 
+    // ── OPEN PAYMENT MODAL ────────────────────────
+    // Validation passed — show Stripe payment form
+    this.showPaymentModal = true;
+  }
+
+  // ── HANDLE PAYMENT SUCCESS ────────────────────
+  // Called by payment modal after Stripe confirms payment
+  // Only now do we create the actual order in our DB
+  onPaymentSuccess(paymentIntentId: string): void {
+    this.showPaymentModal = false;
     this.isCheckingOut = true;
 
     this.auth.user$.pipe(take(1)).subscribe(user => {
@@ -144,40 +183,65 @@ loadLoyaltyPoints(): void {
         return;
       }
 
-const request: CheckoutRequest = {
-  participantId,
-  couponCode: this.couponApplied ? this.couponCode : undefined, // ← ADD
-  items: this.cartItems.map(item => ({
-    productId: item.product.id,
-    quantity: item.quantity
-  }))
-};
+      const request: CheckoutRequest = {
+        participantId,
+        couponCode: this.couponApplied ? this.couponCode : undefined,
+        items: this.cartItems.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity
+        }))
+      };
 
       this.shopService.checkout(request).subscribe({
         next: () => this.onSuccess(),
         error: (err) => {
-          console.error('Checkout error:', err);
-          this.checkoutError = 'Checkout failed. Please try again.';
+          console.error('Order creation error:', err);
+          this.checkoutError = 'Payment successful but order creation failed. Contact support.';
           this.isCheckingOut = false;
         }
       });
     });
   }
 
-  // ── SUCCESS + CONFETTI ───────────────────────
-  onSuccess(): void {
-    this.isCheckingOut = false;
-    this.checkoutSuccess = true;
-    this.checkoutError = '';
-
-    // 🎉 Launch confetti
-    this.launchConfetti();
-
-    setTimeout(() => {
-      this.cartService.clearCart();
-      this.router.navigate(['/shop/inventory']);
-    }, 3500);
+  // ── CLOSE PAYMENT MODAL ───────────────────────
+  // Called when user clicks X on the payment modal
+  onPaymentModalClose(): void {
+    this.showPaymentModal = false;
   }
+
+  // ── SUCCESS + CONFETTI ───────────────────────
+  //ai order message generation is also handled here after successful checkout
+onSuccess(): void {
+  this.isCheckingOut = false;
+  this.checkoutSuccess = true;
+  this.checkoutError = '';
+
+  // 🎉 Launch confetti
+  this.launchConfetti();
+
+  // ── GENERATE AI MESSAGE ───────────────────────
+  // Get product names for the AI prompt
+  const itemNames = this.cartItems.map(item => item.product.name);
+  const total = this.getFinalTotal();
+  this.isLoadingAiMessage = true;
+
+  this.geminiService.generateOrderMessage(itemNames, total).subscribe({
+    next: (message) => {
+      this.aiOrderMessage = message;
+      this.isLoadingAiMessage = false;
+    },
+    error: () => {
+      // If AI fails, show a default message
+      this.aiOrderMessage = '⚔ WARRIOR! Your order is confirmed and on its way. May your code compile on the first try! 🚀';
+      this.isLoadingAiMessage = false;
+    }
+  });
+
+  setTimeout(() => {
+    this.cartService.clearCart();
+    this.router.navigate(['/shop/inventory']);
+  }, 20000); // extended to 20s so user can read the AI message
+}
 
   launchConfetti(): void {
     // Center burst
@@ -221,93 +285,75 @@ const request: CheckoutRequest = {
     }, 1000);
   }
 
-  // ── COUPON ───────────────────────────────────
-couponCode: string = '';
-couponApplied: boolean = false;
-couponDiscount: number = 0;
-couponMessage: string = '';
-couponError: string = '';
-couponLoading: boolean = false;
+  // ── APPLY COUPON ──────────────────────────────
+  applyCoupon(): void {
+    if (!this.couponCode.trim()) return;
+    this.couponLoading = true;
+    this.couponError = '';
+    this.couponMessage = '';
 
-// ── APPLY COUPON ─────────────────────────────
-applyCoupon(): void {
-  if (!this.couponCode.trim()) return;
-  this.couponLoading = true;
-  this.couponError = '';
-  this.couponMessage = '';
-
-  this.shopService.validateCoupon(this.couponCode).subscribe({
-    next: (res) => {
-      this.couponLoading = false;
-      if (res.data.valid) {
-        this.couponApplied = true;
-        this.couponDiscount = res.data.discountRate;
-        this.couponMessage = res.data.message;
-      } else {
-        this.couponApplied = false;
-        this.couponDiscount = 0;
-        this.couponError = '❌ ' + res.data.message;
+    this.shopService.validateCoupon(this.couponCode).subscribe({
+      next: (res) => {
+        this.couponLoading = false;
+        if (res.data.valid) {
+          this.couponApplied = true;
+          this.couponDiscount = res.data.discountRate;
+          this.couponMessage = res.data.message;
+        } else {
+          this.couponApplied = false;
+          this.couponDiscount = 0;
+          this.couponError = '❌ ' + res.data.message;
+        }
+      },
+      error: () => {
+        this.couponLoading = false;
+        this.couponError = '❌ Failed to validate coupon.';
       }
-    },
-    error: () => {
-      this.couponLoading = false;
-      this.couponError = '❌ Failed to validate coupon.';
-    }
-  });
-}
+    });
+  }
 
-removeCoupon(): void {
-  this.couponCode = '';
-  this.couponApplied = false;
-  this.couponDiscount = 0;
-  this.couponMessage = '';
-  this.couponError = '';
-}
+  removeCoupon(): void {
+    this.couponCode = '';
+    this.couponApplied = false;
+    this.couponDiscount = 0;
+    this.couponMessage = '';
+    this.couponError = '';
+  }
 
-// ── FINAL TOTAL WITH COUPON and loyalty ───────────────────
-// ── UPDATE FINAL TOTAL TO INCLUDE LOYALTY ────
-getFinalTotal(): number {
-  let total = this.getDiscountedTotal();
-  if (this.couponApplied) total = total * (1 - this.couponDiscount);
-  if (this.loyaltyApplied) total = total - this.loyaltyDiscount;
-  return Math.max(0, total);
-}
+  // ── FINAL TOTAL WITH COUPON + LOYALTY ─────────
+  getFinalTotal(): number {
+    let total = this.getDiscountedTotal();
+    if (this.couponApplied) total = total * (1 - this.couponDiscount);
+    if (this.loyaltyApplied) total = total - this.loyaltyDiscount;
+    return Math.max(0, total);
+  }
 
-getCouponSavings(): number {
-  return this.getDiscountedTotal() - this.getFinalTotal();
-}
-// ── LOYALTY POINTS ───────────────────────────
-loyaltyPoints: number = 0;
-loyaltyRedeemableValue: number = 0;
-loyaltyApplied: boolean = false;
-loyaltyDiscount: number = 0;
-loyaltyMessage: string = '';
-participantId: string = '';
-// ── REDEEM LOYALTY POINTS ────────────────────
-applyLoyaltyPoints(): void {
-  if (!this.loyaltyRedeemableValue || this.loyaltyApplied) return;
+  getCouponSavings(): number {
+    return this.getDiscountedTotal() - this.getFinalTotal();
+  }
 
-  const pointsToRedeem = Math.floor(this.loyaltyPoints / 100) * 100;
+  // ── REDEEM LOYALTY POINTS ─────────────────────
+  applyLoyaltyPoints(): void {
+    if (!this.loyaltyRedeemableValue || this.loyaltyApplied) return;
 
-  this.shopService.redeemPoints(this.participantId, pointsToRedeem).subscribe({
-    next: (res) => {
-      this.loyaltyApplied = true;
-      this.loyaltyDiscount = res.data.discount;
-      this.loyaltyPoints = res.data.remainingPoints;
-      this.loyaltyRedeemableValue = 0;
-      this.loyaltyMessage = `✅ ${pointsToRedeem} points redeemed for $${res.data.discount.toFixed(2)} off!`;
-    },
-    error: (err) => console.error('Redeem failed', err)
-  });
-}
+    const pointsToRedeem = Math.floor(this.loyaltyPoints / 100) * 100;
 
-removeLoyaltyDiscount(): void {
-  // Note: points already deducted from DB, reload to get current balance
-  this.loyaltyApplied = false;
-  this.loyaltyDiscount = 0;
-  this.loyaltyMessage = '';
-  this.loadLoyaltyPoints();
-}
+    this.shopService.redeemPoints(this.participantId, pointsToRedeem).subscribe({
+      next: (res) => {
+        this.loyaltyApplied = true;
+        this.loyaltyDiscount = res.data.discount;
+        this.loyaltyPoints = res.data.remainingPoints;
+        this.loyaltyRedeemableValue = 0;
+        this.loyaltyMessage = `✅ ${pointsToRedeem} points redeemed for $${res.data.discount.toFixed(2)} off!`;
+      },
+      error: (err) => console.error('Redeem failed', err)
+    });
+  }
 
-
+  removeLoyaltyDiscount(): void {
+    this.loyaltyApplied = false;
+    this.loyaltyDiscount = 0;
+    this.loyaltyMessage = '';
+    this.loadLoyaltyPoints();
+  }
 }

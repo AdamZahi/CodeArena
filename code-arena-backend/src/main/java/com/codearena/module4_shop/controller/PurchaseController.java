@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class PurchaseController {
     private final ExcelService excelService;
     private final CouponService couponService;
     private final LoyaltyService loyaltyService;
+    private final StripeService stripeService;
 
 
 
@@ -220,5 +222,31 @@ public class PurchaseController {
         result.put("remainingPoints", loyaltyService.getPoints(participantId));
 
         return ResponseEntity.ok(ApiResponse.success(result, "Points redeemed successfully"));
+    }
+    // ── CREATE PAYMENT INTENT ─────────────────────
+// Frontend calls this before showing payment form
+// Returns clientSecret needed to confirm payment on frontend
+    @PostMapping("/payment/create-intent")
+    public ResponseEntity<ApiResponse<Map<String, String>>> createPaymentIntent(
+            @RequestBody Map<String, Object> body
+    ) {
+        try {
+            double amount = Double.parseDouble(body.get("amount").toString());
+            String currency = body.getOrDefault("currency", "usd").toString();
+            Map<String, String> result = stripeService.createPaymentIntent(amount, currency);
+            return ResponseEntity.ok(ApiResponse.success(result, "Payment intent created"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to create payment intent: " + e.getMessage()));
+        }
+    }
+
+    // ── GET PUBLISHABLE KEY ───────────────────────
+// Frontend calls this on load to initialize Stripe.js
+    @GetMapping("/payment/config")
+    public ResponseEntity<ApiResponse<Map<String, String>>> getPaymentConfig() {
+        Map<String, String> config = new HashMap<>();
+        config.put("publishableKey", stripeService.getPublishableKey());
+        return ResponseEntity.ok(ApiResponse.success(config, "Payment config"));
     }
 }

@@ -102,4 +102,17 @@ redeemPoints(participantId: string, points: number): Observable<ApiResponse<any>
     { participantId, points }
   );
 }
+// ── STRIPE PAYMENT ────────────────────────────
+// Gets the Stripe publishable key from backend
+getPaymentConfig(): Observable<ApiResponse<any>> {
+  return this.get<any>('/payment/config');
+}
+
+// Creates a payment intent and returns clientSecret
+createPaymentIntent(amount: number): Observable<ApiResponse<any>> {
+  return this.http.post<ApiResponse<any>>(
+    `${environment.apiBaseUrl}/api/shop/payment/create-intent`,
+    { amount, currency: 'usd' }
+  );
+}
 }

@@ -10,6 +10,7 @@ import { SoundService } from '../../services/sound.service';
 import { NotificationService, PriceUpdate } from '../../services/notification.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { take } from 'rxjs/operators';
+import { EcoScoreService, EcoScore } from '../../services/eco-score.service';
 @Component({
   selector: 'app-shop-home',
   standalone: true,
@@ -60,6 +61,7 @@ export class ShopHomeComponent implements OnInit {
     private soundService: SoundService,
     private notificationService: NotificationService,
     private auth: AuthService,
+    private ecoScoreService: EcoScoreService,
     private router: Router
 
   ) {}
@@ -99,14 +101,24 @@ ngOnInit(): void {
       'name',
       'asc'
     ).subscribe({
-      next: (res) => {
-        this.products = res.data.products;
-        this.filteredProducts = [...this.products];
-        this.totalPages = res.data.totalPages;
-        this.totalItems = res.data.totalItems;
-        this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
-        this.isLoading = false;
-      },
+next: (res) => {
+  this.products = res.data.products;
+  this.filteredProducts = [...this.products];
+  this.totalPages = res.data.totalPages;
+  this.totalItems = res.data.totalItems;
+  this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
+  this.isLoading = false;
+
+  // ── LOAD ECO SCORES FOR ALL PRODUCTS ─────────
+  // Generate AI eco scores after products load
+  // Uses caching so Gemini is only called once per product
+ // ── LOAD ECO SCORES WITH DELAY ────────────────
+// Space out API calls to avoid Gemini rate limit (15 req/min free tier)
+// 5 second delay between each product = safe for free tier
+this.products.forEach((product, index) => {
+  this.loadEcoScore(product, index * 8000);
+});
+},
       error: (err) => {
         console.error('Failed to load products', err);
         this.isLoading = false;
@@ -262,5 +274,32 @@ getDynamicIndicator(product: Product): string {
 isPriceChanged(product: Product): boolean {
   const update = this.dynamicPrices[product.id];
   return update ? update.changed : false;
+}
+// ── ECO SCORE property───────────────────────────────
+// ── ECO SCORES ────────────────────────────────
+// Stores eco scores per product ID
+// Loaded lazily when products appear on screen
+ecoScores: { [productId: string]: EcoScore } = {};
+ecoTooltipId: string = ''; // which product's tooltip is showing
+// ── LOAD ECO SCORE ────────────────────────────
+// Called when product card is visible
+// Generates AI eco score for each product
+// ── LOAD ECO SCORE ────────────────────────────
+// delayMs: how long to wait before calling Gemini
+// This prevents hitting the rate limit when loading multiple products
+loadEcoScore(product: Product, delayMs: number = 0): void {
+  if (this.ecoScores[product.id]) return; // already loaded — use cache
+
+  this.ecoScoreService.getScore(product.id, product.name, product.category, delayMs)
+    .subscribe(score => {
+      const newScores = { ...this.ecoScores };
+      newScores[product.id] = score;
+      this.ecoScores = newScores; // triggers Angular change detection
+    });
+}
+
+// ── TOGGLE ECO TOOLTIP ────────────────────────
+toggleEcoTooltip(productId: string): void {
+  this.ecoTooltipId = this.ecoTooltipId === productId ? '' : productId;
 }
 }

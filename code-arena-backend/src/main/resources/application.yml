@@ -39,9 +39,3 @@ app:
       - http://localhost:4200
   shop:
     admin-email: islemazzouz04@gmail.com
-
-    stripe:
-      secret-key: ${STRIPE_SECRET_KEY:your-stripe-secret-key-here}
-      publishable-key: pk_test_51TFMdY0mrwK4eA2C92xU22HoJGLjz7LxnNVuGHuvrjKKeJbWXqdThqoAFRzGlQ6b1sUGPpx60S1hHrT54I3SkXeC00aMOhTVTN
-
-
