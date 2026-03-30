@@ -153,6 +153,7 @@ export class ArenatalkCreateComponent {
       this.errorMessage = 'Please complete all required steps before creating your community.';
       return;
     }
+    
 
     this.loading = true;
     this.errorMessage = '';
@@ -187,21 +188,20 @@ export class ArenatalkCreateComponent {
       })
     ).subscribe({
       next: ({ createdHub, createdChannels }) => {
-        this.loading = false;
+  this.loading = false;
 
-        this.router.navigate(['/arenatalk/workspace'], {
-          state: {
-            selectedHub: createdHub,
-            createdChannels: createdChannels
-          }
-        });
-      },
-      error: (err: unknown) => {
-        console.error('Error creating community:', err);
-        this.loading = false;
-        this.errorMessage = 'Something went wrong while creating the community.';
-      }
+  localStorage.setItem('communityArena_selectedHub', JSON.stringify(createdHub));
+  localStorage.setItem('communityArena_channels', JSON.stringify(createdChannels));
+
+  this.router.navigate(['/arenatalk/workspace'], {
+    state: {
+      selectedHub: createdHub,
+      createdChannels: createdChannels
+    }
+  });
+},
     });
+    
   }
 
   get selectedChannelsCount(): number {

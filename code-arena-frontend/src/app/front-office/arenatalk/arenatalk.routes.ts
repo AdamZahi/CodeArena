@@ -16,6 +16,13 @@ export const ARENATALK_ROUTES: Routes = [
       )
   },
   {
+    path: 'join',
+    loadComponent: () =>
+      import('./pages/arenatalk-join/arenatalk-join.component').then(
+        (m) => m.ArenaTalkJoinComponent
+      )
+  },
+  {
     path: 'workspace',
     loadComponent: () =>
       import('./pages/arenatalk-workspace/arenatalk-workspace.component').then(

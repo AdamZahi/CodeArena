@@ -1,0 +1,69 @@
+<section class="join-page">
+  <div class="header">
+    <p class="eyebrow">COMMUNITY ARENA //</p>
+    <h1>Join a Community</h1>
+    <p class="header-text">
+      Discover public communities inside CodeArena and enter spaces built for gaming, programming, teamwork, and collaboration.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      placeholder="Search communities..."
+    />
+
+    <select [(ngModel)]="selectedCategory">
+      <option *ngFor="let category of categories" [value]="category">
+        {{ category }}
+      </option>
+    </select>
+  </div>
+
+  <div class="state-text" *ngIf="loading">Loading communities...</div>
+
+  <div class="communities-grid" *ngIf="!loading && filteredHubs.length > 0">
+    <article class="community-card" *ngFor="let hub of filteredHubs">
+      <div class="card-top">
+        <div>
+          <p class="badge">{{ hub.category }}</p>
+          <h2>{{ hub.name }}</h2>
+        </div>
+
+        <span
+          class="visibility-badge"
+          [class.public]="hub.visibility === 'PUBLIC'"
+          [class.private]="hub.visibility === 'PRIVATE'"
+        >
+          {{ hub.visibility }}
+        </span>
+      </div>
+
+      <p class="description">{{ hub.description }}</p>
+
+      <div class="meta">
+        <span>{{ hub.createdAt | date:'mediumDate' }}</span>
+      </div>
+
+      <div class="card-actions">
+        <button
+          class="join-btn"
+          *ngIf="hub.visibility === 'PUBLIC'; else privateBlock"
+          (click)="joinCommunity(hub)"
+        >
+          Join Now
+        </button>
+
+        <ng-template #privateBlock>
+          <button class="locked-btn" disabled>Private Community</button>
+        </ng-template>
+      </div>
+    </article>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && filteredHubs.length === 0">
+    <h3>No communities found</h3>
+    <p>Try another search or category.</p>
+  </div>
+</section>

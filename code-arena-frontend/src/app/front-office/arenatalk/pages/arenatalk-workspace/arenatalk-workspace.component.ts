@@ -80,7 +80,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
       this.arenaService.getChannelsByHub(hub.id).subscribe({
         next: (data) => {
           this.channels = data;
-
+localStorage.setItem('communityArena_selectedHub', JSON.stringify(hub));
+localStorage.setItem('communityArena_channels', JSON.stringify(data));
           const generalChannel =
             this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
 
@@ -198,6 +199,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   }
 
   confirmDelete(): void {
+    localStorage.removeItem('communityArena_selectedHub');
+localStorage.removeItem('communityArena_channels');
     if (!this.deleteTargetType || !this.deleteTargetId) return;
 
     if (this.deleteTargetType === 'hub') {
