@@ -1,29 +1,25 @@
 package com.codearena.module8_terminalquest.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoryLevelDto {
-    private UUID id;
+public class CreateStoryMissionRequest {
     private UUID chapterId;
     private String title;
-    private String scenario;
+    private String context;
+    private String task;
+    private String acceptedAnswers; // JSON array e.g. ["cmd1", "cmd2"]
     private String hint;
     private int orderIndex;
-    private String difficulty;
-    @JsonProperty("isBoss")
+    private String difficulty; // EASY, MEDIUM, HARD
     private boolean isBoss;
     private int xpReward;
-    private Instant createdAt;
-    // acceptedAnswers intentionally excluded from response (server-side validation only)
 }

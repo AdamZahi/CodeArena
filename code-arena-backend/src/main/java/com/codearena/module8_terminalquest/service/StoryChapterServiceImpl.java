@@ -3,6 +3,7 @@ package com.codearena.module8_terminalquest.service;
 import com.codearena.module8_terminalquest.dto.CreateStoryChapterRequest;
 import com.codearena.module8_terminalquest.dto.StoryChapterDto;
 import com.codearena.module8_terminalquest.dto.StoryLevelDto;
+import com.codearena.module8_terminalquest.dto.StoryMissionDto;
 import com.codearena.module8_terminalquest.entity.StoryChapter;
 import com.codearena.module8_terminalquest.repository.StoryChapterRepository;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,23 @@ public class StoryChapterServiceImpl implements StoryChapterService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<StoryMissionDto> missionDtos = chapter.getMissions().stream()
+                .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))
+                .map(mission -> StoryMissionDto.builder()
+                        .id(mission.getId())
+                        .chapterId(chapter.getId())
+                        .title(mission.getTitle())
+                        .context(mission.getContext())
+                        .task(mission.getTask())
+                        .hint(mission.getHint())
+                        .orderIndex(mission.getOrderIndex())
+                        .difficulty(mission.getDifficulty())
+                        .isBoss(mission.isBoss())
+                        .xpReward(mission.getXpReward())
+                        .createdAt(mission.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
         return StoryChapterDto.builder()
                 .id(chapter.getId())
                 .title(chapter.getTitle())
@@ -92,6 +110,7 @@ public class StoryChapterServiceImpl implements StoryChapterService {
                 .isLocked(chapter.isLocked())
                 .createdAt(chapter.getCreatedAt())
                 .levels(levelDtos)
+                .missions(missionDtos)
                 .build();
     }
 }

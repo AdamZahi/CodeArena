@@ -9,6 +9,8 @@ import java.util.UUID;
 
 public interface LevelProgressService {
     SubmitAnswerResponse submitAnswer(UUID levelId, SubmitAnswerRequest request);
+    SubmitAnswerResponse submitMissionAnswer(UUID missionId, SubmitAnswerRequest request);
     List<LevelProgressDto> getProgressByUser(String userId);
     LevelProgressDto getProgressByUserAndLevel(String userId, UUID levelId);
+    LevelProgressDto getProgressByUserAndMission(String userId, UUID missionId);
 }

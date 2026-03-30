@@ -12,8 +12,8 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "level")
-@ToString(exclude = "level")
+@EqualsAndHashCode(exclude = {"level", "mission"})
+@ToString(exclude = {"level", "mission"})
 @Entity
 @Table(name = "level_progress")
 public class LevelProgress {
@@ -26,8 +26,12 @@ public class LevelProgress {
     private String userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "level_id", nullable = false)
+    @JoinColumn(name = "level_id", nullable = true)
     private StoryLevel level;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mission_id", nullable = true)
+    private StoryMission mission;
 
     private boolean completed;
 

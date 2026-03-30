@@ -76,13 +76,13 @@ public class StatsServiceImpl implements StatsService {
         List<StoryChapter> chapters = storyChapterRepository.findAllByOrderByOrderIndexAsc();
         List<ChapterCompletionStatsDto> chapterStats = chapters.stream()
                 .map(chapter -> {
-                    long attempts = levelProgressRepository.countByChapterId(chapter.getId());
-                    long completions = levelProgressRepository.countCompletedByChapterId(chapter.getId());
+                    long attempts    = levelProgressRepository.countMissionProgressByChapterId(chapter.getId());
+                    long completions = levelProgressRepository.countCompletedMissionProgressByChapterId(chapter.getId());
                     double rate = attempts == 0 ? 0.0 : (double) completions / attempts;
                     return ChapterCompletionStatsDto.builder()
                             .chapterId(chapter.getId())
                             .chapterTitle(chapter.getTitle())
-                            .totalLevels(chapter.getLevels().size())
+                            .totalLevels(chapter.getMissions().size())
                             .totalAttempts(attempts)
                             .totalCompletions(completions)
                             .completionRate(rate)

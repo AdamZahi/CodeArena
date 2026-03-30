@@ -39,4 +39,18 @@ public class LevelProgressController {
             @PathVariable UUID levelId) {
         return ResponseEntity.ok(levelProgressService.getProgressByUserAndLevel(userId, levelId));
     }
+
+    @PostMapping("/missions/{missionId}/submit")
+    public ResponseEntity<SubmitAnswerResponse> submitMissionAnswer(
+            @PathVariable UUID missionId,
+            @RequestBody SubmitAnswerRequest request) {
+        return ResponseEntity.ok(levelProgressService.submitMissionAnswer(missionId, request));
+    }
+
+    @GetMapping("/progress/{userId}/mission/{missionId}")
+    public ResponseEntity<LevelProgressDto> getProgressByUserAndMission(
+            @PathVariable String userId,
+            @PathVariable UUID missionId) {
+        return ResponseEntity.ok(levelProgressService.getProgressByUserAndMission(userId, missionId));
+    }
 }

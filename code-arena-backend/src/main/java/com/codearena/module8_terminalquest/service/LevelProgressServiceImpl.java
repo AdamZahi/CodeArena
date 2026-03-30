@@ -5,8 +5,10 @@ import com.codearena.module8_terminalquest.dto.SubmitAnswerRequest;
 import com.codearena.module8_terminalquest.dto.SubmitAnswerResponse;
 import com.codearena.module8_terminalquest.entity.LevelProgress;
 import com.codearena.module8_terminalquest.entity.StoryLevel;
+import com.codearena.module8_terminalquest.entity.StoryMission;
 import com.codearena.module8_terminalquest.repository.LevelProgressRepository;
 import com.codearena.module8_terminalquest.repository.StoryLevelRepository;
+import com.codearena.module8_terminalquest.repository.StoryMissionRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class LevelProgressServiceImpl implements LevelProgressService {
 
     private final LevelProgressRepository levelProgressRepository;
     private final StoryLevelRepository storyLevelRepository;
+    private final StoryMissionRepository storyMissionRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -45,7 +48,6 @@ public class LevelProgressServiceImpl implements LevelProgressService {
                         .build());
 
         progress.setAttempts(progress.getAttempts() + 1);
-
         boolean correct = isAnswerCorrect(request.getAnswer(), level.getAcceptedAnswers());
 
         if (correct && !progress.isCompleted()) {
@@ -55,9 +57,7 @@ public class LevelProgressServiceImpl implements LevelProgressService {
             progress.setStarsEarned(stars);
             levelProgressRepository.save(progress);
             return SubmitAnswerResponse.builder()
-                    .correct(true)
-                    .starsEarned(stars)
-                    .xpEarned(level.getXpReward())
+                    .correct(true).starsEarned(stars).xpEarned(level.getXpReward())
                     .attempts(progress.getAttempts())
                     .message("Correct! You earned " + stars + " star(s) and " + level.getXpReward() + " XP.")
                     .build();
@@ -67,20 +67,61 @@ public class LevelProgressServiceImpl implements LevelProgressService {
 
         if (correct) {
             return SubmitAnswerResponse.builder()
-                    .correct(true)
-                    .starsEarned(progress.getStarsEarned())
-                    .xpEarned(0)
-                    .attempts(progress.getAttempts())
-                    .message("Correct! Level already completed.")
+                    .correct(true).starsEarned(progress.getStarsEarned()).xpEarned(0)
+                    .attempts(progress.getAttempts()).message("Correct! Level already completed.")
                     .build();
         }
 
         return SubmitAnswerResponse.builder()
-                .correct(false)
-                .starsEarned(0)
-                .xpEarned(0)
-                .attempts(progress.getAttempts())
-                .message("Wrong answer. Try again!")
+                .correct(false).starsEarned(0).xpEarned(0)
+                .attempts(progress.getAttempts()).message("Wrong answer. Try again!")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public SubmitAnswerResponse submitMissionAnswer(UUID missionId, SubmitAnswerRequest request) {
+        StoryMission mission = storyMissionRepository.findById(missionId)
+                .orElseThrow(() -> new RuntimeException("Mission not found: " + missionId));
+
+        LevelProgress progress = levelProgressRepository
+                .findByUserIdAndMissionId(request.getUserId(), missionId)
+                .orElseGet(() -> LevelProgress.builder()
+                        .userId(request.getUserId())
+                        .mission(mission)
+                        .completed(false)
+                        .starsEarned(0)
+                        .attempts(0)
+                        .build());
+
+        progress.setAttempts(progress.getAttempts() + 1);
+        boolean correct = isAnswerCorrect(request.getAnswer(), mission.getAcceptedAnswers());
+
+        if (correct && !progress.isCompleted()) {
+            progress.setCompleted(true);
+            progress.setCompletedAt(Instant.now().toString());
+            int stars = calculateStars(progress.getAttempts());
+            progress.setStarsEarned(stars);
+            levelProgressRepository.save(progress);
+            return SubmitAnswerResponse.builder()
+                    .correct(true).starsEarned(stars).xpEarned(mission.getXpReward())
+                    .attempts(progress.getAttempts())
+                    .message("Correct! You earned " + stars + " star(s) and " + mission.getXpReward() + " XP.")
+                    .build();
+        }
+
+        levelProgressRepository.save(progress);
+
+        if (correct) {
+            return SubmitAnswerResponse.builder()
+                    .correct(true).starsEarned(progress.getStarsEarned()).xpEarned(0)
+                    .attempts(progress.getAttempts()).message("Correct! Mission already completed.")
+                    .build();
+        }
+
+        return SubmitAnswerResponse.builder()
+                .correct(false).starsEarned(0).xpEarned(0)
+                .attempts(progress.getAttempts()).message("Wrong answer. Try again!")
                 .build();
     }
 
@@ -99,6 +140,14 @@ public class LevelProgressServiceImpl implements LevelProgressService {
         return levelProgressRepository.findByUserIdAndLevelId(userId, levelId)
                 .map(this::toDto)
                 .orElseThrow(() -> new RuntimeException("Progress not found for user " + userId + " and level " + levelId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LevelProgressDto getProgressByUserAndMission(String userId, UUID missionId) {
+        return levelProgressRepository.findByUserIdAndMissionId(userId, missionId)
+                .map(this::toDto)
+                .orElseThrow(() -> new RuntimeException("Progress not found for user " + userId + " and mission " + missionId));
     }
 
     private boolean isAnswerCorrect(String submitted, String acceptedAnswersJson) {
@@ -123,7 +172,8 @@ public class LevelProgressServiceImpl implements LevelProgressService {
         return LevelProgressDto.builder()
                 .id(p.getId())
                 .userId(p.getUserId())
-                .levelId(p.getLevel().getId())
+                .levelId(p.getLevel() != null ? p.getLevel().getId() : null)
+                .missionId(p.getMission() != null ? p.getMission().getId() : null)
                 .completed(p.isCompleted())
                 .starsEarned(p.getStarsEarned())
                 .attempts(p.getAttempts())

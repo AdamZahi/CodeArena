@@ -13,11 +13,12 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoryLevelDto {
+public class StoryMissionDto {
     private UUID id;
     private UUID chapterId;
     private String title;
-    private String scenario;
+    private String context;
+    private String task;
     private String hint;
     private int orderIndex;
     private String difficulty;
@@ -25,5 +26,5 @@ public class StoryLevelDto {
     private boolean isBoss;
     private int xpReward;
     private Instant createdAt;
-    // acceptedAnswers intentionally excluded from response (server-side validation only)
+    // acceptedAnswers intentionally excluded (server-side validation only)
 }

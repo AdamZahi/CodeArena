@@ -1,5 +1,6 @@
 package com.codearena.module8_terminalquest.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,9 @@ public class StoryChapterDto {
     private String title;
     private String description;
     private int orderIndex;
+    @JsonProperty("isLocked")
     private boolean isLocked;
     private Instant createdAt;
     private List<StoryLevelDto> levels;
+    private List<StoryMissionDto> missions;
 }

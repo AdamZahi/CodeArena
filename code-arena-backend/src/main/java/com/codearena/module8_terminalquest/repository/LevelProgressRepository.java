@@ -13,6 +13,7 @@ import java.util.UUID;
 @Repository
 public interface LevelProgressRepository extends JpaRepository<LevelProgress, UUID> {
     Optional<LevelProgress> findByUserIdAndLevelId(String userId, UUID levelId);
+    Optional<LevelProgress> findByUserIdAndMissionId(String userId, UUID missionId);
     List<LevelProgress> findByUserId(String userId);
     List<LevelProgress> findByUserIdAndCompleted(String userId, boolean completed);
 
@@ -22,9 +23,17 @@ public interface LevelProgressRepository extends JpaRepository<LevelProgress, UU
     @Query("SELECT DISTINCT lp.userId FROM LevelProgress lp")
     List<String> findDistinctUserIds();
 
-    @Query("SELECT COUNT(lp) FROM LevelProgress lp WHERE lp.level.chapter.id = :chapterId")
+    // Level-based progress (kept for backwards compat; level IS NOT NULL guard prevents NPE)
+    @Query("SELECT COUNT(lp) FROM LevelProgress lp WHERE lp.level IS NOT NULL AND lp.level.chapter.id = :chapterId")
     long countByChapterId(@Param("chapterId") UUID chapterId);
 
-    @Query("SELECT COUNT(lp) FROM LevelProgress lp WHERE lp.level.chapter.id = :chapterId AND lp.completed = true")
+    @Query("SELECT COUNT(lp) FROM LevelProgress lp WHERE lp.level IS NOT NULL AND lp.level.chapter.id = :chapterId AND lp.completed = true")
     long countCompletedByChapterId(@Param("chapterId") UUID chapterId);
+
+    // Mission-based progress (Story Mode)
+    @Query("SELECT COUNT(lp) FROM LevelProgress lp WHERE lp.mission IS NOT NULL AND lp.mission.chapter.id = :chapterId")
+    long countMissionProgressByChapterId(@Param("chapterId") UUID chapterId);
+
+    @Query("SELECT COUNT(lp) FROM LevelProgress lp WHERE lp.mission IS NOT NULL AND lp.mission.chapter.id = :chapterId AND lp.completed = true")
+    long countCompletedMissionProgressByChapterId(@Param("chapterId") UUID chapterId);
 }

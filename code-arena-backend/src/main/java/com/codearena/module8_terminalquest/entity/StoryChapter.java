@@ -14,8 +14,8 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "levels")
-@ToString(exclude = "levels")
+@EqualsAndHashCode(exclude = {"levels", "missions"})
+@ToString(exclude = {"levels", "missions"})
 @Entity
 @Table(name = "story_chapter")
 public class StoryChapter {
@@ -40,4 +40,8 @@ public class StoryChapter {
     @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<StoryLevel> levels = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<StoryMission> missions = new ArrayList<>();
 }
