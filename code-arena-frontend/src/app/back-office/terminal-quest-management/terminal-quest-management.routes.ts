@@ -28,5 +28,17 @@ export const TERMINAL_QUEST_MANAGEMENT_ROUTES: Routes = [
   {
     path: 'levels/:chapterId/edit/:id',
     loadComponent: () => import('./pages/level-form/level-form.component').then((m) => m.LevelFormComponent)
+  },
+  {
+    path: 'missions/:chapterId',
+    loadComponent: () => import('./pages/mission-list/mission-list.component').then((m) => m.MissionListComponent)
+  },
+  {
+    path: 'missions/:chapterId/new',
+    loadComponent: () => import('./pages/mission-form/mission-form.component').then((m) => m.MissionFormComponent)
+  },
+  {
+    path: 'missions/:chapterId/edit/:id',
+    loadComponent: () => import('./pages/mission-form/mission-form.component').then((m) => m.MissionFormComponent)
   }
 ];

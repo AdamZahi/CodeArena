@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import {
   StoryChapter,
   StoryLevel,
+  StoryMission,
   GlobalStats,
 } from '../../../front-office/terminal-quest/models/terminal-quest.model';
 
@@ -54,6 +55,27 @@ export class AdminTqService {
 
   deleteLevel(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/levels/${id}`);
+  }
+
+  // ── Missions ─────────────────────────────────────────────────────────────
+  getMissionsByChapter(chapterId: string): Observable<StoryMission[]> {
+    return this.http.get<StoryMission[]>(`${this.base}/missions/chapter/${chapterId}`);
+  }
+
+  getMissionById(id: string): Observable<StoryMission> {
+    return this.http.get<StoryMission>(`${this.base}/missions/${id}`);
+  }
+
+  createMission(payload: any): Observable<StoryMission> {
+    return this.http.post<StoryMission>(`${this.base}/missions`, payload);
+  }
+
+  updateMission(id: string, payload: any): Observable<StoryMission> {
+    return this.http.put<StoryMission>(`${this.base}/missions/${id}`, payload);
+  }
+
+  deleteMission(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/missions/${id}`);
   }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
