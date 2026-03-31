@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JoinRoomRequest {
+public class KickParticipantRequest {
 
     @NotBlank
-    private String inviteToken;
+    private String targetUserId;
 
-    private String role; // PLAYER | SPECTATOR — defaults to PLAYER if absent
+    private String reason;
 }
