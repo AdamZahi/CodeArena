@@ -44,35 +44,44 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     private router: Router,
     private arenaService: ArenatalkService
   ) {}
+ngOnInit(): void {
+  const nav = this.router.getCurrentNavigation();
+  const state = nav?.extras?.state || history.state;
 
-  ngOnInit(): void {
-    const nav = this.router.getCurrentNavigation();
-    const state = nav?.extras?.state || history.state;
+  const createdHub = state?.selectedHub as Hub | undefined;
+  const createdChannels = (state?.createdChannels as TextChannel[] | undefined) || [];
 
-    const createdHub = state?.selectedHub as Hub | undefined;
-    const createdChannels = (state?.createdChannels as TextChannel[] | undefined) || [];
+  const storedHub = localStorage.getItem('communityArena_selectedHub');
+  const storedChannels = localStorage.getItem('communityArena_channels');
 
-    if (createdHub) {
-      this.hubs = [createdHub];
-      this.selectedHub = createdHub;
-    }
-
-    if (createdChannels.length > 0) {
-      this.channels = createdChannels;
-
-      const generalChannel =
-        this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
-
-      this.selectedChannel = generalChannel;
-
-      if (this.selectedChannel?.id) {
-        this.loadMessagesByChannel(this.selectedChannel.id);
-      } else {
-        this.messages = [];
-      }
-    }
+  if (createdHub) {
+    this.hubs = [createdHub];
+    this.selectedHub = createdHub;
+  } else if (storedHub) {
+    const parsedHub = JSON.parse(storedHub) as Hub;
+    this.hubs = [parsedHub];
+    this.selectedHub = parsedHub;
   }
 
+  if (createdChannels.length > 0) {
+    this.channels = createdChannels;
+  } else if (storedChannels) {
+    this.channels = JSON.parse(storedChannels) as TextChannel[];
+  }
+
+  if (this.channels.length > 0) {
+    const generalChannel =
+      this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
+
+    this.selectedChannel = generalChannel;
+
+    if (this.selectedChannel?.id) {
+      this.loadMessagesByChannel(this.selectedChannel.id);
+    } else {
+      this.messages = [];
+    }
+  }
+}
   selectHub(hub: Hub): void {
     this.selectedHub = hub;
 
@@ -159,20 +168,50 @@ localStorage.setItem('communityArena_channels', JSON.stringify(data));
   }
 
   createChannel(): void {
-    if (!this.selectedHub?.id || !this.newChannel.name.trim()) return;
-
-    this.arenaService.createChannel(this.selectedHub.id, this.newChannel).subscribe({
-      next: (createdChannel) => {
-        this.channels.push(createdChannel);
-        this.selectedChannel = createdChannel;
-        this.messages = [];
-        this.closeCreateChannelForm();
-      },
-      error: (err) => {
-        console.error('Error creating channel', err);
-      }
-    });
+  if (!this.selectedHub?.id) {
+    return;
   }
+
+  const rawName = this.newChannel.name?.trim();
+  const topic = this.newChannel.topic?.trim() || '';
+
+  if (!rawName) {
+    return;
+  }
+
+  const normalizedName = rawName.toLowerCase().replace(/\s+/g, '-');
+
+  if (normalizedName.length < 3 || normalizedName.length > 20) {
+    return;
+  }
+
+  const pattern = /^[a-z0-9-_]+$/;
+  if (!pattern.test(normalizedName)) {
+    return;
+  }
+
+  if (topic.length > 100) {
+    return;
+  }
+
+  const payload: TextChannel = {
+    name: normalizedName,
+    topic
+  };
+
+  this.arenaService.createChannel(this.selectedHub.id, payload).subscribe({
+    next: (createdChannel) => {
+      this.channels.push(createdChannel);
+      this.selectedChannel = createdChannel;
+      this.messages = [];
+      this.closeCreateChannelForm();
+    },
+    error: (err) => {
+      console.error('Error creating channel', err);
+      alert('Failed to create channel.');
+    }
+  });
+}
 
   // ---------- delete modal ----------
   openDeleteModal(type: DeleteTargetType, id?: number): void {
@@ -284,7 +323,20 @@ localStorage.removeItem('communityArena_channels');
     this.editingMessageId = null;
     this.editedMessageContent = '';
   }
+onHubImageError(event: Event, type: 'icon' | 'banner'): void {
+  const img = event.target as HTMLImageElement;
 
+  if (type === 'icon') {
+    img.style.display = 'none';
+  }
+
+  if (type === 'banner') {
+    const bannerContainer = img.parentElement;
+    if (bannerContainer) {
+      bannerContainer.style.display = 'none';
+    }
+  }
+}
   saveEditedMessage(message: Message): void {
     if (!message.id || !this.editedMessageContent.trim()) return;
 

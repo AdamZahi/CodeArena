@@ -61,4 +61,19 @@ updateChannel(channelId: number, channel: TextChannel) {
 updateMessage(messageId: number, message: Message) {
   return this.http.put<Message>(`${this.apiUrl}/messages/${messageId}`, message);
 }
+joinHub(hubId: number, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/memberships/join?hubId=${hubId}&userId=${userId}`, {});
+}
+
+getMembersByHub(hubId: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/memberships/hub/${hubId}`);
+}
+
+getHubsByUser(userId: string): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/memberships/user/${userId}`);
+}
+
+leaveHub(hubId: number, userId: string): Observable<void> {
+  return this.http.delete<void>(`${this.apiUrl}/memberships/leave?hubId=${hubId}&userId=${userId}`);
+}
 }

@@ -1,7 +1,6 @@
 <section class="workspace-page">
   <div class="workspace-shell">
 
-    <!-- HUBS -->
     <aside class="sidebar hubs-sidebar">
       <div class="sidebar-header with-action">
         <div>
@@ -26,8 +25,19 @@
           (click)="selectHub(hub)"
         >
           <div class="hub-avatar">
-            {{ hub.name.charAt(0).toUpperCase() }}
+            <ng-container *ngIf="hub.iconUrl; else letterAvatar">
+              <img
+                [src]="hub.iconUrl"
+                alt="Hub icon"
+                (error)="onHubImageError($event, 'icon')"
+              />
+            </ng-container>
+
+            <ng-template #letterAvatar>
+              {{ hub.name.charAt(0).toUpperCase() }}
+            </ng-template>
           </div>
+
           <div class="hub-info">
             <h3>{{ hub.name }}</h3>
             <p>{{ hub.category }}</p>
@@ -42,7 +52,6 @@
       </ng-template>
     </aside>
 
-    <!-- CHANNELS -->
     <aside class="sidebar channels-sidebar">
       <div class="sidebar-header with-action">
         <div>
@@ -56,21 +65,65 @@
       </div>
 
       <div class="create-channel-box" *ngIf="showCreateChannelForm">
-        <input
-          type="text"
-          [(ngModel)]="newChannel.name"
-          placeholder="Channel name"
-        />
-        <input
-          type="text"
-          [(ngModel)]="newChannel.topic"
-          placeholder="Channel topic"
-        />
-        <div class="mini-actions">
-          <button class="primary-mini-btn" (click)="createChannel()">Create</button>
-          <button class="ghost-mini-btn" (click)="closeCreateChannelForm()">Cancel</button>
-        </div>
-      </div>
+  <div class="form-header">
+    <h3>Create Channel</h3>
+    <p>Add a new discussion space inside this community.</p>
+  </div>
+
+ <div class="form-group">
+  <label>Channel Name</label>
+  <input
+    type="text"
+    [(ngModel)]="newChannel.name"
+    #name="ngModel"
+    required
+    minlength="3"
+    maxlength="20"
+    pattern="^[a-zA-Z0-9-_]+$"
+    placeholder="Ex: general"
+  />
+
+  <div class="field-error" *ngIf="name.touched && name.invalid">
+    <small *ngIf="name.errors?.['required']">Channel name is required.</small>
+    <small *ngIf="name.errors?.['minlength']">Minimum 3 characters.</small>
+    <small *ngIf="name.errors?.['maxlength']">Maximum 20 characters.</small>
+    <small *ngIf="name.errors?.['pattern']">
+      Only letters, numbers, dash (-) and underscore (_).
+    </small>
+  </div>
+</div>
+<div class="form-group">
+  <label>Channel Topic</label>
+  <input
+    type="text"
+    [(ngModel)]="newChannel.topic"
+    #topic="ngModel"
+    maxlength="100"
+    placeholder="Ex: Main announcements"
+  />
+
+  <div class="field-error" *ngIf="topic.touched && topic.invalid">
+    <small *ngIf="topic.errors?.['maxlength']">
+      Maximum 100 characters.
+    </small>
+  </div>
+</div>
+
+
+
+  <div class="mini-actions channel-form-actions">
+    <button
+  class="primary-mini-btn"
+  (click)="createChannel()"
+  [disabled]="name.invalid || !newChannel.name?.trim()"
+>
+  Create
+</button>
+    <button class="ghost-mini-btn" (click)="closeCreateChannelForm()">
+      Cancel
+    </button>
+  </div>
+</div>
 
       <div class="channel-list" *ngIf="channels.length > 0; else noChannels">
         <div
@@ -102,10 +155,17 @@
       </ng-template>
     </aside>
 
-    <!-- MAIN -->
     <main class="main-panel">
       <div class="main-header" *ngIf="selectedChannel">
-        <div>
+        <div class="hub-banner" *ngIf="selectedHub?.bannerUrl">
+          <img
+            [src]="selectedHub?.bannerUrl"
+            alt="Hub banner"
+            (error)="onHubImageError($event, 'banner')"
+          />
+        </div>
+
+        <div class="main-header-content">
           <p class="channel-badge">{{ categoryLabel }}</p>
           <h1># {{ selectedChannel.name }}</h1>
           <p class="channel-topic">{{ selectedChannel.topic }}</p>
@@ -200,7 +260,6 @@
     </main>
   </div>
 
-  <!-- CUSTOM DELETE MODAL -->
   <div class="modal-backdrop" *ngIf="showDeleteModal">
     <div class="modal-card">
       <h3>Confirm deletion</h3>

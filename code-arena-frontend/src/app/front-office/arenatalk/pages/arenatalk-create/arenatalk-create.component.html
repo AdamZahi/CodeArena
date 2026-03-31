@@ -41,42 +41,65 @@
         <p>Give your community a strong identity and visual presence.</p>
       </div>
 
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Community Name</label>
-          <input
-            type="text"
-            [(ngModel)]="hubData.name"
-            placeholder="Ex: Code Warriors"
-          />
-        </div>
+      <form [formGroup]="hubForm">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Community Name</label>
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="Ex: Code Warriors"
+            />
+            <div class="field-error" *ngIf="name?.touched && name?.invalid">
+              <small *ngIf="name?.errors?.['required']">Community name is required.</small>
+              <small *ngIf="name?.errors?.['minlength']">Community name must be at least 3 characters.</small>
+              <small *ngIf="name?.errors?.['maxlength']">Community name cannot exceed 30 characters.</small>
+              <small *ngIf="name?.errors?.['whitespace']">Community name cannot contain only spaces.</small>
+              <small *ngIf="name?.errors?.['pattern']">
+                Only letters, numbers, spaces, underscores and hyphens are allowed.
+              </small>
+            </div>
+          </div>
 
-        <div class="form-group full">
-          <label>Description</label>
-          <textarea
-            [(ngModel)]="hubData.description"
-            placeholder="Describe your community..."
-          ></textarea>
-        </div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea
+              formControlName="description"
+              placeholder="Describe your community..."
+            ></textarea>
+            <div class="field-error" *ngIf="description?.touched && description?.invalid">
+              <small *ngIf="description?.errors?.['required']">Description is required.</small>
+              <small *ngIf="description?.errors?.['minlength']">Description must be at least 10 characters.</small>
+              <small *ngIf="description?.errors?.['maxlength']">Description cannot exceed 200 characters.</small>
+              <small *ngIf="description?.errors?.['whitespace']">Description cannot contain only spaces.</small>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label>Banner URL</label>
-          <input
-            type="text"
-            [(ngModel)]="hubData.bannerUrl"
-            placeholder="Paste a banner image URL"
-          />
-        </div>
+          <div class="form-group">
+            <label>Banner URL</label>
+            <input
+              type="text"
+              formControlName="bannerUrl"
+              placeholder="Paste a banner image URL"
+            />
+            <div class="field-error" *ngIf="bannerUrl?.touched && bannerUrl?.errors?.['invalidUrl']">
+              <small>Please enter a valid banner URL.</small>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label>Icon URL</label>
-          <input
-            type="text"
-            [(ngModel)]="hubData.iconUrl"
-            placeholder="Paste an icon image URL"
-          />
+          <div class="form-group">
+            <label>Icon URL</label>
+            <input
+              type="text"
+              formControlName="iconUrl"
+              placeholder="Paste an icon image URL"
+            />
+            <div class="field-error" *ngIf="iconUrl?.touched && iconUrl?.errors?.['invalidUrl']">
+              <small>Please enter a valid icon URL.</small>
+            </div>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
 
     <div *ngIf="step === 3">
@@ -133,11 +156,11 @@
         </div>
         <div class="summary-row">
           <span>Name</span>
-          <strong>{{ hubData.name }}</strong>
+          <strong>{{ hubForm.value.name }}</strong>
         </div>
         <div class="summary-row">
           <span>Description</span>
-          <strong>{{ hubData.description }}</strong>
+          <strong>{{ hubForm.value.description }}</strong>
         </div>
         <div class="summary-row">
           <span>Visibility</span>
@@ -145,11 +168,11 @@
         </div>
         <div class="summary-row">
           <span>Banner</span>
-          <strong>{{ hubData.bannerUrl || 'Not provided' }}</strong>
+          <strong>{{ hubForm.value.bannerUrl || 'Not provided' }}</strong>
         </div>
         <div class="summary-row">
           <span>Icon</span>
-          <strong>{{ hubData.iconUrl || 'Not provided' }}</strong>
+          <strong>{{ hubForm.value.iconUrl || 'Not provided' }}</strong>
         </div>
         <div class="summary-row">
           <span>Channels</span>
@@ -168,7 +191,7 @@
         *ngIf="step < 5"
         [disabled]="
           (step === 1 && !selectedCategory) ||
-          (step === 2 && (!hubData.name.trim() || !hubData.description.trim())) ||
+          (step === 2 && hubForm.invalid) ||
           (step === 3 && !selectedVisibility)
         "
         (click)="nextStep()"
@@ -179,7 +202,7 @@
       <button
         class="create-btn"
         *ngIf="step === 5"
-        [disabled]="loading"
+        [disabled]="loading || hubForm.invalid || !selectedCategory || !selectedVisibility || selectedChannelsCount === 0"
         (click)="createCommunity()"
       >
         {{ loading ? 'Creating...' : 'Create Community' }}

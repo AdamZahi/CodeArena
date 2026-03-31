@@ -1,8 +1,15 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
 import { ArenatalkService } from '../../services/arenatalk.service';
 import { Hub, TextChannel } from '../../models/arenatalk.model';
 
@@ -30,7 +37,7 @@ interface ChannelOption {
 @Component({
   selector: 'app-arenatalk-create',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './arenatalk-create.component.html',
   styleUrl: './arenatalk-create.component.css'
 })
@@ -38,6 +45,8 @@ export class ArenatalkCreateComponent {
   step = 1;
   loading = false;
   errorMessage = '';
+
+  hubForm: FormGroup;
 
   categories: CategoryCard[] = [
     {
@@ -83,56 +92,100 @@ export class ArenatalkCreateComponent {
   selectedCategory: CommunityCategory | null = null;
   selectedVisibility: CommunityVisibility | null = null;
 
-  hubData: Hub = {
-    name: '',
-    description: '',
-    bannerUrl: '',
-    iconUrl: '',
-    category: undefined as any,
-    visibility: undefined as any
-  };
-
   channelOptions: ChannelOption[] = [];
 
   constructor(
+    private fb: FormBuilder,
     private arenatalkService: ArenatalkService,
     private router: Router
-  ) {}
+  ) {
+    this.hubForm = this.fb.group({
+      name: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(30),
+          this.noWhitespaceValidator,
+          Validators.pattern(/^[a-zA-Z0-9 _-]+$/)
+        ]
+      ],
+      description: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.maxLength(200),
+          this.noWhitespaceValidator
+        ]
+      ],
+      bannerUrl: ['', [this.optionalUrlValidator]],
+      iconUrl: ['', [this.optionalUrlValidator]]
+    });
+  }
+
+  noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value?.trim();
+    return value ? null : { whitespace: true };
+  }
+
+  optionalUrlValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value?.trim();
+    if (!value) {
+      return null;
+    }
+
+    const urlPattern = /^(https?:\/\/)[^\s$.?#].[^\s]*$/i;
+    return urlPattern.test(value) ? null : { invalidUrl: true };
+  }
 
   selectCategory(category: CommunityCategory): void {
     this.selectedCategory = category;
-    this.hubData.category = category as any;
     this.channelOptions = this.buildDefaultChannels(category);
+    this.errorMessage = '';
   }
 
   selectVisibility(visibility: CommunityVisibility): void {
     this.selectedVisibility = visibility;
-    this.hubData.visibility = visibility as any;
+    this.errorMessage = '';
   }
 
   nextStep(): void {
     this.errorMessage = '';
 
-    if (this.step === 1 && this.selectedCategory) {
+    if (this.step === 1) {
+      if (!this.selectedCategory) {
+        this.errorMessage = 'Please select a category.';
+        return;
+      }
       this.step = 2;
       return;
     }
 
-    if (
-      this.step === 2 &&
-      this.hubData.name.trim() &&
-      this.hubData.description.trim()
-    ) {
+    if (this.step === 2) {
+      if (this.hubForm.invalid) {
+        this.hubForm.markAllAsTouched();
+        this.errorMessage = 'Please correct the form errors before continuing.';
+        return;
+      }
       this.step = 3;
       return;
     }
 
-    if (this.step === 3 && this.selectedVisibility) {
+    if (this.step === 3) {
+      if (!this.selectedVisibility) {
+        this.errorMessage = 'Please select a visibility.';
+        return;
+      }
       this.step = 4;
       return;
     }
 
     if (this.step === 4) {
+      if (this.selectedChannelsCount === 0) {
+        this.errorMessage = 'Please select at least one channel.';
+        return;
+      }
       this.step = 5;
     }
   }
@@ -146,23 +199,39 @@ export class ArenatalkCreateComponent {
 
   toggleChannel(channel: ChannelOption): void {
     channel.selected = !channel.selected;
+    this.errorMessage = '';
   }
 
   createCommunity(): void {
-    if (!this.selectedCategory || !this.selectedVisibility) {
-      this.errorMessage = 'Please complete all required steps before creating your community.';
+    if (!this.selectedCategory) {
+      this.errorMessage = 'Please select a category.';
       return;
     }
-    
+
+    if (this.hubForm.invalid) {
+      this.hubForm.markAllAsTouched();
+      this.errorMessage = 'Please correct the form errors.';
+      return;
+    }
+
+    if (!this.selectedVisibility) {
+      this.errorMessage = 'Please select a visibility.';
+      return;
+    }
+
+    if (this.selectedChannelsCount === 0) {
+      this.errorMessage = 'Please select at least one channel.';
+      return;
+    }
 
     this.loading = true;
     this.errorMessage = '';
 
     const hubPayload: Hub = {
-      name: this.hubData.name,
-      description: this.hubData.description,
-      bannerUrl: this.hubData.bannerUrl,
-      iconUrl: this.hubData.iconUrl,
+      name: this.hubForm.value.name.trim(),
+      description: this.hubForm.value.description.trim(),
+      bannerUrl: this.hubForm.value.bannerUrl?.trim() || '',
+      iconUrl: this.hubForm.value.iconUrl?.trim() || '',
       category: this.selectedCategory as any,
       visibility: this.selectedVisibility as any
     };
@@ -188,20 +257,40 @@ export class ArenatalkCreateComponent {
       })
     ).subscribe({
       next: ({ createdHub, createdChannels }) => {
-  this.loading = false;
+        this.loading = false;
 
-  localStorage.setItem('communityArena_selectedHub', JSON.stringify(createdHub));
-  localStorage.setItem('communityArena_channels', JSON.stringify(createdChannels));
+        localStorage.setItem('communityArena_selectedHub', JSON.stringify(createdHub));
+        localStorage.setItem('communityArena_channels', JSON.stringify(createdChannels));
 
-  this.router.navigate(['/arenatalk/workspace'], {
-    state: {
-      selectedHub: createdHub,
-      createdChannels: createdChannels
-    }
-  });
-},
+        this.router.navigate(['/arenatalk/workspace'], {
+          state: {
+            selectedHub: createdHub,
+            createdChannels: createdChannels
+          }
+        });
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage =
+          err?.error?.message || 'Failed to create the community. Please try again.';
+      }
     });
-    
+  }
+
+  get name(): AbstractControl | null {
+    return this.hubForm.get('name');
+  }
+
+  get description(): AbstractControl | null {
+    return this.hubForm.get('description');
+  }
+
+  get bannerUrl(): AbstractControl | null {
+    return this.hubForm.get('bannerUrl');
+  }
+
+  get iconUrl(): AbstractControl | null {
+    return this.hubForm.get('iconUrl');
   }
 
   get selectedChannelsCount(): number {

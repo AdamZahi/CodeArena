@@ -163,11 +163,40 @@
   background: #121526;
   color: white;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #8d63ff;
+  box-shadow: 0 0 0 3px rgba(141, 99, 255, 0.12);
 }
 
 .form-group textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+.form-group input.ng-invalid.ng-touched,
+.form-group textarea.ng-invalid.ng-touched {
+  border-color: #ff6b81;
+  box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.12);
+}
+
+.form-group input.ng-valid.ng-touched,
+.form-group textarea.ng-valid.ng-touched {
+  border-color: #22c55e;
+}
+
+.field-error {
+  margin-top: 8px;
+}
+
+.field-error small {
+  display: block;
+  color: #ff8da1;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .channels-grid {
@@ -252,6 +281,7 @@
   margin-top: 16px;
   text-align: center;
   color: #ff7a90;
+  font-weight: 600;
 }
 
 .actions {
