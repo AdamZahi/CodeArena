@@ -60,6 +60,7 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public downvotes = 0;
   public userVote: string | null = null;
   public currentUserSub: string | null = null;
+  public isAdmin = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -82,7 +83,17 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.loadComments();
 
       this.auth.user$.subscribe(user => {
-        if (user) this.currentUserSub = user.sub || null;
+        if (user) {
+          this.currentUserSub = user.sub || null;
+          // Admin check - looking for 'ADMIN' role in custom claims, or nickname toggle
+          const roles: string[] = (user as any)['https://codearena.com/roles'] || (user as any)['roles'] || [];
+          const nickname = user.nickname?.toUpperCase() || '';
+          
+          this.isAdmin = roles.includes('ADMIN') || 
+                         nickname.includes('ADMIN') || 
+                         nickname === 'GABABHIMZAKATAKA' || // Dev bypass
+                         this.currentUserSub === this.challenge?.authorId;
+        }
       });
     }
   }
@@ -425,5 +436,24 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
         this.comments = this.comments.filter(c => c.id !== commentId);
       }
     });
+  }
+
+  public reestablishConnection(): void {
+    this.trialsLeft = this.maxTrials;
+    this.healthPercent = 100;
+    this.isGameOver = false;
+    this.saveHealthState();
+    window.location.reload();
+  }
+
+  public toggleAntiCheat(): void {
+    if (!this.challenge) return;
+    this.challenge.antiCheatEnabled = !this.challenge.antiCheatEnabled;
+  }
+
+  public blockEvent(event: Event): void {
+    if (this.challenge?.antiCheatEnabled) {
+      event.preventDefault();
+    }
   }
 }

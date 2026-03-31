@@ -1,0 +1,267 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #0f1519; /* Dark LoL client color */
+  border: 1px solid #c8aa6e; /* LoL Gold */
+  color: #f0e6d2;
+  width: 900px;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  font-family: 'Inter', sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #3c3c41;
+}
+
+.modal-header h2 { margin: 0; font-size: 14px; font-weight: bold; letter-spacing: 2px; }
+.close-btn { background: none; border: none; color: #a09b8c; font-size: 20px; cursor: pointer; }
+.close-btn:hover { color: #f0e6d2; }
+
+.modal-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* LEFT PANE PREVIEW */
+.preview-pane {
+  flex: 0 0 280px;
+  background: #090c10;
+  border-right: 1px solid #3c3c41;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.banner-preview {
+  background: linear-gradient(to bottom, #2b1f33 0%, #1a1224 100%);
+  border: 1px solid #4a3c54;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+  border-radius: 4px;
+}
+
+.icon-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+}
+
+.preview-icon {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  position: absolute;
+  top: 10px; left: 10px;
+  background: #111;
+  z-index: 1;
+}
+
+.preview-border {
+  width: 130px; height: 130px;
+  position: absolute;
+  top: -5px; left: -5px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.rank-gem {
+  position: absolute;
+  bottom: -15px; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 40px;
+  background: #1e282c;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  z-index: 3;
+  display: flex; justify-content: center; align-items: center;
+  border: 2px solid #00ff88; /* Emerald equivalent */
+}
+
+.gem-inner {
+  width: 20px; height: 20px;
+  background: #00ff88;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.preview-nickname {
+  margin: 10px 0 5px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.preview-title {
+  color: #c8aa6e;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- PREMIUM BORDER SYSTEM --- */
+.avatar-frame {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.border_iron { border-color: #8e8e8e; box-shadow: 0 0 15px rgba(142,142,142, 0.4); }
+.border_bronze { border-color: #cd7f32; box-shadow: 0 0 15px rgba(205,127,50, 0.4); }
+.border_silver { border-color: #c0c0c0; box-shadow: 0 0 20px rgba(192,192,192, 0.5); }
+.border_gold { 
+  border-color: #ffd700; 
+  box-shadow: 0 0 25px rgba(255,215,0, 0.6);
+  animation: gold-pulse 2s infinite ease-in-out;
+}
+.border_platinum { 
+  border-color: #00ecff; 
+  box-shadow: 0 0 30px rgba(0,236,255, 0.7);
+  animation: plat-pulse 3s infinite alternate;
+}
+.border_diamond {
+  border-color: #b9f2ff;
+  box-shadow: 0 0 40px rgba(185,242,255, 0.8), inset 0 0 20px rgba(185,242,255, 0.2);
+  animation: diamond-shimmer 4s infinite linear;
+}
+
+@keyframes gold-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(255,215,0, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 35px rgba(255,215,0, 0.8); transform: scale(1.02); }
+}
+
+@keyframes plat-pulse {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(45deg); }
+}
+
+@keyframes diamond-shimmer {
+  0% { transform: rotate(0deg); }
+  50% { filter: brightness(1.5); }
+  100% { transform: rotate(360deg); }
+}
+
+.honor-slots {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+.honor-circle {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  background: rgba(0,0,0,0.3);
+  overflow: hidden;
+  display: flex; justify-content: center; align-items: center;
+}
+.honor-circle.active { 
+  border-color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+/* RIGHT PANE SELECTOR */
+.selector-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+  overflow-y: auto;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #3c3c41;
+  margin-bottom: 15px;
+}
+
+.tabs button {
+  background: none; border: none;
+  color: #a09b8c;
+  padding: 15px 20px;
+  font-size: 12px; font-weight: bold;
+  cursor: pointer;
+}
+.tabs button:hover { color: #f0e6d2; }
+.tabs button.active {
+  color: #c8aa6e;
+  border-bottom: 2px solid #c8aa6e;
+}
+
+.filter-bar {
+  display: flex; gap: 10px; margin-bottom: 20px;
+}
+.search-input, .sort-select {
+  background: #010a13;
+  border: 1px solid #3c3c41;
+  color: #f0e6d2; padding: 8px 12px;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 15px;
+}
+
+.item-card {
+  width: 80px; height: 80px;
+  background: #111;
+  border: 2px solid #3c3c41;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  display: flex; justify-content: center; align-items: center;
+}
+
+.item-card:hover { border-color: #c8aa6e; transform: scale(1.05); }
+
+.item-card.selected { border-color: #00ff88; } /* Equipped */
+
+.item-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.border-placeholder, .title-placeholder {
+  font-size: 10px;
+  text-align: center; color: #a09b8c;
+  padding: 5px;
+}
+
+/* Locked items */
+.item-card.locked { opacity: 0.5; filter: grayscale(100%); cursor: not-allowed; }
+.item-card.locked:hover { border-color: #3c3c41; transform: none; }
+
+.lock-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+}
+.lock-icon { font-style: normal; font-size: 20px; margin-bottom: 5px; }
+.unlock-req { font-size: 10px; color: #ff4d4d; font-weight: bold; text-align: center; }
+
+.loading-state {
+  text-align: center;
+  color: #00ff88;
+  margin-top: 50px;
+  font-size: 14px;
+}
