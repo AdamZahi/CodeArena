@@ -36,7 +36,8 @@ export class ChapterMapComponent implements OnInit {
     this.tqService.getProgress(this.userId).subscribe({
       next: (progress) => {
         progress.forEach(p => {
-          if (p.levelId) this.progressMap.set(p.levelId, p);
+          if (p.missionId) this.progressMap.set(p.missionId, p);
+          if (p.levelId)   this.progressMap.set(p.levelId, p);
         });
         this.isLoading = false;
       },
@@ -53,10 +54,18 @@ export class ChapterMapComponent implements OnInit {
     return p?.completed ? p.starsEarned : 0;
   }
 
+  isChapterUnlocked(_chapter: StoryChapter, index: number): boolean {
+    if (index === 0) return true;
+    const prev = this.chapters[index - 1];
+    const missions = prev.missions ?? [];
+    if (missions.length === 0) return false;
+    return missions.every(m => this.progressMap.get(m.id)?.completed === true);
+  }
+
   readonly starRange = [1, 2, 3];
 
-  navigateToMission(mission: StoryMission, chapter: StoryChapter): void {
-    if (chapter.isLocked) return;
+  navigateToMission(mission: StoryMission, chapter: StoryChapter, index: number): void {
+    if (!this.isChapterUnlocked(chapter, index)) return;
     this.router.navigate(['/terminal-quest/story/play', mission.id]);
   }
 }

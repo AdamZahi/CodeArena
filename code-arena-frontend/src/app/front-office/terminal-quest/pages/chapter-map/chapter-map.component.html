@@ -26,7 +26,7 @@
   <!-- ── CHAPTERS ──────────────────────────────────── -->
   <div class="chapters-list" *ngIf="!isLoading && chapters.length > 0">
 
-    <div class="chapter-card" *ngFor="let chapter of chapters">
+    <div class="chapter-card" *ngFor="let chapter of chapters; let i = index">
 
       <!-- Chapter header -->
       <div class="chapter-header">
@@ -35,7 +35,7 @@
           <h2 class="chapter-title">{{ chapter.title }}</h2>
           <p class="chapter-desc">{{ chapter.description }}</p>
         </div>
-        <span class="locked-badge" *ngIf="chapter.isLocked">🔒 LOCKED</span>
+        <span class="locked-badge" *ngIf="!isChapterUnlocked(chapter, i)">🔒 LOCKED</span>
       </div>
 
       <!-- Missions grid -->
@@ -44,8 +44,8 @@
           class="level-card"
           *ngFor="let mission of chapter.missions"
           [class.completed]="isCompleted(mission)"
-          [class.locked]="chapter.isLocked"
-          (click)="navigateToMission(mission, chapter)">
+          [class.locked]="!isChapterUnlocked(chapter, i)"
+          (click)="navigateToMission(mission, chapter, i)">
 
           <!-- Boss banner -->
           <div class="boss-banner" *ngIf="mission.isBoss">⚔ BOSS FIGHT</div>
