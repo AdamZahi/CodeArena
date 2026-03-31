@@ -27,7 +27,8 @@
           <th>TITLE</th>
           <th>DESCRIPTION</th>
           <th class="center">LOCKED</th>
-          <th class="center">LEVELS</th>
+          <th class="center">MISSIONS</th>
+          <th class="center">SURVIVAL LEVELS</th>
           <th class="right">ACTIONS</th>
         </tr>
       </thead>
@@ -42,7 +43,12 @@
             </span>
           </td>
           <td class="center">
-            <a [routerLink]="['/admin/terminal-quest/levels', chapter.id]" class="levels-link">
+            <a [routerLink]="['/admin/terminal-quest/missions', chapter.id]" class="levels-link">
+              {{ missionCount(chapter) }} missions
+            </a>
+          </td>
+          <td class="center">
+            <a [routerLink]="['/admin/terminal-quest/levels', chapter.id]" class="levels-link survival-link">
               {{ levelCount(chapter) }} levels
             </a>
           </td>

@@ -196,6 +196,9 @@
 }
 .levels-link:hover { color: #a78bfa; text-decoration: underline; }
 
+.survival-link { color: #06b6d4; }
+.survival-link:hover { color: #38bdf8; }
+
 .action-btns { display: flex; justify-content: flex-end; gap: 8px; }
 
 /* ── EMPTY STATE ─────────────────────────────────────── */

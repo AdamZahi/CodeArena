@@ -54,6 +54,10 @@ export class ChapterListComponent implements OnInit {
     });
   }
 
+  missionCount(chapter: StoryChapter): number {
+    return chapter.missions?.length ?? 0;
+  }
+
   levelCount(chapter: StoryChapter): number {
     return chapter.levels?.length ?? 0;
   }
