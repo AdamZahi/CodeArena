@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
-import { StoryChapter, StoryLevel, LevelProgress } from '../../models/terminal-quest.model';
+import { StoryChapter, StoryMission, LevelProgress } from '../../models/terminal-quest.model';
 
 @Component({
   selector: 'app-chapter-map',
@@ -35,26 +35,28 @@ export class ChapterMapComponent implements OnInit {
   private loadProgress(): void {
     this.tqService.getProgress(this.userId).subscribe({
       next: (progress) => {
-        progress.forEach(p => this.progressMap.set(p.levelId, p));
+        progress.forEach(p => {
+          if (p.levelId) this.progressMap.set(p.levelId, p);
+        });
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; }
     });
   }
 
-  isCompleted(level: StoryLevel): boolean {
-    return this.progressMap.get(level.id)?.completed ?? false;
+  isCompleted(mission: StoryMission): boolean {
+    return this.progressMap.get(mission.id)?.completed ?? false;
   }
 
-  getStars(level: StoryLevel): number {
-    const p = this.progressMap.get(level.id);
+  getStars(mission: StoryMission): number {
+    const p = this.progressMap.get(mission.id);
     return p?.completed ? p.starsEarned : 0;
   }
 
   readonly starRange = [1, 2, 3];
 
-  navigateToLevel(level: StoryLevel, chapter: StoryChapter): void {
+  navigateToMission(mission: StoryMission, chapter: StoryChapter): void {
     if (chapter.isLocked) return;
-    this.router.navigate(['/terminal-quest/story/play', level.id]);
+    this.router.navigate(['/terminal-quest/story/play', mission.id]);
   }
 }

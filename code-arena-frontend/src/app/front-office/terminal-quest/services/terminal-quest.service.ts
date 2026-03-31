@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import {
   StoryChapter,
   StoryLevel,
+  StoryMission,
   LevelProgress,
   SubmitAnswerResponse,
   SurvivalSession,
@@ -40,6 +41,19 @@ export class TerminalQuestService {
   // ── Story answer submission ───────────────────────────────────────────────
   submitAnswer(levelId: string, userId: string, answer: string): Observable<SubmitAnswerResponse> {
     return this.http.post<SubmitAnswerResponse>(`${this.base}/levels/${levelId}/submit`, { userId, answer });
+  }
+
+  // ── Missions ──────────────────────────────────────────────────────────────
+  getMissionsByChapter(chapterId: string): Observable<StoryMission[]> {
+    return this.http.get<StoryMission[]>(`${this.base}/missions/chapter/${chapterId}`);
+  }
+
+  getMissionById(id: string): Observable<StoryMission> {
+    return this.http.get<StoryMission>(`${this.base}/missions/${id}`);
+  }
+
+  submitMissionAnswer(missionId: string, userId: string, answer: string): Observable<SubmitAnswerResponse> {
+    return this.http.post<SubmitAnswerResponse>(`${this.base}/missions/${missionId}/submit`, { userId, answer });
   }
 
   // ── Progress ──────────────────────────────────────────────────────────────

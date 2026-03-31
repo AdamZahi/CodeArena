@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
-import { StoryLevel, SubmitAnswerResponse } from '../../models/terminal-quest.model';
+import { StoryMission, SubmitAnswerResponse } from '../../models/terminal-quest.model';
 
 interface TerminalLine {
   text: string;
@@ -15,12 +15,12 @@ interface TerminalLine {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './level-play.component.html',
-  styleUrl: './level-play.component.css'
+  styleUrls: ['./level-play.component.css']
 })
 export class LevelPlayComponent implements OnInit {
   @ViewChild('terminalOutput') terminalOutput!: ElementRef<HTMLDivElement>;
 
-  level: StoryLevel | null = null;
+  mission: StoryMission | null = null;
   commandHistory: TerminalLine[] = [];
   currentCommand = '';
   isCorrect: boolean | null = null;
@@ -30,7 +30,7 @@ export class LevelPlayComponent implements OnInit {
   isSubmitting = false;
 
   readonly userId = 'test-user-001';
-  private levelId = '';
+  private missionId = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -39,32 +39,32 @@ export class LevelPlayComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.levelId = this.route.snapshot.paramMap.get('levelId') ?? '';
-    if (!this.levelId) { this.isLoading = false; return; }
+    this.missionId = this.route.snapshot.paramMap.get('levelId') ?? '';
+    if (!this.missionId) { this.isLoading = false; return; }
 
-    this.tqService.getLevelById(this.levelId).subscribe({
-      next: (level) => {
-        this.level = level;
+    this.tqService.getMissionById(this.missionId).subscribe({
+      next: (mission) => {
+        this.mission = mission;
         this.isLoading = false;
         this.addLine('System ready. Type your command below.', 'info');
       },
       error: () => {
         this.isLoading = false;
-        this.addLine('Failed to load level.', 'error');
+        this.addLine('Failed to load mission.', 'error');
       }
     });
   }
 
   executeCommand(): void {
     const cmd = this.currentCommand.trim();
-    if (!cmd || this.isSubmitting || !this.level || this.isCorrect === true) return;
+    if (!cmd || this.isSubmitting || !this.mission || this.isCorrect === true) return;
 
     this.addLine(`$ ${cmd}`, 'input');
     this.currentCommand = '';
     this.isSubmitting = true;
     this.scrollTerminal();
 
-    this.tqService.submitAnswer(this.levelId, this.userId, cmd).subscribe({
+    this.tqService.submitMissionAnswer(this.missionId, this.userId, cmd).subscribe({
       next: (res) => {
         this.result = res;
         this.isCorrect = res.correct;

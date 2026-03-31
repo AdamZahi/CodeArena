@@ -141,32 +141,102 @@
   border: 1px solid rgba(6,182,212,0.25);
 }
 
-.scenario-block {
-  padding: 20px 24px;
+/* ── DIALOGUE BLOCK (narrative context) ─────────────── */
+.dialogue-block {
   background: rgba(6,182,212,0.04);
   border-left: 3px solid var(--cyan);
-  border-radius: 0 6px 6px 0;
-  margin-bottom: 20px;
+  border-radius: 0 8px 8px 0;
+  padding: 20px 24px;
+  margin-bottom: 16px;
   animation: slide-up 0.4s 0.05s ease both;
 }
-.scenario-label {
-  font-family: 'Orbitron', monospace;
-  font-size: 9px;
-  letter-spacing: 3px;
-  color: var(--cyan);
-  margin-bottom: 10px;
-  opacity: 0.7;
+
+.dialogue-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
 }
-.scenario-text {
-  font-size: 16px;
+
+.npc-avatar {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,182,212,0.12);
+  border: 1px solid rgba(6,182,212,0.3);
+  border-radius: 50%;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.npc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.npc-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.npc-role {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.dialogue-text {
+  font-size: 15px;
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.75;
   margin: 0;
   font-weight: 500;
   white-space: pre-wrap;
+  opacity: 0.92;
 }
 
-.hint-section { margin-bottom: 24px; animation: slide-up 0.4s 0.1s ease both; }
+/* ── TASK BLOCK (objective) ─────────────────────────── */
+.task-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 20px;
+  background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  animation: slide-up 0.4s 0.1s ease both;
+}
+
+.task-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--neon);
+  background: rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.3);
+  padding: 3px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.task-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.hint-section { margin-bottom: 24px; animation: slide-up 0.4s 0.15s ease both; }
 .hint-btn {
   font-family: 'Orbitron', monospace;
   font-size: 10px;

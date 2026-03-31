@@ -271,6 +271,30 @@
 .diff-medium { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
 .diff-hard   { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
 
+/* Mission task summary */
+.mission-task {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* Bottom row: stars + xp */
+.level-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* No missions */
+.no-missions {
+  padding: 24px 28px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 /* Stars */
 .level-stars { display: flex; gap: 2px; }
 

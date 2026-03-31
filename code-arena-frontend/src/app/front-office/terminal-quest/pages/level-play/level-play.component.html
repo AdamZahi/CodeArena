@@ -8,25 +8,37 @@
   <!-- ── LOADING ───────────────────────────────────── -->
   <div class="loading-state" *ngIf="isLoading">
     <div class="loader-ring"></div>
-    <span class="loader-text">LOADING LEVEL...</span>
+    <span class="loader-text">LOADING MISSION...</span>
   </div>
 
-  <ng-container *ngIf="!isLoading && level">
+  <ng-container *ngIf="!isLoading && mission">
 
-    <!-- ── LEVEL HEADER ──────────────────────────────── -->
+    <!-- ── MISSION HEADER ───────────────────────────── -->
     <div class="level-header">
-      <h1 class="level-title">{{ level.title }}</h1>
+      <h1 class="level-title">{{ mission.title }}</h1>
       <div class="level-badges">
-        <span class="diff-badge" [ngClass]="'diff-' + level.difficulty.toLowerCase()">{{ level.difficulty }}</span>
-        <span class="boss-badge" *ngIf="level.isBoss">&#9876; BOSS FIGHT</span>
-        <span class="xp-badge">+{{ level.xpReward }} XP</span>
+        <span class="diff-badge" [ngClass]="'diff-' + mission.difficulty.toLowerCase()">{{ mission.difficulty }}</span>
+        <span class="boss-badge" *ngIf="mission.isBoss">&#9876; BOSS FIGHT</span>
+        <span class="xp-badge">+{{ mission.xpReward }} XP</span>
       </div>
     </div>
 
-    <!-- ── SCENARIO ──────────────────────────────────── -->
-    <div class="scenario-block">
-      <div class="scenario-label">// MISSION BRIEFING</div>
-      <p class="scenario-text">{{ level.scenario }}</p>
+    <!-- ── NARRATIVE CONTEXT (dialogue block) ───────── -->
+    <div class="dialogue-block">
+      <div class="dialogue-header">
+        <div class="npc-avatar">👤</div>
+        <div class="npc-info">
+          <span class="npc-name">DevOps Lead</span>
+          <span class="npc-role">// NexaTech Infrastructure</span>
+        </div>
+      </div>
+      <p class="dialogue-text">{{ mission.context }}</p>
+    </div>
+
+    <!-- ── TASK OBJECTIVE ───────────────────────────── -->
+    <div class="task-block">
+      <span class="task-label">OBJECTIVE</span>
+      <p class="task-text">{{ mission.task }}</p>
     </div>
 
     <!-- ── HINT ──────────────────────────────────────── -->
@@ -35,7 +47,7 @@
         {{ showHint ? '&#9660; HIDE HINT' : '&#9654; SHOW HINT' }}
       </button>
       <div class="hint-block" *ngIf="showHint">
-        &#128161; {{ level.hint || 'No hint available for this level.' }}
+        &#128161; {{ mission.hint || 'No hint available for this mission.' }}
       </div>
     </div>
 
@@ -89,7 +101,7 @@
         <span
           *ngFor="let s of getStarDisplay(result.starsEarned)"
           class="success-star"
-          [class.filled]="s === '&#9733;'">{{ s }}</span>
+          [class.filled]="s === '★'">{{ s }}</span>
       </div>
       <div class="success-xp">+{{ result.xpEarned }} XP EARNED</div>
       <div class="success-actions">

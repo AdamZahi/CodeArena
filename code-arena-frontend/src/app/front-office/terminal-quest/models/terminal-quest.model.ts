@@ -1,3 +1,17 @@
+export interface StoryMission {
+  id: string;
+  chapterId: string;
+  title: string;
+  context: string;
+  task: string;
+  hint: string;
+  orderIndex: number;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  isBoss: boolean;
+  xpReward: number;
+  createdAt: string;
+}
+
 export interface StoryChapter {
   id: string;
   title: string;
@@ -6,6 +20,7 @@ export interface StoryChapter {
   isLocked: boolean;
   createdAt: string;
   levels?: StoryLevel[];
+  missions?: StoryMission[];
 }
 
 export interface StoryLevel {

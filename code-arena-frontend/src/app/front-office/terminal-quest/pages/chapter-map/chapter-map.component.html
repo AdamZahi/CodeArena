@@ -38,37 +38,44 @@
         <span class="locked-badge" *ngIf="chapter.isLocked">🔒 LOCKED</span>
       </div>
 
-      <!-- Levels grid -->
-      <div class="levels-grid">
+      <!-- Missions grid -->
+      <div class="levels-grid" *ngIf="chapter.missions && chapter.missions.length > 0; else noMissions">
         <div
           class="level-card"
-          *ngFor="let level of chapter.levels"
-          [class.completed]="isCompleted(level)"
+          *ngFor="let mission of chapter.missions"
+          [class.completed]="isCompleted(mission)"
           [class.locked]="chapter.isLocked"
-          (click)="navigateToLevel(level, chapter)">
+          (click)="navigateToMission(mission, chapter)">
 
           <!-- Boss banner -->
-          <div class="boss-banner" *ngIf="level.isBoss">⚔ BOSS FIGHT</div>
+          <div class="boss-banner" *ngIf="mission.isBoss">⚔ BOSS FIGHT</div>
 
           <div class="level-top">
-            <span class="level-title">{{ level.title }}</span>
-            <span class="diff-badge" [ngClass]="'diff-' + level.difficulty.toLowerCase()">
-              {{ level.difficulty }}
+            <span class="level-title">{{ mission.title }}</span>
+            <span class="diff-badge" [ngClass]="'diff-' + mission.difficulty.toLowerCase()">
+              {{ mission.difficulty }}
             </span>
           </div>
 
-          <div class="level-stars">
-            <span
-              *ngFor="let n of starRange"
-              class="star"
-              [class.filled]="n <= getStars(level)">
-              {{ n <= getStars(level) ? '★' : '☆' }}
-            </span>
-          </div>
+          <div class="mission-task">{{ mission.task }}</div>
 
-          <div class="level-xp">+{{ level.xpReward }} XP</div>
+          <div class="level-bottom">
+            <div class="level-stars">
+              <span
+                *ngFor="let n of starRange"
+                class="star"
+                [class.filled]="n <= getStars(mission)">
+                {{ n <= getStars(mission) ? '★' : '☆' }}
+              </span>
+            </div>
+            <div class="level-xp">+{{ mission.xpReward }} XP</div>
+          </div>
         </div>
       </div>
+
+      <ng-template #noMissions>
+        <div class="no-missions">No missions available for this chapter.</div>
+      </ng-template>
 
     </div>
   </div>
