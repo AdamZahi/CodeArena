@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface SeasonRepository extends JpaRepository<Season, UUID> {
 
-    Optional<Season> findByIsActiveTrue();
+    Optional<Season> findFirstByIsActiveTrue();
 
     // Step 5: season history — all seasons ordered by creation date DESC
     List<Season> findAllByOrderByCreatedAtDesc();
