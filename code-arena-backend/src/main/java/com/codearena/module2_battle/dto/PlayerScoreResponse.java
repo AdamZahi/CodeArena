@@ -1,0 +1,27 @@
+package com.codearena.module2_battle.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PlayerScoreResponse {
+    private String participantId;
+    private String userId;
+    private String username;
+    private String avatarUrl;
+    private int finalRank;
+    private int finalScore;
+    private int eloChange;
+    private int newElo;
+    private String newTier;
+    private List<ScoreBreakdownResponse> challengeBreakdowns;
+    private List<String> badgesAwarded;
+    private boolean isWinner;
+}
