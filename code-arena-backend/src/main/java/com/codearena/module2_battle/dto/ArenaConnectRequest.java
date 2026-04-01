@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BattleRoomDto {
-    private String placeholder;
+public class ArenaConnectRequest {
+    private String roomId;
+    private String participantId;
 }
