@@ -57,6 +57,10 @@ public class PlayerRating {
     @Builder.Default
     private Integer winStreak = 0;
 
+    @Column(name = "best_win_streak", nullable = false)
+    @Builder.Default
+    private Integer bestWinStreak = 0;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
