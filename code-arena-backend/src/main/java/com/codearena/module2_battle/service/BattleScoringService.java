@@ -326,7 +326,7 @@ public class BattleScoringService {
      */
     private void computeAndPersistElo(List<BattleParticipant> players, BattleRoom room,
                                        Map<String, Integer> newEloMap, Map<String, String> newTierMap) {
-        Season activeSeason = seasonRepository.findByIsActiveTrue()
+        Season activeSeason = seasonRepository.findFirstByIsActiveTrue()
                 .orElseThrow(ActiveSeasonNotFoundException::new);
         String seasonId = activeSeason.getId().toString();
 

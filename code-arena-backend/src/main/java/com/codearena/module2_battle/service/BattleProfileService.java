@@ -39,7 +39,7 @@ public class BattleProfileService {
         String username = user.getNickname() != null ? user.getNickname() : user.getFirstName();
 
         // Load current season rating (null-safe)
-        PlayerRating currentRating = seasonRepository.findByIsActiveTrue()
+        PlayerRating currentRating = seasonRepository.findFirstByIsActiveTrue()
                 .flatMap(season -> playerRatingRepository.findByUserIdAndSeasonId(
                         targetUserId, season.getId().toString()))
                 .orElse(null);

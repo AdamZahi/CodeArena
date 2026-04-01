@@ -193,7 +193,7 @@ public class BadgeEvaluationService {
     private boolean checkUntouchable(String userId, BattleMode mode) {
         if (!isRankedMode(mode)) return false;
 
-        Optional<Season> activeSeason = seasonRepository.findByIsActiveTrue();
+        Optional<Season> activeSeason = seasonRepository.findFirstByIsActiveTrue();
         if (activeSeason.isEmpty()) return false;
 
         Optional<PlayerRating> rating = playerRatingRepository

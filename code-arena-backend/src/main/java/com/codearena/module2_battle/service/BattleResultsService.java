@@ -158,7 +158,7 @@ public class BattleResultsService {
      */
     @Transactional(readOnly = true)
     public SeasonLeaderboardResponse getSeasonLeaderboard(String requestingUserId) {
-        Season activeSeason = seasonRepository.findByIsActiveTrue()
+        Season activeSeason = seasonRepository.findFirstByIsActiveTrue()
                 .orElseThrow(ActiveSeasonNotFoundException::new);
 
         String seasonId = activeSeason.getId().toString();
@@ -209,7 +209,7 @@ public class BattleResultsService {
      */
     @Transactional(readOnly = true)
     public SeasonLeaderboardEntryResponse getPlayerSeasonRank(String userId) {
-        Season activeSeason = seasonRepository.findByIsActiveTrue()
+        Season activeSeason = seasonRepository.findFirstByIsActiveTrue()
                 .orElseThrow(ActiveSeasonNotFoundException::new);
 
         String seasonId = activeSeason.getId().toString();

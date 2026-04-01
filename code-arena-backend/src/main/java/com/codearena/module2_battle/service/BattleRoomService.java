@@ -387,10 +387,12 @@ public class BattleRoomService {
     private List<Challenge> selectChallenges(String difficulty, int count) {
         List<Challenge> pool;
         if (difficulty == null || difficulty.equalsIgnoreCase("MIXED")) {
-            pool = challengeRepository.findAll();
+            pool = challengeRepository.findAllSanitized().stream()
+                    .map(this::mapSanitizedChallenge)
+                    .collect(Collectors.toList());
         } else {
-            pool = challengeRepository.findAll().stream()
-                    .filter(c -> difficulty.equalsIgnoreCase(c.getDifficulty()))
+            pool = challengeRepository.findByDifficultySanitized(difficulty).stream()
+                    .map(this::mapSanitizedChallenge)
                     .collect(Collectors.toList());
         }
 
@@ -401,6 +403,28 @@ public class BattleRoomService {
 
         Collections.shuffle(pool);
         return pool.subList(0, count);
+    }
+
+    private Challenge mapSanitizedChallenge(Object[] row) {
+        // Expected order from native query:
+        // id, title, description, difficulty, tags, language, author_id, created_at
+        Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
+        String title = (String) row[1];
+        String description = (String) row[2];
+        String difficulty = (String) row[3];
+        String tags = (String) row[4];
+        String language = (String) row[5];
+        String authorId = (String) row[6];
+
+        return Challenge.builder()
+                .id(id)
+                .title(title)
+                .description(description)
+                .difficulty(difficulty)
+                .tags(tags)
+                .language(language)
+                .authorId(authorId)
+                .build();
     }
 
     private BattleRoomResponse buildRoomResponse(BattleRoom room) {
@@ -479,7 +503,7 @@ public class BattleRoomService {
         // Resolve current season ELO and tier
         Integer currentElo = null;
         String tier = null;
-        Optional<Season> activeSeason = seasonRepository.findByIsActiveTrue();
+        Optional<Season> activeSeason = seasonRepository.findFirstByIsActiveTrue();
         if (activeSeason.isPresent()) {
             Optional<PlayerRating> rating = playerRatingRepository.findByUserIdAndSeasonId(
                     participant.getUserId(), activeSeason.get().getId().toString());

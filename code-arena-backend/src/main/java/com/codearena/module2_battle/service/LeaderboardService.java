@@ -37,7 +37,7 @@ public class LeaderboardService {
     public LeaderboardPageResponse getSeasonLeaderboardPage(
             String requestingUserId, LeaderboardPageRequest request) {
 
-        Season activeSeason = seasonRepository.findByIsActiveTrue()
+        Season activeSeason = seasonRepository.findFirstByIsActiveTrue()
                 .orElseThrow(ActiveSeasonNotFoundException::new);
         String seasonId = activeSeason.getId().toString();
 
@@ -158,7 +158,7 @@ public class LeaderboardService {
                 .thenComparingInt(e -> e.getTimeSeconds() != null ? e.getTimeSeconds() : Integer.MAX_VALUE));
 
         // Get active season for tier lookup
-        String activeSeasonId = seasonRepository.findByIsActiveTrue()
+        String activeSeasonId = seasonRepository.findFirstByIsActiveTrue()
                 .map(s -> s.getId().toString()).orElse(null);
 
         Integer requestingUserRank = null;

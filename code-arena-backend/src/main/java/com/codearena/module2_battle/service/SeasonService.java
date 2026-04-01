@@ -41,7 +41,7 @@ public class SeasonService {
     public SeasonSummaryResponse closeActiveSeason(String adminUserId) {
         verifyAdmin(adminUserId);
 
-        Season activeSeason = seasonRepository.findByIsActiveTrue()
+        Season activeSeason = seasonRepository.findFirstByIsActiveTrue()
                 .orElseThrow(ActiveSeasonNotFoundException::new);
 
         // Compute final standings
@@ -87,7 +87,7 @@ public class SeasonService {
     public SeasonResponse createNextSeason(String adminUserId, CreateSeasonRequest request) {
         verifyAdmin(adminUserId);
 
-        if (seasonRepository.findByIsActiveTrue().isPresent()) {
+        if (seasonRepository.findFirstByIsActiveTrue().isPresent()) {
             throw new SeasonAlreadyActiveException();
         }
 
