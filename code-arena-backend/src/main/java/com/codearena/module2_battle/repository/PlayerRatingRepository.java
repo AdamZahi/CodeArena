@@ -34,6 +34,6 @@ public interface PlayerRatingRepository extends JpaRepository<PlayerRating, UUID
     List<PlayerRating> findBySeasonId(String seasonId);
 
     // Step 5: stats — active streak count (users with >= 3 completed daily entries)
-    @Query("SELECT COUNT(sub) FROM (SELECT de.userId FROM DailyEntry de WHERE de.status = 'COMPLETED' GROUP BY de.userId HAVING COUNT(de.id) >= 3) sub")
+    @Query("SELECT COUNT(DISTINCT de.userId) FROM DailyEntry de WHERE de.status = 'COMPLETED' AND de.userId IN (SELECT de2.userId FROM DailyEntry de2 WHERE de2.status = 'COMPLETED' GROUP BY de2.userId HAVING COUNT(de2.id) >= 3)")
     long countUsersWithStreakAtLeast3();
 }
