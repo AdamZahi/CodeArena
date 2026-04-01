@@ -156,4 +156,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse.<Void>builder()
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
     }
+
+    // ── Step 5 exceptions ──
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+            .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(SeasonAlreadyActiveException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSeasonAlreadyActive(SeasonAlreadyActiveException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.<Void>builder()
+            .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(DailyChallengeNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDailyChallengeNotFound(DailyChallengeNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+            .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
 }
