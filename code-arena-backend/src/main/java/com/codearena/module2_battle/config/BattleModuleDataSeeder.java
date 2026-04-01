@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
@@ -103,7 +104,13 @@ public class BattleModuleDataSeeder {
             return;
         }
 
-        List<Challenge> challenges = challengeRepository.findAll(PageRequest.of(0, 3)).getContent();
+        List<Challenge> challenges;
+        try {
+            challenges = challengeRepository.findAll(PageRequest.of(0, 3)).getContent();
+        } catch (DataAccessException ex) {
+            log.warn("Skipping daily challenge seed due to malformed challenge data: {}", ex.getMostSpecificCause().getMessage());
+            return;
+        }
         if (challenges.size() < 3) {
             log.warn("Not enough challenges to seed daily challenge (found {}, need 3)", challenges.size());
             return;
