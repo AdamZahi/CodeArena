@@ -44,7 +44,7 @@ public class BattleModuleDataSeeder {
      * Single-active-season constraint: if another season is already active, skip and warn.
      */
     private void seedSeason() {
-        if (seasonRepository.findByIsActiveTrue().isPresent()) {
+        if (seasonRepository.findFirstByIsActiveTrue().isPresent()) {
             log.info("An active season already exists — skipping Season 1 seed");
             return;
         }
