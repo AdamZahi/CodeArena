@@ -51,7 +51,6 @@ pnpm-debug.log*
 
 # IDE / OS
 **/.idea/
+**/.claude/
 **/.DS_Store
 **/Thumbs.db
-
-**/.claude/
