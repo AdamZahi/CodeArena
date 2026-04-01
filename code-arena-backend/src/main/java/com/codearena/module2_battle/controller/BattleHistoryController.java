@@ -19,7 +19,7 @@ public class BattleHistoryController {
     @GetMapping("/me")
     public ResponseEntity<MatchHistoryPageResponse> getMyMatchHistory(
             @ModelAttribute MatchHistoryPageRequest request,
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String userId = principal.getToken().getSubject();
         return ResponseEntity.ok(matchHistoryService.getMatchHistory(userId, userId, request));
     }
@@ -28,7 +28,7 @@ public class BattleHistoryController {
     public ResponseEntity<MatchHistoryPageResponse> getUserMatchHistory(
             @PathVariable String userId,
             @ModelAttribute MatchHistoryPageRequest request,
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String requestingUserId = principal != null ? principal.getToken().getSubject() : null;
         return ResponseEntity.ok(matchHistoryService.getMatchHistory(userId, requestingUserId, request));
     }

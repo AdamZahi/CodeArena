@@ -7,7 +7,6 @@ import com.codearena.module2_battle.service.LeaderboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +22,14 @@ public class BattleLeaderboardController {
     @GetMapping("/season")
     public ResponseEntity<LeaderboardPageResponse> getSeasonLeaderboard(
             @ModelAttribute LeaderboardPageRequest request,
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String userId = principal.getToken().getSubject();
         return ResponseEntity.ok(leaderboardService.getSeasonLeaderboardPage(userId, request));
     }
 
     @GetMapping("/daily")
     public ResponseEntity<DailyLeaderboardResponse> getTodaysDailyLeaderboard(
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String userId = principal != null ? principal.getToken().getSubject() : null;
         return ResponseEntity.ok(leaderboardService.getDailyLeaderboard(LocalDate.now(), userId));
     }
@@ -38,7 +37,7 @@ public class BattleLeaderboardController {
     @GetMapping("/daily/{date}")
     public ResponseEntity<DailyLeaderboardResponse> getDailyLeaderboard(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String userId = principal != null ? principal.getToken().getSubject() : null;
         return ResponseEntity.ok(leaderboardService.getDailyLeaderboard(date, userId));
     }
