@@ -22,7 +22,7 @@ public class SeasonAdminController {
 
     @PostMapping("/close")
     public ResponseEntity<SeasonSummaryResponse> closeActiveSeason(
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String userId = principal.getToken().getSubject();
         return ResponseEntity.ok(seasonService.closeActiveSeason(userId));
     }
@@ -30,7 +30,7 @@ public class SeasonAdminController {
     @PostMapping("/")
     public ResponseEntity<SeasonResponse> createNextSeason(
             @RequestBody @Valid CreateSeasonRequest request,
-            @AuthenticationPrincipal JwtAuthenticationToken principal) {
+            JwtAuthenticationToken principal) {
         String userId = principal.getToken().getSubject();
         return ResponseEntity.ok(seasonService.createNextSeason(userId, request));
     }
