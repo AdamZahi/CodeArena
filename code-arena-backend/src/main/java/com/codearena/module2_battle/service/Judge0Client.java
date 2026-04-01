@@ -27,7 +27,7 @@ public class Judge0Client {
 
     public Judge0Client(
             @Value("${judge0.base-url}") String baseUrl,
-            @Value("${judge0.api-key}") String apiKey,
+            @Value("${judge0.api-key:}") String apiKey,
             @Value("${judge0.timeout-seconds:10}") int timeoutSeconds) {
         this.restTemplate = new RestTemplate();
         this.baseUrl = baseUrl;

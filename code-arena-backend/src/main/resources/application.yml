@@ -46,10 +46,10 @@ app:
   shop:
     admin-email: islemazzouz04@gmail.com
 
-# Judge0 code execution engine
+# Judge0 CE (Community Edition) — free, no API key required
 judge0:
-  base-url: https://judge0.example.com
-  api-key: your-api-key
+  base-url: https://ce.judge0.com
+  api-key:
   timeout-seconds: 10
 
 # Battle time limits per mode (in minutes, -1 = no limit)
