@@ -36,9 +36,28 @@ keycloak:
   client-id: code-arena-backend
   server-url: http://localhost:8081
 
+codearena:
+  base-url: https://codearena.app
+
 app:
   cors:
     allowed-origins:
       - http://localhost:4200
   shop:
     admin-email: islemazzouz04@gmail.com
+
+# Judge0 code execution engine
+judge0:
+  base-url: https://judge0.example.com
+  api-key: your-api-key
+  timeout-seconds: 10
+
+# Battle time limits per mode (in minutes, -1 = no limit)
+battle:
+  time-limit:
+    duel-minutes: 30
+    team-minutes: 40
+    ranked-arena-minutes: 25
+    blitz-minutes: 15
+    practice-minutes: -1
+    daily-minutes: -1
