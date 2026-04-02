@@ -16,6 +16,7 @@ import com.codearena.module6_event.repository.EventInvitationRepository;
 import com.codearena.module6_event.repository.EventRegistrationRepository;
 import com.codearena.module6_event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InvitationServiceImpl implements InvitationService {
@@ -41,40 +45,55 @@ public class InvitationServiceImpl implements InvitationService {
     private final EventRegistrationRepository registrationRepository;
     private final EventMapper eventMapper;
     private final ObjectMapper objectMapper;
-
-    private static final String TOP10_URL = "http://localhost:8080/api/rankings/top10";
+    
+    @Qualifier("eventEmailService")
+    private final EmailService emailService;
 
     @Override
     @Transactional
     public int inviteTop10Players(UUID eventId) {
-        if (!eventRepository.existsById(eventId)) {
-            throw new EventNotFoundException("Event not found: " + eventId);
-        }
+        ProgrammingEvent event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Event not found: " + eventId));
 
-        List<String> playerIds = fetchTop10PlayerIds();
+        List<String> top10 = List.of(
+                "google-oauth2|115542530890235890362",
+                "google-oauth2|115948396210140607346",
+                "google-oauth2|115021199274267292708",
+                "google-oauth2|112255744825732358525",
+                "google-oauth2|100499137846569783005",
+                "google-oauth2|108378133921738621575",
+                "google-oauth2|108133574113488267379",
+                "google-oauth2|110630587307020708631 7",
+                "github|134744963",
+                "auth0|69c5a6978245aa1f8bde6caa");
 
         List<EventInvitation> toSave = new ArrayList<>();
-        for (String playerId : playerIds) {
-            if (playerId == null || playerId.isBlank()) {
-                continue;
-            }
-            Optional<EventInvitation> existing =
-                    invitationRepository.findByEventIdAndParticipantId(eventId, playerId);
+        for (String participantId : top10) {
+            Optional<EventInvitation> existing = invitationRepository.findFirstByEventIdAndParticipantId(eventId,
+                    participantId);
             if (existing.isPresent()) {
                 continue;
             }
 
             EventInvitation invitation = EventInvitation.builder()
                     .eventId(eventId)
-                    .participantId(playerId)
+                    .participantId(participantId)
                     .status(InvitationStatus.PENDING)
                     .build();
+            invitation = invitationRepository.save(invitation);
             toSave.add(invitation);
+
+            try {
+                String testEmail = "codearenapi@gmail.com";
+                emailService.sendInvitationEmail(testEmail, event.getTitle(),
+                        event.getStartDate() != null ? event.getStartDate().toString() : "",
+                        event.getLocation() != null ? event.getLocation() : "");
+                log.info("Invitation email sent to {}", participantId);
+            } catch (Exception e) {
+                log.error("Failed to send invitation email to {}", participantId, e);
+            }
         }
 
-        if (!toSave.isEmpty()) {
-            invitationRepository.saveAll(toSave);
-        }
         return toSave.size();
     }
 
@@ -90,7 +109,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Transactional
     public RegistrationResponseDTO acceptInvitation(UUID eventId, String participantId) {
         EventInvitation invitation = invitationRepository
-                .findByEventIdAndParticipantId(eventId, participantId)
+                .findFirstByEventIdAndParticipantId(eventId, participantId)
                 .orElseThrow(() -> new InvitationNotFoundException(
                         "Invitation not found for eventId=" + eventId + " participantId=" + participantId));
 
@@ -101,8 +120,8 @@ public class InvitationServiceImpl implements InvitationService {
         invitation.setRespondedAt(LocalDateTime.now());
         invitationRepository.save(invitation);
 
-        Optional<EventRegistration> existingRegistration =
-                registrationRepository.findByParticipantIdAndEvent_Id(participantId, eventId);
+        Optional<EventRegistration> existingRegistration = registrationRepository
+                .findByParticipantIdAndEvent_Id(participantId, eventId);
 
         int current = event.getCurrentParticipants() == null ? 0 : event.getCurrentParticipants();
         String qrCode = generateQRCode(eventId, participantId);
@@ -144,7 +163,7 @@ public class InvitationServiceImpl implements InvitationService {
     @Transactional
     public InvitationResponseDTO declineInvitation(UUID eventId, String participantId) {
         EventInvitation invitation = invitationRepository
-                .findByEventIdAndParticipantId(eventId, participantId)
+                .findFirstByEventIdAndParticipantId(eventId, participantId)
                 .orElseThrow(() -> new InvitationNotFoundException(
                         "Invitation not found for eventId=" + eventId + " participantId=" + participantId));
 
@@ -166,110 +185,6 @@ public class InvitationServiceImpl implements InvitationService {
                 .build();
     }
 
-    private List<String> fetchTop10PlayerIds() {
-        try {
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(1))
-                    .build();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(TOP10_URL))
-                    .timeout(Duration.ofSeconds(1))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response =
-                    client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() != 200) {
-                throw new IllegalStateException("Ranking endpoint returned: " + response.statusCode());
-            }
-
-            String body = response.body();
-            JsonNode root = objectMapper.readTree(body);
-
-            JsonNode arrayNode = null;
-            if (root.isArray()) {
-                arrayNode = root;
-            } else if (root.has("content") && root.get("content").isArray()) {
-                arrayNode = root.get("content");
-            } else if (root.has("data") && root.get("data").isArray()) {
-                arrayNode = root.get("data");
-            } else if (root.has("players") && root.get("players").isArray()) {
-                arrayNode = root.get("players");
-            } else if (root.has("items") && root.get("items").isArray()) {
-                arrayNode = root.get("items");
-            }
-
-            if (arrayNode == null) {
-                throw new IllegalStateException("Unexpected rankings payload");
-            }
-
-            List<String> ids = new ArrayList<>();
-            for (JsonNode item : arrayNode) {
-                if (item == null || item.isNull()) {
-                    continue;
-                }
-
-                if (item.isTextual()) {
-                    ids.add(item.asText());
-                    continue;
-                }
-
-                if (item.has("userId")) {
-                    ids.add(item.get("userId").asText());
-                    continue;
-                }
-
-                if (item.has("participantId")) {
-                    ids.add(item.get("participantId").asText());
-                    continue;
-                }
-
-                if (item.has("id")) {
-                    ids.add(item.get("id").asText());
-                }
-            }
-
-            return ensureExactly10(ids, mockPlayerIds());
-        } catch (Exception ignored) {
-            return mockPlayerIds();
-        }
-    }
-
-    private List<String> ensureExactly10(List<String> ids, List<String> fallback) {
-        Set<String> unique = new HashSet<>();
-        if (ids != null) {
-            for (String id : ids) {
-                if (id != null && !id.isBlank()) {
-                    unique.add(id);
-                }
-            }
-        }
-
-        List<String> result = new ArrayList<>(unique);
-        if (result.size() >= 10) {
-            return result.subList(0, 10);
-        }
-
-        for (String f : fallback) {
-            if (result.size() >= 10) {
-                break;
-            }
-            if (!result.contains(f)) {
-                result.add(f);
-            }
-        }
-        return result;
-    }
-
-    private List<String> mockPlayerIds() {
-        List<String> ids = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            ids.add("mock-player-" + i);
-        }
-        return ids;
-    }
 
     private String generateQRCode(UUID eventId, String participantId) {
         return "CODEARENA|EVENT:" + eventId
@@ -277,4 +192,3 @@ public class InvitationServiceImpl implements InvitationService {
                 + "|TOKEN:" + UUID.randomUUID();
     }
 }
-
