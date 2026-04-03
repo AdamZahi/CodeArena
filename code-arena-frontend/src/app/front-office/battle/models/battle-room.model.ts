@@ -156,3 +156,90 @@ export interface SubmissionResultResponse {
   feedback: string;
   isAccepted: boolean;
 }
+
+// ── Request DTOs ────────────────────────────────────────────
+
+export interface CreateRoomRequest {
+  mode: string;
+  maxPlayers: number;
+  challengeCount: number;
+  isPublic: boolean;
+  difficulty: string;
+}
+
+export interface JoinRoomRequest {
+  inviteToken: string;
+  role?: string;
+}
+
+export interface ReadyToggleRequest {
+  ready: boolean;
+}
+
+export interface KickParticipantRequest {
+  targetUserId: string;
+  reason?: string;
+}
+
+export interface SubmitSolutionRequest {
+  roomId: string;
+  roomChallengeId: string;
+  language: string;
+  code: string;
+}
+
+// ── Response DTOs ───────────────────────────────────────────
+
+export interface RoomCreatedResponse {
+  room: BattleRoomResponse;
+  invite: InviteLinkResponse;
+}
+
+export interface InviteLinkResponse {
+  inviteToken: string;
+  inviteUrl: string;
+  expiresAt: string;
+}
+
+export interface ScoreBreakdownResponse {
+  roomChallengeId: string;
+  challengePosition: number;
+  challengeTitle: string;
+  solved: boolean;
+  correctnessScore: number;
+  speedScore: number;
+  efficiencyScore: number;
+  attemptPenalty: number;
+  totalChallengeScore: number;
+  attemptCount: number;
+  bestRuntimeMs: number | null;
+  bestMemoryKb: number | null;
+  solvedInSeconds: number;
+}
+
+export interface PlayerScoreResponse {
+  participantId: string;
+  userId: string;
+  username: string;
+  avatarUrl: string;
+  finalRank: number;
+  finalScore: number;
+  eloChange: number;
+  newElo: number;
+  newTier: string;
+  challengeBreakdowns: ScoreBreakdownResponse[];
+  badgesAwarded: string[];
+  isWinner: boolean;
+}
+
+export interface PostMatchSummaryResponse {
+  roomId: string;
+  mode: string;
+  challengeCount: number;
+  startedAt: string;
+  finishedAt: string;
+  durationSeconds: number;
+  finishReason: string;
+  standings: PlayerScoreResponse[];
+  maxPossibleScore: number;
+}
