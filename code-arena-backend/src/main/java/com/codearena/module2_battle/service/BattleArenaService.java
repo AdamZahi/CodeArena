@@ -3,6 +3,7 @@ package com.codearena.module2_battle.service;
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
+import com.codearena.module1_challenge.repository.TestCaseRepository;
 import com.codearena.module2_battle.dto.*;
 import com.codearena.module2_battle.entity.BattleParticipant;
 import com.codearena.module2_battle.entity.BattleRoom;
@@ -45,6 +46,7 @@ public class BattleArenaService {
     private final BattleRoomChallengeRepository roomChallengeRepository;
     private final BattleSubmissionRepository submissionRepository;
     private final ChallengeRepository challengeRepository;
+    private final TestCaseRepository testCaseRepository;
     private final UserRepository userRepository;
     private final Judge0Client judge0Client;
     private final Judge0LanguageMapper languageMapper;
@@ -62,6 +64,7 @@ public class BattleArenaService {
             BattleRoomChallengeRepository roomChallengeRepository,
             BattleSubmissionRepository submissionRepository,
             ChallengeRepository challengeRepository,
+            TestCaseRepository testCaseRepository,
             UserRepository userRepository,
             Judge0Client judge0Client,
             Judge0LanguageMapper languageMapper,
@@ -74,6 +77,7 @@ public class BattleArenaService {
         this.roomChallengeRepository = roomChallengeRepository;
         this.submissionRepository = submissionRepository;
         this.challengeRepository = challengeRepository;
+        this.testCaseRepository = testCaseRepository;
         this.userRepository = userRepository;
         this.judge0Client = judge0Client;
         this.languageMapper = languageMapper;
@@ -185,32 +189,24 @@ public class BattleArenaService {
         String submissionId = submission.getId().toString();
         int challengePosition = roomChallenge.getPosition();
 
-        // Load all test cases (including hidden ones) for judging
-        Challenge challenge = challengeRepository.findById(Long.parseLong(roomChallenge.getChallengeId()))
-                .orElseThrow(() -> new BattleRoomNotFoundException(roomChallenge.getChallengeId()));
-        List<TestCase> allTestCases = challenge.getTestCases();
-        int totalTestCases = allTestCases.size();
+        long challengeId = parseNumericChallengeId(roomChallenge.getChallengeId());
+
+        // Load all test cases (including hidden ones) for judging, using sanitized native reads.
+        List<TestCase> allTestCases = loadSanitizedTestCases(challengeId);
+        if (allTestCases.isEmpty()) {
+            throw new InvalidParticipantActionException("Challenge has no valid test cases");
+        }
 
         // Map language to Judge0 language ID
         int languageId = languageMapper.toJudge0Id(request.getLanguage());
-
-        // Build Judge0 request — concatenate all test inputs/outputs
-        String stdin = allTestCases.stream().map(TestCase::getInput).collect(Collectors.joining("\n"));
-        String expectedOutput = allTestCases.stream().map(TestCase::getExpectedOutput).collect(Collectors.joining("\n"));
-
-        Judge0SubmissionRequest judge0Request = Judge0SubmissionRequest.builder()
-                .languageId(languageId)
-                .sourceCode(request.getCode())
-                .stdin(stdin)
-                .expectedOutput(expectedOutput)
-                .build();
+        String sourceCode = request.getCode();
 
         // Submit to Judge0 and process result asynchronously on the submissionExecutor thread pool.
-        // This ensures the HTTP response returns immediately with PENDING status.
+        // Each test case is run as a separate Judge0 submission to match how code reads stdin.
         submissionExecutor.execute(() -> processJudge0Submission(
-                judge0Request, submissionId, roomId, participantId,
+                sourceCode, languageId, allTestCases, submissionId, roomId, participantId,
                 request.getRoomChallengeId(), challengePosition, userId,
-                room.getChallengeCount(), attemptNumber, totalTestCases
+                room.getChallengeCount(), attemptNumber
         ));
 
         return SubmissionResultResponse.builder()
@@ -224,44 +220,76 @@ public class BattleArenaService {
     }
 
     /**
-     * Async callback: submits code to Judge0, polls for result, updates the submission record,
-     * and broadcasts results to arena subscribers.
+     * Async callback: runs each test case as a separate Judge0 submission, polls for results,
+     * updates the submission record, and broadcasts results to arena subscribers.
      */
     private void processJudge0Submission(
-            Judge0SubmissionRequest judge0Request, String submissionId, String roomId,
-            String participantId, String roomChallengeId, int challengePosition,
-            String userId, int challengeCount, int attemptNumber, int totalTestCases) {
+            String sourceCode, int languageId, List<TestCase> testCases,
+            String submissionId, String roomId, String participantId,
+            String roomChallengeId, int challengePosition, String userId,
+            int challengeCount, int attemptNumber) {
+        int totalTestCases = testCases.size();
         try {
-            String token = judge0Client.submitCode(judge0Request);
+            BattleSubmissionStatus finalStatus = BattleSubmissionStatus.ACCEPTED;
+            Integer totalRuntimeMs = null;
+            Integer maxMemoryKb = null;
+            String failCompileOutput = null;
 
-            // Poll Judge0 at 1-second intervals until result is ready or timeout
-            Judge0SubmissionResult result = pollJudge0Result(token);
+            for (TestCase tc : testCases) {
+                Judge0SubmissionRequest judge0Request = Judge0SubmissionRequest.builder()
+                        .languageId(languageId)
+                        .sourceCode(sourceCode)
+                        .stdin(tc.getInput())
+                        .build();
 
-            // Map Judge0 result to our submission status
-            BattleSubmissionStatus status = mapJudge0Status(result);
-            Integer runtimeMs = result.getTime() != null ? (int) (result.getTime() * 1000) : null;
-            Integer memoryKb = result.getMemory();
-            String feedback = buildFeedback(status, runtimeMs, result.getCompileOutput(), totalTestCases);
+                String token = judge0Client.submitCode(judge0Request);
+                Judge0SubmissionResult result = pollJudge0Result(token);
+                BattleSubmissionStatus tcStatus = mapJudge0Status(result);
+
+                // Accumulate runtime and memory
+                if (result.getTime() != null) {
+                    int ms = (int) (result.getTime() * 1000);
+                    totalRuntimeMs = (totalRuntimeMs == null) ? ms : totalRuntimeMs + ms;
+                }
+                if (result.getMemory() != null) {
+                    maxMemoryKb = (maxMemoryKb == null) ? result.getMemory()
+                            : Math.max(maxMemoryKb, result.getMemory());
+                }
+
+                if (tcStatus != BattleSubmissionStatus.ACCEPTED) {
+                    finalStatus = tcStatus;
+                    failCompileOutput = result.getCompileOutput();
+                    break;
+                }
+
+                // Judge0 accepted execution; validate output with normalized line endings/whitespace.
+                if (!outputsMatch(tc.getExpectedOutput(), result.getStdout())) {
+                    finalStatus = BattleSubmissionStatus.WRONG_ANSWER;
+                    break;
+                }
+            }
+
+            String feedback = buildFeedback(finalStatus, totalRuntimeMs, failCompileOutput, totalTestCases);
 
             // Update the submission record
             BattleSubmission submission = submissionRepository.findById(UUID.fromString(submissionId)).orElse(null);
             if (submission != null) {
-                submission.setStatus(status);
-                submission.setRuntimeMs(runtimeMs);
-                submission.setMemoryKb(memoryKb);
+                submission.setStatus(finalStatus);
+                submission.setRuntimeMs(totalRuntimeMs);
+                submission.setMemoryKb(maxMemoryKb);
                 submissionRepository.save(submission);
             }
 
-            boolean isAccepted = status == BattleSubmissionStatus.ACCEPTED;
+            boolean isAccepted = finalStatus == BattleSubmissionStatus.ACCEPTED;
 
             // Send result to the submitting player only
             SubmissionResultResponse resultResponse = SubmissionResultResponse.builder()
                     .submissionId(submissionId)
                     .roomChallengeId(roomChallengeId)
-                    .status(status.name())
+                    .status(finalStatus.name())
                     .attemptNumber(attemptNumber)
-                    .runtimeMs(runtimeMs)
-                    .memoryKb(memoryKb)
+                    .runtimeMs(totalRuntimeMs)
+                    .memoryKb(maxMemoryKb)
                     .feedback(feedback)
                     .isAccepted(isAccepted)
                     .build();
@@ -288,7 +316,7 @@ public class BattleArenaService {
                         .participantId(participantId)
                         .username(username)
                         .challengePosition(challengePosition)
-                        .submissionStatus(status)
+                        .submissionStatus(finalStatus)
                         .attemptNumber(attemptNumber)
                         .delayedAtTimestamp(System.currentTimeMillis())
                         .build();
@@ -302,25 +330,38 @@ public class BattleArenaService {
 
         } catch (Judge0UnavailableException e) {
             log.error("Judge0 unavailable for submission {}: {}", submissionId, e.getMessage());
-            // Mark submission as COMPILE_ERROR and notify the player
-            BattleSubmission submission = submissionRepository.findById(UUID.fromString(submissionId)).orElse(null);
-            if (submission != null) {
-                submission.setStatus(BattleSubmissionStatus.COMPILE_ERROR);
-                submissionRepository.save(submission);
-            }
-
-            SubmissionResultResponse errorResponse = SubmissionResultResponse.builder()
-                    .submissionId(submissionId)
-                    .roomChallengeId(roomChallengeId)
-                    .status(BattleSubmissionStatus.COMPILE_ERROR.name())
-                    .attemptNumber(attemptNumber)
-                    .feedback("Code execution service is temporarily unavailable — please retry")
-                    .isAccepted(false)
-                    .build();
-            arenaBroadcastService.sendSubmissionResult(userId, errorResponse);
+            failSubmissionAndNotify(userId, submissionId, roomChallengeId, attemptNumber,
+                    BattleSubmissionStatus.COMPILE_ERROR,
+                    "Code execution service is temporarily unavailable - please retry");
         } catch (Exception e) {
             log.error("Unexpected error processing submission {}: {}", submissionId, e.getMessage(), e);
+            failSubmissionAndNotify(userId, submissionId, roomChallengeId, attemptNumber,
+                    BattleSubmissionStatus.RUNTIME_ERROR,
+                    "Submission processing failed unexpectedly - please retry");
         }
+    }
+
+    private void failSubmissionAndNotify(String userId,
+                                         String submissionId,
+                                         String roomChallengeId,
+                                         int attemptNumber,
+                                         BattleSubmissionStatus status,
+                                         String feedback) {
+        BattleSubmission submission = submissionRepository.findById(UUID.fromString(submissionId)).orElse(null);
+        if (submission != null) {
+            submission.setStatus(status);
+            submissionRepository.save(submission);
+        }
+
+        SubmissionResultResponse errorResponse = SubmissionResultResponse.builder()
+                .submissionId(submissionId)
+                .roomChallengeId(roomChallengeId)
+                .status(status.name())
+                .attemptNumber(attemptNumber)
+                .feedback(feedback)
+                .isAccepted(false)
+                .build();
+        arenaBroadcastService.sendSubmissionResult(userId, errorResponse);
     }
 
     /**
@@ -387,7 +428,7 @@ public class BattleArenaService {
                                  String compileOutput, int totalTestCases) {
         return switch (status) {
             case ACCEPTED -> "All " + totalTestCases + " test cases passed";
-            case WRONG_ANSWER -> "Wrong answer — check your logic";
+            case WRONG_ANSWER -> "Wrong answer - verify exact output format (extra prints/spaces/newlines can fail)";
             case TIME_LIMIT -> "Time limit exceeded (" + (runtimeMs != null ? runtimeMs + "ms" : "unknown") + ")";
             case RUNTIME_ERROR -> "Runtime error — check for null references or array bounds";
             case COMPILE_ERROR -> {
@@ -402,6 +443,31 @@ public class BattleArenaService {
             }
             default -> "Processing";
         };
+    }
+
+    private boolean outputsMatch(String expectedOutput, String actualOutput) {
+        String normalizedExpected = normalizeOutput(expectedOutput);
+        String normalizedActual = normalizeOutput(actualOutput);
+        return normalizedExpected.equals(normalizedActual);
+    }
+
+    private String normalizeOutput(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String normalized = value.replace("\r\n", "\n").replace("\r", "\n");
+        List<String> lines = new ArrayList<>(Arrays.asList(normalized.split("\n", -1)));
+
+        for (int i = 0; i < lines.size(); i++) {
+            lines.set(i, lines.get(i).stripTrailing());
+        }
+
+        while (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+
+        return String.join("\n", lines);
     }
 
     // ──────────────────────────────────────────────
@@ -504,7 +570,18 @@ public class BattleArenaService {
      * Hidden test cases are used by Judge0 for judging but never appear in any response DTO.
      */
     private ArenaChallengeResponse buildArenaChallengeResponse(BattleRoomChallenge rc) {
-        Challenge challenge = challengeRepository.findById(Long.parseLong(rc.getChallengeId())).orElse(null);
+        long challengeId;
+        try {
+            challengeId = parseNumericChallengeId(rc.getChallengeId());
+        } catch (InvalidParticipantActionException ex) {
+            return ArenaChallengeResponse.builder()
+                    .roomChallengeId(rc.getId().toString())
+                    .position(rc.getPosition())
+                    .challengeId(rc.getChallengeId())
+                    .build();
+        }
+
+        Challenge challenge = challengeRepository.findById(challengeId).orElse(null);
         if (challenge == null) {
             return ArenaChallengeResponse.builder()
                     .roomChallengeId(rc.getId().toString())
@@ -513,8 +590,8 @@ public class BattleArenaService {
                     .build();
         }
 
-        // Only expose non-hidden test cases
-        List<VisibleTestCaseResponse> visibleTests = challenge.getTestCases().stream()
+        // Only expose non-hidden test cases from sanitized reads.
+        List<VisibleTestCaseResponse> visibleTests = loadSanitizedTestCases(challengeId).stream()
                 .filter(tc -> !Boolean.TRUE.equals(tc.getIsHidden()))
                 .map(tc -> VisibleTestCaseResponse.builder()
                         .input(tc.getInput())
@@ -532,6 +609,40 @@ public class BattleArenaService {
                 .tags(challenge.getTags())
                 .visibleTestCases(visibleTests)
                 .build();
+    }
+
+    private long parseNumericChallengeId(String challengeId) {
+        try {
+            return Long.parseLong(challengeId);
+        } catch (NumberFormatException ex) {
+            throw new InvalidParticipantActionException("Invalid challenge reference in room data");
+        }
+    }
+
+    private List<TestCase> loadSanitizedTestCases(long challengeId) {
+        return testCaseRepository.findRawByNumericChallengeId(challengeId).stream()
+                .map(row -> TestCase.builder()
+                        .input((String) row[0])
+                        .expectedOutput((String) row[1])
+                        .isHidden(parseBoolean(row[2]))
+                        .build())
+                .toList();
+    }
+
+    private boolean parseBoolean(Object rawValue) {
+        if (rawValue == null) {
+            return false;
+        }
+        if (rawValue instanceof Boolean value) {
+            return value;
+        }
+        if (rawValue instanceof Number value) {
+            return value.intValue() != 0;
+        }
+        if (rawValue instanceof byte[] value && value.length > 0) {
+            return value[0] != 0;
+        }
+        return "1".equals(rawValue.toString()) || "true".equalsIgnoreCase(rawValue.toString());
     }
 
     /**
