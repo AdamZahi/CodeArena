@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BattleWebsocketService } from '../../services/battle-websocket.service';
 import { BattleService } from '../../services/battle.service';
@@ -44,6 +44,7 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
 
   opponentPulses: Record<string, ProgressPulse | null> = {};
   private solvedChallenges = new Set<string>();
+  private countdownStarted = false;
 
   ngOnInit(): void {
     this.roomId = this.route.snapshot.paramMap.get('roomId') ?? '';
@@ -52,13 +53,19 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
     this.ws.connect(this.roomId);
 
     this.battleService.getArenaState(this.roomId).subscribe({
-      next: (state) => (this.arenaState = state),
+      next: (state) => {
+        this.arenaState = state;
+        this.startCountdown();
+      },
       error: () => {},
     });
 
     this.ws.arenaState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((e) => (this.arenaState = e.payload));
+      .subscribe((e) => {
+        this.arenaState = e.payload;
+        this.startCountdown();
+      });
 
     this.ws.opponentProgress$
       .pipe(takeUntil(this.destroy$))
@@ -91,6 +98,22 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  private startCountdown(): void {
+    if (this.countdownStarted || !this.arenaState || this.arenaState.remainingSeconds <= 0) return;
+    this.countdownStarted = true;
+
+    interval(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.arenaState && this.arenaState.remainingSeconds > 0) {
+          this.arenaState = {
+            ...this.arenaState,
+            remainingSeconds: this.arenaState.remainingSeconds - 1,
+          };
+        }
+      });
   }
 
   isChallengeSolved(roomChallengeId: string): boolean {
