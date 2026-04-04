@@ -26,9 +26,35 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     @Query(value = """
             SELECT COALESCE(MAX(CAST(c.id AS UNSIGNED)), 0) + 1
             FROM challenge c
-            WHERE c.id REGEXP '^[0-9]+$'
+            WHERE TRIM(c.id) REGEXP '^[0-9]+$'
             """, nativeQuery = true)
     Long findNextNumericId();
+
+        @Query(value = """
+            SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END
+            FROM challenge c
+            WHERE TRIM(c.id) REGEXP '^[0-9]+$'
+              AND CAST(TRIM(c.id) AS UNSIGNED) = :id
+            """, nativeQuery = true)
+        boolean existsByNumericId(@Param("id") Long id);
+
+        @Modifying
+        @Query(value = """
+            UPDATE challenge
+            SET title = :title,
+            description = :description,
+            difficulty = :difficulty,
+            tags = :tags,
+            language = :language
+            WHERE TRIM(id) REGEXP '^[0-9]+$'
+              AND CAST(TRIM(id) AS UNSIGNED) = :id
+            """, nativeQuery = true)
+        int updateChallengeByNumericId(@Param("id") Long id,
+            @Param("title") String title,
+            @Param("description") String description,
+            @Param("difficulty") String difficulty,
+            @Param("tags") String tags,
+            @Param("language") String language);
 
     // Step 5: daily challenge generation
     List<Challenge> findByDifficulty(String difficulty);
@@ -44,7 +70,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
                c.author_id,
                c.created_at
             FROM challenge c
-            WHERE c.id REGEXP '^[0-9]+$'
+            WHERE TRIM(c.id) REGEXP '^[0-9]+$'
             """, nativeQuery = true)
         List<Object[]> findAllSanitized();
 
@@ -58,7 +84,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
                c.author_id,
                c.created_at
             FROM challenge c
-            WHERE c.id REGEXP '^[0-9]+$'
+                        WHERE TRIM(c.id) REGEXP '^[0-9]+$'
               AND LOWER(c.difficulty) = LOWER(:difficulty)
             """, nativeQuery = true)
         List<Object[]> findByDifficultySanitized(@Param("difficulty") String difficulty);
@@ -73,8 +99,8 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
                              c.author_id,
                              c.created_at
                         FROM challenge c
-                        WHERE c.id REGEXP '^[0-9]+$'
-                            AND CAST(c.id AS UNSIGNED) = :id
+                        WHERE TRIM(c.id) REGEXP '^[0-9]+$'
+                            AND CAST(TRIM(c.id) AS UNSIGNED) = :id
                         LIMIT 1
                         """, nativeQuery = true)
                 List<Object[]> findByIdSanitized(@Param("id") Long id);
