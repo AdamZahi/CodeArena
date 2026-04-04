@@ -23,6 +23,25 @@
       </div>
     </div>
 
+    <!-- ── BOMB TIMER ─────────────────────────────── -->
+    <div class="bomb-timer" *ngIf="!isCorrect && !isTimeOut"
+         [class.critical]="isTimeCritical"
+         [class.danger]="isDanger">
+      <div class="timer-led-left">
+        <div class="led-dot" *ngFor="let i of ledRange"
+             [class.off]="timeRemaining < (totalTime / 5) * (5 - i + 1)"></div>
+      </div>
+      <div class="timer-digits">
+        <span class="digit">{{ getMinutes() }}</span>
+        <span class="colon" [class.blink]="colonBlink">:</span>
+        <span class="digit">{{ getSeconds() }}</span>
+      </div>
+      <div class="timer-led-right">
+        <div class="led-dot" *ngFor="let i of ledRange"
+             [class.off]="timeRemaining < (totalTime / 5) * (5 - i + 1)"></div>
+      </div>
+    </div>
+
     <!-- ── NARRATIVE CONTEXT (dialogue block) ───────── -->
     <div class="dialogue-block">
       <div class="dialogue-header">
@@ -53,7 +72,6 @@
 
     <!-- ── TERMINAL ───────────────────────────────────── -->
     <div class="terminal-wrapper">
-
       <div class="terminal-titlebar">
         <div class="terminal-dots">
           <span class="dot red"></span>
@@ -73,7 +91,7 @@
         </div>
       </div>
 
-      <div class="terminal-input-row" *ngIf="isCorrect !== true">
+      <div class="terminal-input-row" *ngIf="isCorrect !== true && !isTimeOut">
         <span class="input-prompt">$&nbsp;</span>
         <input
           type="text"
@@ -91,7 +109,6 @@
           EXECUTE
         </button>
       </div>
-
     </div>
 
     <!-- ── SUCCESS BLOCK ──────────────────────────────── -->
@@ -104,11 +121,25 @@
           [class.filled]="s === '★'">{{ s }}</span>
       </div>
       <div class="success-xp">+{{ result.xpEarned }} XP EARNED</div>
+      <div class="speed-bonus" *ngIf="speedBonus">&#9889; SPEED BONUS! +50% XP</div>
       <div class="success-actions">
         <button class="btn-primary" (click)="backToMap()">&#8592; BACK TO MAP</button>
       </div>
     </div>
 
   </ng-container>
+
+  <!-- ── TIMEOUT OVERLAY ────────────────────────────── -->
+  <div class="timeout-overlay" *ngIf="isTimeOut">
+    <div class="timeout-box">
+      <div class="timeout-digits">00:00</div>
+      <div class="timeout-title">SYSTEM FAILURE</div>
+      <div class="timeout-sub">Time expired — mission aborted.</div>
+      <div class="timeout-actions">
+        <button class="btn-retry" (click)="retryMission()">&#8635; RETRY</button>
+        <button class="btn-back" (click)="backToMap()">&#8592; MAP</button>
+      </div>
+    </div>
+  </div>
 
 </div>

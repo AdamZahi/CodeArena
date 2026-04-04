@@ -32,9 +32,27 @@
       <div class="no-challenge">No challenge available. Check back later.</div>
     </ng-template>
 
+    <!-- Bomb Timer -->
+    <div class="bomb-timer" *ngIf="currentChallenge && totalTime > 0"
+         [class.critical]="isTimeCritical"
+         [class.danger]="isDanger">
+      <div class="timer-led-left">
+        <div class="led-dot" *ngFor="let i of ledRange"
+             [class.off]="timeRemaining < (totalTime / 5) * (5 - i + 1)"></div>
+      </div>
+      <div class="timer-digits">
+        <span class="digit">{{ getMinutes() }}</span>
+        <span class="colon" [class.blink]="colonBlink">:</span>
+        <span class="digit">{{ getSeconds() }}</span>
+      </div>
+      <div class="timer-led-right">
+        <div class="led-dot" *ngFor="let i of ledRange"
+             [class.off]="timeRemaining < (totalTime / 5) * (5 - i + 1)"></div>
+      </div>
+    </div>
+
     <!-- Terminal -->
     <div class="terminal-wrapper" *ngIf="currentChallenge">
-
       <div class="terminal-titlebar">
         <div class="terminal-dots">
           <span class="dot red"></span>
@@ -75,7 +93,6 @@
           EXECUTE
         </button>
       </div>
-
     </div>
   </div>
 

@@ -1,8 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
+import { TimerAudioService } from '../../services/timer-audio.service';
 import { SurvivalSession, StoryLevel } from '../../models/terminal-quest.model';
 
 interface TerminalLine {
@@ -17,7 +18,7 @@ interface TerminalLine {
   templateUrl: './survival-play.component.html',
   styleUrls: ['./survival-play.component.css']
 })
-export class SurvivalPlayComponent implements OnInit {
+export class SurvivalPlayComponent implements OnInit, OnDestroy {
   @ViewChild('terminalOutput') terminalOutput!: ElementRef<HTMLDivElement>;
 
   session: SurvivalSession | null = null;
@@ -33,33 +34,132 @@ export class SurvivalPlayComponent implements OnInit {
   heartsShake = false;
   gameOverStats: { wave: number; score: number; message: string } | null = null;
 
+  timeRemaining = 0;
+  totalTime = 0;
+  timerInterval: ReturnType<typeof setInterval> | null = null;
+  isTimeCritical = false;
+  isDanger = false;
+  colonBlink = false;
+
+  private pendingTimeouts: ReturnType<typeof setTimeout>[] = [];
+
+  readonly ledRange = [1, 2, 3, 4, 5];
   readonly userId = 'test-user-001';
   readonly heartRange = [1, 2, 3];
 
   constructor(
     private tqService: TerminalQuestService,
-    private router: Router
+    private router: Router,
+    private audio: TimerAudioService
   ) {}
 
   ngOnInit(): void {
-    console.log('ngOnInit called');
     this.startGame();
+  }
+
+  ngOnDestroy(): void {
+    this.clearTimer();
+    this.pendingTimeouts.forEach(id => clearTimeout(id));
+  }
+
+  private startTimer(): void {
+    this.clearTimer();
+    if (!this.currentChallenge || this.gameOver) return;
+
+    this.totalTime = this.audio.getTimeForDifficulty(this.currentChallenge.difficulty, this.currentChallenge.isBoss);
+    this.timeRemaining = this.totalTime;
+    this.isTimeCritical = false;
+    this.isDanger = false;
+    this.colonBlink = false;
+
+    this.timerInterval = setInterval(() => {
+      if (this.gameOver) {
+        this.clearTimer();
+        return;
+      }
+
+      this.timeRemaining--;
+      this.colonBlink = !this.colonBlink;
+
+      if (this.timeRemaining <= 5 && this.timeRemaining > 0) {
+        this.isTimeCritical = true;
+        this.isDanger = true;
+        this.audio.playUrgentTick();
+      } else if (this.timeRemaining <= 15 && this.timeRemaining > 5) {
+        this.isTimeCritical = true;
+        this.audio.playTick();
+      }
+
+      if (this.timeRemaining <= 0) {
+        this.timeRemaining = 0;
+        this.clearTimer();
+        this.onTimeOut();
+      }
+    }, 1000);
+  }
+
+  private clearTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  private scheduleTransition(callback: () => void, delay: number): void {
+    const id = setTimeout(() => {
+      this.pendingTimeouts = this.pendingTimeouts.filter(t => t !== id);
+      callback();
+    }, delay);
+    this.pendingTimeouts.push(id);
+  }
+
+  getMinutes(): string {
+    return Math.floor(this.timeRemaining / 60).toString().padStart(2, '0');
+  }
+
+  getSeconds(): string {
+    return (this.timeRemaining % 60).toString().padStart(2, '0');
+  }
+
+  private onTimeOut(): void {
+    this.audio.playErrorSound();
+    this.lives--;
+    this.addLine("⏰ Time's up! -1 ❤️", 'error');
+    this.triggerHeartShake();
+    this.scrollTerminal();
+
+    if (this.lives <= 0) {
+      this.audio.playGameOverSound();
+      this.scheduleTransition(() => {
+        this.gameOverStats = { wave: this.wave, score: this.score, message: `You reached wave ${this.wave}!` };
+        this.gameOver = true;
+      }, 800);
+      return;
+    }
+
+    // Same challenge — just reset the timer
+    this.scheduleTransition(() => {
+      this.isTimeCritical = false;
+      this.isDanger = false;
+      this.colonBlink = false;
+      this.timeRemaining = this.totalTime;
+      this.addLine('Timer reset — try again!', 'info');
+      this.scrollTerminal();
+      this.startTimer();
+    }, 1200);
   }
 
   private startGame(): void {
     this.isLoading = true;
-    console.log('starting session...');
     this.tqService.startSurvivalSession(this.userId).subscribe({
       next: (session) => {
-        console.log('session started:', session);
         this.session = session;
         this.lives = session.livesRemaining;
         this.wave = session.waveReached;
         this.score = session.score;
         this.loadFirstChallenge();
       },
-      error: (err) => {
-        console.log('error:', err);
+      error: () => {
         this.isLoading = false;
         this.addLine('Failed to start session. Try again.', 'error');
       }
@@ -69,17 +169,17 @@ export class SurvivalPlayComponent implements OnInit {
   private loadFirstChallenge(): void {
     this.tqService.getChapters().subscribe({
       next: (chapters) => {
-        console.log('chapters loaded:', chapters);
         const allLevels = chapters.flatMap(c => c.levels || []);
-        console.log('allLevels:', allLevels);
         if (allLevels.length > 0) {
           this.currentChallenge = allLevels[Math.floor(Math.random() * allLevels.length)];
         }
         this.isLoading = false;
         this.addLine('Session started — 3 lives remaining. Good luck.', 'info');
+        if (this.currentChallenge) {
+          this.startTimer();
+        }
       },
-      error: (err) => {
-        console.log('chapters error:', err);
+      error: () => {
         this.isLoading = false;
         this.addLine('Session started. Type your command.', 'info');
       }
@@ -103,22 +203,28 @@ export class SurvivalPlayComponent implements OnInit {
         this.isSubmitting = false;
 
         if (res.correct) {
+          this.clearTimer();
+          this.audio.playSuccessSound();
           const pts = res.waveReached * 10;
           this.addLine(`✓ Correct! +${pts} pts — Wave ${res.waveReached}`, 'success');
           this.scrollTerminal();
-          setTimeout(() => {
+          this.scheduleTransition(() => {
             this.commandHistory = [];
             this.currentChallenge = res.nextChallenge;
             if (this.currentChallenge) {
               this.addLine('New challenge. Type your command.', 'info');
+              this.startTimer();
             }
           }, 900);
         } else {
+          this.audio.playErrorSound();
           this.addLine('✗ Wrong answer! −1 life', 'error');
           this.triggerHeartShake();
           this.scrollTerminal();
           if (res.gameOver) {
-            setTimeout(() => {
+            this.clearTimer();
+            this.audio.playGameOverSound();
+            this.scheduleTransition(() => {
               this.gameOverStats = {
                 wave: res.waveReached,
                 score: res.score,
@@ -139,6 +245,7 @@ export class SurvivalPlayComponent implements OnInit {
 
   abandon(): void {
     if (!this.session) return;
+    this.clearTimer();
     this.tqService.endSurvivalSession(this.session.id).subscribe({
       next: (ended) => {
         this.gameOverStats = { wave: ended.waveReached, score: ended.score, message: 'Session abandoned.' };
@@ -152,6 +259,9 @@ export class SurvivalPlayComponent implements OnInit {
   }
 
   playAgain(): void {
+    this.clearTimer();
+    this.pendingTimeouts.forEach(id => clearTimeout(id));
+    this.pendingTimeouts = [];
     this.session = null;
     this.currentChallenge = null;
     this.commandHistory = [];
@@ -161,7 +271,9 @@ export class SurvivalPlayComponent implements OnInit {
     this.score = 0;
     this.gameOver = false;
     this.gameOverStats = null;
-    this.heartsShake = false;
+    this.isTimeCritical = false;
+    this.isDanger = false;
+    this.colonBlink = false;
     this.startGame();
   }
 
