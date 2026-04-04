@@ -1,5 +1,6 @@
 package com.codearena.module2_battle.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class BattleFeedItemResponse {
     private String roomId;
     private String mode;
     private String status;
+    @JsonProperty("isLive")
     private boolean isLive;
     private int playerCount;
     private int maxPlayers;

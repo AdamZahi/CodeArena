@@ -1,6 +1,7 @@
 package com.codearena.module2_battle.dto;
 
 import com.codearena.module2_battle.enums.BattleRoomStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class MatchHistorySummaryResponse {
     private int finalScore;
     private int totalPlayers;
     private int eloChange;
+    @JsonProperty("isWinner")
     private boolean isWinner;
     private String opponentSummary;
     private List<String> badgesEarned;

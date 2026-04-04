@@ -1,5 +1,6 @@
 package com.codearena.module2_battle.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,7 @@ public class SubmissionResultResponse {
     private Integer runtimeMs;
     private Integer memoryKb;
     private String feedback;
+
+    @JsonProperty("isAccepted")
     private boolean isAccepted;
 }

@@ -1,5 +1,6 @@
 package com.codearena.module2_battle.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,5 +24,6 @@ public class PlayerScoreResponse {
     private String newTier;
     private List<ScoreBreakdownResponse> challengeBreakdowns;
     private List<String> badgesAwarded;
+    @JsonProperty("isWinner")
     private boolean isWinner;
 }

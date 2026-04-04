@@ -1,5 +1,6 @@
 package com.codearena.module2_battle.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +17,6 @@ public class SeasonResponse {
     private String name;
     private LocalDateTime startsAt;
     private LocalDateTime endsAt;
+    @JsonProperty("isActive")
     private boolean isActive;
 }

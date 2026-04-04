@@ -1,5 +1,6 @@
 package com.codearena.module2_battle.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class BattleRoomResponse {
     private String status;
     private int maxPlayers;
     private int challengeCount;
+    @JsonProperty("isPublic")
     private boolean isPublic;
     private String inviteToken;
     private String hostId;
