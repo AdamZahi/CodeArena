@@ -3,8 +3,6 @@ package com.codearena.module1_challenge.service;
 import com.codearena.module1_challenge.dto.ChallengeDto;
 import com.codearena.module1_challenge.dto.CreateChallengeRequest;
 import com.codearena.module1_challenge.dto.TestCaseDto;
-import com.codearena.module1_challenge.entity.Challenge;
-import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module1_challenge.repository.TestCaseRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -47,10 +43,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     @Override
     @Transactional
     public ChallengeDto createChallenge(CreateChallengeRequest request, String authorId) {
-        Long nextId = challengeRepository.findNextNumericId();
-        if (nextId == null || nextId < 1) {
-            nextId = 1L;
-        }
+        Long nextId = nextChallengeId();
         long nextTestCaseId = nextTestCaseId();
 
         challengeRepository.insertChallenge(
@@ -86,53 +79,35 @@ public class ChallengeServiceImpl implements ChallengeService {
     @Override
     @Transactional
     public ChallengeDto updateChallenge(Long id, CreateChallengeRequest request) {
-        Challenge challenge = challengeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Challenge not found: " + id));
+        boolean exists = !challengeRepository.findByIdSanitized(id).isEmpty();
+        if (!exists) {
+            throw new RuntimeException("Challenge not found: " + id);
+        }
+
+        challengeRepository.updateChallengeByNumericId(
+                id,
+                request.getTitle(),
+                request.getDescription(),
+                request.getDifficulty(),
+                request.getTags(),
+                request.getLanguage());
+
+        testCaseRepository.deleteByNumericChallengeId(id);
+
         long nextTestCaseId = nextTestCaseId();
-
-        challenge.setTitle(request.getTitle());
-        challenge.setDescription(request.getDescription());
-        challenge.setDifficulty(request.getDifficulty());
-        challenge.setTags(request.getTags());
-        challenge.setLanguage(request.getLanguage());
-
-        challenge.getTestCases().clear();
         if (request.getTestCases() != null) {
             for (TestCaseDto tcDto : request.getTestCases()) {
-                TestCase tc = TestCase.builder()
-                        .id(nextTestCaseId++)
-                        .input(tcDto.getInput())
-                        .expectedOutput(tcDto.getExpectedOutput())
-                        .isHidden(tcDto.getIsHidden())
-                        .challenge(challenge)
-                        .build();
-                challenge.getTestCases().add(tc);
+                testCaseRepository.insertTestCase(
+                        nextTestCaseId++,
+                        id,
+                        tcDto.getInput(),
+                        tcDto.getExpectedOutput(),
+                        Boolean.TRUE.equals(tcDto.getIsHidden()) ? 1 : 0
+                );
             }
         }
 
-        challenge = challengeRepository.save(challenge);
-        return mapToDto(challenge);
-    }
-
-    private ChallengeDto mapToDto(Challenge challenge) {
-        return ChallengeDto.builder()
-                .id(challenge.getId())
-                .title(challenge.getTitle())
-                .description(challenge.getDescription())
-                .difficulty(challenge.getDifficulty())
-                .tags(challenge.getTags())
-                .language(challenge.getLanguage())
-                .authorId(challenge.getAuthorId())
-                .createdAt(challenge.getCreatedAt())
-                .testCases(challenge.getTestCases().stream()
-                        .map(tc -> TestCaseDto.builder()
-                                .id(tc.getId())
-                                .input(tc.getInput())
-                                .expectedOutput(tc.getExpectedOutput())
-                                .isHidden(tc.getIsHidden())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
+        return getChallengeById(id);
     }
 
     private ChallengeDto mapSanitizedRowToDto(Object[] row) {
@@ -207,9 +182,30 @@ public class ChallengeServiceImpl implements ChallengeService {
 
     private long nextTestCaseId() {
         Long nextId = testCaseRepository.findNextNumericId();
-        if (nextId == null || nextId < 1) {
-            return 1L;
+        long candidate = (nextId == null || nextId < 1) ? System.currentTimeMillis() : nextId;
+
+        // Legacy dumps may contain mixed ID formats; avoid low repeated IDs like 1.
+        if (candidate < 1_000_000L) {
+            candidate = System.currentTimeMillis();
         }
-        return nextId;
+
+        while (testCaseRepository.existsByNumericId(candidate)) {
+            candidate++;
+        }
+        return candidate;
+    }
+
+    private long nextChallengeId() {
+        Long nextId = challengeRepository.findNextNumericId();
+        long candidate = (nextId == null || nextId < 1) ? System.currentTimeMillis() : nextId;
+
+        if (candidate < 1_000_000L) {
+            candidate = System.currentTimeMillis();
+        }
+
+        while (challengeRepository.existsByNumericId(candidate)) {
+            candidate++;
+        }
+        return candidate;
     }
 }
