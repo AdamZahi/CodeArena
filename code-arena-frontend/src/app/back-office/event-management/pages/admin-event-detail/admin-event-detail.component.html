@@ -1,48 +1,163 @@
 <div class="page">
-  <button class="btn" (click)="goBack()">← BACK TO EVENT LIST</button>
+  <ng-container *ngIf="event">
+    <div class="detail-header">
+      <button class="back-btn" (click)="goBack()">
+        ← BACK TO EVENT LIST
+      </button>
+      <div class="header-right">
+        <span [class]="event?.type === 'OPEN' ? 
+          'type-badge open' : 'type-badge exclusive'">
+          {{ event?.type }}
+        </span>
+        <span [class]="'status-badge ' + (event?.status || '').toLowerCase()">
+          {{ event?.status }}
+        </span>
+      </div>
+    </div>
 
-  <h1>⚔ ADMIN EVENT DETAIL</h1>
+    <div class="event-title-section">
+      <h1 class="event-title">{{ event?.title }}</h1>
+      <p class="event-desc">{{ event?.description }}</p>
+    </div>
 
-  <div class="message" *ngIf="message">{{ message }}</div>
-  <div class="error" *ngIf="error">{{ error }}</div>
+    <div class="message" *ngIf="message">{{ message }}</div>
+    <div class="error" *ngIf="error">{{ error }}</div>
 
-  <div class="panel" *ngIf="event">
-    <h2>{{ event.title }}</h2>
-    <p>{{ event.description }}</p>
-    <p><strong>Type:</strong> {{ event.type }} | <strong>Category:</strong> {{ event.category }}</p>
-    <p><strong>Date:</strong> {{ event.startDate | date:'medium' }} → {{ event.endDate | date:'medium' }}</p>
-    <button class="btn btn-invite" 
-            (click)="inviteTop10()" 
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-icon">📅</span>
+        <div class="info-content">
+          <div class="info-label">DATES</div>
+          <div class="info-value">
+            {{ event?.startDate | date:'dd MMM yyyy, HH:mm' }}
+            → {{ event?.endDate | date:'dd MMM yyyy, HH:mm' }}
+          </div>
+        </div>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">📍</span>
+        <div class="info-content">
+          <div class="info-label">LOCATION</div>
+          <div class="info-value">
+            {{ event?.location || 'CODEARENA HQ' }}
+          </div>
+        </div>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">🎯</span>
+        <div class="info-content">
+          <div class="info-label">CATEGORY</div>
+          <div class="info-value">{{ event?.category }}</div>
+        </div>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">👥</span>
+        <div class="info-content">
+          <div class="info-label">PARTICIPANTS</div>
+          <div class="info-value">
+            {{ event?.currentParticipants }}/{{ event?.maxParticipants }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="invite-btn" 
+            (click)="inviteTop10()"
             *ngIf="event?.type === 'EXCLUSIVE'">
-      [ INVITE TOP 10 ]
+      ⭐ INVITE TOP 10
     </button>
-  </div>
 
-  <div class="panel">
-    <h3>Participants</h3>
-    <div class="row" *ngFor="let p of participants">
-      <span>{{ p.participantId }}</span>
-      <span class="badge">{{ p.status }}</span>
-    </div>
-  </div>
+    <div class="stats-grid" *ngIf="event?.type === 'EXCLUSIVE'">
+      <div class="stat-box">
+        <div class="stat-title">INVITATIONS</div>
+        <div class="stat-row">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ totalInvitations }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label pending">Pending</span>
+          <span class="stat-value pending">{{ pendingInvitations }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label accepted">Accepted</span>
+          <span class="stat-value accepted">{{ acceptedInvitations }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label declined">Declined</span>
+          <span class="stat-value declined">{{ declinedInvitations }}</span>
+        </div>
+      </div>
 
-  <div class="panel">
-    <h3>Candidatures</h3>
-    <div class="row" *ngFor="let c of candidatures">
-      <span>{{ c.participantId }} - {{ c.status }}</span>
-      <span>
-        <button class="btn btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
-        <button class="btn btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
-      </span>
+      <div class="stat-box">
+        <div class="stat-title">CANDIDATURES</div>
+        <div class="stat-row">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ totalCandidatures }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label pending">Pending</span>
+          <span class="stat-value pending">{{ pendingCandidatures }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label accepted">Accepted</span>
+          <span class="stat-value accepted">{{ acceptedCandidatures }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label declined">Rejected</span>
+          <span class="stat-value declined">{{ rejectedCandidatures }}</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="panel">
-    <h3>Invitations</h3>
-    <div class="row" *ngFor="let i of invitations">
-      <span>{{ i.participantId }}</span>
-      <span class="badge">{{ i.status }}</span>
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">👥 PARTICIPANTS</h2>
+        <span class="section-count">
+          {{ participants?.length || 0 }}
+        </span>
+      </div>
+      <div class="section-content">
+        <div class="row" *ngFor="let p of participants">
+          <span>{{ p.participantId }}</span>
+          <span class="badge">{{ p.status }}</span>
+        </div>
+        <div class="muted" *ngIf="participants.length === 0">No participants yet.</div>
+      </div>
     </div>
-    <div class="muted" *ngIf="invitations.length === 0">No invitations available.</div>
-  </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">📩 CANDIDATURES</h2>
+        <span class="section-count">
+          {{ candidatures?.length || 0 }}
+        </span>
+      </div>
+      <div class="section-content">
+        <div class="row" *ngFor="let c of candidatures">
+          <span>{{ c.participantId }} - <span class="badge">{{ c.status }}</span></span>
+          <span>
+            <button class="btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
+            <button class="btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
+          </span>
+        </div>
+        <div class="muted" *ngIf="candidatures.length === 0">No candidatures available.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">🤝 INVITATIONS</h2>
+        <span class="section-count">
+          {{ invitations?.length || 0 }}
+        </span>
+      </div>
+      <div class="section-content">
+        <div class="row" *ngFor="let i of invitations">
+          <span>{{ i.participantId }}</span>
+          <span class="badge">{{ i.status }}</span>
+        </div>
+        <div class="muted" *ngIf="invitations.length === 0">No invitations available.</div>
+      </div>
+    </div>
+  </ng-container>
 </div>
