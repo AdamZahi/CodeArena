@@ -60,7 +60,7 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/back-office/events']);
+    this.router.navigate(['/admin/events']);
   }
 
   acceptCandidature(id: string): void {
