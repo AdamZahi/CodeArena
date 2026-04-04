@@ -128,18 +128,24 @@
             <ng-container *ngIf="myRegistration?.status === 'CANCELLED'; else openNone">
               <div class="reg-state-box reg-cancelled">
                 <div class="reg-badge reg-badge-red">✕ REGISTRATION CANCELLED</div>
-                <button class="checkout-btn auto btn-open-detail" (click)="register()">
+                <button *ngIf="!countdownEnded" class="checkout-btn auto btn-open-detail" (click)="register()">
                   [ RE-JOIN EVENT ]
                 </button>
+                <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
+                  THIS EVENT HAS ENDED.
+                </div>
               </div>
             </ng-container>
 
             <!-- NOT REGISTERED -->
-            <ng-template #openNone>
-              <button class="checkout-btn auto btn-open-detail" (click)="register()">
-                [ JOIN EVENT ]
-              </button>
-            </ng-template>
+              <ng-template #openNone>
+                <button *ngIf="!countdownEnded" class="checkout-btn auto btn-open-detail" (click)="register()">
+                  [ JOIN EVENT ]
+                </button>
+                <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
+                  THIS EVENT HAS ENDED.
+                </div>
+              </ng-template>
           </ng-template>
         </ng-template>
       </ng-container>
@@ -166,13 +172,16 @@
           <ng-container *ngIf="exclusiveInvitation?.status === 'PENDING'; else exclusiveState4">
             <div class="reg-state-box vip-invite-box">
               <div class="reg-badge vip-title">⭐ VIP INVITATION</div>
-              <div class="exclusive-actions">
+              <div class="exclusive-actions" *ngIf="!countdownEnded">
                 <button class="checkout-btn auto btn-open-detail" (click)="acceptInvitation()">
                   [ ACCEPT ]
                 </button>
                 <button class="checkout-btn auto btn-neutral" (click)="declineInvitation()">
                   [ DECLINE ]
                 </button>
+              </div>
+              <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
+                THIS EVENT HAS ENDED.
               </div>
             </div>
           </ng-container>
@@ -192,18 +201,24 @@
             <label class="form-label" for="motivation-reapply">MOTIVATION</label>
             <textarea id="motivation-reapply" class="event-textarea" [(ngModel)]="motivationText" rows="6"
               placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
-            <button class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+            <button *ngIf="!countdownEnded" class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
               [ SUBMIT CANDIDATURE ]
             </button>
+            <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
+              THIS EVENT HAS ENDED.
+            </div>
           </ng-container>
         </ng-template>
         <ng-template #exclusiveState6>
           <label class="form-label" for="motivation">MOTIVATION</label>
           <textarea id="motivation" class="event-textarea" [(ngModel)]="motivationText" rows="6"
             placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
-          <button class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+          <button *ngIf="!countdownEnded" class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
             [ SUBMIT CANDIDATURE ]
           </button>
+          <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
+            THIS EVENT HAS ENDED. CANNOT SUBMIT CANDIDATURE.
+          </div>
         </ng-template>
       </ng-container>
     </div>
