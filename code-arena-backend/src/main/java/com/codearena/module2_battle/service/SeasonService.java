@@ -49,7 +49,7 @@ public class SeasonService {
                 .findBySeasonIdOrderByEloDesc(activeSeason.getId().toString());
 
         // Award season_champion badge to top 3
-        Badge championBadge = badgeRepository.findByCriteria("season_champion")
+        Badge championBadge = badgeRepository.findFirstByCriteria("season_champion")
                 .orElseGet(() -> {
                     Badge b = Badge.builder()
                             .id(UUID.randomUUID())

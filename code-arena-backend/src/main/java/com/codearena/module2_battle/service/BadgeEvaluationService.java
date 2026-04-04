@@ -74,7 +74,7 @@ public class BadgeEvaluationService {
     }
 
     private void awardBadge(String criteriaSlug, String userId, String participantId, List<String> badges) {
-        Optional<Badge> badgeOpt = badgeRepository.findByCriteria(criteriaSlug);
+        Optional<Badge> badgeOpt = badgeRepository.findFirstByCriteria(criteriaSlug);
         if (badgeOpt.isEmpty()) {
             log.warn("Badge with criteria '{}' not found in badge table", criteriaSlug);
             return;

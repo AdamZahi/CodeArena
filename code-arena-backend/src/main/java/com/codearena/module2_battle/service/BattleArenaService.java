@@ -53,6 +53,7 @@ public class BattleArenaService {
     private final ArenaBroadcastService arenaBroadcastService;
     private final BattleRoomStateMachineService stateMachineService;
     private final com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties;
+    private final CodeWrapperService codeWrapperService;
     private final Executor submissionExecutor;
 
     // Lock object for thread-safe match completion checks
@@ -71,6 +72,7 @@ public class BattleArenaService {
             ArenaBroadcastService arenaBroadcastService,
             BattleRoomStateMachineService stateMachineService,
             com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties,
+            CodeWrapperService codeWrapperService,
             @Qualifier("submissionExecutor") Executor submissionExecutor) {
         this.battleRoomRepository = battleRoomRepository;
         this.participantRepository = participantRepository;
@@ -84,6 +86,7 @@ public class BattleArenaService {
         this.arenaBroadcastService = arenaBroadcastService;
         this.stateMachineService = stateMachineService;
         this.timeLimitProperties = timeLimitProperties;
+        this.codeWrapperService = codeWrapperService;
         this.submissionExecutor = submissionExecutor;
     }
 
@@ -202,9 +205,10 @@ public class BattleArenaService {
         String sourceCode = request.getCode();
 
         // Submit to Judge0 and process result asynchronously on the submissionExecutor thread pool.
-        // Each test case is run as a separate Judge0 submission to match how code reads stdin.
+        // Each test case is run as a separate Judge0 submission.
+        String language = request.getLanguage();
         submissionExecutor.execute(() -> processJudge0Submission(
-                sourceCode, languageId, allTestCases, submissionId, roomId, participantId,
+                sourceCode, languageId, language, allTestCases, submissionId, roomId, participantId,
                 request.getRoomChallengeId(), challengePosition, userId,
                 room.getChallengeCount(), attemptNumber
         ));
@@ -224,7 +228,7 @@ public class BattleArenaService {
      * updates the submission record, and broadcasts results to arena subscribers.
      */
     private void processJudge0Submission(
-            String sourceCode, int languageId, List<TestCase> testCases,
+            String sourceCode, int languageId, String language, List<TestCase> testCases,
             String submissionId, String roomId, String participantId,
             String roomChallengeId, int challengePosition, String userId,
             int challengeCount, int attemptNumber) {
@@ -236,10 +240,16 @@ public class BattleArenaService {
             String failCompileOutput = null;
 
             for (TestCase tc : testCases) {
+                // Try to wrap the code so that user's hardcoded prints are suppressed
+                // and only the function result for THIS test case is printed.
+                String wrappedCode = codeWrapperService.wrapCode(sourceCode, language, tc.getInput());
+                boolean wrapped = wrappedCode != null;
+
                 Judge0SubmissionRequest judge0Request = Judge0SubmissionRequest.builder()
                         .languageId(languageId)
-                        .sourceCode(sourceCode)
-                        .stdin(tc.getInput())
+                        .sourceCode(wrapped ? wrappedCode : sourceCode)
+                        .stdin(wrapped ? null : tc.getInput())
+                        .expectedOutput(tc.getExpectedOutput())
                         .build();
 
                 String token = judge0Client.submitCode(judge0Request);
@@ -257,13 +267,20 @@ public class BattleArenaService {
                 }
 
                 if (tcStatus != BattleSubmissionStatus.ACCEPTED) {
+                    log.debug("Judge0 returned status {} for submission {}: stdout=[{}], expected=[{}]",
+                            result.getStatus().getId(), submissionId,
+                            result.getStdout(), tc.getExpectedOutput());
                     finalStatus = tcStatus;
                     failCompileOutput = result.getCompileOutput();
                     break;
                 }
 
-                // Judge0 accepted execution; validate output with normalized line endings/whitespace.
+                // Safety-net: if Judge0 said ACCEPTED but output still doesn't match,
+                // fall back to our own normalized comparison.
                 if (!outputsMatch(tc.getExpectedOutput(), result.getStdout())) {
+                    log.debug("Judge0 status ACCEPTED but outputsMatch failed for submission {}: " +
+                                    "stdout=[{}], expected=[{}]",
+                            submissionId, result.getStdout(), tc.getExpectedOutput());
                     finalStatus = BattleSubmissionStatus.WRONG_ANSWER;
                     break;
                 }
@@ -322,9 +339,15 @@ public class BattleArenaService {
                         .build();
                 arenaBroadcastService.broadcastSpectatorFeedDelayed(roomId, spectatorEvent);
 
-                // If accepted, check if this player has solved all challenges
+                // If accepted, check if this player has solved all challenges.
+                // Wrapped in its own try-catch so a scoring/transition failure doesn't
+                // overwrite the already-persisted ACCEPTED submission.
                 if (isAccepted && progress.getChallengesCompleted() >= challengeCount) {
-                    checkMatchCompletion(roomId);
+                    try {
+                        checkMatchCompletion(roomId);
+                    } catch (Exception ex) {
+                        log.error("Failed to process match completion for room {}: {}", roomId, ex.getMessage(), ex);
+                    }
                 }
             }
 

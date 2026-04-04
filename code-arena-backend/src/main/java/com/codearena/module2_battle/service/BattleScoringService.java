@@ -326,8 +326,12 @@ public class BattleScoringService {
      */
     private void computeAndPersistElo(List<BattleParticipant> players, BattleRoom room,
                                        Map<String, Integer> newEloMap, Map<String, String> newTierMap) {
-        Season activeSeason = seasonRepository.findFirstByIsActiveTrue()
-                .orElseThrow(ActiveSeasonNotFoundException::new);
+        Optional<Season> activeSeasonOpt = seasonRepository.findFirstByIsActiveTrue();
+        if (activeSeasonOpt.isEmpty()) {
+            log.warn("No active season found — skipping ELO updates for room {}", room.getId());
+            return;
+        }
+        Season activeSeason = activeSeasonOpt.get();
         String seasonId = activeSeason.getId().toString();
 
         // Load or create PlayerRating for each player
