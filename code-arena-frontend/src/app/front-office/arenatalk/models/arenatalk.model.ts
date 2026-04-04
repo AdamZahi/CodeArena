@@ -19,6 +19,6 @@ export interface TextChannel {
 export interface Message {
   id?: number;
   content: string;
-  senderName: string;
+  senderName?: string;
   sentAt?: string;
 }

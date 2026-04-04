@@ -2,8 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { take } from 'rxjs/operators';
+import { AuthService } from '@auth0/auth0-angular';
 import { Hub, TextChannel } from '../../models/arenatalk.model';
 import { ArenatalkService } from '../../services/arenatalk.service';
+import { HubMemberService } from '../../services/hub-member.service';
 
 @Component({
   selector: 'app-arenatalk-join',
@@ -13,16 +16,22 @@ import { ArenatalkService } from '../../services/arenatalk.service';
   styleUrl: './arenatalk-join.component.css'
 })
 export class ArenaTalkJoinComponent implements OnInit {
+
   hubs: Hub[] = [];
   searchTerm = '';
   selectedCategory = 'ALL';
   loading = false;
 
+  hubStates: Map<number, 'NONE' | 'ACTIVE' | 'PENDING'> = new Map();
+  joiningHubId: number | null = null;
+
   categories = ['ALL', 'GAMING', 'PROGRAMMING', 'ESPORT', 'STUDY', 'CUSTOM'];
 
   constructor(
     private arenaService: ArenatalkService,
-    private router: Router
+    private hubMemberService: HubMemberService,
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -31,11 +40,13 @@ export class ArenaTalkJoinComponent implements OnInit {
 
   loadHubs(): void {
     this.loading = true;
-
     this.arenaService.getHubs().subscribe({
       next: (data) => {
         this.hubs = data;
         this.loading = false;
+        data.forEach(hub => {
+          if (hub.id) this.hubStates.set(hub.id, 'NONE');
+        });
       },
       error: (err) => {
         console.error('Error loading hubs', err);
@@ -49,32 +60,65 @@ export class ArenaTalkJoinComponent implements OnInit {
       const matchesSearch =
         hub.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         hub.description.toLowerCase().includes(this.searchTerm.toLowerCase());
-
       const matchesCategory =
         this.selectedCategory === 'ALL' || hub.category === this.selectedCategory;
-
       return matchesSearch && matchesCategory;
     });
   }
 
-  joinCommunity(hub: Hub): void {
-    if (hub.visibility !== 'PUBLIC' || !hub.id) return;
+  getHubState(hubId: number): 'NONE' | 'ACTIVE' | 'PENDING' {
+    return this.hubStates.get(hubId) ?? 'NONE';
+  }
 
-    this.arenaService.getChannelsByHub(hub.id).subscribe({
-     next: (channels: TextChannel[]) => {
-  localStorage.setItem('communityArena_selectedHub', JSON.stringify(hub));
-  localStorage.setItem('communityArena_channels', JSON.stringify(channels));
+  onJoinClick(hub: Hub): void {
+    if (!hub.id) return;
 
-  this.router.navigate(['/arenatalk/workspace'], {
-    state: {
-      selectedHub: hub,
-      createdChannels: channels
-    }
-  });
-},
-      error: (err) => {
-        console.error('Error loading channels', err);
+    this.auth.isAuthenticated$.pipe(take(1)).subscribe(isAuth => {
+      if (!isAuth) {
+        this.auth.loginWithRedirect();
+        return;
       }
+
+      // ─── Récupérer le keycloakId depuis le token ────────────
+      this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const keycloakId = payload.sub;
+
+        this.joiningHubId = hub.id!;
+
+        this.hubMemberService.joinHub(hub.id!, keycloakId).subscribe({
+          next: (member) => {
+            this.joiningHubId = null;
+            if (member.status === 'ACTIVE') {
+              this.hubStates.set(hub.id!, 'ACTIVE');
+              this.goToWorkspace(hub);
+            } else if (member.status === 'PENDING') {
+              this.hubStates.set(hub.id!, 'PENDING');
+            }
+          },
+          error: (err) => {
+  this.joiningHubId = null;
+  // 409 = déjà membre → on met ACTIVE directement
+  if (err.status === 409) {
+    this.hubStates.set(hub.id!, 'ACTIVE');
+  } else {
+    console.error('Error joining hub', err);
+  }
+}
+        });
+      });
+    });
+  }
+
+  goToWorkspace(hub: Hub): void {
+    if (!hub.id) return;
+    this.arenaService.getChannelsByHub(hub.id).subscribe({
+      next: (channels: TextChannel[]) => {
+        this.router.navigate(['/arenatalk/workspace'], {
+          state: { selectedHub: hub, createdChannels: channels }
+        });
+      },
+      error: (err) => console.error('Error loading channels', err)
     });
   }
 }

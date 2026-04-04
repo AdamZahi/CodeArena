@@ -25,11 +25,20 @@ export const appConfig: ApplicationConfig = {
       httpInterceptor: {
         allowedList: [
           {
-            uri: `${environment.apiBaseUrl}/api/terminal-quest/*`,
-            allowAnonymous: true
+            uri: 'http://localhost:4200/api/*',
+            tokenOptions: {
+              authorizationParams: {
+                audience: environment.auth0Audience
+              }
+            }
           },
           {
-            uri: `${environment.apiBaseUrl}/*`
+            uri: `${environment.apiBaseUrl}/api/*`,
+            tokenOptions: {
+              authorizationParams: {
+                audience: environment.auth0Audience
+              }
+            }
           }
         ]
       }

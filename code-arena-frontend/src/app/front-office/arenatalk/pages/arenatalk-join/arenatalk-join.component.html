@@ -3,21 +3,14 @@
     <p class="eyebrow">COMMUNITY ARENA //</p>
     <h1>Join a Community</h1>
     <p class="header-text">
-      Discover public communities inside CodeArena and enter spaces built for gaming, programming, teamwork, and collaboration.
+      Discover communities inside CodeArena built for gaming, programming, teamwork, and collaboration.
     </p>
   </div>
 
   <div class="toolbar">
-    <input
-      type="text"
-      [(ngModel)]="searchTerm"
-      placeholder="Search communities..."
-    />
-
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Search communities..." />
     <select [(ngModel)]="selectedCategory">
-      <option *ngFor="let category of categories" [value]="category">
-        {{ category }}
-      </option>
+      <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
     </select>
   </div>
 
@@ -25,17 +18,15 @@
 
   <div class="communities-grid" *ngIf="!loading && filteredHubs.length > 0">
     <article class="community-card" *ngFor="let hub of filteredHubs">
+
       <div class="card-top">
         <div>
           <p class="badge">{{ hub.category }}</p>
           <h2>{{ hub.name }}</h2>
         </div>
-
-        <span
-          class="visibility-badge"
+        <span class="visibility-badge"
           [class.public]="hub.visibility === 'PUBLIC'"
-          [class.private]="hub.visibility === 'PRIVATE'"
-        >
+          [class.private]="hub.visibility === 'PRIVATE'">
           {{ hub.visibility }}
         </span>
       </div>
@@ -47,17 +38,53 @@
       </div>
 
       <div class="card-actions">
-        <button
-          class="join-btn"
-          *ngIf="hub.visibility === 'PUBLIC'; else privateBlock"
-          (click)="joinCommunity(hub)"
-        >
-          Join Now
-        </button>
 
-        <ng-template #privateBlock>
-          <button class="locked-btn" disabled>Private Community</button>
-        </ng-template>
+        <!-- Hub PUBLIC -->
+        <ng-container *ngIf="hub.visibility === 'PUBLIC'">
+
+          <!-- Pas encore membre -->
+          <button class="join-btn"
+            *ngIf="getHubState(hub.id!) === 'NONE'"
+            [disabled]="joiningHubId === hub.id"
+            (click)="onJoinClick(hub)">
+            {{ joiningHubId === hub.id ? 'Joining...' : 'Join Now' }}
+          </button>
+
+          <!-- Déjà membre ACTIVE -->
+          <button class="open-btn"
+            *ngIf="getHubState(hub.id!) === 'ACTIVE'"
+            (click)="goToWorkspace(hub)">
+            Open Workspace
+          </button>
+
+        </ng-container>
+
+        <!-- Hub PRIVATE -->
+        <ng-container *ngIf="hub.visibility === 'PRIVATE'">
+
+          <!-- Pas encore de demande -->
+          <button class="request-btn"
+            *ngIf="getHubState(hub.id!) === 'NONE'"
+            [disabled]="joiningHubId === hub.id"
+            (click)="onJoinClick(hub)">
+            {{ joiningHubId === hub.id ? 'Sending...' : 'Request to Join' }}
+          </button>
+
+          <!-- Demande envoyée -->
+          <button class="pending-btn" disabled
+            *ngIf="getHubState(hub.id!) === 'PENDING'">
+            ⏳ Request Pending
+          </button>
+
+          <!-- Accepté -->
+          <button class="open-btn"
+            *ngIf="getHubState(hub.id!) === 'ACTIVE'"
+            (click)="goToWorkspace(hub)">
+            Open Workspace
+          </button>
+
+        </ng-container>
+
       </div>
     </article>
   </div>
