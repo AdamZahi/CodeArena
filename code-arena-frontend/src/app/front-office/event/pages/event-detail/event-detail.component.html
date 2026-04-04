@@ -218,7 +218,14 @@
     <div class="qr-success-card">
       <h2>✅ REGISTRATION CONFIRMED</h2>
       <p>{{ event?.title }}</p>
-      <img [src]="qrCodeImageUrl" style="width:200px;height:200px;display:block;margin:16px auto;border:2px solid #8b5cf6;border-radius:8px;"/>
+      
+      <div class="qr-code-viewer">
+        <div *ngIf="qrLoading" class="qr-spinner">
+          <div class="spinner"></div>
+          <p>GENERATE QR...</p>
+        </div>
+        <img *ngIf="!qrLoading" [src]="qrCodeImageUrl" style="width:200px;height:200px;display:block;margin:16px auto;border:2px solid #8b5cf6;border-radius:8px;"/>
+      </div>
       <p class="qr-instruction">SHOW THIS QR CODE AT THE EVENT ENTRANCE</p>
       <button class="download-btn" (click)="downloadQR()">[ DOWNLOAD QR CODE ]</button>
       <button class="close-overlay-btn" (click)="showQROverlay = false">[ CLOSE ]</button>
