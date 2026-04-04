@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface BadgeRepository extends JpaRepository<Badge, UUID> {
 
-    Optional<Badge> findByCriteria(String criteria);
+    Optional<Badge> findFirstByCriteria(String criteria);
 }
