@@ -16,24 +16,26 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <span class="brand-title">SYSTEM PLATFORM</span>
       </a>
       <nav class="links">
-        <a routerLink="/challenge" routerLinkActive="active">
-          <span class="link-label">CHALLENGES</span>
-        </a>
-        <a routerLink="/battle" routerLinkActive="active">
-          <span class="link-label">BATTLES</span>
-        </a>
-        <a routerLink="/shop" routerLinkActive="active">
-          <span class="link-label">GEAR SHOP</span>
-        </a>
-        <a routerLink="/reward-profile" routerLinkActive="active">
-          <span class="link-label">REWARDS</span>
-        </a>
-        <a routerLink="/terminal-quest" routerLinkActive="active">
-          <span class="link-label">TERMINAL QUEST</span>
-        </a>
-        <a *ngIf="(currentUser$ | async)?.role === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
-          <span class="link-label">BACKOFFICE</span>
-        </a>
+        <ng-container *ngIf="isAuthenticated$ | async">
+          <a routerLink="/challenge" routerLinkActive="active">
+            <span class="link-label">CHALLENGES</span>
+          </a>
+          <a routerLink="/battle" routerLinkActive="active">
+            <span class="link-label">BATTLES</span>
+          </a>
+          <a routerLink="/shop" routerLinkActive="active">
+            <span class="link-label">GEAR SHOP</span>
+          </a>
+          <a routerLink="/reward-profile" routerLinkActive="active">
+            <span class="link-label">REWARDS</span>
+          </a>
+          <a routerLink="/terminal-quest" routerLinkActive="active">
+            <span class="link-label">TERMINAL QUEST</span>
+          </a>
+          <a *ngIf="(currentUser$ | async)?.role === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
+            <span class="link-label">BACKOFFICE</span>
+          </a>
+        </ng-container>
       </nav>
 
       <div class="actions">

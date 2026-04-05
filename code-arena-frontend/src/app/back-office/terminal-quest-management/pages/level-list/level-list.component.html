@@ -28,6 +28,7 @@
         <tr>
           <th class="center">#ORDER</th>
           <th>TITLE</th>
+          <th>SCENARIO</th>
           <th class="center">DIFFICULTY</th>
           <th class="center">BOSS</th>
           <th class="center">XP</th>
@@ -38,6 +39,7 @@
         <tr *ngFor="let level of levels">
           <td class="center order-cell">{{ level.orderIndex }}</td>
           <td class="title-cell">{{ level.title }}</td>
+          <td class="scenario-cell">{{ truncate(level.scenario) }}</td>
           <td class="center">
             <span class="diff-badge" [ngClass]="diffClass(level.difficulty)">
               {{ level.difficulty }}

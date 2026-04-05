@@ -173,9 +173,10 @@
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tr:hover td { background: rgba(255,255,255,0.015); }
 
-.order-cell { text-align: center; color: #64748b; font-family: 'Orbitron', monospace; font-size: 12px; }
-.title-cell { font-weight: 700; }
-.xp-cell    { text-align: center; font-family: 'Orbitron', monospace; font-size: 12px; color: #fbbf24; }
+.order-cell    { text-align: center; color: #64748b; font-family: 'Orbitron', monospace; font-size: 12px; }
+.title-cell    { font-weight: 700; }
+.scenario-cell { font-size: 13px; color: #94a3b8; max-width: 260px; }
+.xp-cell       { text-align: center; font-family: 'Orbitron', monospace; font-size: 12px; color: #fbbf24; }
 
 /* ── BADGES ──────────────────────────────────────────── */
 .diff-badge {

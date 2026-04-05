@@ -39,7 +39,8 @@ export interface StoryLevel {
 export interface LevelProgress {
   id: string;
   userId: string;
-  levelId: string;
+  levelId?: string;
+  missionId?: string;
   completed: boolean;
   starsEarned: number;
   attempts: number;

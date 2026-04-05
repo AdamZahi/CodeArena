@@ -5,10 +5,12 @@ import { roleGuard } from './core/auth/role.guard';
 export const routes: Routes = [
   {
     path: '',
+    canActivate: [authGuard],
     loadChildren: () => import('./front-office/fo.routes').then((m) => m.FO_ROUTES)
   },
   {
     path: 'admin',
+    canActivate: [authGuard, roleGuard],
     data: { role: 'ADMIN' },
     loadChildren: () => import('./back-office/bo.routes').then((m) => m.BO_ROUTES)
   },

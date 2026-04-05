@@ -69,4 +69,8 @@ export class LevelListComponent implements OnInit {
   diffClass(difficulty: string): string {
     return 'diff-' + difficulty.toLowerCase();
   }
+
+  truncate(text: string, max = 60): string {
+    return text.length > max ? text.slice(0, max) + '…' : text;
+  }
 }
