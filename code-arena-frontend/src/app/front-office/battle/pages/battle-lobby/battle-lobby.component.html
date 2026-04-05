@@ -140,6 +140,20 @@
     </ng-container>
   </div>
 
+  <!-- Challenge Preview Panel -->
+  <div class="challenge-preview-panel" *ngIf="lobbyState.challenges && lobbyState.challenges.length > 0">
+    <h3 class="preview-title">CHALLENGES</h3>
+    <div class="preview-list">
+      <div class="preview-row" *ngFor="let ch of lobbyState.challenges"
+        [style.animation-delay]="(ch.index - 1) * 80 + 'ms'">
+        <span class="preview-index">#{{ ch.index }}</span>
+        <span class="preview-difficulty" [attr.data-diff]="ch.difficulty">{{ ch.difficulty }}</span>
+        <span class="preview-category">{{ ch.category }}</span>
+        <span class="preview-redacted">&bull;&bull;&bull;&bull;&bull;&bull;</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Spectators -->
   <div class="spectators-bar" *ngIf="lobbyState.spectators.length > 0">
     <span class="spectator-icon">&#128065;</span>
