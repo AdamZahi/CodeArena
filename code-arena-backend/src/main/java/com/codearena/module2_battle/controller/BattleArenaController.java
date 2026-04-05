@@ -56,4 +56,32 @@ public class BattleArenaController {
         List<ArenaChallengeResponse> challenges = battleArenaService.getRoomChallenges(roomId, userId);
         return ResponseEntity.ok(challenges);
     }
+
+    @PostMapping("/{roomId}/activity")
+    public ResponseEntity<Void> reportActivity(
+            @PathVariable String roomId,
+            @RequestBody ActivityRequest request,
+            JwtAuthenticationToken principal) {
+        String userId = principal.getToken().getSubject();
+        battleArenaService.reportActivity(roomId, userId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{roomId}/reconnect")
+    public ResponseEntity<ArenaStateResponse> reconnect(
+            @PathVariable String roomId,
+            JwtAuthenticationToken principal) {
+        String userId = principal.getToken().getSubject();
+        ArenaStateResponse state = battleArenaService.handleReconnect(roomId, userId);
+        return ResponseEntity.ok(state);
+    }
+
+    @PostMapping("/{roomId}/heartbeat")
+    public ResponseEntity<Void> heartbeat(
+            @PathVariable String roomId,
+            JwtAuthenticationToken principal) {
+        String userId = principal.getToken().getSubject();
+        battleArenaService.handleHeartbeat(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
 }
