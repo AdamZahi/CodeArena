@@ -53,3 +53,6 @@ pnpm-debug.log*
 **/.idea/
 **/.DS_Store
 **/Thumbs.db
+
+# Local AI assistant config
+.claude/
