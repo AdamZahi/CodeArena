@@ -131,12 +131,18 @@
         </span>
       </div>
       <div class="section-content">
-        <div class="row" *ngFor="let c of candidatures">
-          <span>{{ c.participantId }} - <span class="badge">{{ c.status }}</span></span>
-          <span>
-            <button class="btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
-            <button class="btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
-          </span>
+        <div class="candidature-item" *ngFor="let c of candidatures">
+          <div class="row">
+            <span>{{ c.participantId }} - <span class="badge">{{ c.status }}</span></span>
+            <span *ngIf="c.status === 'PENDING'">
+              <button class="btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
+              <button class="btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
+            </span>
+          </div>
+          <div class="motivation-box" *ngIf="c.motivation">
+            <div class="motivation-label">MOTIVATION:</div>
+            <div class="motivation-text">{{ c.motivation }}</div>
+          </div>
         </div>
         <div class="muted" *ngIf="candidatures.length === 0">No candidatures available.</div>
       </div>

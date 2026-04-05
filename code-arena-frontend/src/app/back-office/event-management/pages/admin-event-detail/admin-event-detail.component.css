@@ -363,3 +363,44 @@
   font-size: 13px;
   font-family: 'Rajdhani', sans-serif;
 }
+
+/* ── MOTIVATION STYLES ────────────────────────── */
+.candidature-item {
+  border-bottom: 1px solid rgba(26,26,46,0.8);
+  padding: 8px 0;
+}
+
+.candidature-item:last-child {
+  border-bottom: none;
+}
+
+.candidature-item .row {
+  border-bottom: none;
+  padding-bottom: 4px;
+}
+
+.motivation-box {
+  background: rgba(13, 13, 21, 0.5);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 6px 0 10px;
+  border-left: 3px solid var(--neon);
+}
+
+.motivation-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.65rem;
+  color: var(--neon2);
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.motivation-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  font-style: italic;
+}
