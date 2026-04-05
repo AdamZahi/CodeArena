@@ -5,10 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BattleEventMessage {
-    private String placeholder;
+public class InviteLinkResponse {
+    private String inviteToken;
+    private String inviteUrl;
+    private LocalDateTime expiresAt;
 }
