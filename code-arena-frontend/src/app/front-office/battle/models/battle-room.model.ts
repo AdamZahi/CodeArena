@@ -16,7 +16,11 @@ export type LobbyEventType =
   | 'MATCH_FINISHED'
   | 'MATCH_CANCELLED'
   | 'SPECTATOR_FEED'
-  | 'SUBMISSION_RESULT';
+  | 'SUBMISSION_RESULT'
+  | 'OPPONENT_ACTIVITY'
+  | 'TEST_CASE_PROGRESS'
+  | 'PLAYER_DISCONNECTED'
+  | 'PLAYER_RECONNECTED';
 
 export type BattleSubmissionStatus =
   | 'PENDING'
@@ -66,12 +70,20 @@ export interface BattleRoomResponse {
 
 // ── Lobby payloads ───────────────────────────────────────────
 
+export interface LobbyChallengeSummary {
+  index: number;
+  difficulty: string;
+  category: string;
+  titleSlug: string;
+}
+
 export interface LobbyStateResponse {
   room: BattleRoomResponse;
   players: ParticipantResponse[];
   spectators: ParticipantResponse[];
   canStart: boolean;
   countdownSeconds: number;
+  challenges: LobbyChallengeSummary[];
 }
 
 export interface CountdownPayload {
@@ -155,6 +167,48 @@ export interface SubmissionResultResponse {
   memoryKb: number | null;
   feedback: string;
   isAccepted: boolean;
+}
+
+// ── Feature 1: Opponent Activity ───────────────────────────
+
+export type ActivityType = 'TYPING' | 'IDLE' | 'SWITCHED_CHALLENGE';
+
+export interface OpponentActivityEvent {
+  participantId: string;
+  displayName: string;
+  type: ActivityType;
+  challengeId: number | null;
+  timestamp: string;
+}
+
+export interface ActivityRequest {
+  type: ActivityType;
+  challengeId: number | null;
+}
+
+// ── Feature 2: Per-Test-Case Progress ─────────────────────
+
+export type TestCaseStatus = 'PENDING' | 'RUNNING' | 'PASSED' | 'FAILED' | 'ERROR';
+
+export interface TestCaseProgressEvent {
+  submissionId: string;
+  testCaseIndex: number;
+  totalTestCases: number;
+  status: TestCaseStatus;
+  errorType: string | null;
+}
+
+// ── Feature 3: Disconnect/Reconnect ──────────────────────
+
+export interface PlayerDisconnectedEvent {
+  participantId: string;
+  displayName: string;
+  reconnectDeadlineSeconds: number;
+}
+
+export interface PlayerReconnectedEvent {
+  participantId: string;
+  displayName: string;
 }
 
 // ── Request DTOs ────────────────────────────────────────────
