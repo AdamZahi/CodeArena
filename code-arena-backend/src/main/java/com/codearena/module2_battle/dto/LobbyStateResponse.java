@@ -17,4 +17,5 @@ public class LobbyStateResponse {
     private List<ParticipantResponse> spectators;
     private boolean canStart;
     private int countdownSeconds;
+    private List<LobbyChallengeSummary> challenges;
 }
