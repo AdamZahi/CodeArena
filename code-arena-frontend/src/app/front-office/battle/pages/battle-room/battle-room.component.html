@@ -4,6 +4,20 @@
   <div class="scan-line"></div>
 </div>
 
+<!-- ── Disconnect Overlay (Feature 3) ─────────────────────── -->
+<div class="disconnect-overlay" *ngIf="disconnected">
+  <div class="disconnect-modal">
+    <div class="disconnect-icon">&#9888;</div>
+    <h2 class="disconnect-title">CONNECTION LOST</h2>
+    <p class="disconnect-text">Attempting to reconnect...</p>
+    <div class="disconnect-countdown">{{ reconnectCountdown }}s</div>
+    <div class="disconnect-bar">
+      <div class="disconnect-bar-fill" [style.width.%]="(reconnectCountdown / 30) * 100"></div>
+    </div>
+    <button class="reconnect-btn" (click)="attemptReconnect()">RECONNECT NOW</button>
+  </div>
+</div>
+
 <!-- ── Top Bar ─────────────────────────────────────────────── -->
 <header class="arena-topbar" *ngIf="arenaState">
   <div class="topbar-left">
@@ -26,6 +40,22 @@
   </div>
 </header>
 
+<!-- ── Challenge Switch Toast (Feature 1) ─────────────────── -->
+<div class="challenge-switch-toast" *ngIf="challengeSwitchToast">
+  <span class="toast-icon">&#8644;</span>
+  <span class="toast-text">
+    <strong>{{ challengeSwitchToast.displayName }}</strong> switched to Challenge #{{ challengeSwitchToast.challengeId }}
+  </span>
+</div>
+
+<!-- ── Opponent Disconnect Banner (Feature 3) ─────────────── -->
+<div class="opponent-disconnect-banner" *ngFor="let opp of disconnectedOpponents">
+  <span class="disconnect-banner-icon">&#9888;</span>
+  <span class="disconnect-banner-text">
+    <strong>{{ opp.displayName }}</strong> disconnected — {{ opp.deadline }}s to reconnect
+  </span>
+</div>
+
 <!-- ── Main Arena Layout ───────────────────────────────────── -->
 <div class="arena-layout" *ngIf="arenaState">
 
@@ -39,7 +69,7 @@
         class="challenge-tab"
         [class.active]="activeChallengeIndex === i"
         [class.solved]="isChallengeSolved(ch.roomChallengeId)"
-        (click)="activeChallengeIndex = i"
+        (click)="selectChallenge(i)"
       >
         <span class="tab-number">{{ i + 1 }}</span>
         <span class="tab-check" *ngIf="isChallengeSolved(ch.roomChallengeId)">&#10004;</span>
@@ -94,6 +124,7 @@
         *ngFor="let p of arenaState.participants"
         [class.finished]="p.isFinished"
         [class.has-pulse]="opponentPulses[p.participantId]"
+        [class.disconnected]="opponentDisconnects[p.participantId]"
         [attr.data-pulse]="opponentPulses[p.participantId] || null"
       >
         <div class="opp-avatar">
@@ -101,7 +132,13 @@
           <span *ngIf="!p.avatarUrl">{{ p.username.charAt(0).toUpperCase() }}</span>
         </div>
         <div class="opp-info">
-          <span class="opp-name">{{ p.username }}</span>
+          <div class="opp-name-row">
+            <span class="opp-name">{{ p.username }}</span>
+            <!-- Feature 1: Typing dots -->
+            <span class="typing-dots" *ngIf="opponentActivities[p.participantId] === 'TYPING'">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </span>
+          </div>
           <div class="opp-progress-bar">
             <div class="opp-progress-fill"
               [style.width.%]="(p.challengesCompleted / arenaState.challenges.length) * 100"
@@ -153,6 +190,20 @@
           spellcheck="false"
           placeholder="// Write your solution here..."
         ></textarea>
+      </div>
+
+      <!-- Feature 2: Test Case Progress Strip -->
+      <div class="test-case-strip" *ngIf="testCaseChips.length > 0">
+        <span class="strip-label">TESTS</span>
+        <div class="chip-row">
+          <span
+            class="tc-chip"
+            *ngFor="let chip of testCaseChips; let i = index"
+            [attr.data-status]="chip.status"
+          >
+            {{ i + 1 }}
+          </span>
+        </div>
       </div>
     </div>
 
