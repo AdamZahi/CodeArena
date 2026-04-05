@@ -19,4 +19,14 @@ public final class LobbyEventType {
     public static final String SPECTATOR_FEED = "SPECTATOR_FEED";
     public static final String MATCH_FINISHED = "MATCH_FINISHED";
     public static final String MATCH_CANCELLED = "MATCH_CANCELLED";
+
+    // Feature 1: Opponent activity
+    public static final String OPPONENT_ACTIVITY = "OPPONENT_ACTIVITY";
+
+    // Feature 2: Per-test-case progress
+    public static final String TEST_CASE_PROGRESS = "TEST_CASE_PROGRESS";
+
+    // Feature 3: Disconnect/reconnect
+    public static final String PLAYER_DISCONNECTED = "PLAYER_DISCONNECTED";
+    public static final String PLAYER_RECONNECTED = "PLAYER_RECONNECTED";
 }
