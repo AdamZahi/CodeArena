@@ -1,83 +1,210 @@
-<div class="map-container">
+<div class="progression-screen">
 
-  <!-- ── NAV ───────────────────────────────────────── -->
-  <div class="page-nav">
-    <a routerLink="/terminal-quest" class="back-btn">← TERMINAL QUEST</a>
-  </div>
+  <!-- Fixed back button -->
+  <a routerLink="/terminal-quest" class="back-btn-fixed">&#8592; TERMINAL QUEST</a>
 
-  <!-- ── HEADER ────────────────────────────────────── -->
-  <div class="page-header">
-    <span class="kicker">STORY MODE</span>
-    <h1 class="page-title">CHAPTER <span class="accent">MAP</span></h1>
-  </div>
-
-  <!-- ── LOADING ───────────────────────────────────── -->
+  <!-- Loading -->
   <div class="loading-state" *ngIf="isLoading">
     <div class="loader-ring"></div>
-    <span class="loader-text">LOADING CHAPTERS...</span>
+    <span class="loader-text">LOADING MAP...</span>
   </div>
 
-  <!-- ── EMPTY ─────────────────────────────────────── -->
+  <!-- Empty -->
   <div class="empty-state" *ngIf="!isLoading && chapters.length === 0">
-    <span class="empty-icon">📭</span>
     <p>No chapters available yet.</p>
   </div>
 
-  <!-- ── CHAPTERS ──────────────────────────────────── -->
-  <div class="chapters-list" *ngIf="!isLoading && chapters.length > 0">
+  <!-- Path -->
+  <div class="path-container" *ngIf="!isLoading && chapters.length > 0">
 
-    <div class="chapter-card" *ngFor="let chapter of chapters; let i = index">
+    <ng-container *ngFor="let chapter of chapters; let i = index">
+      <div class="chapter-section">
 
-      <!-- Chapter header -->
-      <div class="chapter-header">
-        <div class="chapter-number">CH.{{ chapter.orderIndex }}</div>
-        <div class="chapter-info">
-          <h2 class="chapter-title">{{ chapter.title }}</h2>
-          <p class="chapter-desc">{{ chapter.description }}</p>
-        </div>
-        <span class="locked-badge" *ngIf="!isChapterUnlocked(chapter, i)">🔒 LOCKED</span>
-      </div>
-
-      <!-- Missions grid -->
-      <div class="levels-grid" *ngIf="chapter.missions && chapter.missions.length > 0; else noMissions">
-        <div
-          class="level-card"
-          *ngFor="let mission of chapter.missions"
-          [class.completed]="isCompleted(mission)"
-          [class.locked]="!isChapterUnlocked(chapter, i)"
-          (click)="navigateToMission(mission, chapter, i)">
-
-          <!-- Boss banner -->
-          <div class="boss-banner" *ngIf="mission.isBoss">⚔ BOSS FIGHT</div>
-
-          <div class="level-top">
-            <span class="level-title">{{ mission.title }}</span>
-            <span class="diff-badge" [ngClass]="'diff-' + mission.difficulty.toLowerCase()">
-              {{ mission.difficulty }}
-            </span>
+        <!-- Chapter header -->
+        <div class="chapter-header" [class.locked]="!isChapterUnlocked(chapter, i)">
+          <div class="chapter-locked-overlay" *ngIf="!isChapterUnlocked(chapter, i)">
+            <span class="locked-ico">&#128274;</span>
+            <span class="locked-txt">LOCKED</span>
           </div>
-
-          <div class="mission-task">{{ mission.task }}</div>
-
-          <div class="level-bottom">
-            <div class="level-stars">
-              <span
-                *ngFor="let n of starRange"
-                class="star"
-                [class.filled]="n <= getStars(mission)">
-                {{ n <= getStars(mission) ? '★' : '☆' }}
-              </span>
-            </div>
-            <div class="level-xp">+{{ mission.xpReward }} XP</div>
+          <div class="chapter-header-content">
+            <span class="chapter-num">CH.{{ chapter.orderIndex }}</span>
+            <span class="chapter-title">{{ chapter.title }}</span>
+            <span class="chapter-desc">{{ chapter.description }}</span>
           </div>
         </div>
+
+        <!-- Missions path -->
+        <div class="missions-path" [class.chapter-locked]="!isChapterUnlocked(chapter, i)">
+
+          <ng-container *ngFor="let mission of chapter.missions; let j = index; let last = last">
+
+            <!-- Mission row -->
+            <div class="mission-wrapper"
+                 [class.is-boss]="mission.isBoss"
+                 (click)="selectMission(mission, chapter, i)">
+
+              <!-- Left info (even index) -->
+              <div class="mission-side left">
+                <ng-container *ngIf="j % 2 === 0">
+                  <div class="mission-info info-left">
+                    <span class="mission-title">{{ mission.title }}</span>
+                    <span class="mission-diff" [class]="'diff-' + mission.difficulty.toLowerCase()">
+                      {{ mission.difficulty }}
+                    </span>
+                    <span class="mission-xp" *ngIf="isCompleted(mission)">+{{ mission.xpReward }} XP</span>
+                  </div>
+                </ng-container>
+              </div>
+
+              <!-- Center: node -->
+              <div class="mission-center">
+                <div class="mission-node"
+                     [class.completed]="isCompleted(mission)"
+                     [class.current]="isCurrentMission(mission, chapter, i)"
+                     [class.locked]="isMissionLocked(mission, chapter, i)"
+                     [class.boss]="mission.isBoss">
+
+                  <div class="node-content">
+                    <!-- Completed -->
+                    <span class="node-icon" *ngIf="isCompleted(mission)">&#10003;</span>
+                    <!-- Current, non-boss -->
+                    <span class="node-icon" *ngIf="isCurrentMission(mission, chapter, i) && !mission.isBoss">&#9654;</span>
+                    <!-- Locked -->
+                    <span class="node-icon" *ngIf="isMissionLocked(mission, chapter, i)">&#128274;</span>
+                    <!-- Boss, not completed, not locked -->
+                    <span class="node-icon"
+                          *ngIf="mission.isBoss && !isCompleted(mission) && !isMissionLocked(mission, chapter, i)">
+                      &#9876;
+                    </span>
+                    <!-- Unlocked non-boss, not current, not completed -->
+                    <span class="node-num"
+                          *ngIf="!isCompleted(mission)
+                                 && !isCurrentMission(mission, chapter, i)
+                                 && !isMissionLocked(mission, chapter, i)
+                                 && !mission.isBoss">
+                      {{ mission.orderIndex }}
+                    </span>
+                  </div>
+
+                </div><!-- /mission-node -->
+
+                <!-- Stars (completed) -->
+                <div class="node-stars" *ngIf="isCompleted(mission)">
+                  <span *ngFor="let n of starRange"
+                        class="star" [class.filled]="n <= getStars(mission)">
+                    {{ n <= getStars(mission) ? '&#9733;' : '&#9734;' }}
+                  </span>
+                </div>
+              </div><!-- /mission-center -->
+
+              <!-- Right info (odd index) -->
+              <div class="mission-side right">
+                <ng-container *ngIf="j % 2 !== 0">
+                  <div class="mission-info info-right">
+                    <span class="mission-title">{{ mission.title }}</span>
+                    <span class="mission-diff" [class]="'diff-' + mission.difficulty.toLowerCase()">
+                      {{ mission.difficulty }}
+                    </span>
+                    <span class="mission-xp" *ngIf="isCompleted(mission)">+{{ mission.xpReward }} XP</span>
+                  </div>
+                </ng-container>
+              </div>
+
+            </div><!-- /mission-wrapper -->
+
+            <!-- Connecting path line -->
+            <div class="path-line" *ngIf="!last"
+                 [class.active]="isCompleted(mission)"></div>
+
+          </ng-container>
+
+        </div><!-- /missions-path -->
+
+      </div><!-- /chapter-section -->
+    </ng-container>
+
+  </div><!-- /path-container -->
+
+  <!-- ── BACKDROP ───────────────────────────────────────── -->
+  <div class="panel-backdrop" *ngIf="showMissionPanel" (click)="closeMissionPanel()"></div>
+
+  <!-- ── MISSION DETAIL PANEL ───────────────────────────── -->
+  <div class="mission-panel" [class.open]="showMissionPanel" *ngIf="selectedMission">
+
+    <!-- Close button -->
+    <button class="panel-close" (click)="closeMissionPanel()">&#10005;</button>
+
+    <!-- Mission header -->
+    <div class="panel-header">
+      <span class="panel-difficulty" [ngClass]="'diff-' + selectedMission.difficulty.toLowerCase()">
+        {{ selectedMission.difficulty }}
+      </span>
+      <span class="panel-boss" *ngIf="selectedMission.isBoss">&#9876; BOSS FIGHT</span>
+    </div>
+
+    <h2 class="panel-title">{{ selectedMission.title }}</h2>
+    <p class="panel-task">{{ selectedMission.task }}</p>
+
+    <!-- Separator -->
+    <div class="panel-divider"></div>
+
+    <!-- Stats -->
+    <div class="panel-stats">
+
+      <!-- Stars -->
+      <div class="stat-row">
+        <span class="stat-label">RATING</span>
+        <div class="stat-stars">
+          <span *ngFor="let n of starRange" class="panel-star" [class.filled]="n <= getMissionStars()">
+            {{ n <= getMissionStars() ? '&#9733;' : '&#9734;' }}
+          </span>
+        </div>
       </div>
 
-      <ng-template #noMissions>
-        <div class="no-missions">No missions available for this chapter.</div>
-      </ng-template>
+      <!-- Status -->
+      <div class="stat-row">
+        <span class="stat-label">STATUS</span>
+        <span class="stat-value" [class.completed]="selectedMissionProgress?.completed">
+          {{ selectedMissionProgress?.completed ? 'COMPLETED' : 'NOT COMPLETED' }}
+        </span>
+      </div>
+
+      <!-- Attempts -->
+      <div class="stat-row">
+        <span class="stat-label">ATTEMPTS</span>
+        <span class="stat-value">{{ selectedMissionProgress?.attempts || 0 }}</span>
+      </div>
+
+      <!-- Best score -->
+      <div class="stat-row">
+        <span class="stat-label">BEST SCORE</span>
+        <span class="stat-value">{{ getMissionStars() }} / 3 &#9733;</span>
+      </div>
+
+      <!-- XP Reward -->
+      <div class="stat-row">
+        <span class="stat-label">XP REWARD</span>
+        <span class="stat-value xp">+{{ selectedMission.xpReward }} XP</span>
+      </div>
+
+      <!-- Time limit -->
+      <div class="stat-row">
+        <span class="stat-label">TIME LIMIT</span>
+        <span class="stat-value">
+          {{ selectedMission.isBoss ? '90' : (selectedMission.difficulty === 'EASY' ? '60' : (selectedMission.difficulty === 'MEDIUM' ? '45' : '30')) }}s
+        </span>
+      </div>
 
     </div>
+
+    <!-- Separator -->
+    <div class="panel-divider"></div>
+
+    <!-- Play button -->
+    <button class="panel-play-btn" (click)="playMission()">
+      {{ selectedMissionProgress?.completed ? '&#8635; REPLAY MISSION' : '&#9654; START MISSION' }}
+    </button>
+
   </div>
 
 </div>

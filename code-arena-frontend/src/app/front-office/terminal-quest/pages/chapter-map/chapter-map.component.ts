@@ -15,7 +15,13 @@ export class ChapterMapComponent implements OnInit {
   chapters: StoryChapter[] = [];
   progressMap = new Map<string, LevelProgress>();
   isLoading = true;
-  readonly userId = 'test-user-001';
+
+  selectedMission: StoryMission | null = null;
+  selectedMissionProgress: LevelProgress | null = null;
+  showMissionPanel = false;
+
+  readonly userId   = 'test-user-001';
+  readonly starRange = [1, 2, 3];
 
   constructor(
     private tqService: TerminalQuestService,
@@ -24,10 +30,7 @@ export class ChapterMapComponent implements OnInit {
 
   ngOnInit(): void {
     this.tqService.getChapters().subscribe({
-      next: (chapters) => {
-        this.chapters = chapters;
-        this.loadProgress();
-      },
+      next: (chapters) => { this.chapters = chapters; this.loadProgress(); },
       error: () => { this.isLoading = false; }
     });
   }
@@ -45,6 +48,8 @@ export class ChapterMapComponent implements OnInit {
     });
   }
 
+  // ── Core state helpers ────────────────────────────────
+
   isCompleted(mission: StoryMission): boolean {
     return this.progressMap.get(mission.id)?.completed ?? false;
   }
@@ -58,14 +63,48 @@ export class ChapterMapComponent implements OnInit {
     if (index === 0) return true;
     const prev = this.chapters[index - 1];
     const missions = prev.missions ?? [];
-    if (missions.length === 0) return false;
+    if (!missions.length) return false;
     return missions.every(m => this.progressMap.get(m.id)?.completed === true);
   }
 
-  readonly starRange = [1, 2, 3];
+  isCurrentMission(mission: StoryMission, chapter: StoryChapter, chapterIndex: number): boolean {
+    if (!this.isChapterUnlocked(chapter, chapterIndex)) return false;
+    if (this.isCompleted(mission)) return false;
+    const missions = chapter.missions ?? [];
+    const idx = missions.findIndex(m => m.id === mission.id);
+    return missions.slice(0, idx).every(m => this.progressMap.get(m.id)?.completed);
+  }
 
-  navigateToMission(mission: StoryMission, chapter: StoryChapter, index: number): void {
-    if (!this.isChapterUnlocked(chapter, index)) return;
-    this.router.navigate(['/terminal-quest/story/play', mission.id]);
+  isMissionLocked(mission: StoryMission, chapter: StoryChapter, chapterIndex: number): boolean {
+    if (!this.isChapterUnlocked(chapter, chapterIndex)) return true;
+    const missions = chapter.missions ?? [];
+    const idx = missions.findIndex(m => m.id === mission.id);
+    if (idx === 0) return false;
+    return !missions.slice(0, idx).every(m => this.progressMap.get(m.id)?.completed);
+  }
+
+  // ── Mission panel ─────────────────────────────────────
+
+  selectMission(mission: StoryMission, chapter: StoryChapter, chapterIndex: number): void {
+    if (this.isMissionLocked(mission, chapter, chapterIndex)) return;
+    this.selectedMission = mission;
+    this.selectedMissionProgress = this.progressMap.get(mission.id) ?? null;
+    this.showMissionPanel = true;
+  }
+
+  closeMissionPanel(): void {
+    this.showMissionPanel = false;
+    this.selectedMission = null;
+    this.selectedMissionProgress = null;
+  }
+
+  playMission(): void {
+    if (this.selectedMission) {
+      this.router.navigate(['/terminal-quest/story/play', this.selectedMission.id]);
+    }
+  }
+
+  getMissionStars(): number {
+    return this.selectedMissionProgress?.completed ? this.selectedMissionProgress.starsEarned : 0;
   }
 }
