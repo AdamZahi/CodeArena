@@ -1,13 +1,15 @@
 :host {
-  --auth-bg: radial-gradient(circle at 20% 0%, #f97316 0%, transparent 36%),
-    radial-gradient(circle at 80% 100%, #0ea5e9 0%, transparent 34%),
-    linear-gradient(150deg, #1e1b4b 0%, #0f172a 65%, #052e2b 100%);
-  --card-bg: rgba(255, 255, 255, 0.07);
-  --card-border: rgba(255, 255, 255, 0.2);
-  --text-main: #f9fafb;
-  --text-muted: #d1d5db;
-  --primary: #f59e0b;
-  --primary-hover: #d97706;
+  --neon: #8b5cf6;
+  --neon-rgb: 139, 92, 246;
+  --cyan: #06b6d4;
+  --cyan-rgb: 6, 182, 212;
+  --green: #10b981;
+  --bg: #0a0a0f;
+  --card: rgba(13, 13, 21, 0.9);
+  --border: #1a1a2e;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  display: block;
 }
 
 * {
@@ -18,92 +20,193 @@
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 1.25rem;
-  background: var(--auth-bg);
-  font-family: Candara, 'Gill Sans', 'Trebuchet MS', sans-serif;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(var(--neon-rgb), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--neon-rgb), 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--cyan-rgb), 0.5), transparent);
+  animation: scan 4s linear infinite;
+}
+
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.glow-purple {
+  width: 600px;
+  height: 600px;
+  background: var(--neon);
+  top: -220px;
+  left: -120px;
+}
+
+.glow-cyan {
+  width: 500px;
+  height: 500px;
+  background: var(--cyan);
+  bottom: -200px;
+  right: -120px;
 }
 
 .auth-card {
-  width: min(100%, 460px);
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 20px;
-  padding: 2rem;
-  color: var(--text-main);
-  box-shadow: 0 26px 70px rgba(1, 8, 20, 0.5);
-  backdrop-filter: blur(8px);
-  animation: card-in 380ms ease;
+  width: min(100%, 620px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  color: var(--text);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  animation: card-in 350ms ease;
 }
 
 .auth-kicker {
   margin: 0;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #fdba74;
+  color: var(--green);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
 }
 
 h1 {
-  margin: 0.5rem 0 0;
-  font-size: clamp(1.9rem, 3vw, 2.45rem);
-  line-height: 1.15;
+  margin: 10px 0 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.9rem, 3.5vw, 2.55rem);
+  line-height: 1.1;
+  letter-spacing: 1px;
 }
 
 .auth-subtitle {
-  margin: 0.9rem 0 1.6rem;
+  margin: 10px 0 22px;
   color: var(--text-muted);
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .auth-actions {
   display: grid;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .auth-btn {
   width: 100%;
-  border-radius: 11px;
-  border: 1px solid transparent;
-  padding: 0.85rem 1rem;
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 600;
+  border: none;
   cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1.8px;
+  padding: 13px 16px;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.auth-btn:active {
-  transform: translateY(1px);
+.auth-btn:hover {
+  transform: translateY(-2px);
 }
 
 .auth-btn-primary {
-  background: var(--primary);
-  color: #431407;
+  background: linear-gradient(135deg, var(--neon), #7c3aed);
+  color: #fff;
+  box-shadow: 0 0 24px rgba(var(--neon-rgb), 0.3);
 }
 
-.auth-btn-primary:hover {
-  background: var(--primary-hover);
+.auth-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .auth-btn-outline {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.24);
-  color: var(--text-main);
+  background: rgba(var(--cyan-rgb), 0.08);
+  color: var(--cyan);
+  border: 1px solid rgba(var(--cyan-rgb), 0.5);
 }
 
-.auth-btn-outline:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.46);
+.email-signup-form {
+  display: grid;
+  gap: 12px;
+}
+
+.field-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field span {
+  font-size: 0.92rem;
+  color: #cbd5e1;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  background: rgba(2, 6, 23, 0.75);
+  border: 1px solid #243048;
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 12px;
+  outline: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: rgba(var(--neon-rgb), 0.8);
+  box-shadow: 0 0 0 2px rgba(var(--neon-rgb), 0.18);
+}
+
+.field small {
+  color: #fda4af;
+  font-size: 0.82rem;
+}
+
+.form-note {
+  color: #a5b4fc;
+  font-size: 0.88rem;
+}
+
+.form-error {
+  color: #fda4af;
+  font-size: 0.9rem;
 }
 
 .auth-footer {
-  margin: 1.3rem 0 0;
-  font-size: 0.94rem;
+  margin: 16px 0 0;
+  font-size: 0.95rem;
   color: var(--text-muted);
 }
 
 .auth-footer a {
-  color: #38bdf8;
+  color: var(--cyan);
   text-decoration: none;
   font-weight: 700;
 }
@@ -112,10 +215,23 @@ h1 {
   text-decoration: underline;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 680px) {
   .auth-card {
-    padding: 1.45rem;
-    border-radius: 16px;
+    width: min(100%, 520px);
+    padding: 20px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100vh);
+  }
+  100% {
+    transform: translateY(100vh);
   }
 }
 
