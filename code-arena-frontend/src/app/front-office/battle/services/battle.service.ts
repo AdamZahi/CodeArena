@@ -16,6 +16,7 @@ import {
   SubmitSolutionRequest,
   SubmissionResultResponse,
   PostMatchSummaryResponse,
+  ActivityRequest,
 } from '../models/battle-room.model';
 
 @Injectable({ providedIn: 'root' })
@@ -78,6 +79,20 @@ export class BattleService extends ApiService {
 
   getRoomChallenges(roomId: string): Observable<ArenaChallengeResponse[]> {
     return this.http.get<ArenaChallengeResponse[]>(`${this.baseUrl}/arena/${roomId}/challenges`);
+  }
+
+  // ── Activity & Connection endpoints ────────────────────────
+
+  reportActivity(roomId: string, request: ActivityRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/arena/${roomId}/activity`, request);
+  }
+
+  reconnect(roomId: string): Observable<ArenaStateResponse> {
+    return this.http.post<ArenaStateResponse>(`${this.baseUrl}/arena/${roomId}/reconnect`, {});
+  }
+
+  sendHeartbeat(roomId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/arena/${roomId}/heartbeat`, {});
   }
 
   // ── Results endpoints (/api/battle/results) ───────────────

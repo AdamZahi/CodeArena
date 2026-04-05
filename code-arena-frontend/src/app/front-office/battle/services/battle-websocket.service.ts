@@ -14,6 +14,10 @@ import {
   MatchFinishedEvent,
   SpectatorFeedEvent,
   SubmissionResultResponse,
+  OpponentActivityEvent,
+  TestCaseProgressEvent,
+  PlayerDisconnectedEvent,
+  PlayerReconnectedEvent,
 } from '../models/battle-room.model';
 
 @Injectable({ providedIn: 'root' })
@@ -41,6 +45,16 @@ export class BattleWebsocketService implements OnDestroy {
 
   // ── Spectator observable ─────────────────────────────────
   readonly spectatorFeed$ = new Subject<LobbyEvent<SpectatorFeedEvent>>();
+
+  // ── Feature 1: Opponent activity ─────────────────────────
+  readonly opponentActivity$ = new Subject<LobbyEvent<OpponentActivityEvent>>();
+
+  // ── Feature 2: Per-test-case progress ───────────────────
+  readonly testCaseProgress$ = new Subject<TestCaseProgressEvent>();
+
+  // ── Feature 3: Disconnect/reconnect ─────────────────────
+  readonly playerDisconnected$ = new Subject<LobbyEvent<PlayerDisconnectedEvent>>();
+  readonly playerReconnected$  = new Subject<LobbyEvent<PlayerReconnectedEvent>>();
 
   // ── User-specific submission result ──────────────────────
   readonly submissionResult$ = new Subject<SubmissionResultResponse>();
@@ -116,10 +130,13 @@ export class BattleWebsocketService implements OnDestroy {
       (msg: IMessage) => {
         const event: LobbyEvent = JSON.parse(msg.body);
         switch (event.type) {
-          case 'ARENA_STATE':       this.arenaState$.next(event as LobbyEvent<ArenaStateResponse>); break;
-          case 'OPPONENT_PROGRESS': this.opponentProgress$.next(event as LobbyEvent<OpponentProgressEvent>); break;
-          case 'MATCH_FINISHED':    this.matchFinished$.next(event as LobbyEvent<MatchFinishedEvent>); break;
-          case 'MATCH_CANCELLED':   this.matchCancelled$.next(event as LobbyEvent<string>); break;
+          case 'ARENA_STATE':        this.arenaState$.next(event as LobbyEvent<ArenaStateResponse>); break;
+          case 'OPPONENT_PROGRESS':  this.opponentProgress$.next(event as LobbyEvent<OpponentProgressEvent>); break;
+          case 'MATCH_FINISHED':     this.matchFinished$.next(event as LobbyEvent<MatchFinishedEvent>); break;
+          case 'MATCH_CANCELLED':    this.matchCancelled$.next(event as LobbyEvent<string>); break;
+          case 'OPPONENT_ACTIVITY':  this.opponentActivity$.next(event as LobbyEvent<OpponentActivityEvent>); break;
+          case 'PLAYER_DISCONNECTED': this.playerDisconnected$.next(event as LobbyEvent<PlayerDisconnectedEvent>); break;
+          case 'PLAYER_RECONNECTED': this.playerReconnected$.next(event as LobbyEvent<PlayerReconnectedEvent>); break;
         }
       }
     );
@@ -143,8 +160,12 @@ export class BattleWebsocketService implements OnDestroy {
     const sub = this.client!.subscribe(
       '/user/queue/battle/submission',
       (msg: IMessage) => {
-        const event: LobbyEvent<SubmissionResultResponse> = JSON.parse(msg.body);
-        this.submissionResult$.next(event.payload);
+        const event: LobbyEvent = JSON.parse(msg.body);
+        if (event.type === 'TEST_CASE_PROGRESS') {
+          this.testCaseProgress$.next(event.payload as TestCaseProgressEvent);
+        } else {
+          this.submissionResult$.next(event.payload as SubmissionResultResponse);
+        }
       }
     );
     this.subscriptions.push(sub);
