@@ -43,9 +43,9 @@ export class ArenatalkService {
     return this.http.get<Message[]>(`${this.apiUrl}/channels/${channelId}/messages`);
   }
 
-  sendMessage(channelId: number, message: Message): Observable<Message> {
-    return this.http.post<Message>(`${this.apiUrl}/channels/${channelId}/messages`, message);
-  }
+sendMessage(channelId: number, message: { content: string }) {
+  return this.http.post<Message>(`${this.apiUrl}/channels/${channelId}/messages`, message);
+}
 
   deleteMessage(messageId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}`);

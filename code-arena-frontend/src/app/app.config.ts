@@ -13,7 +13,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor, loadingInterceptor])),
+    provideHttpClient(
+      withInterceptors([jwtInterceptor, errorInterceptor, loadingInterceptor])
+    ),
     provideAnimations(),
     provideAuth0({
       domain: environment.auth0Domain,
@@ -25,20 +27,10 @@ export const appConfig: ApplicationConfig = {
       httpInterceptor: {
         allowedList: [
           {
-            uri: 'http://localhost:4200/api/*',
-            tokenOptions: {
-              authorizationParams: {
-                audience: environment.auth0Audience
-              }
-            }
+            uri: '/api/*'
           },
           {
-            uri: `${environment.apiBaseUrl}/api/*`,
-            tokenOptions: {
-              authorizationParams: {
-                audience: environment.auth0Audience
-              }
-            }
+            uri: `${environment.apiBaseUrl}/api/*`
           }
         ]
       }

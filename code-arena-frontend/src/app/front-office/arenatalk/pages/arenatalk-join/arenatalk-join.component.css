@@ -14,7 +14,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 36px;
 }
 
 .eyebrow {
@@ -58,6 +58,13 @@
   background: #121526;
   color: white;
   outline: none;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.toolbar input:focus,
+.toolbar select:focus {
+  border-color: #8d63ff;
 }
 
 .toolbar input {
@@ -80,15 +87,23 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 .community-card {
   background: rgba(12, 13, 28, 0.9);
   border: 1px solid rgba(120, 132, 190, 0.18);
   border-radius: 22px;
-  padding: 24px;
+  padding: 26px;
   box-shadow: 0 0 0 1px rgba(120, 132, 190, 0.06), 0 20px 60px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.community-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(141, 99, 255, 0.35);
 }
 
 .card-top {
@@ -102,80 +117,161 @@
 .badge {
   display: inline-block;
   margin-bottom: 10px;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: rgba(141, 99, 255, 0.16);
   color: #b9a2ff;
   font-size: 12px;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .community-card h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 26px;
+  color: #f4f7ff;
+  line-height: 1.2;
 }
 
 .visibility-badge {
-  padding: 8px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .visibility-badge.public {
-  background: rgba(34, 199, 255, 0.16);
+  background: rgba(34, 199, 255, 0.12);
   color: #8ee7ff;
+  border: 1px solid rgba(34, 199, 255, 0.25);
 }
 
 .visibility-badge.private {
-  background: rgba(255, 111, 145, 0.16);
+  background: rgba(255, 111, 145, 0.12);
   color: #ff9eb1;
+  border: 1px solid rgba(255, 111, 145, 0.25);
 }
 
 .description {
-  min-height: 72px;
+  flex: 1;
   color: #97a5c0;
   line-height: 1.7;
   margin-bottom: 16px;
+  font-size: 15px;
 }
 
 .meta {
   color: #7f8cab;
-  font-size: 14px;
-  margin-bottom: 18px;
+  font-size: 13px;
+  margin-bottom: 20px;
 }
 
 .card-actions {
   margin-top: auto;
 }
 
+/* ── Buttons ──────────────────────────────────────────────────── */
 .join-btn,
-.locked-btn {
+.request-btn,
+.open-btn,
+.pending-btn {
   width: 100%;
   padding: 14px 18px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
   font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
 }
 
+/* Join Now — public hubs */
 .join-btn {
   background: linear-gradient(90deg, #8d63ff, #22c7ff);
   color: white;
-  cursor: pointer;
 }
 
-.locked-btn {
-  background: rgba(255,255,255,0.08);
-  color: #97a5c0;
+.join-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  opacity: 0.92;
+}
+
+.join-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* Request to Join — private hubs */
+.request-btn {
+  background: transparent;
+  border: 1px solid rgba(141, 99, 255, 0.5);
+  color: #c4a8ff;
+  position: relative;
+  overflow: hidden;
+}
+
+.request-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(141,99,255,0.1), rgba(34,199,255,0.08));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.request-btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.request-btn:hover:not(:disabled) {
+  border-color: #8d63ff;
+  transform: translateY(-2px);
+}
+
+.request-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Request Pending */
+.pending-btn {
+  background: rgba(255, 200, 80, 0.08);
+  border: 1px solid rgba(255, 200, 80, 0.25);
+  color: #ffd97a;
+  cursor: not-allowed;
+  letter-spacing: 0.03em;
+}
+
+/* Open Workspace */
+.open-btn {
+  background: rgba(34, 199, 255, 0.1);
+  border: 1px solid rgba(34, 199, 255, 0.3);
+  color: #7bdfff;
+}
+
+.open-btn:hover {
+  background: rgba(34, 199, 255, 0.18);
+  border-color: #22c7ff;
+  transform: translateY(-2px);
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 60px;
   color: #97a5c0;
 }
 
+.empty-state h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #c9d4e8;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .communities-grid {
     grid-template-columns: repeat(2, 1fr);

@@ -48,7 +48,10 @@ export class HubMemberService {
       { keycloakId }
     );
   }
-
+getMyHubIds(keycloakId: string): Observable<number[]> {
+  const params = new HttpParams().set('keycloakId', keycloakId);
+  return this.http.get<number[]>(`${this.apiUrl}/my-hubs`, { params });
+}
   rejectRequest(hubId: number, memberId: number, keycloakId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/${hubId}/requests/${memberId}/reject`,

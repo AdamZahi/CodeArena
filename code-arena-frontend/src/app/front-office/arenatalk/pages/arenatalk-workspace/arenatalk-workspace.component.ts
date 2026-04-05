@@ -56,7 +56,6 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Récupérer le keycloakId depuis le token
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.currentKeycloakId = payload.sub;
@@ -80,7 +79,6 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     }
   }
 
-  // ─── Sélectionner un hub ─────────────────────────────────────────
   selectHub(hub: Hub): void {
     this.selectedHub = hub;
     this.channels = [];
@@ -93,17 +91,13 @@ export class ArenatalkWorkspaceComponent implements OnInit {
 
     if (hub.id) {
       this.arenaService.getChannelsByHub(hub.id).subscribe({
-        next: (data) => {
-          this.channels = data;
-          this.selectFirstChannel();
-        },
+        next: (data) => { this.channels = data; this.selectFirstChannel(); },
         error: (err) => console.error('Error loading channels', err)
       });
       this.loadMembers(hub.id);
     }
   }
 
-  // ─── Charger les membres ─────────────────────────────────────────
   loadMembers(hubId: number): void {
     this.hubMemberService.getMembers(hubId).subscribe({
       next: (members) => {
@@ -118,6 +112,15 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.authUserSync.currentUser$.pipe(take(1)).subscribe((currentUser: CurrentUser | null) => {
       if (!currentUser?.id) return;
       this.currentUserMember = members.find(m => m.user.id === currentUser.id) ?? null;
+
+      // Auto-load pending requests count for notification badge
+      if (this.isOwner && this.selectedHub?.id && this.currentKeycloakId) {
+        this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId)
+          .subscribe({
+            next: (reqs) => this.pendingRequests = reqs,
+            error: () => {}
+          });
+      }
     });
   }
 
@@ -125,13 +128,12 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     return this.currentUserMember?.role === 'OWNER';
   }
 
-  // ─── Pending requests ────────────────────────────────────────────
   loadPendingRequests(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId).subscribe({
       next: (requests) => {
         this.pendingRequests = requests;
-        this.showPendingRequests = true;
+        this.showPendingRequests = !this.showPendingRequests;
       },
       error: (err) => console.error('Error loading requests', err)
     });
@@ -158,10 +160,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     });
   }
 
-  // ─── Sélectionner le premier channel ────────────────────────────
   private selectFirstChannel(): void {
-    const general = this.channels.find(c => c.name.toLowerCase() === 'general')
-      || this.channels[0];
+    const general = this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
     this.selectedChannel = general || null;
     if (this.selectedChannel?.id) {
       this.loadMessagesByChannel(this.selectedChannel.id);
@@ -181,40 +181,17 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   loadMessagesByChannel(channelId: number): void {
     this.arenaService.getMessagesByChannel(channelId).subscribe({
       next: (data) => this.messages = data,
-      error: (err) => {
-        console.error('Error loading messages', err);
-        this.messages = [];
-      }
+      error: (err) => { console.error('Error loading messages', err); this.messages = []; }
     });
   }
-sendMessage(): void {
-  if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
 
-  this.authUserSync.currentUser$.pipe(take(1)).subscribe(currentUser => {
-    // Utiliser firstName si dispo, sinon keycloakId, sinon 'User'
-    let senderName = 'User';
-    if (currentUser?.firstName) {
-      senderName = `${currentUser.firstName} ${currentUser.lastName || ''}`.trim();
-    } else if (currentUser?.email) {
-      senderName = currentUser.email;
-    } else if (this.currentKeycloakId) {
-      senderName = 'You'; // ← fallback propre
-    }
-
-    const message: Message = {
-      content: this.newMessage.trim(),
-      senderName: senderName
-    };
-
-    this.arenaService.sendMessage(this.selectedChannel!.id!, message).subscribe({
-      next: (savedMessage) => {
-        this.messages.push(savedMessage);
-        this.newMessage = '';
-      },
+  sendMessage(): void {
+    if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
+    this.arenaService.sendMessage(this.selectedChannel.id, { content: this.newMessage.trim() }).subscribe({
+      next: (savedMessage) => { this.messages.push(savedMessage); this.newMessage = ''; },
       error: (err) => console.error('Error sending message', err)
     });
-  });
-}
+  }
 
   openCreateChannelForm(): void { this.showCreateChannelForm = true; }
 
@@ -230,11 +207,9 @@ sendMessage(): void {
     if (!rawName) return;
     const normalizedName = rawName.toLowerCase().replace(/\s+/g, '-');
     if (normalizedName.length < 3 || normalizedName.length > 20) return;
-    const pattern = /^[a-z0-9-_]+$/;
-    if (!pattern.test(normalizedName)) return;
+    if (!/^[a-z0-9-_]+$/.test(normalizedName)) return;
     if (topic.length > 100) return;
-    const payload: TextChannel = { name: normalizedName, topic };
-    this.arenaService.createChannel(this.selectedHub.id, payload).subscribe({
+    this.arenaService.createChannel(this.selectedHub.id, { name: normalizedName, topic }).subscribe({
       next: (createdChannel) => {
         this.channels.push(createdChannel);
         this.selectedChannel = createdChannel;
@@ -285,11 +260,8 @@ sendMessage(): void {
         this.channels = this.channels.filter(c => c.id !== channelId);
         if (this.selectedChannel?.id === channelId) {
           this.selectedChannel = this.channels[0] || null;
-          if (this.selectedChannel?.id) {
-            this.loadMessagesByChannel(this.selectedChannel.id);
-          } else {
-            this.messages = [];
-          }
+          if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
+          else this.messages = [];
         }
         this.closeDeleteModal();
       },
@@ -299,10 +271,7 @@ sendMessage(): void {
 
   deleteMessageConfirmed(messageId: number): void {
     this.arenaService.deleteMessage(messageId).subscribe({
-      next: () => {
-        this.messages = this.messages.filter(msg => msg.id !== messageId);
-        this.closeDeleteModal();
-      },
+      next: () => { this.messages = this.messages.filter(msg => msg.id !== messageId); this.closeDeleteModal(); },
       error: (err) => console.error('Error deleting message', err)
     });
   }
@@ -320,12 +289,8 @@ sendMessage(): void {
 
   saveEditedMessage(message: Message): void {
     if (!message.id || !this.editedMessageContent.trim()) return;
-    const updated: Message = { ...message, content: this.editedMessageContent.trim() };
-    this.arenaService.updateMessage(message.id, updated).subscribe({
-      next: (saved) => {
-        this.messages = this.messages.map(m => m.id === saved.id ? saved : m);
-        this.cancelEditMessage();
-      },
+    this.arenaService.updateMessage(message.id, { ...message, content: this.editedMessageContent.trim() }).subscribe({
+      next: (saved) => { this.messages = this.messages.map(m => m.id === saved.id ? saved : m); this.cancelEditMessage(); },
       error: (err) => console.error('Error updating message', err)
     });
   }
@@ -341,10 +306,7 @@ sendMessage(): void {
   onHubImageError(event: Event, type: 'icon' | 'banner'): void {
     const img = event.target as HTMLImageElement;
     if (type === 'icon') img.style.display = 'none';
-    if (type === 'banner') {
-      const container = img.parentElement;
-      if (container) container.style.display = 'none';
-    }
+    if (type === 'banner') { const c = img.parentElement; if (c) c.style.display = 'none'; }
   }
 
   get hasMessages(): boolean { return this.messages.length > 0; }

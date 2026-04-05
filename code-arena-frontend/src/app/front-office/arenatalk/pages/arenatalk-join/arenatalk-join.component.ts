@@ -18,12 +18,14 @@ import { HubMemberService } from '../../services/hub-member.service';
 export class ArenaTalkJoinComponent implements OnInit {
 
   hubs: Hub[] = [];
+  myHubIds: Set<number> = new Set();
   searchTerm = '';
   selectedCategory = 'ALL';
   loading = false;
 
   hubStates: Map<number, 'NONE' | 'ACTIVE' | 'PENDING'> = new Map();
   joiningHubId: number | null = null;
+  currentKeycloakId = '';
 
   categories = ['ALL', 'GAMING', 'PROGRAMMING', 'ESPORT', 'STUDY', 'CUSTOM'];
 
@@ -34,29 +36,43 @@ export class ArenaTalkJoinComponent implements OnInit {
     private auth: AuthService
   ) {}
 
-  ngOnInit(): void {
-    this.loadHubs();
-  }
+ ngOnInit(): void {
+  this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    this.currentKeycloakId = payload.sub;
+    this.loadHubsWithState();
+  });
+}
 
-  loadHubs(): void {
-    this.loading = true;
-    this.arenaService.getHubs().subscribe({
-      next: (data) => {
-        this.hubs = data;
-        this.loading = false;
-        data.forEach(hub => {
-          if (hub.id) this.hubStates.set(hub.id, 'NONE');
-        });
-      },
-      error: (err) => {
-        console.error('Error loading hubs', err);
-        this.loading = false;
-      }
-    });
-  }
+loadHubsWithState(): void {
+  this.loading = true;
+  this.arenaService.getHubs().subscribe({
+    next: (data) => {
+      this.hubMemberService.getMyHubIds(this.currentKeycloakId).subscribe({
+        next: (myIds) => {
+          this.myHubIds = new Set(myIds);
+          this.hubs = data;
+          this.loading = false;
+          data.forEach(hub => {
+            if (hub.id) this.hubStates.set(hub.id, 'NONE');
+          });
+        },
+        error: () => {
+          this.hubs = data;
+          this.loading = false;
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Error loading hubs', err);
+      this.loading = false;
+    }
+  });
+}
 
   get filteredHubs(): Hub[] {
     return this.hubs.filter((hub) => {
+      if (hub.id && this.myHubIds.has(hub.id)) return false; // hide user's hubs
       const matchesSearch =
         hub.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         hub.description.toLowerCase().includes(this.searchTerm.toLowerCase());
@@ -74,16 +90,11 @@ export class ArenaTalkJoinComponent implements OnInit {
     if (!hub.id) return;
 
     this.auth.isAuthenticated$.pipe(take(1)).subscribe(isAuth => {
-      if (!isAuth) {
-        this.auth.loginWithRedirect();
-        return;
-      }
+      if (!isAuth) { this.auth.loginWithRedirect(); return; }
 
-      // ─── Récupérer le keycloakId depuis le token ────────────
       this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const keycloakId = payload.sub;
-
         this.joiningHubId = hub.id!;
 
         this.hubMemberService.joinHub(hub.id!, keycloakId).subscribe({
@@ -97,14 +108,13 @@ export class ArenaTalkJoinComponent implements OnInit {
             }
           },
           error: (err) => {
-  this.joiningHubId = null;
-  // 409 = déjà membre → on met ACTIVE directement
-  if (err.status === 409) {
-    this.hubStates.set(hub.id!, 'ACTIVE');
-  } else {
-    console.error('Error joining hub', err);
-  }
-}
+            this.joiningHubId = null;
+            if (err.status === 409) {
+              this.hubStates.set(hub.id!, 'ACTIVE');
+            } else {
+              console.error('Error joining hub', err);
+            }
+          }
         });
       });
     });
