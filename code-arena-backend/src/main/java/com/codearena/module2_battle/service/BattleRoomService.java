@@ -475,6 +475,13 @@ public class BattleRoomService {
 
         BattleRoomResponse roomResponse = buildRoomResponse(room);
 
+        // Build challenge previews (metadata only — no problem text)
+        List<BattleRoomChallenge> roomChallenges = roomChallengeRepository
+                .findByRoomIdOrderByPositionAsc(roomIdStr);
+        List<LobbyChallengeSummary> challengeSummaries = roomChallenges.stream()
+                .map(this::buildChallengeSummary)
+                .toList();
+
         return LobbyStateResponse.builder()
                 .room(roomResponse)
                 .players(playerResponses)
@@ -482,7 +489,20 @@ public class BattleRoomService {
                 .canStart(allReady)
                 .countdownSeconds(countdownSeconds != null ? countdownSeconds :
                         (room.getStatus() == BattleRoomStatus.COUNTDOWN ? 5 : 0))
+                .challenges(challengeSummaries)
                 .build();
+    }
+
+    private LobbyChallengeSummary buildChallengeSummary(BattleRoomChallenge rc) {
+        Challenge challenge = challengeRepository.findById(Long.parseLong(rc.getChallengeId())).orElse(null);
+        String difficulty = challenge != null ? challenge.getDifficulty() : "MEDIUM";
+        String category = challenge != null && challenge.getTags() != null
+                ? challenge.getTags().split(",")[0].trim()
+                : "General";
+        String titleSlug = challenge != null && challenge.getTitle() != null
+                ? challenge.getTitle().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "")
+                : "challenge";
+        return new LobbyChallengeSummary(rc.getPosition(), difficulty, category, titleSlug);
     }
 
     /**

@@ -106,4 +106,52 @@ public class ArenaBroadcastService {
                 .build();
         messagingTemplate.convertAndSend(ARENA_TOPIC_PREFIX + roomId, event);
     }
+
+    /**
+     * Sends OPPONENT_ACTIVITY to all arena subscribers (client filters out self).
+     */
+    public void broadcastActivity(String roomId, OpponentActivityEvent activityEvent) {
+        LobbyEvent event = LobbyEvent.builder()
+                .type(LobbyEventType.OPPONENT_ACTIVITY)
+                .roomId(roomId)
+                .payload(activityEvent)
+                .build();
+        messagingTemplate.convertAndSend(ARENA_TOPIC_PREFIX + roomId, event);
+    }
+
+    /**
+     * Sends TEST_CASE_PROGRESS to a specific user's private queue.
+     */
+    public void sendTestCaseProgress(String username, TestCaseProgressEvent progress) {
+        LobbyEvent event = LobbyEvent.builder()
+                .type(LobbyEventType.TEST_CASE_PROGRESS)
+                .roomId(null)
+                .payload(progress)
+                .build();
+        messagingTemplate.convertAndSendToUser(username, "/queue/battle/submission", event);
+    }
+
+    /**
+     * Sends PLAYER_DISCONNECTED to all arena subscribers.
+     */
+    public void broadcastPlayerDisconnected(String roomId, Object payload) {
+        LobbyEvent event = LobbyEvent.builder()
+                .type(LobbyEventType.PLAYER_DISCONNECTED)
+                .roomId(roomId)
+                .payload(payload)
+                .build();
+        messagingTemplate.convertAndSend(ARENA_TOPIC_PREFIX + roomId, event);
+    }
+
+    /**
+     * Sends PLAYER_RECONNECTED to all arena subscribers.
+     */
+    public void broadcastPlayerReconnected(String roomId, Object payload) {
+        LobbyEvent event = LobbyEvent.builder()
+                .type(LobbyEventType.PLAYER_RECONNECTED)
+                .roomId(roomId)
+                .payload(payload)
+                .build();
+        messagingTemplate.convertAndSend(ARENA_TOPIC_PREFIX + roomId, event);
+    }
 }

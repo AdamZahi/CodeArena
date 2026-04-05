@@ -25,8 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
@@ -54,10 +56,15 @@ public class BattleArenaService {
     private final BattleRoomStateMachineService stateMachineService;
     private final com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties;
     private final CodeWrapperService codeWrapperService;
+    private final BattleConnectionTracker connectionTracker;
     private final Executor submissionExecutor;
 
     // Lock object for thread-safe match completion checks
     private final Object matchCompletionLock = new Object();
+
+    // Rate-limit map for activity events: key = participantId + activityType, value = last sent instant
+    private final ConcurrentHashMap<String, Instant> activityRateLimit = new ConcurrentHashMap<>();
+    private static final long ACTIVITY_RATE_LIMIT_MS = 2000;
 
     public BattleArenaService(
             BattleRoomRepository battleRoomRepository,
@@ -73,6 +80,7 @@ public class BattleArenaService {
             BattleRoomStateMachineService stateMachineService,
             com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties,
             CodeWrapperService codeWrapperService,
+            BattleConnectionTracker connectionTracker,
             @Qualifier("submissionExecutor") Executor submissionExecutor) {
         this.battleRoomRepository = battleRoomRepository;
         this.participantRepository = participantRepository;
@@ -87,6 +95,7 @@ public class BattleArenaService {
         this.stateMachineService = stateMachineService;
         this.timeLimitProperties = timeLimitProperties;
         this.codeWrapperService = codeWrapperService;
+        this.connectionTracker = connectionTracker;
         this.submissionExecutor = submissionExecutor;
     }
 
@@ -223,6 +232,61 @@ public class BattleArenaService {
                 .build();
     }
 
+    // ──────────────────────────────────────────────
+    // 3.2b — reportActivity (Feature 1)
+    // ──────────────────────────────────────────────
+
+    public void reportActivity(String roomId, String userId, ActivityRequest request) {
+        BattleRoom room = loadRoom(roomId);
+        if (room.getStatus() != BattleRoomStatus.IN_PROGRESS) return;
+
+        BattleParticipant participant = participantRepository.findByRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new ParticipantNotFoundException(roomId));
+        if (participant.getRole() != ParticipantRole.PLAYER) return;
+
+        // Rate-limit: discard if same participant+type within 2 seconds
+        String rateLimitKey = participant.getId() + ":" + request.getType();
+        Instant now = Instant.now();
+        Instant lastSent = activityRateLimit.get(rateLimitKey);
+        if (lastSent != null && now.toEpochMilli() - lastSent.toEpochMilli() < ACTIVITY_RATE_LIMIT_MS) {
+            return; // discard duplicate
+        }
+        activityRateLimit.put(rateLimitKey, now);
+
+        String displayName = resolveUsername(userId);
+        OpponentActivityEvent event = OpponentActivityEvent.builder()
+                .participantId(participant.getId().toString())
+                .displayName(displayName)
+                .type(request.getType())
+                .challengeId(request.getChallengeId())
+                .timestamp(now)
+                .build();
+
+        arenaBroadcastService.broadcastActivity(roomId, event);
+    }
+
+    // ──────────────────────────────────────────────
+    // 3.2c — handleReconnect / handleHeartbeat (Feature 3)
+    // ──────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public ArenaStateResponse handleReconnect(String roomId, String userId) {
+        BattleRoom room = loadRoom(roomId);
+        if (room.getStatus() != BattleRoomStatus.IN_PROGRESS) {
+            throw new ArenaNotActiveException(roomId, room.getStatus());
+        }
+
+        participantRepository.findByRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new ParticipantNotFoundException(roomId));
+
+        connectionTracker.onReconnect(roomId, userId);
+        return getArenaState(roomId, userId);
+    }
+
+    public void handleHeartbeat(String roomId, String userId) {
+        connectionTracker.updateHeartbeat(userId);
+    }
+
     /**
      * Async callback: runs each test case as a separate Judge0 submission, polls for results,
      * updates the submission record, and broadcasts results to arena subscribers.
@@ -239,7 +303,21 @@ public class BattleArenaService {
             Integer maxMemoryKb = null;
             String failCompileOutput = null;
 
-            for (TestCase tc : testCases) {
+            // Feature 2: broadcast initial PENDING state for all test cases
+            for (int i = 0; i < totalTestCases; i++) {
+                arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                        .submissionId(submissionId).testCaseIndex(i).totalTestCases(totalTestCases)
+                        .status(com.codearena.module2_battle.enums.TestCaseStatus.PENDING).build());
+            }
+
+            for (int tcIndex = 0; tcIndex < testCases.size(); tcIndex++) {
+                TestCase tc = testCases.get(tcIndex);
+
+                // Feature 2: mark this test case as RUNNING
+                arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                        .submissionId(submissionId).testCaseIndex(tcIndex).totalTestCases(totalTestCases)
+                        .status(com.codearena.module2_battle.enums.TestCaseStatus.RUNNING).build());
+
                 // Try to wrap the code so that user's hardcoded prints are suppressed
                 // and only the function result for THIS test case is printed.
                 String wrappedCode = codeWrapperService.wrapCode(sourceCode, language, tc.getInput());
@@ -272,6 +350,17 @@ public class BattleArenaService {
                             result.getStdout(), tc.getExpectedOutput());
                     finalStatus = tcStatus;
                     failCompileOutput = result.getCompileOutput();
+
+                    // Feature 2: broadcast failure for this test case and ERROR for remaining
+                    String errorType = tcStatus.name();
+                    arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                            .submissionId(submissionId).testCaseIndex(tcIndex).totalTestCases(totalTestCases)
+                            .status(com.codearena.module2_battle.enums.TestCaseStatus.FAILED).errorType(errorType).build());
+                    for (int rem = tcIndex + 1; rem < totalTestCases; rem++) {
+                        arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                                .submissionId(submissionId).testCaseIndex(rem).totalTestCases(totalTestCases)
+                                .status(com.codearena.module2_battle.enums.TestCaseStatus.ERROR).errorType(errorType).build());
+                    }
                     break;
                 }
 
@@ -282,8 +371,23 @@ public class BattleArenaService {
                                     "stdout=[{}], expected=[{}]",
                             submissionId, result.getStdout(), tc.getExpectedOutput());
                     finalStatus = BattleSubmissionStatus.WRONG_ANSWER;
+
+                    // Feature 2: broadcast FAILED for this, ERROR for remaining
+                    arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                            .submissionId(submissionId).testCaseIndex(tcIndex).totalTestCases(totalTestCases)
+                            .status(com.codearena.module2_battle.enums.TestCaseStatus.FAILED).errorType("WRONG_ANSWER").build());
+                    for (int rem = tcIndex + 1; rem < totalTestCases; rem++) {
+                        arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                                .submissionId(submissionId).testCaseIndex(rem).totalTestCases(totalTestCases)
+                                .status(com.codearena.module2_battle.enums.TestCaseStatus.ERROR).errorType("WRONG_ANSWER").build());
+                    }
                     break;
                 }
+
+                // Feature 2: broadcast PASSED for this test case
+                arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
+                        .submissionId(submissionId).testCaseIndex(tcIndex).totalTestCases(totalTestCases)
+                        .status(com.codearena.module2_battle.enums.TestCaseStatus.PASSED).build());
             }
 
             String feedback = buildFeedback(finalStatus, totalRuntimeMs, failCompileOutput, totalTestCases);
