@@ -2,19 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Hub, TextChannel, Message } from '../../models/arenatalk.model';
+import { Hub, TextChannel, Message, MessageReaction } from '../../models/arenatalk.model';
 import { ArenatalkService } from '../../services/arenatalk.service';
 import { HubMemberService, HubMember } from '../../services/hub-member.service';
 import { AuthUserSyncService, CurrentUser } from '../../../../core/auth/auth-user-sync.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { take } from 'rxjs/operators';
+import { VoiceChannelComponent } from '../voice-channel/voice-channel.component';
+import { MessageReactionsComponent } from '../message-reactions/message-reactions.component';
+import { ReactionService } from '../../services/reaction.service';
 
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
   selector: 'app-arenatalk-workspace',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VoiceChannelComponent, MessageReactionsComponent],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
 })
@@ -22,6 +25,7 @@ export class ArenatalkWorkspaceComponent implements OnInit {
 
   hubs: Hub[] = [];
   selectedHub: Hub | null = null;
+  currentUserName = '';
 
   channels: TextChannel[] = [];
   selectedChannel: TextChannel | null = null;
@@ -32,6 +36,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   members: HubMember[] = [];
   currentUserMember: HubMember | null = null;
   currentKeycloakId = '';
+
+  reactions: { [messageId: number]: MessageReaction } = {};
 
   pendingRequests: HubMember[] = [];
   showPendingRequests = false;
@@ -52,7 +58,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     private arenaService: ArenatalkService,
     private hubMemberService: HubMemberService,
     private authUserSync: AuthUserSyncService,
-    private auth: AuthService
+    private auth: AuthService,
+    private reactionService: ReactionService
   ) {}
 
   ngOnInit(): void {
@@ -112,14 +119,13 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.authUserSync.currentUser$.pipe(take(1)).subscribe((currentUser: CurrentUser | null) => {
       if (!currentUser?.id) return;
       this.currentUserMember = members.find(m => m.user.id === currentUser.id) ?? null;
+      this.currentUserName = `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim()
+        || currentUser.email
+        || this.currentKeycloakId;
 
-      // Auto-load pending requests count for notification badge
       if (this.isOwner && this.selectedHub?.id && this.currentKeycloakId) {
         this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId)
-          .subscribe({
-            next: (reqs) => this.pendingRequests = reqs,
-            error: () => {}
-          });
+          .subscribe({ next: (reqs) => this.pendingRequests = reqs, error: () => {} });
       }
     });
   }
@@ -180,15 +186,34 @@ export class ArenatalkWorkspaceComponent implements OnInit {
 
   loadMessagesByChannel(channelId: number): void {
     this.arenaService.getMessagesByChannel(channelId).subscribe({
-      next: (data) => this.messages = data,
-      error: (err) => { console.error('Error loading messages', err); this.messages = []; }
+      next: (data) => {
+        this.messages = data;
+        this.loadReactions();
+      },
+      error: (err) => {
+        console.error('Error loading messages', err);
+        this.messages = [];
+      }
+    });
+  }
+
+  loadReactions(): void {
+    if (!this.messages.length || !this.currentKeycloakId) return;
+    const ids = this.messages.map(m => m.id!).filter(Boolean);
+    this.reactionService.getForChannel(ids, this.currentKeycloakId).subscribe({
+      next: (data) => this.reactions = data,
+      error: () => {}
     });
   }
 
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
     this.arenaService.sendMessage(this.selectedChannel.id, { content: this.newMessage.trim() }).subscribe({
-      next: (savedMessage) => { this.messages.push(savedMessage); this.newMessage = ''; },
+      next: (savedMessage) => {
+        this.messages.push(savedMessage);
+        this.newMessage = '';
+        this.loadReactions();
+      },
       error: (err) => console.error('Error sending message', err)
     });
   }
@@ -271,7 +296,10 @@ export class ArenatalkWorkspaceComponent implements OnInit {
 
   deleteMessageConfirmed(messageId: number): void {
     this.arenaService.deleteMessage(messageId).subscribe({
-      next: () => { this.messages = this.messages.filter(msg => msg.id !== messageId); this.closeDeleteModal(); },
+      next: () => {
+        this.messages = this.messages.filter(msg => msg.id !== messageId);
+        this.closeDeleteModal();
+      },
       error: (err) => console.error('Error deleting message', err)
     });
   }
@@ -290,7 +318,10 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   saveEditedMessage(message: Message): void {
     if (!message.id || !this.editedMessageContent.trim()) return;
     this.arenaService.updateMessage(message.id, { ...message, content: this.editedMessageContent.trim() }).subscribe({
-      next: (saved) => { this.messages = this.messages.map(m => m.id === saved.id ? saved : m); this.cancelEditMessage(); },
+      next: (saved) => {
+        this.messages = this.messages.map(m => m.id === saved.id ? saved : m);
+        this.cancelEditMessage();
+      },
       error: (err) => console.error('Error updating message', err)
     });
   }

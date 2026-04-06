@@ -1,0 +1,65 @@
+<div class="voice-section">
+  <div class="voice-header">
+    <p class="voice-kicker">VOICE CHANNELS</p>
+    <button class="add-voice-btn" *ngIf="isOwner" (click)="showCreateForm = !showCreateForm">+</button>
+  </div>
+
+  <div class="create-voice-form" *ngIf="showCreateForm && isOwner">
+    <input type="text" [(ngModel)]="newChannelName" placeholder="Channel name" maxlength="20" />
+    <div class="form-btns">
+      <button class="primary-mini-btn" (click)="createChannel()" [disabled]="!newChannelName.trim()">Create</button>
+      <button class="ghost-mini-btn" (click)="showCreateForm = false">Cancel</button>
+    </div>
+  </div>
+
+  <div class="room-full-msg" *ngIf="roomFull">
+    ⚠️ Room is full (max 8 users)
+  </div>
+
+  <div class="voice-list">
+    <div class="voice-card" *ngFor="let channel of voiceChannels"
+      [class.active]="activeChannelId === channel.id">
+
+      <div class="voice-card-top">
+        <span class="voice-icon">🔊</span>
+        <span class="voice-name">{{ channel.name }}</span>
+        <div class="voice-actions">
+          <button class="join-voice-btn"
+            *ngIf="activeChannelId !== channel.id"
+            (click)="joinChannel(channel)">
+            Join
+          </button>
+          <button class="leave-voice-btn"
+            *ngIf="activeChannelId === channel.id"
+            (click)="leaveChannel()">
+            Leave
+          </button>
+          <button class="delete-voice-btn"
+            *ngIf="isOwner"
+            (click)="deleteChannel(channel.id)">
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div class="room-controls" *ngIf="activeChannelId === channel.id && inRoom">
+        <button class="mute-btn" (click)="toggleMute()" [class.muted]="isMuted">
+          {{ isMuted ? '🔇 Unmute' : '🎙️ Mute' }}
+        </button>
+      </div>
+
+      <div class="participants-list"
+        *ngIf="activeChannelId === channel.id && participants.length > 0">
+        <div class="participant" *ngFor="let p of participants">
+          <div class="participant-avatar">{{ p.userName.charAt(0).toUpperCase() }}</div>
+          <span>{{ p.userName }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="empty-voice" *ngIf="voiceChannels.length === 0">
+    <p>No voice channels yet.</p>
+  </div>
+</div>

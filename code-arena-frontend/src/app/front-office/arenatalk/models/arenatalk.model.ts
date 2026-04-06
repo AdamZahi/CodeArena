@@ -22,3 +22,8 @@ export interface Message {
   senderName?: string;
   sentAt?: string;
 }
+export interface MessageReaction {
+  messageId: number;
+  counts: { [emoji: string]: number };
+  reacted: { [emoji: string]: boolean };
+}

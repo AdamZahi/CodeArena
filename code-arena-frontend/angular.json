@@ -31,7 +31,9 @@
               "src/styles.css",
               "node_modules/leaflet/dist/leaflet.css"
             ],
-            "scripts": []
+"scripts": [
+  "node_modules/sockjs-client/dist/sockjs.min.js"
+]
           },
           "configurations": {
             "production": {
