@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Hub, TextChannel, Message, MessageReaction } from '../../models/arenatalk.model';
+import { Hub, TextChannel, Message, MessageReaction, ReadReceipt } from '../../models/arenatalk.model';
 import { ArenatalkService } from '../../services/arenatalk.service';
 import { HubMemberService, HubMember } from '../../services/hub-member.service';
 import { AuthUserSyncService, CurrentUser } from '../../../../core/auth/auth-user-sync.service';
@@ -12,6 +12,7 @@ import { VoiceChannelComponent } from '../voice-channel/voice-channel.component'
 import { MessageReactionsComponent } from '../message-reactions/message-reactions.component';
 import { ReactionService } from '../../services/reaction.service';
 import { MessageSearchComponent } from '../message-search/message-search.component';
+
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
@@ -21,7 +22,7 @@ type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
 })
-export class ArenatalkWorkspaceComponent implements OnInit {
+export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   hubs: Hub[] = [];
   selectedHub: Hub | null = null;
@@ -31,6 +32,7 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   selectedChannel: TextChannel | null = null;
 
   messages: Message[] = [];
+  pinnedMessages: Message[] = [];
   newMessage = '';
 
   members: HubMember[] = [];
@@ -38,6 +40,7 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   currentKeycloakId = '';
 
   reactions: { [messageId: number]: MessageReaction } = {};
+  readReceipts: { [messageId: number]: ReadReceipt } = {};
 
   pendingRequests: HubMember[] = [];
   showPendingRequests = false;
@@ -66,30 +69,61 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.currentKeycloakId = payload.sub;
+
+      const nav = this.router.getCurrentNavigation();
+      const state = nav?.extras?.state || history.state;
+
+      const createdHub = state?.selectedHub as Hub | undefined;
+      const createdChannels = (state?.createdChannels as TextChannel[] | undefined) || [];
+
+      if (createdHub) {
+        this.hubs = [createdHub];
+        this.selectedHub = createdHub;
+        this.loadMembers(createdHub.id!);
+        this.setCurrentUserOnline();
+      }
+
+      if (createdChannels.length > 0) {
+        this.channels = createdChannels;
+        this.selectFirstChannel();
+      }
     });
+  }
 
-    const nav = this.router.getCurrentNavigation();
-    const state = nav?.extras?.state || history.state;
+  ngOnDestroy(): void {
+    this.setCurrentUserOffline();
+  }
 
-    const createdHub = state?.selectedHub as Hub | undefined;
-    const createdChannels = (state?.createdChannels as TextChannel[] | undefined) || [];
+  @HostListener('window:beforeunload')
+  handleBeforeUnload(): void {
+    this.setCurrentUserOffline();
+  }
 
-    if (createdHub) {
-      this.hubs = [createdHub];
-      this.selectedHub = createdHub;
-      this.loadMembers(createdHub.id!);
-    }
+  private setCurrentUserOnline(): void {
+    if (!this.selectedHub?.id || !this.currentKeycloakId) return;
+    this.hubMemberService.setOnline(this.selectedHub.id, this.currentKeycloakId).subscribe({
+      next: () => this.loadMembers(this.selectedHub!.id!),
+      error: () => {}
+    });
+  }
 
-    if (createdChannels.length > 0) {
-      this.channels = createdChannels;
-      this.selectFirstChannel();
-    }
+  private setCurrentUserOffline(): void {
+    if (!this.selectedHub?.id || !this.currentKeycloakId) return;
+    this.hubMemberService.setOffline(this.selectedHub.id, this.currentKeycloakId).subscribe({
+      error: () => {}
+    });
   }
 
   selectHub(hub: Hub): void {
+    if (this.selectedHub?.id && this.selectedHub.id !== hub.id) {
+      this.setCurrentUserOffline();
+    }
+
     this.selectedHub = hub;
     this.channels = [];
     this.messages = [];
+    this.pinnedMessages = [];
+    this.readReceipts = {};
     this.selectedChannel = null;
     this.members = [];
     this.currentUserMember = null;
@@ -98,10 +132,15 @@ export class ArenatalkWorkspaceComponent implements OnInit {
 
     if (hub.id) {
       this.arenaService.getChannelsByHub(hub.id).subscribe({
-        next: (data) => { this.channels = data; this.selectFirstChannel(); },
+        next: (data) => {
+          this.channels = data;
+          this.selectFirstChannel();
+        },
         error: (err) => console.error('Error loading channels', err)
       });
+
       this.loadMembers(hub.id);
+      this.setCurrentUserOnline();
     }
   }
 
@@ -118,8 +157,10 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   private detectCurrentUser(members: HubMember[]): void {
     this.authUserSync.currentUser$.pipe(take(1)).subscribe((currentUser: CurrentUser | null) => {
       if (!currentUser?.id) return;
+
       this.currentUserMember = members.find(m => m.user.id === currentUser.id) ?? null;
-      this.currentUserName = `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim()
+      this.currentUserName =
+        `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim()
         || currentUser.email
         || this.currentKeycloakId;
 
@@ -181,6 +222,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
       this.loadMessagesByChannel(channel.id);
     } else {
       this.messages = [];
+      this.pinnedMessages = [];
+      this.readReceipts = {};
     }
   }
 
@@ -188,12 +231,23 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.arenaService.getMessagesByChannel(channelId).subscribe({
       next: (data) => {
         this.messages = data;
+        this.loadPinnedMessages(channelId);
         this.loadReactions();
+        this.markChannelAsRead(channelId);
       },
       error: (err) => {
         console.error('Error loading messages', err);
         this.messages = [];
+        this.pinnedMessages = [];
+        this.readReceipts = {};
       }
+    });
+  }
+
+  loadPinnedMessages(channelId: number): void {
+    this.arenaService.getPinnedMessages(channelId).subscribe({
+      next: (data) => this.pinnedMessages = data,
+      error: (err) => console.error('Error loading pinned messages', err)
     });
   }
 
@@ -206,6 +260,27 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     });
   }
 
+  markChannelAsRead(channelId: number): void {
+    if (!this.currentKeycloakId) return;
+
+    this.arenaService.markChannelAsRead(channelId, this.currentKeycloakId).subscribe({
+      next: () => this.loadReadReceipts(),
+      error: (err) => console.error('Error marking channel as read', err)
+    });
+  }
+
+  loadReadReceipts(): void {
+    if (!this.currentKeycloakId) return;
+
+    this.messages.forEach(msg => {
+      if (!msg.id) return;
+      this.arenaService.getReadStatus(msg.id, this.currentKeycloakId).subscribe({
+        next: (data) => this.readReceipts[msg.id!] = data,
+        error: () => {}
+      });
+    });
+  }
+
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
     this.arenaService.sendMessage(this.selectedChannel.id, { content: this.newMessage.trim() }).subscribe({
@@ -213,12 +288,37 @@ export class ArenatalkWorkspaceComponent implements OnInit {
         this.messages.push(savedMessage);
         this.newMessage = '';
         this.loadReactions();
+        this.loadReadReceipts();
       },
       error: (err) => console.error('Error sending message', err)
     });
   }
 
-  openCreateChannelForm(): void { this.showCreateChannelForm = true; }
+  pinMessage(messageId: number): void {
+    this.arenaService.pinMessage(messageId).subscribe({
+      next: () => {
+        if (this.selectedChannel?.id) {
+          this.loadMessagesByChannel(this.selectedChannel.id);
+        }
+      },
+      error: (err) => console.error('Error pinning message', err)
+    });
+  }
+
+  unpinMessage(messageId: number): void {
+    this.arenaService.unpinMessage(messageId).subscribe({
+      next: () => {
+        if (this.selectedChannel?.id) {
+          this.loadMessagesByChannel(this.selectedChannel.id);
+        }
+      },
+      error: (err) => console.error('Error unpinning message', err)
+    });
+  }
+
+  openCreateChannelForm(): void {
+    this.showCreateChannelForm = true;
+  }
 
   closeCreateChannelForm(): void {
     this.showCreateChannelForm = false;
@@ -230,15 +330,19 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     const rawName = this.newChannel.name?.trim();
     const topic = this.newChannel.topic?.trim() || '';
     if (!rawName) return;
+
     const normalizedName = rawName.toLowerCase().replace(/\s+/g, '-');
     if (normalizedName.length < 3 || normalizedName.length > 20) return;
     if (!/^[a-z0-9-_]+$/.test(normalizedName)) return;
     if (topic.length > 100) return;
+
     this.arenaService.createChannel(this.selectedHub.id, { name: normalizedName, topic }).subscribe({
       next: (createdChannel) => {
         this.channels.push(createdChannel);
         this.selectedChannel = createdChannel;
         this.messages = [];
+        this.pinnedMessages = [];
+        this.readReceipts = {};
         this.closeCreateChannelForm();
       },
       error: (err) => console.error('Error creating channel', err)
@@ -250,11 +354,13 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.deleteTargetType = type;
     this.deleteTargetId = id;
     this.showDeleteModal = true;
+
     const messages: Record<string, string> = {
       hub: 'Are you sure you want to delete this community? This action is irreversible.',
       channel: 'Are you sure you want to delete this channel and all its messages?',
       message: 'Are you sure you want to delete this message?'
     };
+
     this.deleteMessageText = messages[type!] || '';
   }
 
@@ -274,7 +380,10 @@ export class ArenatalkWorkspaceComponent implements OnInit {
 
   deleteHubConfirmed(hubId: number): void {
     this.arenaService.deleteHub(hubId).subscribe({
-      next: () => { this.closeDeleteModal(); this.router.navigate(['/arenatalk']); },
+      next: () => {
+        this.closeDeleteModal();
+        this.router.navigate(['/arenatalk']);
+      },
       error: (err) => console.error('Error deleting hub', err)
     });
   }
@@ -286,7 +395,11 @@ export class ArenatalkWorkspaceComponent implements OnInit {
         if (this.selectedChannel?.id === channelId) {
           this.selectedChannel = this.channels[0] || null;
           if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
-          else this.messages = [];
+          else {
+            this.messages = [];
+            this.pinnedMessages = [];
+            this.readReceipts = {};
+          }
         }
         this.closeDeleteModal();
       },
@@ -298,6 +411,8 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.arenaService.deleteMessage(messageId).subscribe({
       next: () => {
         this.messages = this.messages.filter(msg => msg.id !== messageId);
+        this.pinnedMessages = this.pinnedMessages.filter(msg => msg.id !== messageId);
+        delete this.readReceipts[messageId];
         this.closeDeleteModal();
       },
       error: (err) => console.error('Error deleting message', err)
@@ -320,6 +435,7 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     this.arenaService.updateMessage(message.id, { ...message, content: this.editedMessageContent.trim() }).subscribe({
       next: (saved) => {
         this.messages = this.messages.map(m => m.id === saved.id ? saved : m);
+        this.pinnedMessages = this.pinnedMessages.map(m => m.id === saved.id ? saved : m);
         this.cancelEditMessage();
       },
       error: (err) => console.error('Error updating message', err)
@@ -337,21 +453,37 @@ export class ArenatalkWorkspaceComponent implements OnInit {
   onHubImageError(event: Event, type: 'icon' | 'banner'): void {
     const img = event.target as HTMLImageElement;
     if (type === 'icon') img.style.display = 'none';
-    if (type === 'banner') { const c = img.parentElement; if (c) c.style.display = 'none'; }
-  } 
-  scrollToMessage(msg: Message): void {
-  if (!msg.id) return;
-  setTimeout(() => {
-    const el = document.getElementById(`msg-${msg.id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add('highlighted');
-      setTimeout(() => el.classList.remove('highlighted'), 2000);
+    if (type === 'banner') {
+      const c = img.parentElement;
+      if (c) c.style.display = 'none';
     }
-  }, 100);
-}
+  }
 
-  get hasMessages(): boolean { return this.messages.length > 0; }
-  get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }
-  get activeMembers(): HubMember[] { return this.members.filter(m => m.status === 'ACTIVE'); }
+  scrollToMessage(msg: Message): void {
+    if (!msg.id) return;
+    setTimeout(() => {
+      const el = document.getElementById(`msg-${msg.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlighted');
+        setTimeout(() => el.classList.remove('highlighted'), 2000);
+      }
+    }, 100);
+  }
+
+  get hasMessages(): boolean {
+    return this.messages.length > 0;
+  }
+
+  get categoryLabel(): string {
+    return this.selectedHub?.category || 'COMMUNITY';
+  }
+
+  get activeMembers(): HubMember[] {
+    return this.members.filter(m => m.status === 'ACTIVE');
+  }
+
+  get onlineMembers(): HubMember[] {
+    return this.activeMembers.filter(m => m.online);
+  }
 }

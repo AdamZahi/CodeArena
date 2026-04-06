@@ -21,9 +21,18 @@ export interface Message {
   content: string;
   senderName?: string;
   sentAt?: string;
+  pinned?: boolean;
+  pinnedAt?: string | null;
 }
+
 export interface MessageReaction {
   messageId: number;
   counts: { [emoji: string]: number };
   reacted: { [emoji: string]: boolean };
+}
+
+export interface ReadReceipt {
+  messageId: number;
+  readCount: number;
+  readByCurrentUser: boolean;
 }

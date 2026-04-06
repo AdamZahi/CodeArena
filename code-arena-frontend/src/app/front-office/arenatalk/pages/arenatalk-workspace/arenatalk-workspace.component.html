@@ -1,7 +1,6 @@
 <section class="workspace-page">
   <div class="workspace-shell">
 
-    <!-- ── Sidebar Hubs ─────────────────────────────────────── -->
     <aside class="sidebar hubs-sidebar">
       <div class="sidebar-header with-action">
         <div>
@@ -44,7 +43,6 @@
       </ng-template>
     </aside>
 
-    <!-- ── Sidebar Channels ───────────────────────────────────── -->
     <aside class="sidebar channels-sidebar">
       <div class="sidebar-header with-action">
         <div>
@@ -63,6 +61,7 @@
           <h3>Create Channel</h3>
           <p>Add a new discussion space inside this community.</p>
         </div>
+
         <div class="form-group">
           <label>Channel Name</label>
           <input type="text" [(ngModel)]="newChannel.name" #name="ngModel"
@@ -75,11 +74,13 @@
             <small *ngIf="name.errors?.['pattern']">Only letters, numbers, - and _.</small>
           </div>
         </div>
+
         <div class="form-group">
           <label>Channel Topic</label>
           <input type="text" [(ngModel)]="newChannel.topic" #topic="ngModel"
             maxlength="100" placeholder="Ex: Main announcements" />
         </div>
+
         <div class="mini-actions channel-form-actions">
           <button class="primary-mini-btn" (click)="createChannel()"
             [disabled]="name.invalid || !newChannel.name?.trim()">
@@ -136,6 +137,7 @@
               </div>
             </div>
           </ng-container>
+
           <ng-template #noRequests>
             <div class="empty-box"><p>No pending requests.</p></div>
           </ng-template>
@@ -148,27 +150,31 @@
         [currentUserId]="currentKeycloakId"
         [currentUserName]="currentUserName">
       </app-voice-channel>
-
     </aside>
 
-    <!-- ── Main Panel ─────────────────────────────────────────── -->
     <main class="main-panel">
       <div class="main-header" *ngIf="selectedChannel">
         <div class="hub-banner" *ngIf="selectedHub?.bannerUrl">
           <img [src]="selectedHub?.bannerUrl" alt="Hub banner"
             (error)="onHubImageError($event, 'banner')" />
         </div>
+
         <div class="main-header-content">
           <p class="channel-badge">{{ categoryLabel }}</p>
           <h1># {{ selectedChannel.name }}</h1>
           <p class="channel-topic">{{ selectedChannel.topic }}</p>
 
-          <!-- ── Message Search ── -->
           <app-message-search
             [messages]="messages"
             (resultClick)="scrollToMessage($event)">
           </app-message-search>
+        </div>
+      </div>
 
+      <div class="pinned-box" *ngIf="pinnedMessages.length > 0">
+        <h3>📌 Pinned Messages</h3>
+        <div class="pinned-item" *ngFor="let pinned of pinnedMessages" (click)="scrollToMessage(pinned)">
+          <strong>{{ pinned.senderName || 'Unknown' }}</strong>: {{ pinned.content }}
         </div>
       </div>
 
@@ -177,6 +183,7 @@
           <p class="eyebrow">// COMMUNITY READY</p>
           <h2>Welcome to {{ selectedHub?.name }}</h2>
           <p class="welcome-text">Your community is ready. Start the conversation below.</p>
+
           <div class="welcome-grid">
             <div class="mini-card">
               <h3>Start the conversation</h3>
@@ -200,14 +207,18 @@
             <div class="message-avatar">
               {{ msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?' }}
             </div>
+
             <div class="message-content">
               <div class="message-meta">
                 <strong>{{ msg.senderName || 'Unknown' }}</strong>
-                <span>{{ msg.sentAt | date:'short' }}</span>
+                <span class="message-time">{{ msg.sentAt | date:'short' }}</span>
+                <span class="message-pin" *ngIf="msg.pinned">📌 Pinned</span>
               </div>
+
               <ng-container *ngIf="editingMessageId !== msg.id; else editBlock">
-                <p>{{ msg.content }}</p>
+                <p class="message-text">{{ msg.content }}</p>
               </ng-container>
+
               <ng-template #editBlock>
                 <div class="edit-message-box">
                   <textarea [(ngModel)]="editedMessageContent"></textarea>
@@ -218,24 +229,27 @@
                 </div>
               </ng-template>
 
-              <!-- Reactions -->
+              <div class="read-receipt" *ngIf="msg.id && readReceipts[msg.id]">
+                <small>Seen by {{ readReceipts[msg.id].readCount }} user(s)</small>
+              </div>
+
               <app-message-reactions
                 *ngIf="msg.id"
                 [messageId]="msg.id!"
                 [keycloakId]="currentKeycloakId"
                 [reaction]="reactions[msg.id!] || null">
               </app-message-reactions>
-
             </div>
           </div>
 
           <div class="message-actions"
             *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
             <button class="icon-btn edit-btn" (click)="startEditMessage(msg)" title="Edit">✎</button>
+            <button class="icon-btn pin-btn" *ngIf="!msg.pinned" (click)="pinMessage(msg.id!)" title="Pin">📌</button>
+            <button class="icon-btn pin-btn" *ngIf="msg.pinned" (click)="unpinMessage(msg.id!)" title="Unpin">📍</button>
             <button class="icon-btn delete-btn"
               (click)="openDeleteModal('message', msg.id)" title="Delete">×</button>
           </div>
-
         </div>
       </div>
 
@@ -247,11 +261,10 @@
       </div>
     </main>
 
-    <!-- ── Sidebar Members ────────────────────────────────────── -->
     <aside class="sidebar members-sidebar">
       <div class="sidebar-header">
         <p class="sidebar-kicker">MEMBERS</p>
-        <h2>{{ activeMembers.length }} Online</h2>
+        <h2>{{ onlineMembers.length }} Online</h2>
       </div>
 
       <div class="members-list" *ngIf="activeMembers.length > 0; else noMembers">
@@ -262,11 +275,16 @@
               {{ (member.user.firstName || member.user.email || '?').charAt(0).toUpperCase() }}
             </span>
           </div>
+
           <div class="member-info">
             <strong>{{ member.user.firstName }} {{ member.user.lastName }}</strong>
             <span class="role-badge" [class.owner]="member.role === 'OWNER'">
               {{ member.role }}
             </span>
+            <small>
+              <span class="status-dot" [class.online]="member.online" [class.offline]="!member.online"></span>
+              <span>{{ member.online ? 'Online' : 'Offline' }}</span>
+            </small>
           </div>
         </div>
       </div>
@@ -278,7 +296,6 @@
 
   </div>
 
-  <!-- ── Delete Modal ───────────────────────────────────────────── -->
   <div class="modal-backdrop" *ngIf="showDeleteModal">
     <div class="modal-card">
       <h3>Confirm deletion</h3>
@@ -289,5 +306,4 @@
       </div>
     </div>
   </div>
-
 </section>

@@ -7,6 +7,8 @@ export interface HubMember {
   role: 'OWNER' | 'MEMBER' | 'PENDING';
   status: 'ACTIVE' | 'PENDING' | 'BANNED';
   joinedAt: string;
+  online?: boolean;
+  lastSeen?: string;
   user: {
     id: string;
     firstName: string;
@@ -48,14 +50,26 @@ export class HubMemberService {
       { keycloakId }
     );
   }
-getMyHubIds(keycloakId: string): Observable<number[]> {
-  const params = new HttpParams().set('keycloakId', keycloakId);
-  return this.http.get<number[]>(`${this.apiUrl}/my-hubs`, { params });
-}
+
+  getMyHubIds(keycloakId: string): Observable<number[]> {
+    const params = new HttpParams().set('keycloakId', keycloakId);
+    return this.http.get<number[]>(`${this.apiUrl}/my-hubs`, { params });
+  }
+
   rejectRequest(hubId: number, memberId: number, keycloakId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/${hubId}/requests/${memberId}/reject`,
       { body: { keycloakId } }
     );
+  }
+
+  setOnline(hubId: number, keycloakId: string): Observable<HubMember> {
+    const params = new HttpParams().set('keycloakId', keycloakId);
+    return this.http.put<HubMember>(`${this.apiUrl}/${hubId}/online`, {}, { params });
+  }
+
+  setOffline(hubId: number, keycloakId: string): Observable<HubMember> {
+    const params = new HttpParams().set('keycloakId', keycloakId);
+    return this.http.put<HubMember>(`${this.apiUrl}/${hubId}/offline`, {}, { params });
   }
 }
