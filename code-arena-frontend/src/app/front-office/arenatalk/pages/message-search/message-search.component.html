@@ -1,0 +1,32 @@
+<div class="search-wrapper">
+  <div class="search-input-row">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="search()"
+      placeholder="Search messages..."
+      class="search-input" />
+    <button class="clear-btn" *ngIf="searchTerm" (click)="clear()">×</button>
+  </div>
+
+  <div class="search-results" *ngIf="showResults">
+    <div class="results-header">
+      <span>{{ results.length }} result{{ results.length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="result-empty" *ngIf="results.length === 0">
+      <p>No messages found for "{{ searchTerm }}"</p>
+    </div>
+
+    <div class="result-item"
+      *ngFor="let msg of results"
+      (click)="onResultClick(msg)">
+      <div class="result-sender">{{ msg.senderName || 'Unknown' }}</div>
+      <div class="result-content"
+        [innerHTML]="highlight(msg.content)">
+      </div>
+      <div class="result-time">{{ msg.sentAt | date:'short' }}</div>
+    </div>
+  </div>
+</div>

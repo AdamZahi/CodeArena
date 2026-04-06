@@ -162,6 +162,13 @@
           <p class="channel-badge">{{ categoryLabel }}</p>
           <h1># {{ selectedChannel.name }}</h1>
           <p class="channel-topic">{{ selectedChannel.topic }}</p>
+
+          <!-- ── Message Search ── -->
+          <app-message-search
+            [messages]="messages"
+            (resultClick)="scrollToMessage($event)">
+          </app-message-search>
+
         </div>
       </div>
 
@@ -188,7 +195,7 @@
       </div>
 
       <div class="messages-panel" *ngIf="selectedChannel && hasMessages">
-        <div class="message-card" *ngFor="let msg of messages">
+        <div class="message-card" *ngFor="let msg of messages" [id]="'msg-' + msg.id">
           <div class="message-main">
             <div class="message-avatar">
               {{ msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?' }}
@@ -221,12 +228,14 @@
 
             </div>
           </div>
-        <div class="message-actions" 
-  *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
-  <button class="icon-btn edit-btn" (click)="startEditMessage(msg)" title="Edit">✎</button>
-  <button class="icon-btn delete-btn"
-    (click)="openDeleteModal('message', msg.id)" title="Delete">×</button>
-</div>
+
+          <div class="message-actions"
+            *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
+            <button class="icon-btn edit-btn" (click)="startEditMessage(msg)" title="Edit">✎</button>
+            <button class="icon-btn delete-btn"
+              (click)="openDeleteModal('message', msg.id)" title="Delete">×</button>
+          </div>
+
         </div>
       </div>
 

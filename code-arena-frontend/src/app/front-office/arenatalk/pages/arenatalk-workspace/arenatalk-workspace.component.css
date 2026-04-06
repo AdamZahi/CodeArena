@@ -496,3 +496,8 @@
   .workspace-shell { grid-template-columns: 1fr; }
   .welcome-grid { grid-template-columns: 1fr; }
 }
+.message-card.highlighted {
+  border-color: #8d63ff !important;
+  background: rgba(141,99,255,0.08) !important;
+  transition: all 0.3s ease;
+}

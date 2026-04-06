@@ -11,13 +11,13 @@ import { take } from 'rxjs/operators';
 import { VoiceChannelComponent } from '../voice-channel/voice-channel.component';
 import { MessageReactionsComponent } from '../message-reactions/message-reactions.component';
 import { ReactionService } from '../../services/reaction.service';
-
+import { MessageSearchComponent } from '../message-search/message-search.component';
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
   selector: 'app-arenatalk-workspace',
   standalone: true,
-  imports: [CommonModule, FormsModule, VoiceChannelComponent, MessageReactionsComponent],
+  imports: [CommonModule, FormsModule, VoiceChannelComponent, MessageReactionsComponent, MessageSearchComponent],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
 })
@@ -338,7 +338,18 @@ export class ArenatalkWorkspaceComponent implements OnInit {
     const img = event.target as HTMLImageElement;
     if (type === 'icon') img.style.display = 'none';
     if (type === 'banner') { const c = img.parentElement; if (c) c.style.display = 'none'; }
-  }
+  } 
+  scrollToMessage(msg: Message): void {
+  if (!msg.id) return;
+  setTimeout(() => {
+    const el = document.getElementById(`msg-${msg.id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('highlighted');
+      setTimeout(() => el.classList.remove('highlighted'), 2000);
+    }
+  }, 100);
+}
 
   get hasMessages(): boolean { return this.messages.length > 0; }
   get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }
