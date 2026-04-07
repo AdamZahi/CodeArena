@@ -122,8 +122,10 @@ public class BattleScoringService {
         // Step 5: ELO updates for ranked modes
         Map<String, Integer> newEloMap = new HashMap<>();
         Map<String, String> newTierMap = new HashMap<>();
+        Map<String, Integer> eloBeforeMap = new HashMap<>();
+        Map<String, String> tierBeforeMap = new HashMap<>();
         if (isRankedMode(room.getMode())) {
-            computeAndPersistElo(players, room, newEloMap, newTierMap);
+            computeAndPersistElo(players, room, newEloMap, newTierMap, eloBeforeMap, tierBeforeMap);
         }
 
         // Step 6: Badge evaluation
@@ -135,7 +137,7 @@ public class BattleScoringService {
         }
 
         // Step 8: Build response
-        return buildPostMatchSummaryWithDetails(room, players, breakdownMap, newEloMap, newTierMap, badgesMap);
+        return buildPostMatchSummaryWithDetails(room, players, breakdownMap, newEloMap, newTierMap, eloBeforeMap, tierBeforeMap, badgesMap);
     }
 
     // ──────────────────────────────────────────────
@@ -325,7 +327,8 @@ public class BattleScoringService {
      * New ELO = current ELO + elo_change, floored at 100.
      */
     private void computeAndPersistElo(List<BattleParticipant> players, BattleRoom room,
-                                       Map<String, Integer> newEloMap, Map<String, String> newTierMap) {
+                                       Map<String, Integer> newEloMap, Map<String, String> newTierMap,
+                                       Map<String, Integer> eloBeforeMap, Map<String, String> tierBeforeMap) {
         Optional<Season> activeSeasonOpt = seasonRepository.findFirstByIsActiveTrue();
         if (activeSeasonOpt.isEmpty()) {
             log.warn("No active season found — skipping ELO updates for room {}", room.getId());
@@ -390,7 +393,11 @@ public class BattleScoringService {
             player.setEloChange(eloChange);
 
             PlayerRating rating = ratings.get(pid);
-            int newElo = Math.max(MIN_ELO, rating.getElo() + eloChange);
+            int eloBefore = rating.getElo();
+            String tierBefore = rating.getTier() != null ? rating.getTier().name() : PlayerTier.BRONZE.name();
+            eloBeforeMap.put(pid, eloBefore);
+            tierBeforeMap.put(pid, tierBefore);
+            int newElo = Math.max(MIN_ELO, eloBefore + eloChange);
             rating.setElo(newElo);
             rating.setTier(computeTier(newElo));
 
@@ -506,14 +513,30 @@ public class BattleScoringService {
             badgesMap.put(player.getId().toString(), List.of());
         }
 
+        // Reconstruct current ELO/tier snapshot for idempotent path (after-state only).
+        Map<String, Integer> newEloMap = new HashMap<>();
+        Map<String, String> newTierMap = new HashMap<>();
+        if (isRankedMode(room.getMode())) {
+            seasonRepository.findFirstByIsActiveTrue().ifPresent(season -> {
+                String seasonId = season.getId().toString();
+                for (BattleParticipant p : players) {
+                    playerRatingRepository.findByUserIdAndSeasonId(p.getUserId(), seasonId).ifPresent(r -> {
+                        newEloMap.put(p.getId().toString(), r.getElo());
+                        if (r.getTier() != null) newTierMap.put(p.getId().toString(), r.getTier().name());
+                    });
+                }
+            });
+        }
+
         return buildPostMatchSummaryWithDetails(room, players, breakdownMap,
-                new HashMap<>(), new HashMap<>(), badgesMap);
+                newEloMap, newTierMap, new HashMap<>(), new HashMap<>(), badgesMap);
     }
 
     private PostMatchSummaryResponse buildPostMatchSummaryWithDetails(
             BattleRoom room, List<BattleParticipant> players,
             Map<String, List<ScoreBreakdownResponse>> breakdownMap,
             Map<String, Integer> newEloMap, Map<String, String> newTierMap,
+            Map<String, Integer> eloBeforeMap, Map<String, String> tierBeforeMap,
             Map<String, List<String>> badgesMap) {
 
         String roomId = room.getId().toString();
@@ -557,6 +580,12 @@ public class BattleScoringService {
                     .eloChange(player.getEloChange() != null ? player.getEloChange() : 0)
                     .newElo(newEloMap.getOrDefault(pid, 0))
                     .newTier(newTierMap.getOrDefault(pid, null))
+                    .eloBefore(eloBeforeMap.get(pid))
+                    .eloAfter(newEloMap.get(pid))
+                    .tierBefore(tierBeforeMap.get(pid))
+                    .tierAfter(newTierMap.get(pid))
+                    .tierChanged(tierBeforeMap.get(pid) != null && newTierMap.get(pid) != null
+                            && !tierBeforeMap.get(pid).equals(newTierMap.get(pid)))
                     .challengeBreakdowns(breakdownMap.getOrDefault(pid, List.of()))
                     .badgesAwarded(badgesMap.getOrDefault(pid, List.of()))
                     .isWinner(player.getRank() != null && player.getRank() == 1)
