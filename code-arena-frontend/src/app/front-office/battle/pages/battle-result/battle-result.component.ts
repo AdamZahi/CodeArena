@@ -40,6 +40,31 @@ export class BattleResultComponent implements OnInit, OnDestroy {
   spectatorFeed: SpectatorFeedEvent[] = [];
   confettiPieces: ConfettiPiece[] = [];
 
+  // Feature 3 — Share
+  shareUrl = '';
+  shareLoading = false;
+  toastMessage = '';
+  private toastTimer: any = null;
+
+  // Feature 4 — ELO animation
+  animatedEloDelta = 0;
+  showTierUpBanner = false;
+  private readonly UNRANKED_MODES = ['PRACTICE', 'BLITZ', 'DAILY'];
+
+  get isRankedMode(): boolean {
+    return !!this.summary && !this.UNRANKED_MODES.includes(this.summary.mode);
+  }
+
+  tierProgress(elo: number | null | undefined): number {
+    if (elo == null) return 0;
+    // BRONZE 0-1199, SILVER 1200-1499, GOLD 1500-1799, DIAMOND 1800-2099, LEGEND 2100+
+    const bands: [number, number][] = [[0, 1200], [1200, 1500], [1500, 1800], [1800, 2100], [2100, 2400]];
+    for (const [lo, hi] of bands) {
+      if (elo < hi) return Math.max(0, Math.min(100, ((elo - lo) / (hi - lo)) * 100));
+    }
+    return 100;
+  }
+
   get isWinner(): boolean {
     return this.myStanding?.isWinner ?? false;
   }
@@ -64,6 +89,7 @@ export class BattleResultComponent implements OnInit, OnDestroy {
       next: (summary) => {
         this.summary = summary;
         if (this.isWinner) this.generateConfetti();
+        this.startEloAnimation();
       },
       error: () => {},
     });
@@ -105,6 +131,66 @@ export class BattleResultComponent implements OnInit, OnDestroy {
 
   viewLeaderboard(): void {
     this.router.navigate(['/battle']);
+  }
+
+  shareResult(): void {
+    if (this.shareLoading) return;
+    if (this.shareUrl) {
+      this.copyShareUrl();
+      return;
+    }
+    this.shareLoading = true;
+    this.battleService.createShareToken(this.roomId).subscribe({
+      next: (res) => {
+        this.shareUrl = res.shareUrl;
+        this.shareLoading = false;
+        this.copyShareUrl();
+      },
+      error: () => {
+        this.shareLoading = false;
+        this.showToast('Failed to create share link');
+      },
+    });
+  }
+
+  private copyShareUrl(): void {
+    if (!this.shareUrl) return;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(this.shareUrl).then(
+        () => this.showToast('Share link copied to clipboard'),
+        () => this.showToast(this.shareUrl),
+      );
+    } else {
+      this.showToast(this.shareUrl);
+    }
+  }
+
+  private showToast(message: string): void {
+    this.toastMessage = message;
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => (this.toastMessage = ''), 3000);
+  }
+
+  private startEloAnimation(): void {
+    if (!this.isRankedMode) return;
+    const me = this.myStanding;
+    if (!me) return;
+    const target = me.eloChange ?? 0;
+    const duration = 1200;
+    const start = performance.now() + 800; // delay after podium entrance
+    const tick = (now: number) => {
+      const t = Math.max(0, Math.min(1, (now - start) / duration));
+      this.animatedEloDelta = Math.round(target * t);
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    if (me.tierChanged) {
+      setTimeout(() => {
+        this.showTierUpBanner = true;
+        setTimeout(() => (this.showTierUpBanner = false), 5000);
+      }, 1500);
+    }
   }
 
   private generateConfetti(): void {

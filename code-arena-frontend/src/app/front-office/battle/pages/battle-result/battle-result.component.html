@@ -15,6 +15,14 @@
 <!-- ── Main Content ────────────────────────────────────────── -->
 <div class="result-container" *ngIf="summary">
 
+  <!-- Tier-Up Celebration Banner -->
+  <div class="tier-up-banner" *ngIf="showTierUpBanner && myStanding"
+    [attr.data-tier]="myStanding.tierAfter">
+    <span class="tier-up-icon">&#9733;</span>
+    <span class="tier-up-text">PROMOTED TO {{ myStanding.tierAfter }}</span>
+    <span class="tier-up-icon">&#9733;</span>
+  </div>
+
   <!-- Victory / Defeat Header -->
   <header class="result-header" [class.victory]="isWinner" [class.defeat]="!isWinner">
     <div class="result-badge">MATCH COMPLETE</div>
@@ -152,6 +160,31 @@
     </div>
   </div>
 
+  <!-- ELO Progression (current user, ranked modes only) -->
+  <div class="elo-progress-section" *ngIf="isRankedMode && myStanding && myStanding.eloBefore != null">
+    <h2 class="section-title">YOUR RATING</h2>
+    <div class="elo-progress-card">
+      <div class="elo-progress-header">
+        <span class="elo-from">{{ myStanding.eloBefore }}</span>
+        <span class="elo-delta"
+          [class.positive]="myStanding.eloChange >= 0"
+          [class.negative]="myStanding.eloChange < 0">
+          {{ animatedEloDelta >= 0 ? '+' : '' }}{{ animatedEloDelta }}
+        </span>
+        <span class="elo-to">{{ myStanding.eloAfter }}</span>
+      </div>
+      <div class="tier-progress-track">
+        <div class="tier-progress-fill"
+          [attr.data-tier]="myStanding.tierAfter"
+          [style.width.%]="tierProgress(myStanding.eloAfter)"></div>
+      </div>
+      <div class="tier-progress-labels">
+        <span class="tier-badge" [attr.data-tier]="myStanding.tierBefore">{{ myStanding.tierBefore }}</span>
+        <span class="tier-badge" [attr.data-tier]="myStanding.tierAfter">{{ myStanding.tierAfter }}</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Actions -->
   <div class="result-actions">
     <button class="btn-primary" (click)="backToArena()">
@@ -160,8 +193,14 @@
     <button class="btn-outline" (click)="viewLeaderboard()">
       <span>&#9733;</span> LEADERBOARD
     </button>
+    <button class="btn-outline" (click)="shareResult()" [disabled]="shareLoading">
+      <span>&#128279;</span> {{ shareLoading ? 'CREATING...' : (shareUrl ? 'COPY LINK' : 'SHARE') }}
+    </button>
   </div>
 </div>
+
+<!-- Toast -->
+<div class="result-toast" *ngIf="toastMessage">{{ toastMessage }}</div>
 
 <!-- ── Loading ─────────────────────────────────────────────── -->
 <div class="result-loading" *ngIf="!summary">

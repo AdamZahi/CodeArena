@@ -751,3 +751,58 @@
   .breakdown-grid { grid-template-columns: 1fr; }
   .result-actions { flex-direction: column; align-items: center; }
 }
+
+/* ── Feature 3 + 4 additions ── */
+.tier-up-banner{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:16px;padding:18px 28px;margin:0 auto 24px;max-width:720px;border-radius:8px;font-family:"Orbitron",sans-serif;font-size:18px;letter-spacing:4px;font-weight:700;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.5);color:#fff;animation:tierUpPulse 1.6s ease-in-out infinite alternate}
+.tier-up-banner[data-tier="BRONZE"]{background:rgba(205,127,50,.15);border-color:rgba(205,127,50,.6);color:#cd7f32}
+.tier-up-banner[data-tier="SILVER"]{background:rgba(168,169,173,.15);border-color:rgba(168,169,173,.6);color:#c0c0c0}
+.tier-up-banner[data-tier="GOLD"]{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.6);color:#ffd700}
+.tier-up-banner[data-tier="DIAMOND"]{background:rgba(185,242,255,.15);border-color:rgba(185,242,255,.6);color:#b9f2ff}
+.tier-up-banner[data-tier="LEGEND"]{background:rgba(192,132,252,.15);border-color:rgba(192,132,252,.6);color:#c084fc}
+.tier-up-icon{font-size:22px}
+@keyframes tierUpPulse{from{box-shadow:0 0 18px rgba(139,92,246,.4)}to{box-shadow:0 0 32px rgba(139,92,246,.7)}}
+.elo-progress-section{position:relative;z-index:1;max-width:720px;margin:36px auto}
+.elo-progress-card{padding:24px;background:rgba(13,13,21,.7);border:1px solid #1a1a2e;border-radius:8px}
+.elo-progress-header{display:flex;justify-content:space-between;align-items:baseline;font-family:"Orbitron",sans-serif;margin-bottom:18px}
+.elo-from,.elo-to{font-size:28px;color:#e2e8f0}
+.elo-delta{font-size:36px;font-weight:700}
+.elo-delta.positive{color:#10b981}
+.elo-delta.negative{color:#ef4444}
+.tier-progress-track{height:10px;background:#1a1a2e;border-radius:5px;overflow:hidden;margin-bottom:10px}
+.tier-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+  transition: width 1s ease-out;
+  border-radius: 5px;
+}
+.tier-progress-fill[data-tier="BRONZE"] { background: linear-gradient(90deg, #8b4513, #cd7f32); }
+.tier-progress-fill[data-tier="SILVER"] { background: linear-gradient(90deg, #808080, #c0c0c0); }
+.tier-progress-fill[data-tier="GOLD"] { background: linear-gradient(90deg, #b8860b, #ffd700); }
+.tier-progress-fill[data-tier="DIAMOND"] { background: linear-gradient(90deg, #4682b4, #b9f2ff); }
+.tier-progress-fill[data-tier="LEGEND"] { background: linear-gradient(90deg, #7c3aed, #c084fc); }
+.tier-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 2px;
+}
+.result-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 14px 24px;
+  background: rgba(13, 13, 21, 0.95);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  animation: toastSlideUp 0.3s ease-out;
+}
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
