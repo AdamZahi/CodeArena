@@ -3,6 +3,7 @@ package com.codearena.module1_challenge.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.domain.Persistable;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,9 +16,8 @@ import java.util.List;
 @EqualsAndHashCode(exclude = "testCases")
 @ToString(exclude = "testCases")
 @Entity
-public class Challenge {
+public class Challenge implements Persistable<Long> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
@@ -39,4 +39,19 @@ public class Challenge {
     @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<TestCase> testCases = new ArrayList<>();
+
+    @Transient
+    @Builder.Default
+    private boolean newEntity = true;
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.newEntity = false;
+    }
+
+    @Override
+    public boolean isNew() {
+        return newEntity;
+    }
 }

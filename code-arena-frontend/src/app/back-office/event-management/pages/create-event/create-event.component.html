@@ -1,0 +1,133 @@
+<div class="shop-container">
+  <div class="shop-header">
+    <div class="shop-title">
+      <h1>⚔ CREATE EVENT</h1>
+      <p>// BUILD YOUR NEXT CHALLENGE</p>
+    </div>
+  </div>
+
+  <form class="create-card" (ngSubmit)="submit()" novalidate>
+    <!-- Title -->
+    <label class="form-label">TITLE</label>
+    <input
+      class="event-input"
+      type="text"
+      name="title"
+      [(ngModel)]="title"
+      placeholder="Enter event title"
+      required
+    />
+
+    <!-- Description -->
+    <label class="form-label">DESCRIPTION</label>
+    <textarea
+      class="event-textarea"
+      name="description"
+      [(ngModel)]="description"
+      placeholder="Describe the event..."
+      rows="5"
+      required
+    ></textarea>
+
+
+    <!-- Location -->
+    <label class="form-label">LOCATION</label>
+    <input
+      class="event-input"
+      type="text"
+      name="location"
+      [(ngModel)]="location"
+      placeholder="Event Location (or Virtual)"
+      required
+    />
+
+    <!-- Type Toggle -->
+    <div class="section-title">TYPE</div>
+    <div class="type-toggle">
+      <button
+        type="button"
+        class="type-toggle-btn"
+        [class.active]="eventType === 'OPEN'"
+        [class.open-active]="eventType === 'OPEN'"
+        (click)="eventType = 'OPEN'"
+      >
+        [ OPEN ]
+      </button>
+      <button
+        type="button"
+        class="type-toggle-btn"
+        [class.active]="eventType === 'EXCLUSIVE'"
+        [class.exclusive-active]="eventType === 'EXCLUSIVE'"
+        (click)="eventType = 'EXCLUSIVE'"
+      >
+        [ EXCLUSIVE ]
+      </button>
+    </div>
+    <div class="exclusive-note" *ngIf="eventType === 'EXCLUSIVE'">
+      ⭐ TOP 10 PLAYERS WILL BE AUTO-INVITED
+    </div>
+
+    <!-- Category -->
+    <label class="form-label">CATEGORY</label>
+    <select class="event-select" name="category" [(ngModel)]="category">
+      <option value="HACKATHON">HACKATHON</option>
+      <option value="NETWORKING">NETWORKING</option>
+      <option value="BOOTCAMP">BOOTCAMP</option>
+      <option value="CONFERENCE">CONFERENCE</option>
+      <option value="REMISE_PRIX">REMISE_PRIX</option>
+    </select>
+
+    <!-- Dates -->
+    <div class="dates-grid">
+      <div class="date-col">
+        <label class="form-label">START DATE</label>
+        <input
+          class="event-input"
+          type="datetime-local"
+          name="startDate"
+          [(ngModel)]="startDate"
+          required
+        />
+      </div>
+      <div class="date-col">
+        <label class="form-label">END DATE</label>
+        <input
+          class="event-input"
+          type="datetime-local"
+          name="endDate"
+          [(ngModel)]="endDate"
+          required
+        />
+      </div>
+    </div>
+
+    <!-- Max participants -->
+    <label class="form-label">MAX PARTICIPANTS</label>
+    <input
+      class="event-input"
+      type="number"
+      name="maxParticipants"
+      min="1"
+      [(ngModel)]="maxParticipants"
+      required
+    />
+
+    <!-- Status -->
+    <label class="form-label">STATUS</label>
+    <select class="event-select" name="status" [(ngModel)]="status">
+      <option value="UPCOMING">UPCOMING</option>
+      <option value="ACTIVE">ACTIVE</option>
+      <option value="COMPLETED">COMPLETED</option>
+    </select>
+
+    <!-- Error -->
+    <div class="search-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="success-msg" *ngIf="successMessage">{{ successMessage }}</div>
+
+    <!-- Submit -->
+    <button class="checkout-btn" type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'CREATING...' : '[ CREATE EVENT ]' }}
+    </button>
+  </form>
+</div>
+

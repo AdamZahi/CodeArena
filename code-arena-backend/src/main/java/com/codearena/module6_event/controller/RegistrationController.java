@@ -27,16 +27,16 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
     @PostMapping("/{id}/register")
-    public ResponseEntity<?> register(
+    public ResponseEntity<RegistrationResponseDTO> register(
             @PathVariable("id") UUID eventId,
             @AuthenticationPrincipal Jwt jwt) {
         String participantId = jwt.getSubject();
-        RegistrationResponseDTO dto = registrationService.register(eventId, participantId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(registrationService.register(eventId, participantId));
     }
 
     @DeleteMapping("/{id}/register")
-    public ResponseEntity<?> cancelRegistration(
+    public ResponseEntity<Void> cancelRegistration(
             @PathVariable("id") UUID eventId,
             @AuthenticationPrincipal Jwt jwt) {
         String participantId = jwt.getSubject();
@@ -45,19 +45,15 @@ public class RegistrationController {
     }
 
     @GetMapping("/{id}/participants")
-    public ResponseEntity<?> getEventParticipants(@PathVariable("id") UUID eventId) {
-        List<RegistrationResponseDTO> list = registrationService.getEventParticipants(eventId);
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<RegistrationResponseDTO>> getEventParticipants(
+            @PathVariable("id") UUID eventId) {
+        return ResponseEntity.ok(registrationService.getEventParticipants(eventId));
     }
 
     @GetMapping("/me/registrations")
-    public ResponseEntity<?> getMyRegistrations(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<RegistrationResponseDTO>> getMyRegistrations(
+            @AuthenticationPrincipal Jwt jwt) {
         String participantId = jwt.getSubject();
-        List<RegistrationResponseDTO> list = registrationService.getMyRegistrations(participantId);
-        return ResponseEntity.ok(list);
-    }
-
-    private String getCurrentUserId(@AuthenticationPrincipal Jwt jwt) {
-        return jwt.getSubject();
+        return ResponseEntity.ok(registrationService.getMyRegistrations(participantId));
     }
 }

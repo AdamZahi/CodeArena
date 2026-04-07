@@ -22,7 +22,7 @@ spring:
             enable: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     open-in-view: true
   security:
     oauth2:
@@ -34,8 +34,27 @@ spring:
 
 
 
+codearena:
+  base-url: https://codearena.app
+
 app:
   cors:
     allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
+
+# Judge0 CE (Community Edition) — free, no API key required
+judge0:
+  base-url: https://ce.judge0.com
+  api-key:
+  timeout-seconds: 10
+
+# Battle time limits per mode (in minutes, -1 = no limit)
+battle:
+  time-limit:
+    duel-minutes: 30
+    team-minutes: 40
+    ranked-arena-minutes: 25
+    blitz-minutes: 15
+    practice-minutes: -1
+    daily-minutes: -1

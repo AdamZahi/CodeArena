@@ -1,0 +1,238 @@
+<!-- ── Background ──────────────────────────────────────────── -->
+<div class="arena-bg">
+  <div class="grid-overlay"></div>
+  <div class="scan-line"></div>
+</div>
+
+<!-- ── Disconnect Overlay (Feature 3) ─────────────────────── -->
+<div class="disconnect-overlay" *ngIf="disconnected">
+  <div class="disconnect-modal">
+    <div class="disconnect-icon">&#9888;</div>
+    <h2 class="disconnect-title">CONNECTION LOST</h2>
+    <p class="disconnect-text">Attempting to reconnect...</p>
+    <div class="disconnect-countdown">{{ reconnectCountdown }}s</div>
+    <div class="disconnect-bar">
+      <div class="disconnect-bar-fill" [style.width.%]="(reconnectCountdown / 30) * 100"></div>
+    </div>
+    <button class="reconnect-btn" (click)="attemptReconnect()">RECONNECT NOW</button>
+  </div>
+</div>
+
+<!-- ── Top Bar ─────────────────────────────────────────────── -->
+<header class="arena-topbar" *ngIf="arenaState">
+  <div class="topbar-left">
+    <span class="arena-badge">LIVE BATTLE</span>
+    <span class="room-id">{{ arenaState.roomId | slice:0:8 }}</span>
+  </div>
+
+  <div class="topbar-center">
+    <div class="timer" [class.urgent]="arenaState.remainingSeconds <= 60">
+      <span class="timer-icon">&#9201;</span>
+      <span class="timer-value">{{ formatTime(arenaState.remainingSeconds) }}</span>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="challenge-progress">
+      <span class="progress-label">CHALLENGE</span>
+      <span class="progress-value">{{ activeChallengeIndex + 1 }}/{{ arenaState.challenges.length }}</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Challenge Switch Toast (Feature 1) ─────────────────── -->
+<div class="challenge-switch-toast" *ngIf="challengeSwitchToast">
+  <span class="toast-icon">&#8644;</span>
+  <span class="toast-text">
+    <strong>{{ challengeSwitchToast.displayName }}</strong> switched to Challenge #{{ challengeSwitchToast.challengeId }}
+  </span>
+</div>
+
+<!-- ── Opponent Disconnect Banner (Feature 3) ─────────────── -->
+<div class="opponent-disconnect-banner" *ngFor="let opp of disconnectedOpponents">
+  <span class="disconnect-banner-icon">&#9888;</span>
+  <span class="disconnect-banner-text">
+    <strong>{{ opp.displayName }}</strong> disconnected — {{ opp.deadline }}s to reconnect
+  </span>
+</div>
+
+<!-- ── Main Arena Layout ───────────────────────────────────── -->
+<div class="arena-layout" *ngIf="arenaState">
+
+  <!-- ── Left Panel: Challenge Description ──────────────────── -->
+  <div class="panel panel-left" [style.width.%]="leftPanelWidth">
+
+    <!-- Challenge Tabs -->
+    <div class="challenge-tabs">
+      <button
+        *ngFor="let ch of arenaState.challenges; let i = index"
+        class="challenge-tab"
+        [class.active]="activeChallengeIndex === i"
+        [class.solved]="isChallengeSolved(ch.roomChallengeId)"
+        (click)="selectChallenge(i)"
+      >
+        <span class="tab-number">{{ i + 1 }}</span>
+        <span class="tab-check" *ngIf="isChallengeSolved(ch.roomChallengeId)">&#10004;</span>
+      </button>
+    </div>
+
+    <!-- Challenge Content -->
+    <div class="challenge-content" *ngIf="activeChallenge">
+      <div class="challenge-header">
+        <h2 class="challenge-title">{{ activeChallenge.title }}</h2>
+        <span class="difficulty-badge" [attr.data-diff]="activeChallenge.difficulty">
+          {{ activeChallenge.difficulty }}
+        </span>
+      </div>
+
+      <div class="challenge-tags" *ngIf="activeChallenge.tags">
+        <span class="tag" *ngFor="let tag of activeChallenge.tags.split(',')">{{ tag.trim() }}</span>
+      </div>
+
+      <div class="challenge-description" [innerHTML]="activeChallenge.description"></div>
+
+      <!-- Test Cases -->
+      <div class="test-cases-section">
+        <h3 class="section-title">SAMPLE TEST CASES</h3>
+        <div class="test-case" *ngFor="let tc of activeChallenge.visibleTestCases; let i = index">
+          <div class="tc-header">Test Case {{ i + 1 }}</div>
+          <div class="tc-row">
+            <div class="tc-label">INPUT</div>
+            <pre class="tc-code">{{ tc.input }}</pre>
+          </div>
+          <div class="tc-row">
+            <div class="tc-label">EXPECTED</div>
+            <pre class="tc-code">{{ tc.expectedOutput }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Resizer ────────────────────────────────────────────── -->
+  <div class="panel-resizer" (mousedown)="startResize($event)">
+    <div class="resizer-line"></div>
+  </div>
+
+  <!-- ── Right Panel: Code Editor + Opponents ───────────────── -->
+  <div class="panel panel-right" [style.width.%]="100 - leftPanelWidth">
+
+    <!-- Opponent Tracker -->
+    <div class="opponent-tracker">
+      <div
+        class="opponent-card"
+        *ngFor="let p of arenaState.participants"
+        [class.finished]="p.isFinished"
+        [class.has-pulse]="opponentPulses[p.participantId]"
+        [class.disconnected]="opponentDisconnects[p.participantId]"
+        [attr.data-pulse]="opponentPulses[p.participantId] || null"
+      >
+        <div class="opp-avatar">
+          <img *ngIf="p.avatarUrl" [src]="p.avatarUrl" alt="" />
+          <span *ngIf="!p.avatarUrl">{{ p.username.charAt(0).toUpperCase() }}</span>
+        </div>
+        <div class="opp-info">
+          <div class="opp-name-row">
+            <span class="opp-name">{{ p.username }}</span>
+            <!-- Feature 1: Typing dots -->
+            <span class="typing-dots" *ngIf="opponentActivities[p.participantId] === 'TYPING'">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </span>
+          </div>
+          <div class="opp-progress-bar">
+            <div class="opp-progress-fill"
+              [style.width.%]="(p.challengesCompleted / arenaState.challenges.length) * 100"
+            ></div>
+          </div>
+        </div>
+        <span class="opp-score">{{ p.challengesCompleted }}/{{ arenaState.challenges.length }}</span>
+        <span class="pulse-flash" *ngIf="opponentPulses[p.participantId]">
+          {{ opponentPulses[p.participantId] === 'ACCEPTED' ? '&#10004;' : '&#10008;' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Language Selector + Editor -->
+    <div class="editor-section">
+      <div class="editor-toolbar">
+        <select class="lang-select" [(ngModel)]="selectedLanguage">
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+          <option value="csharp">C#</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="typescript">TypeScript</option>
+        </select>
+
+        <div class="toolbar-right">
+          <span class="attempt-count" *ngIf="lastSubmissionResult">
+            Attempt #{{ lastSubmissionResult.attemptNumber }}
+          </span>
+          <button class="submit-btn" (click)="submitCode()" [disabled]="submitting">
+            <span class="submit-icon" *ngIf="!submitting">&#9654;</span>
+            <span class="submit-spinner" *ngIf="submitting"></span>
+            {{ submitting ? 'JUDGING...' : 'SUBMIT' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-wrapper">
+        <div class="line-numbers">
+          <span *ngFor="let line of getLineNumbers()">{{ line }}</span>
+        </div>
+        <textarea
+          class="code-editor"
+          [(ngModel)]="code"
+          (input)="onCodeInput()"
+          (keydown)="onEditorKeydown($event)"
+          spellcheck="false"
+          placeholder="// Write your solution here..."
+        ></textarea>
+      </div>
+
+      <!-- Feature 2: Test Case Progress Strip -->
+      <div class="test-case-strip" *ngIf="testCaseChips.length > 0">
+        <span class="strip-label">TESTS</span>
+        <div class="chip-row">
+          <span
+            class="tc-chip"
+            *ngFor="let chip of testCaseChips; let i = index"
+            [attr.data-status]="chip.status"
+          >
+            {{ i + 1 }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submission Result Banner -->
+    <div class="result-banner" *ngIf="lastSubmissionResult"
+      [class.accepted]="lastSubmissionResult.isAccepted"
+      [class.rejected]="!lastSubmissionResult.isAccepted"
+    >
+      <div class="result-status">
+        <span class="result-icon">{{ lastSubmissionResult.isAccepted ? '&#10004;' : '&#10008;' }}</span>
+        <span class="result-text">{{ lastSubmissionResult.status.replace('_', ' ') }}</span>
+      </div>
+      <div class="result-details">
+        <span *ngIf="lastSubmissionResult.runtimeMs !== null">
+          <span class="detail-label">Runtime:</span> {{ lastSubmissionResult.runtimeMs }}ms
+        </span>
+        <span *ngIf="lastSubmissionResult.memoryKb !== null">
+          <span class="detail-label">Memory:</span> {{ lastSubmissionResult.memoryKb }}KB
+        </span>
+      </div>
+      <div class="result-feedback" *ngIf="lastSubmissionResult.feedback">
+        {{ lastSubmissionResult.feedback }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Loading State ───────────────────────────────────────── -->
+<div class="arena-loading" *ngIf="!arenaState">
+  <div class="loader"></div>
+  <p>Entering the arena...</p>
+</div>
