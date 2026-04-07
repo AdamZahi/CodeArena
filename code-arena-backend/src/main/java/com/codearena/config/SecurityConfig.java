@@ -41,9 +41,8 @@ public class SecurityConfig {
         String issuer = String.format("https://%s/", auth0Config.getDomain());
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
         OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
-            JwtValidators.createDefaultWithIssuer(issuer),
-            new AudienceValidator(auth0Config.getAudience())
-        );
+                JwtValidators.createDefaultWithIssuer(issuer),
+                new AudienceValidator(auth0Config.getAudience()));
         decoder.setJwtValidator(validator);
         return decoder;
     }
@@ -56,23 +55,39 @@ public class SecurityConfig {
      * @throws Exception when configuration fails
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, UserSyncFilter userSyncFilter) throws Exception {
-        // TODO: Expand role matrix for additional modules.
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, UserSyncFilter userSyncFilter,
+            Auth0Config auth0Config) throws Exception {
         return http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
-                .requestMatchers(HttpMethod.PATCH, "/api/users/me").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_COACH")
-                .requestMatchers(HttpMethod.PATCH, "/api/users/*/role").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasAuthority("ROLE_ADMIN")
-                .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
-            .addFilterAfter(userSyncFilter, BearerTokenAuthenticationFilter.class)
-            .build();
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new org.springframework.web.cors.CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:4200"));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                        .requestMatchers("/api/quizzes", "/api/quizzes/**").permitAll()
+                        .requestMatchers("/api/coaching/coaches", "/api/coaching/coaches/**").permitAll()
+                        .requestMatchers("/api/coaching/sessions", "/api/coaching/sessions/**").permitAll()
+                        .requestMatchers("/api/coaching/feedback", "/api/coaching/feedback/**").permitAll()
+                        .requestMatchers("/api/coaching/applications/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_COACH")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/*/role").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasAuthority("ROLE_ADMIN")
+                        .anyRequest().authenticated())
+
+                .oauth2ResourceServer(
+                        oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .addFilterAfter(userSyncFilter, BearerTokenAuthenticationFilter.class)
+                .build();
     }
 
     private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {

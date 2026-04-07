@@ -1,7 +1,16 @@
 server:
   port: 8080
+  tomcat:
+    max-http-form-content-size: 50MB
+    max-swallow-size: 50MB
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  codec:
+    max-in-memory-size: 50MB
   config:
     import:
       - optional:file:.env[.properties]
@@ -18,6 +27,22 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hazem.mtir10@gmail.com
+    password: pabmozhfmsmbzayi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            protocols: TLSv1.2
+            trust: "*"
+
   security:
     oauth2:
       resourceserver:
@@ -32,7 +57,14 @@ auth0:
   audience: ${AUTH0_AUDIENCE}
   management-api-audience: https://${AUTH0_DOMAIN}/api/v2/
 
-app:
   cors:
     allowed-origins:
       - http://localhost:4200
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
+
+application:
+  admin:
+    email: ${ADMIN_EMAIL:hazem@gmail.com}

@@ -1,32 +1,40 @@
-import { Component, inject } from '@angular/core';
-import { AuthService } from '@auth0/auth0-angular';
-import { environment } from '../../../environments/environment';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthProfileService } from '../../core/auth/auth-profile.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   template: `
-    <section style="padding: 1.5rem; display: grid; gap: 0.75rem; max-width: 540px;">
-      <p>Home works</p>
-      <button
-        type="button"
-        (click)="logout()"
-        style="width: fit-content; padding: 0.6rem 1rem; border: 0; border-radius: 8px; cursor: pointer; background: #ef4444; color: #fff; font-weight: 600;"
-      >
-        Logout (test)
-      </button>
-    </section>
-  `
+    <div class="routing-state">
+      <div class="spinner"></div>
+      <p>Routing Workspace...</p>
+    </div>
+  `,
+  styles: [`
+    .routing-state {
+      min-height: 100vh; background: #0f0f11; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; color: #a1a1a6; font-family: 'Fira Code', monospace;
+    }
+    .spinner {
+      width: 50px; height: 50px; border: 4px solid #28282d; border-top-color: #d03c3c;
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 2rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  `]
 })
-export class HomeComponent {
-  private readonly auth = inject(AuthService);
+export class HomeComponent implements OnInit {
+  private readonly router = inject(Router);
+  private readonly profileService = inject(AuthProfileService);
 
-  logout(): void {
-    void this.auth.logout({
-      logoutParams: {
-        returnTo: window.location.origin,
-        client_id: environment.auth0ClientId
-      }
-    });
+  async ngOnInit() {
+    // Wait until profile is loaded
+    const role = await this.profileService.getRole();
+
+    if (role === 'COACH') {
+      this.router.navigate(['/coaching-quiz/coach-dashboard']);
+    } else {
+      this.router.navigate(['/coaching-quiz/coaches']);
+    }
   }
 }

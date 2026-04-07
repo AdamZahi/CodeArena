@@ -5,10 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitQuizRequest {
-    private String placeholder;
+    private UUID quizId;
+    /** Map of questionId -> userAnswer */
+    private Map<UUID, String> answers;
 }

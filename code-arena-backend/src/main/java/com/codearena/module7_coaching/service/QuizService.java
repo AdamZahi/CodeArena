@@ -1,9 +1,15 @@
 package com.codearena.module7_coaching.service;
 
-public interface QuizService {
+import com.codearena.module7_coaching.dto.*;
 
-    /**
-     * Placeholder service method.
-     */
-    void placeholder();
+import java.util.List;
+import java.util.UUID;
+
+public interface QuizService {
+    List<QuizDto> getAllQuizzes();
+    QuizDto getQuizById(UUID quizId);
+    QuizResultDto submitQuiz(String userId, SubmitQuizRequest request);
+    List<QuizResultDto> getUserHistory(String userId);
+    QuizDto createQuiz(QuizDto quizDto);
+    void deleteQuiz(UUID quizId);
 }

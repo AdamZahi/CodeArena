@@ -43,17 +43,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable(name = "id") UUID id) {
         return ResponseEntity.ok(userService.getById(id));
     }
 
     @PatchMapping("/{id}/role")
-    public ResponseEntity<UserResponseDTO> updateRole(@PathVariable UUID id, @RequestParam Role role) {
+    public ResponseEntity<UserResponseDTO> updateRole(@PathVariable(name = "id") UUID id,
+            @RequestParam(name = "role") Role role) {
         return ResponseEntity.ok(userService.updateRole(id, role));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable(name = "id") UUID id) {
         userService.softDelete(id);
         return ResponseEntity.noContent().build();
     }

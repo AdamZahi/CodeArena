@@ -33,6 +33,10 @@ export class LoginComponent {
 
   loginWithEmail(): void {
     void this.auth.loginWithRedirect({
+      authorizationParams: { 
+        connection: 'Username-Password-Authentication',
+        prompt: 'login'
+      },
       appState: { target: this.returnUrl }
     });
   }
