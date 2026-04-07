@@ -32,7 +32,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
             return Collections.emptySet();
         }
 
-        return userRepository.findByKeycloakId(sub)
+        return userRepository.findByAuth0Id(sub)
                 .map(User::getRole)
                 .map(role -> (Collection<GrantedAuthority>) java.util.Set.<GrantedAuthority>of(
                         new SimpleGrantedAuthority("ROLE_" + role.name())

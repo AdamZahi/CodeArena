@@ -123,7 +123,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         try {
             // ── LOOK UP REAL EMAIL FROM USERS TABLE ───────
             String participantEmail = userRepository
-                    .findByKeycloakId(request.getParticipantId())
+                    .findByAuth0Id(request.getParticipantId())
                     .map(user -> user.getEmail())
                     .orElse(null);
 

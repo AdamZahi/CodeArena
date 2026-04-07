@@ -31,14 +31,11 @@ spring:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
 
-keycloak:
-  realm: code-arena
-  client-id: code-arena-backend
-  server-url: http://localhost:8081
+
+
 
 app:
   cors:
-    allowed-origins:
-      - http://localhost:4200
+    allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
