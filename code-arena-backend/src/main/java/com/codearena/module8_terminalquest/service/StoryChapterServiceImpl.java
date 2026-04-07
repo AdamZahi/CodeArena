@@ -6,6 +6,7 @@ import com.codearena.module8_terminalquest.dto.StoryLevelDto;
 import com.codearena.module8_terminalquest.dto.StoryMissionDto;
 import com.codearena.module8_terminalquest.entity.StoryChapter;
 import com.codearena.module8_terminalquest.repository.StoryChapterRepository;
+import com.codearena.module8_terminalquest.tts.SpeakerRotation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,11 +43,14 @@ public class StoryChapterServiceImpl implements StoryChapterService {
     @Override
     @Transactional
     public StoryChapterDto createChapter(CreateStoryChapterRequest request) {
+        SpeakerRotation.Speaker sp = SpeakerRotation.getSpeakerForChapter(request.getOrderIndex());
         StoryChapter chapter = StoryChapter.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .orderIndex(request.getOrderIndex())
                 .isLocked(request.isLocked())
+                .speakerName(sp.name())
+                .speakerVoice(sp.voice())
                 .build();
         return toDto(storyChapterRepository.save(chapter));
     }
@@ -85,21 +89,32 @@ public class StoryChapterServiceImpl implements StoryChapterService {
                         .build())
                 .collect(Collectors.toList());
 
+        // Boss missions speak with the fixed boss speaker; others inherit the chapter speaker
         List<StoryMissionDto> missionDtos = chapter.getMissions().stream()
                 .sorted((a, b) -> Integer.compare(a.getOrderIndex(), b.getOrderIndex()))
-                .map(mission -> StoryMissionDto.builder()
-                        .id(mission.getId())
-                        .chapterId(chapter.getId())
-                        .title(mission.getTitle())
-                        .context(mission.getContext())
-                        .task(mission.getTask())
-                        .hint(mission.getHint())
-                        .orderIndex(mission.getOrderIndex())
-                        .difficulty(mission.getDifficulty())
-                        .isBoss(mission.isBoss())
-                        .xpReward(mission.getXpReward())
-                        .createdAt(mission.getCreatedAt())
-                        .build())
+                .map(mission -> {
+                    String mSpeakerName  = mission.isBoss()
+                            ? SpeakerRotation.getBossSpeaker().name()
+                            : chapter.getSpeakerName();
+                    String mSpeakerVoice = mission.isBoss()
+                            ? SpeakerRotation.getBossSpeaker().voice()
+                            : chapter.getSpeakerVoice();
+                    return StoryMissionDto.builder()
+                            .id(mission.getId())
+                            .chapterId(chapter.getId())
+                            .title(mission.getTitle())
+                            .context(mission.getContext())
+                            .task(mission.getTask())
+                            .hint(mission.getHint())
+                            .orderIndex(mission.getOrderIndex())
+                            .difficulty(mission.getDifficulty())
+                            .isBoss(mission.isBoss())
+                            .xpReward(mission.getXpReward())
+                            .speakerName(mSpeakerName)
+                            .speakerVoice(mSpeakerVoice)
+                            .createdAt(mission.getCreatedAt())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return StoryChapterDto.builder()
@@ -108,6 +123,8 @@ public class StoryChapterServiceImpl implements StoryChapterService {
                 .description(chapter.getDescription())
                 .orderIndex(chapter.getOrderIndex())
                 .isLocked(chapter.isLocked())
+                .speakerName(chapter.getSpeakerName())
+                .speakerVoice(chapter.getSpeakerVoice())
                 .createdAt(chapter.getCreatedAt())
                 .levels(levelDtos)
                 .missions(missionDtos)

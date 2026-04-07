@@ -6,10 +6,13 @@ import com.codearena.module8_terminalquest.entity.StoryChapter;
 import com.codearena.module8_terminalquest.entity.StoryMission;
 import com.codearena.module8_terminalquest.repository.StoryChapterRepository;
 import com.codearena.module8_terminalquest.repository.StoryMissionRepository;
+import com.codearena.module8_terminalquest.tts.SpeakerRotation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +39,8 @@ public class StoryMissionServiceImpl implements StoryMissionService {
     @Transactional(readOnly = true)
     public StoryMissionDto getMissionById(UUID id) {
         StoryMission mission = storyMissionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mission not found: " + id));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Mission not found: " + id));
         return toDto(mission);
     }
 
@@ -91,9 +95,18 @@ public class StoryMissionServiceImpl implements StoryMissionService {
     }
 
     StoryMissionDto toDto(StoryMission mission) {
+        StoryChapter chapter = mission.getChapter();
+        // Boss missions always speak with the dedicated boss speaker
+        String speakerName  = mission.isBoss()
+                ? SpeakerRotation.getBossSpeaker().name()
+                : chapter.getSpeakerName();
+        String speakerVoice = mission.isBoss()
+                ? SpeakerRotation.getBossSpeaker().voice()
+                : chapter.getSpeakerVoice();
+
         return StoryMissionDto.builder()
                 .id(mission.getId())
-                .chapterId(mission.getChapter().getId())
+                .chapterId(chapter.getId())
                 .title(mission.getTitle())
                 .context(mission.getContext())
                 .task(mission.getTask())
@@ -102,6 +115,8 @@ public class StoryMissionServiceImpl implements StoryMissionService {
                 .difficulty(mission.getDifficulty())
                 .isBoss(mission.isBoss())
                 .xpReward(mission.getXpReward())
+                .speakerName(speakerName)
+                .speakerVoice(speakerVoice)
                 .createdAt(mission.getCreatedAt())
                 .build();
     }

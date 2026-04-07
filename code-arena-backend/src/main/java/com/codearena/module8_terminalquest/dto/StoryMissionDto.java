@@ -25,6 +25,8 @@ public class StoryMissionDto {
     @JsonProperty("isBoss")
     private boolean isBoss;
     private int xpReward;
+    private String speakerName;
+    private String speakerVoice;
     private Instant createdAt;
     // acceptedAnswers intentionally excluded (server-side validation only)
 }

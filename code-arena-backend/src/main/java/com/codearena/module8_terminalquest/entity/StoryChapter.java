@@ -34,6 +34,10 @@ public class StoryChapter {
 
     private boolean isLocked;
 
+    private String speakerName;
+
+    private String speakerVoice;
+
     @CreationTimestamp
     private Instant createdAt;
 

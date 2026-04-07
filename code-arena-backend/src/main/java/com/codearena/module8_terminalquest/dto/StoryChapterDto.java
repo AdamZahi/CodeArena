@@ -21,6 +21,8 @@ public class StoryChapterDto {
     private int orderIndex;
     @JsonProperty("isLocked")
     private boolean isLocked;
+    private String speakerName;
+    private String speakerVoice;
     private Instant createdAt;
     private List<StoryLevelDto> levels;
     private List<StoryMissionDto> missions;
