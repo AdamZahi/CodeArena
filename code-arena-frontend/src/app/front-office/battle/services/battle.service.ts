@@ -17,6 +17,8 @@ import {
   SubmissionResultResponse,
   PostMatchSummaryResponse,
   ActivityRequest,
+  ShareUrlResponse,
+  SharedResultDTO,
 } from '../models/battle-room.model';
 
 @Injectable({ providedIn: 'root' })
@@ -99,5 +101,15 @@ export class BattleService extends ApiService {
 
   getScoreboard(roomId: string): Observable<PostMatchSummaryResponse> {
     return this.http.get<PostMatchSummaryResponse>(`${this.baseUrl}/results/${roomId}/scoreboard`);
+  }
+
+  // ── Shareable Result endpoints ────────────────────────────
+
+  createShareToken(roomId: string): Observable<ShareUrlResponse> {
+    return this.http.post<ShareUrlResponse>(`${this.baseUrl}/results/${roomId}/share`, {});
+  }
+
+  getSharedResult(token: string): Observable<SharedResultDTO> {
+    return this.http.get<SharedResultDTO>(`${this.baseUrl}/results/share/${token}`);
   }
 }

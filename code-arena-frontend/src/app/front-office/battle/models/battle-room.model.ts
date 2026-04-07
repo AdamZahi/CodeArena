@@ -70,6 +70,27 @@ export interface BattleRoomResponse {
 
 // ── Lobby payloads ───────────────────────────────────────────
 
+export interface ShareUrlResponse {
+  shareUrl: string;
+}
+
+export interface SharedParticipantResult {
+  displayName: string;
+  rank: number;
+  totalScore: number;
+  challengesSolved: number;
+  totalChallenges: number;
+  badgesEarned: string[];
+  eloChange: number | null;
+  newTier: string | null;
+}
+
+export interface SharedResultDTO {
+  modeName: string;
+  matchFinishedAt: string;
+  standings: SharedParticipantResult[];
+}
+
 export interface LobbyChallengeSummary {
   index: number;
   difficulty: string;
@@ -281,6 +302,11 @@ export interface PlayerScoreResponse {
   eloChange: number;
   newElo: number;
   newTier: string;
+  eloBefore: number | null;
+  eloAfter: number | null;
+  tierBefore: string | null;
+  tierAfter: string | null;
+  tierChanged: boolean;
   challengeBreakdowns: ScoreBreakdownResponse[];
   badgesAwarded: string[];
   isWinner: boolean;
