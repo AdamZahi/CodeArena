@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { TimerAudioService } from '../../services/timer-audio.service';
+import { TtsService } from '../../services/tts.service';
+import { MissionVoiceService } from '../../services/mission-voice.service';
+import { CommandExplainerService } from '../../services/command-explainer.service';
 import { StoryMission, SubmitAnswerResponse } from '../../models/terminal-quest.model';
 
 interface TerminalLine {
@@ -39,6 +42,9 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
   isDanger = false;
   colonBlink = false;
 
+  explanation = '';
+  isExplaining = false;
+
   readonly ledRange = [1, 2, 3, 4, 5];
   readonly userId = 'test-user-001';
   private missionId = '';
@@ -47,7 +53,10 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private tqService: TerminalQuestService,
-    private audio: TimerAudioService
+    public audio: TimerAudioService,
+    public ttsService: TtsService,
+    private missionVoice: MissionVoiceService,
+    private explainerService: CommandExplainerService
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +68,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
         this.mission = mission;
         this.isLoading = false;
         this.addLine('System ready. Type your command below.', 'info');
+        this.missionVoice.playMissionIntro(mission);
         this.totalTime = this.audio.getTimeForDifficulty(mission.difficulty, mission.isBoss);
         this.timeRemaining = this.totalTime;
         this.startTimer();
@@ -72,6 +82,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearTimer();
+    this.ttsService.stop();
   }
 
   private startTimer(): void {
@@ -92,6 +103,8 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
       } else if (this.timeRemaining <= 15 && this.timeRemaining > 5) {
         this.isTimeCritical = true;
         this.audio.playTick();
+      } else if (this.timeRemaining > 15) {
+        this.audio.playBaseTick();
       }
 
       if (this.timeRemaining <= 0) {
@@ -125,6 +138,8 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
     this.colonBlink = false;
     this.currentCommand = '';
     this.commandHistory = [];
+    this.explanation = '';
+    this.isExplaining = false;
     this.addLine('System ready. Type your command below.', 'info');
     this.timeRemaining = this.totalTime;
     this.startTimer();
@@ -149,12 +164,21 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
           this.clearTimer();
           this.speedBonus = this.timeRemaining > this.totalTime * 0.8;
           this.audio.playSuccessSound();
+          this.missionVoice.playCorrectAnswer(res.starsEarned);
         } else {
           this.audio.playErrorSound();
+          this.missionVoice.playWrongAnswer(res.attempts);
         }
 
         this.addLine(res.correct ? `✓ ${res.message}` : `✗ ${res.message}`, res.correct ? 'success' : 'error');
         this.scrollTerminal();
+
+        this.explanation = '';
+        this.isExplaining = true;
+        this.explainerService.explain(cmd, this.mission!.task, this.mission!.context, this.mission!.difficulty, res.correct).subscribe({
+          next: (r) => { this.explanation = r.explanation; this.isExplaining = false; },
+          error: ()  => { this.isExplaining = false; }
+        });
       },
       error: () => {
         this.isSubmitting = false;
@@ -170,6 +194,17 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
 
   backToMap(): void {
     this.router.navigate(['/terminal-quest/story']);
+  }
+
+  getSpeakerRole(): string {
+    const name = this.mission?.speakerName ?? '';
+    if (name.includes('Sarah'))    return '// DevOps Lead — NexaTech';
+    if (name.includes('Lina'))     return '// Cloud Architect — NexaTech';
+    if (name.includes('Alex'))     return '// SRE Engineer — NexaTech';
+    if (name.includes('Nadia'))    return '// Security Analyst — NexaTech';
+    if (name.includes('Karim'))    return '// Platform Engineer — NexaTech';
+    if (name.includes('Directeur')) return '// CTO — NexaTech';
+    return '// NexaTech Engineering';
   }
 
   getStarDisplay(stars: number): string[] {

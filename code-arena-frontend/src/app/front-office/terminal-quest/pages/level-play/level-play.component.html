@@ -2,7 +2,10 @@
 
   <!-- ── NAV ───────────────────────────────────────── -->
   <div class="page-nav">
-    <button class="back-btn" (click)="backToMap()">&#8592; BACK TO MAP</button>
+    <button class="back-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick(); backToMap()">&#8592; BACK TO MAP</button>
+    <button class="mute-btn" (click)="ttsService.toggleMute()" [title]="ttsService.isMuted ? 'Unmute voice' : 'Mute voice'">
+      {{ ttsService.isMuted ? '🔇' : '🔊' }}
+    </button>
   </div>
 
   <!-- ── LOADING ───────────────────────────────────── -->
@@ -47,8 +50,8 @@
       <div class="dialogue-header">
         <div class="npc-avatar">👤</div>
         <div class="npc-info">
-          <span class="npc-name">DevOps Lead</span>
-          <span class="npc-role">// NexaTech Infrastructure</span>
+          <span class="npc-name">{{ mission.speakerName || 'DevOps Lead' }}</span>
+          <span class="npc-role">{{ getSpeakerRole() }}</span>
         </div>
       </div>
       <p class="dialogue-text">{{ mission.context }}</p>
@@ -62,7 +65,7 @@
 
     <!-- ── HINT ──────────────────────────────────────── -->
     <div class="hint-section">
-      <button class="hint-btn" (click)="toggleHint()">
+      <button class="hint-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick(); toggleHint()">
         {{ showHint ? '&#9660; HIDE HINT' : '&#9654; SHOW HINT' }}
       </button>
       <div class="hint-block" *ngIf="showHint">
@@ -104,11 +107,25 @@
           spellcheck="false" />
         <button
           class="execute-btn"
-          (click)="executeCommand()"
+          (mouseenter)="audio.playHover()"
+          (click)="audio.playClick(); executeCommand()"
           [disabled]="isSubmitting || !currentCommand.trim()">
           EXECUTE
         </button>
       </div>
+    </div>
+
+    <!-- ── AI COMMAND ANALYSIS ───────────────────────── -->
+    <div class="ai-explain-block" *ngIf="isExplaining || explanation">
+      <div class="ai-explain-header">
+        <span class="ai-icon">🤖</span>
+        <span class="ai-label">AI COMMAND ANALYSIS</span>
+      </div>
+      <div class="ai-explain-loader" *ngIf="isExplaining">
+        <span class="dot-blink">.</span><span class="dot-blink delay-1">.</span><span class="dot-blink delay-2">.</span>
+        Analyzing command...
+      </div>
+      <p class="ai-explain-text" *ngIf="!isExplaining && explanation">{{ explanation }}</p>
     </div>
 
     <!-- ── SUCCESS BLOCK ──────────────────────────────── -->
@@ -123,7 +140,7 @@
       <div class="success-xp">+{{ result.xpEarned }} XP EARNED</div>
       <div class="speed-bonus" *ngIf="speedBonus">&#9889; SPEED BONUS! +50% XP</div>
       <div class="success-actions">
-        <button class="btn-primary" (click)="backToMap()">&#8592; BACK TO MAP</button>
+        <button class="btn-primary" (mouseenter)="audio.playHover()" (click)="audio.playClick(); backToMap()">&#8592; BACK TO MAP</button>
       </div>
     </div>
 
@@ -136,8 +153,8 @@
       <div class="timeout-title">SYSTEM FAILURE</div>
       <div class="timeout-sub">Time expired — mission aborted.</div>
       <div class="timeout-actions">
-        <button class="btn-retry" (click)="retryMission()">&#8635; RETRY</button>
-        <button class="btn-back" (click)="backToMap()">&#8592; MAP</button>
+        <button class="btn-retry" (mouseenter)="audio.playHover()" (click)="audio.playMissionEntry(); retryMission()">&#8635; RETRY</button>
+        <button class="btn-back" (mouseenter)="audio.playHover()" (click)="audio.playClick(); backToMap()">&#8592; MAP</button>
       </div>
     </div>
   </div>
