@@ -8,4 +8,8 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByAuth0Id(String auth0Id);
+
+    default Optional<User> findByKeycloakId(String keycloakId) {
+        return findByAuth0Id(keycloakId);
+    }
 }

@@ -567,7 +567,7 @@ public class BattleScoringService {
         List<PlayerScoreResponse> standings = sorted.stream().map(player -> {
             String pid = player.getId().toString();
             String username = resolveUsername(player.getUserId());
-            String avatarUrl = userRepository.findByKeycloakId(player.getUserId())
+            String avatarUrl = userRepository.findByAuth0Id(player.getUserId())
                     .map(User::getAvatarUrl).orElse(null);
 
             return PlayerScoreResponse.builder()
@@ -626,7 +626,7 @@ public class BattleScoringService {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
+        return userRepository.findByAuth0Id(userId)
                 .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
                 .orElse(userId);
     }
