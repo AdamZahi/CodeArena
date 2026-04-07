@@ -2,12 +2,14 @@
   "name": "code-arena-frontend",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
-  },
+  "ng": "ng",
+  "start": "ng serve",
+  "build": "ng build",
+  "watch": "ng build --watch --configuration development",
+  "test": "ng test",
+  "test:ci": "ng test --watch=false --code-coverage --browsers=ChromeHeadless",
+  "sonar": "sonar"
+},
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.2.0",
@@ -33,6 +35,7 @@
     "@angular-devkit/build-angular": "^18.2.21",
     "@angular/cli": "^18.2.21",
     "@angular/compiler-cli": "^18.2.0",
+    "@sonar/scan": "^4.3.5",
     "@types/canvas-confetti": "^1.9.0",
     "@types/jasmine": "~5.1.0",
     "@types/leaflet": "^1.9.21",

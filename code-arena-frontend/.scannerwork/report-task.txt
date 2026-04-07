@@ -1,0 +1,6 @@
+projectKey=codearena-frontend
+serverUrl=http://localhost:9000
+serverVersion=26.3.0.120487
+dashboardUrl=http://localhost:9000/dashboard?id=codearena-frontend
+ceTaskId=bdd90ea1-c6dd-41ef-87c0-a19f9c76c770
+ceTaskUrl=http://localhost:9000/api/ce/task?id=bdd90ea1-c6dd-41ef-87c0-a19f9c76c770
