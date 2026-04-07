@@ -2,6 +2,7 @@ export interface ProgrammingEvent {
   id: string;
   title: string;
   description: string;
+  location?: string;
   organizerId: string;
   status: string;
   startDate: string;
