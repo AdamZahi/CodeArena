@@ -61,29 +61,26 @@ export class CartComponent implements OnInit {
 aiOrderMessage: string = '';
 isLoadingAiMessage: boolean = false;
 //
-  ngOnInit(): void {
-    this.cartService.cartItems$.subscribe(items => {
-      this.cartItems = items;
-      this.total = this.cartService.getTotal();
-    });
+ ngOnInit(): void {
+  this.cartService.cartItems$.subscribe(items => {
+    this.cartItems = items;
+    this.total = this.cartService.getTotal();
+  });
 
-    // ── LOAD LOYALTY POINTS ──────────────────────
-    this.auth.user$.pipe(take(1)).subscribe(user => {
-      if (user?.sub) {
-        this.participantId = user.sub;
-        this.loadLoyaltyPoints();
-      }
-    });
-  }
+  // Load loyalty points — backend reads user from JWT automatically
+  this.loadLoyaltyPoints();
+}
 
-  loadLoyaltyPoints(): void {
-    this.shopService.getLoyaltyPoints(this.participantId).subscribe({
-      next: (res) => {
-        this.loyaltyPoints = res.data.points;
-        this.loyaltyRedeemableValue = res.data.redeemableValue;
-      }
-    });
-  }
+
+loadLoyaltyPoints(): void {
+  this.shopService.getLoyaltyPoints().subscribe({
+    next: (res) => {
+      this.loyaltyPoints = res.data.points;
+      this.loyaltyRedeemableValue = res.data.redeemableValue;
+    },
+    error: (err) => console.error('Failed to load loyalty points', err)
+  });
+}
 
   removeItem(productId: string): void {
     this.cartService.removeFromCart(productId);
@@ -333,22 +330,23 @@ onSuccess(): void {
   }
 
   // ── REDEEM LOYALTY POINTS ─────────────────────
-  applyLoyaltyPoints(): void {
-    if (!this.loyaltyRedeemableValue || this.loyaltyApplied) return;
+applyLoyaltyPoints(): void {
+  if (!this.loyaltyRedeemableValue || this.loyaltyApplied) return;
+  const pointsToRedeem = Math.floor(this.loyaltyPoints / 100) * 100;
 
-    const pointsToRedeem = Math.floor(this.loyaltyPoints / 100) * 100;
+  this.shopService.redeemPoints(pointsToRedeem).subscribe({
+    // Only send points — participantId removed
+    next: (res) => {
+      this.loyaltyApplied = true;
+      this.loyaltyDiscount = res.data.discount;
+      this.loyaltyPoints = res.data.remainingPoints;
+      this.loyaltyRedeemableValue = 0;
+      this.loyaltyMessage = `✅ ${pointsToRedeem} points redeemed for $${res.data.discount.toFixed(2)} off!`;
+    },
+    error: (err) => console.error('Redeem failed', err)
+  });
+}
 
-    this.shopService.redeemPoints(this.participantId, pointsToRedeem).subscribe({
-      next: (res) => {
-        this.loyaltyApplied = true;
-        this.loyaltyDiscount = res.data.discount;
-        this.loyaltyPoints = res.data.remainingPoints;
-        this.loyaltyRedeemableValue = 0;
-        this.loyaltyMessage = `✅ ${pointsToRedeem} points redeemed for $${res.data.discount.toFixed(2)} off!`;
-      },
-      error: (err) => console.error('Redeem failed', err)
-    });
-  }
 
   removeLoyaltyDiscount(): void {
     this.loyaltyApplied = false;

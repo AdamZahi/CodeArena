@@ -27,28 +27,25 @@ export class MyInventoryComponent implements OnInit {
   ) {}
 
 ngOnInit(): void {
-  this.auth.user$.pipe(take(1)).subscribe(user => {
-    const sub = user?.sub;
-    if (!sub) return; // not logged in, do nothing
-    this.participantId = sub;
-    this.loadOrders();
+  this.loadOrders();
+  // No need to wait for user.sub — backend reads from JWT automatically
+}
+
+loadOrders(): void {
+  this.isLoading = true;
+  this.shopService.getMyOrders().subscribe({
+    // No participantId argument — removed
+    next: (res) => {
+      this.orders = res.data || [];
+      this.isLoading = false;
+    },
+    error: () => {
+      this.orders = [];
+      this.isLoading = false;
+    }
   });
 }
 
-  // Load orders for this participant
-  loadOrders(): void {
-    this.isLoading = true;
-    this.shopService.getMyOrders(this.participantId).subscribe({
-      next: (res) => {
-        this.orders = res.data || [];
-        this.isLoading = false;
-      },
-      error: () => {
-        this.orders = [];
-        this.isLoading = false;
-      }
-    });
-  }
 
   // Open order detail modal + load QR
   viewOrder(order: Order): void {
