@@ -9,7 +9,7 @@
     </div>
     <div class="wave-display">WAVE {{ wave }}</div>
     <div class="score-display">SCORE: {{ score }}</div>
-    <button class="abandon-btn" (click)="abandon()" [disabled]="gameOver || isLoading">
+    <button class="abandon-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick(); abandon()" [disabled]="gameOver || isLoading">
       ABANDON
     </button>
   </div>
@@ -88,7 +88,8 @@
           spellcheck="false" />
         <button
           class="execute-btn"
-          (click)="executeCommand()"
+          (mouseenter)="audio.playHover()"
+          (click)="audio.playClick(); executeCommand()"
           [disabled]="isSubmitting || !currentCommand.trim()">
           EXECUTE
         </button>
@@ -113,8 +114,8 @@
       </div>
       <p class="go-message">{{ gameOverStats.message }}</p>
       <div class="go-actions">
-        <button class="btn-primary" (click)="playAgain()">&#9654; PLAY AGAIN</button>
-        <button class="btn-secondary" (click)="goToLeaderboard()">&#127942; LEADERBOARD</button>
+        <button class="btn-primary" (mouseenter)="audio.playHover()" (click)="audio.playClick(); playAgain()">&#9654; PLAY AGAIN</button>
+        <button class="btn-secondary" (mouseenter)="audio.playHover()" (click)="audio.playClick(); goToLeaderboard()">&#127942; LEADERBOARD</button>
       </div>
     </div>
   </div>

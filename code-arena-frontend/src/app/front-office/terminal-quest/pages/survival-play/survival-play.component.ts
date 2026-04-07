@@ -50,7 +50,7 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
   constructor(
     private tqService: TerminalQuestService,
     private router: Router,
-    private audio: TimerAudioService
+    public audio: TimerAudioService
   ) {}
 
   ngOnInit(): void {
@@ -88,6 +88,8 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
       } else if (this.timeRemaining <= 15 && this.timeRemaining > 5) {
         this.isTimeCritical = true;
         this.audio.playTick();
+      } else if (this.timeRemaining > 15) {
+        this.audio.playBaseTick();
       }
 
       if (this.timeRemaining <= 0) {

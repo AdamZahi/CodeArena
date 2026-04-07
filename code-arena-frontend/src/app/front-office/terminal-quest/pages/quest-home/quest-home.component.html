@@ -11,7 +11,7 @@
   <div class="mode-grid">
 
     <!-- STORY MODE -->
-    <a routerLink="/terminal-quest/story" class="mode-card story-card">
+    <a routerLink="/terminal-quest/story" class="mode-card story-card" (mouseenter)="audio.playHover()" (click)="audio.playClick()">
       <div class="card-glow"></div>
       <div class="card-icon">📖</div>
       <h2 class="card-title">STORY MODE</h2>
@@ -25,7 +25,7 @@
     </a>
 
     <!-- SURVIVAL MODE -->
-    <a routerLink="/terminal-quest/survival" class="mode-card survival-card">
+    <a routerLink="/terminal-quest/survival" class="mode-card survival-card" (mouseenter)="audio.playHover()" (click)="audio.playClick()">
       <div class="card-glow cyan"></div>
       <div class="card-icon">⚔</div>
       <h2 class="card-title">SURVIVAL MODE</h2>
@@ -42,7 +42,7 @@
 
   <!-- ── LEADERBOARD LINK ───────────────────────────── -->
   <div class="lb-row">
-    <a routerLink="/terminal-quest/survival/leaderboard" class="lb-btn">
+    <a routerLink="/terminal-quest/survival/leaderboard" class="lb-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick()">
       🏆 VIEW LEADERBOARD
     </a>
   </div>

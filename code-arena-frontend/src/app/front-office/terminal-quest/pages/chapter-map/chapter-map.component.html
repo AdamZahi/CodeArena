@@ -1,7 +1,7 @@
 <div class="progression-screen">
 
   <!-- Fixed back button -->
-  <a routerLink="/terminal-quest" class="back-btn-fixed">&#8592; TERMINAL QUEST</a>
+  <a routerLink="/terminal-quest" class="back-btn-fixed" (mouseenter)="audio.playHover()" (click)="audio.playClick()">&#8592; TERMINAL QUEST</a>
 
   <!-- Loading -->
   <div class="loading-state" *ngIf="isLoading">
@@ -41,6 +41,7 @@
             <!-- Mission row -->
             <div class="mission-wrapper"
                  [class.is-boss]="mission.isBoss"
+                 (mouseenter)="!isMissionLocked(mission, chapter, i) && audio.playHover()"
                  (click)="selectMission(mission, chapter, i)">
 
               <!-- Left info (even index) -->
@@ -132,7 +133,7 @@
   <div class="mission-panel" [class.open]="showMissionPanel" *ngIf="selectedMission">
 
     <!-- Close button -->
-    <button class="panel-close" (click)="closeMissionPanel()">&#10005;</button>
+    <button class="panel-close" (mouseenter)="audio.playHover()" (click)="audio.playClick(); closeMissionPanel()">&#10005;</button>
 
     <!-- Mission header -->
     <div class="panel-header">
@@ -201,7 +202,7 @@
     <div class="panel-divider"></div>
 
     <!-- Play button -->
-    <button class="panel-play-btn" (click)="playMission()">
+    <button class="panel-play-btn" (mouseenter)="audio.playHover()" (click)="audio.playMissionEntry(); playMission()">
       {{ selectedMissionProgress?.completed ? '&#8635; REPLAY MISSION' : '&#9654; START MISSION' }}
     </button>
 

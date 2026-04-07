@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
+import { TimerAudioService } from '../../services/timer-audio.service';
 import { StoryChapter, StoryMission, LevelProgress } from '../../models/terminal-quest.model';
 
 @Component({
@@ -11,7 +12,7 @@ import { StoryChapter, StoryMission, LevelProgress } from '../../models/terminal
   templateUrl: './chapter-map.component.html',
   styleUrls: ['./chapter-map.component.css']
 })
-export class ChapterMapComponent implements OnInit {
+export class ChapterMapComponent implements OnInit, OnDestroy {
   chapters: StoryChapter[] = [];
   progressMap = new Map<string, LevelProgress>();
   isLoading = true;
@@ -23,16 +24,28 @@ export class ChapterMapComponent implements OnInit {
   readonly userId   = 'test-user-001';
   readonly starRange = [1, 2, 3];
 
+  private bgMusic = new Audio('assets/dex.mp3');
+
   constructor(
     private tqService: TerminalQuestService,
-    private router: Router
+    private router: Router,
+    public audio: TimerAudioService
   ) {}
 
   ngOnInit(): void {
+    this.bgMusic.loop = true;
+    this.bgMusic.volume = 0.4;
+    this.bgMusic.play().catch(() => {});
+
     this.tqService.getChapters().subscribe({
       next: (chapters) => { this.chapters = chapters; this.loadProgress(); },
       error: () => { this.isLoading = false; }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.bgMusic.pause();
+    this.bgMusic.currentTime = 0;
   }
 
   private loadProgress(): void {
@@ -87,6 +100,7 @@ export class ChapterMapComponent implements OnInit {
 
   selectMission(mission: StoryMission, chapter: StoryChapter, chapterIndex: number): void {
     if (this.isMissionLocked(mission, chapter, chapterIndex)) return;
+    this.audio.playClick();
     this.selectedMission = mission;
     this.selectedMissionProgress = this.progressMap.get(mission.id) ?? null;
     this.showMissionPanel = true;
