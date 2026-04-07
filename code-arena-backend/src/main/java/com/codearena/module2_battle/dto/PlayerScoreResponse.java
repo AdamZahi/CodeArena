@@ -22,6 +22,12 @@ public class PlayerScoreResponse {
     private int eloChange;
     private int newElo;
     private String newTier;
+    private Integer eloBefore;
+    private Integer eloAfter;
+    private String tierBefore;
+    private String tierAfter;
+    @JsonProperty("tierChanged")
+    private boolean tierChanged;
     private List<ScoreBreakdownResponse> challengeBreakdowns;
     private List<String> badgesAwarded;
     @JsonProperty("isWinner")
