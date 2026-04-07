@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         if (jwt == null) {
             return buildAnonymousUser();
         }
-        User user = userRepository.findByKeycloakId(jwt.getSubject())
+        User user = userRepository.findByAuth0Id(jwt.getSubject())
             .orElse(null);
         if (user == null) {
             return buildAnonymousUser();
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         if (jwt == null) {
             return buildAnonymousUser();
         }
-        User user = userRepository.findByKeycloakId(jwt.getSubject())
+        User user = userRepository.findByAuth0Id(jwt.getSubject())
             .orElse(null);
         if (user == null) {
             return buildAnonymousUser();
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setRole(role);
         User saved = userRepository.save(user);
-        auth0ManagementService.updateUserRole(user.getKeycloakId(), role.name());
+        auth0ManagementService.updateUserRole(user.getAuth0Id(), role.name());
         return userMapper.toResponse(saved);
     }
 
@@ -89,10 +89,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void syncFromJwt(Jwt jwt) {
-        User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
+        User user = userRepository.findByAuth0Id(jwt.getSubject()).orElse(null);
         if (user == null) {
             user = User.builder()
-                .keycloakId(jwt.getSubject())
+                .auth0Id(jwt.getSubject())
                 .email(jwt.getClaimAsString("email"))
                 .firstName(jwt.getClaimAsString("given_name"))
                 .lastName(jwt.getClaimAsString("family_name"))

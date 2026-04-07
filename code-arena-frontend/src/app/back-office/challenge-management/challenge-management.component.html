@@ -103,6 +103,18 @@
             <input class="form-input" type="text" [(ngModel)]="formData.tags" name="tags" placeholder="e.g. arrays, hashmap" />
           </div>
 
+          <div class="form-group">
+            <label class="form-label">REQUIRED LANGUAGE</label>
+            <select class="form-input form-select" [(ngModel)]="formData.language" name="language">
+              <option value="">-- ANY LANGUAGE --</option>
+              <option value="62">Java (OpenJDK 13)</option>
+              <option value="71">Python (3.8)</option>
+              <option value="50">C (GCC 9.2)</option>
+              <option value="54">C++ (GCC 9.2)</option>
+              <option value="63">JavaScript (Node 12)</option>
+            </select>
+          </div>
+
           <!-- Test Cases Section -->
           <div class="form-group full-width" style="margin-top: 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">

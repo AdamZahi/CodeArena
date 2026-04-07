@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 
 export interface CurrentUser {
   id?: string;
-  keycloakId?: string;
+  auth0Id?: string;
   email?: string;
   firstName?: string;
   lastName?: string;

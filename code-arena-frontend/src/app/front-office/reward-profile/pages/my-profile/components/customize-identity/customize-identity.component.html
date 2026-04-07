@@ -32,7 +32,7 @@
             <div class="honor-circle active" 
                  *ngFor="let b of previewBadges"
                  [title]="b">
-                 <img [src]="'https://api.dicebear.com/7.x/jdenticon/svg?seed=' + b.replace('badge_', '')"
+                 <img [src]="'https://api.dicebear.com/7.x/identicon/svg?seed=' + b.replace('badge_', '')"
                       style="width: 100%; height: 100%;" />
             </div>
             <div class="honor-circle" *ngFor="let i of [].constructor(3 - previewBadges.length)"></div>
@@ -91,7 +91,7 @@
 
             <!-- Badge Display -->
             <ng-container *ngIf="activeTab === 'BADGES'">
-               <img [src]="item.imageUrl || 'https://api.dicebear.com/7.x/jdenticon/svg?seed=' + item.itemKey.replace('badge_', '')" 
+               <img [src]="item.imageUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + item.itemKey.replace('badge_', '')" 
                     style="width: 50px; height: 50px; pointer-events: none;" />
             </ng-container>
 

@@ -29,8 +29,8 @@ public class User {
     @UuidGenerator
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String keycloakId;
+    @Column(name = "keycloak_id", nullable = false, unique = true)
+    private String auth0Id;
 
     private String email;
     private String firstName;
