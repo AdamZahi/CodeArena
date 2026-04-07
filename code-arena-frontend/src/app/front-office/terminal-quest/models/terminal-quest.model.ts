@@ -9,6 +9,8 @@ export interface StoryMission {
   difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   isBoss: boolean;
   xpReward: number;
+  speakerName?: string;
+  speakerVoice?: string;
   createdAt: string;
 }
 
@@ -18,6 +20,8 @@ export interface StoryChapter {
   description: string;
   orderIndex: number;
   isLocked: boolean;
+  speakerName?: string;
+  speakerVoice?: string;
   createdAt: string;
   levels?: StoryLevel[];
   missions?: StoryMission[];
