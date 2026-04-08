@@ -27,6 +27,16 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
   message: string | null = null;
   error: string | null = null;
 
+  totalInvitations: number = 0;
+  pendingInvitations: number = 0;
+  acceptedInvitations: number = 0;
+  declinedInvitations: number = 0;
+
+  totalCandidatures: number = 0;
+  pendingCandidatures: number = 0;
+  acceptedCandidatures: number = 0;
+  rejectedCandidatures: number = 0;
+
   private subs = new Subscription();
 
   constructor(
@@ -50,7 +60,7 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/back-office/events']);
+    this.router.navigate(['/admin/events']);
   }
 
   acceptCandidature(id: string): void {
@@ -100,13 +110,25 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(participantSub);
 
     const candidatureSub = this.eventService.getCandidaturesByEvent(this.eventId).subscribe({
-      next: (c) => (this.candidatures = c),
+      next: (c) => {
+        this.candidatures = c;
+        this.totalCandidatures = this.candidatures.length;
+        this.pendingCandidatures = this.candidatures.filter((c) => c.status === 'PENDING').length;
+        this.acceptedCandidatures = this.candidatures.filter((c) => c.status === 'ACCEPTED').length;
+        this.rejectedCandidatures = this.candidatures.filter((c) => c.status === 'REJECTED').length;
+      },
       error: () => (this.candidatures = [])
     });
     this.subs.add(candidatureSub);
 
     const inviteSub = this.eventService.getMyInvitations().subscribe({
-      next: (inv) => (this.invitations = inv.filter((i) => i.eventId === this.eventId)),
+      next: (inv) => {
+        this.invitations = inv.filter((i) => i.eventId === this.eventId);
+        this.totalInvitations = this.invitations.length;
+        this.pendingInvitations = this.invitations.filter((i) => i.status === 'PENDING').length;
+        this.acceptedInvitations = this.invitations.filter((i) => i.status === 'ACCEPTED').length;
+        this.declinedInvitations = this.invitations.filter((i) => i.status === 'DECLINED').length;
+      },
       error: () => (this.invitations = [])
     });
     this.subs.add(inviteSub);

@@ -16,6 +16,7 @@ import com.codearena.module6_event.repository.EventInvitationRepository;
 import com.codearena.module6_event.repository.EventRegistrationRepository;
 import com.codearena.module6_event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RegistrationServiceImpl implements RegistrationService {
@@ -32,6 +36,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final EventMapper eventMapper;
     private final EventInvitationRepository invitationRepository;
     private final CandidatureService candidatureService;
+
+    @Qualifier("eventEmailService")
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -50,7 +57,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             case OPEN -> registration = registerOpen(event, participantId, existing);
             case EXCLUSIVE -> {
                 Optional<EventInvitation> invitation = invitationRepository
-                        .findByEventIdAndParticipantId(eventId, participantId);
+                        .findFirstByEventIdAndParticipantId(eventId, participantId);
                 boolean accepted = invitation.isPresent() && invitation.get().getStatus() == InvitationStatus.ACCEPTED;
 
                 if (accepted) {
@@ -98,6 +105,17 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
 
         EventRegistration saved = registrationRepository.save(registration);
+
+        if (saved.getStatus() == EventStatus.CONFIRMED && saved.getQrCode() != null) {
+            try {
+                String testEmail = "codearenapi@gmail.com";
+                emailService.sendRegistrationConfirmationEmail(testEmail, event.getTitle(), saved.getQrCode());
+                log.info("Registration confirmation email sent to {}", participantId);
+            } catch (Exception e) {
+                log.error("Failed to send registration confirmation email to {}", participantId, e);
+            }
+        }
+
         return eventMapper.toRegistrationResponseDTO(saved);
     }
 
@@ -185,6 +203,16 @@ public class RegistrationServiceImpl implements RegistrationService {
         event.setCurrentParticipants(current + 1);
         eventRepository.save(event);
         registrationRepository.save(promoted);
+
+        try {
+            String testEmail = "codearenapi@gmail.com";
+            emailService.sendRegistrationConfirmationEmail(testEmail, event.getTitle(), promoted.getQrCode());
+            log.info("Registration confirmation email sent to {} (promoted from waitlist)",
+                    promoted.getParticipantId());
+        } catch (Exception e) {
+            log.error("Failed to send registration confirmation email to {} (promoted from waitlist)",
+                    promoted.getParticipantId(), e);
+        }
     }
 
     private String generateQRCode(UUID eventId, String participantId) {

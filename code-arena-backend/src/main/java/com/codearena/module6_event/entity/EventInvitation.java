@@ -23,7 +23,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "event_invitations")
+@Table(name = "event_invitations", uniqueConstraints = {
+    @jakarta.persistence.UniqueConstraint(columnNames = {"event_id", "participant_id"})
+})
 public class EventInvitation {
 
     @Id
