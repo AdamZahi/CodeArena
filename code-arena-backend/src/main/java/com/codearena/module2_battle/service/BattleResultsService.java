@@ -2,7 +2,12 @@ package com.codearena.module2_battle.service;
 
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.PostMatchSummaryResponse;
+import com.codearena.module2_battle.dto.ReplayResponse;
+import com.codearena.module2_battle.dto.SeasonLeaderboardResponse;
+import com.codearena.module2_battle.dto.SeasonLeaderboardEntryResponse;
+import com.codearena.module2_battle.dto.ReplaySubmissionResponse;
+import com.codearena.module2_battle.dto.ArenaChallengeResponse;
 import com.codearena.module2_battle.entity.*;
 import com.codearena.module2_battle.enums.BattleRoomStatus;
 import com.codearena.module2_battle.enums.ParticipantRole;
@@ -21,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.codearena.module2_battle.util.UserDisplayUtils;
 
 /**
  * Read-only service for post-match queries (scoreboard, replay, leaderboard).
@@ -178,7 +184,7 @@ public class BattleResultsService {
 
             if (rank <= 50) {
                 String username = resolveUsername(rating.getUserId());
-                String avatarUrl = userRepository.findByKeycloakId(rating.getUserId())
+                String avatarUrl = userRepository.findByAuth0Id(rating.getUserId())
                         .map(User::getAvatarUrl).orElse(null);
 
                 entries.add(SeasonLeaderboardEntryResponse.builder()
@@ -219,7 +225,7 @@ public class BattleResultsService {
             PlayerRating rating = allRatings.get(i);
             if (rating.getUserId().equals(userId)) {
                 String username = resolveUsername(userId);
-                String avatarUrl = userRepository.findByKeycloakId(userId)
+                String avatarUrl = userRepository.findByAuth0Id(userId)
                         .map(User::getAvatarUrl).orElse(null);
 
                 return SeasonLeaderboardEntryResponse.builder()
@@ -253,8 +259,6 @@ public class BattleResultsService {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
 }

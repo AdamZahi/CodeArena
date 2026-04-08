@@ -75,6 +75,8 @@ export class BattleWebsocketService implements OnDestroy {
       brokerURL: `${wsProtocol}://${host}/ws/websocket`,
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
+      heartbeatIncoming: 0,
+      heartbeatOutgoing: 0,
 
       onConnect: () => {
         console.log('[BattleWS] Connected');

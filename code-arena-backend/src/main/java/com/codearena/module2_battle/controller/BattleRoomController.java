@@ -6,7 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,8 +23,8 @@ public class BattleRoomController {
     @PostMapping
     public ResponseEntity<RoomCreatedResponse> createRoom(
             @RequestBody @Valid CreateRoomRequest request,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.createRoom(userId, request));
     }
 
@@ -35,16 +36,16 @@ public class BattleRoomController {
     @GetMapping("/{roomId}/lobby")
     public ResponseEntity<LobbyStateResponse> getLobbyState(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.getLobbyState(roomId, userId));
     }
 
     @PostMapping("/join")
     public ResponseEntity<LobbyStateResponse> joinRoom(
             @RequestBody @Valid JoinRoomRequest request,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.joinRoom(userId, request));
     }
 
@@ -52,16 +53,16 @@ public class BattleRoomController {
     public ResponseEntity<LobbyStateResponse> toggleReady(
             @PathVariable String roomId,
             @RequestBody @Valid ReadyToggleRequest request,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.toggleReady(roomId, userId, request));
     }
 
     @PostMapping("/{roomId}/start")
     public ResponseEntity<LobbyStateResponse> startBattle(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.startBattle(roomId, userId));
     }
 
@@ -69,16 +70,16 @@ public class BattleRoomController {
     public ResponseEntity<LobbyStateResponse> kickParticipant(
             @PathVariable String roomId,
             @RequestBody @Valid KickParticipantRequest request,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.kickParticipant(roomId, userId, request));
     }
 
     @DeleteMapping("/{roomId}/leave")
     public ResponseEntity<Void> leaveRoom(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         battleRoomService.leaveRoom(roomId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -86,8 +87,8 @@ public class BattleRoomController {
     @GetMapping("/{roomId}/invite")
     public ResponseEntity<InviteLinkResponse> getInviteLink(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleRoomService.getInviteLink(roomId, userId));
     }
 }

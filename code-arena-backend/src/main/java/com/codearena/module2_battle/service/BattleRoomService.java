@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.codearena.module2_battle.util.UserDisplayUtils;
 
 @Slf4j
 @Service
@@ -510,15 +511,9 @@ public class BattleRoomService {
      * and active season rating (elo, tier).
      */
     private ParticipantResponse enrichParticipant(BattleParticipant participant) {
-        String username = resolveUsername(participant.getUserId());
-        String avatarUrl = null;
-
-        User user = userRepository.findByKeycloakId(participant.getUserId()).orElse(null);
-        if (user != null) {
-            username = user.getNickname() != null ? user.getNickname()
-                    : (user.getFirstName() != null ? user.getFirstName() : username);
-            avatarUrl = user.getAvatarUrl();
-        }
+        User user = userRepository.findByAuth0Id(participant.getUserId()).orElse(null);
+        String username = UserDisplayUtils.resolveDisplayName(user);
+        String avatarUrl = UserDisplayUtils.resolveAvatarUrl(user);
 
         // Resolve current season ELO and tier
         Integer currentElo = null;
@@ -546,8 +541,6 @@ public class BattleRoomService {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
 }

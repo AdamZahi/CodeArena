@@ -50,12 +50,15 @@
       </div>
 
       <!-- Ranked Solo Info -->
-      <div class="rank-card">
-        <img src="https://opgg-static.akamaized.net/images/medals_new/emerald.png" class="rank-icon" alt="Emerald Rank">
+      <div class="rank-card" *ngIf="battleProfile$ | async as profile">
+        <img [src]="getTierIcon(profile.currentTier)" class="rank-icon" [alt]="profile.currentTier">
         <div class="rank-info">
           <span class="stat-label">RANKED SOLO</span>
-          <span class="rank-tier">EMERALD II</span>
-          <span class="rank-division">64 LP / 12W 8L (60%)</span>
+          <span class="rank-tier" [attr.data-tier]="profile.currentTier">{{ profile.currentTier || 'UNRANKED' }}</span>
+          <span class="rank-division">
+            {{ profile.currentElo || 0 }} LP / {{ profile.seasonWins }}W {{ profile.seasonLosses }}L
+            ({{ (profile.seasonWins + profile.seasonLosses > 0) ? ((profile.seasonWins / (profile.seasonWins + profile.seasonLosses) * 100) | number:'1.0-0') : 0 }}%)
+          </span>
         </div>
       </div>
 
@@ -65,24 +68,41 @@
          <span class="rank-tier" style="color: #fbbf24;">Lvl 5</span>
       </div>
 
+      <!-- Quick Links -->
+      <div class="identity-card" style="padding: 15px; margin-top: 10px;">
+        <span class="stat-label" style="margin-bottom: 15px; display: block;">NAVIGATION</span>
+        <div class="nav-links">
+          <a routerLink="/front-office/reward-profile/leaderboard" class="nav-btn">
+            <span class="icon">🏆</span>
+            <span class="label">GLOBAL LEADERBOARD</span>
+          </a>
+          <a routerLink="/front-office/challenge" class="nav-btn">
+            <span class="icon">⚔️</span>
+            <span class="label">TRAINING GROUNDS</span>
+          </a>
+        </div>
+      </div>
+
     </aside>
 
     <!-- PERFORMANCE & HISTORY MAIN -->
     <main class="performance-main">
 
       <!-- Key Performance Indicators -->
-      <div class="performance-header">
+      <div class="performance-header" *ngIf="battleProfile$ | async as profile">
         <div class="stat-card">
-          <span class="stat-label">SUCCESS RATE</span>
-          <span class="stat-value winrate">74.2%</span>
+          <span class="stat-label">WIN RATE</span>
+          <span class="stat-value winrate">
+            {{ (profile.totalWins / (profile.totalMatchesPlayed || 1) * 100) | number:'1.1-1' }}%
+          </span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">CODE KDA (S/F/A)</span>
-          <span class="stat-value kda">12.5 / 2.1 / 1.5</span>
+          <span class="stat-label">SOLVED CHALLENGES</span>
+          <span class="stat-value kda">{{ profile.totalSolvedChallenges }}</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">DPM</span>
-          <span class="stat-value dpm">156.2</span>
+          <span class="stat-label">AVG BATTLE POINTS</span>
+          <span class="stat-value dpm">{{ profile.averageScore }}</span>
         </div>
       </div>
 
@@ -119,6 +139,105 @@
              LOADING HISTORY...
           </div>
         </ng-template>
+      </section>
+
+      <!-- Battle History -->
+      <section class="history-section" style="margin-top: 2rem;">
+        <div class="section-header">
+          <h3>BATTLE HISTORY</h3>
+          <span class="stat-label">LAST 10 MATCHES</span>
+        </div>
+
+        <div class="history-list" *ngIf="battleHistory$ | async as battles; else loadingBattles">
+          <div class="history-item" *ngFor="let battle of battles">
+            <div class="status-indicator" [class.success]="battle.isWinner"></div>
+            <div class="item-mode">{{ battle.mode | uppercase }}</div>
+            <div class="history-opponents" *ngIf="battle.opponents && battle.opponents.length > 0; else noOpponents">
+              <div class="user-pill opponent-pill" *ngFor="let opp of battle.opponents">
+                <div class="pill-avatar">
+                  <img [src]="opp.avatarUrl" [alt]="opp.username" />
+                </div>
+                <span class="pill-name">{{ opp.username | uppercase }}</span>
+              </div>
+            </div>
+            <ng-template #noOpponents>
+              <div class="item-challenge">{{ battle.totalPlayers }}-player match</div>
+            </ng-template>
+            
+            <div class="item-result" 
+                 [class.win]="battle.isWinner" 
+                 [class.loss]="!battle.isWinner">
+              {{ battle.isWinner ? 'VICTORY' : 'DEFEAT' }} (Rank #{{ battle.finalRank }})
+            </div>
+            
+            <div class="item-meta">
+              <span [style.color]="battle.eloChange >= 0 ? '#10b981' : '#ef4444'">
+                {{ battle.eloChange >= 0 ? '+' : '' }}{{ battle.eloChange }} ELO
+              </span>
+              <br>{{ battle.playedAt | date:'short' }}
+            </div>
+          </div>
+          
+          <div *ngIf="battles.length === 0" style="padding: 30px; text-align: center; color: #64748b;">
+             NO BATTLES JOINED YET.
+          </div>
+        </div>
+        
+        <ng-template #loadingBattles>
+          <div style="padding: 30px; text-align: center; color: #64748b;">
+             LOADING BATTLE HISTORY...
+          </div>
+        </ng-template>
+      </section>
+
+      <!-- LEADERBOARD PREVIEW SECTION -->
+      <section class="history-section" style="margin-top: 2rem;">
+        <div class="leaderboard-nav">
+          <div class="nav-title">TOP CODERS</div>
+          <div class="nav-toggle">
+            <button 
+              [class.active]="activeLeaderboardTab === 'elo'" 
+              (click)="setLeaderboardTab('elo')">
+              ELO RANKED
+            </button>
+            <button 
+              [class.active]="activeLeaderboardTab === 'xp'" 
+              (click)="setLeaderboardTab('xp')">
+              LEVEL / XP
+            </button>
+          </div>
+          <span class="stat-label">TOP 3</span>
+        </div>
+
+        <!-- ELO Content -->
+        <div class="history-list" *ngIf="activeLeaderboardTab === 'elo'">
+          <div class="rank-item" *ngFor="let entry of topElo$ | async">
+            <span class="rank-num">#{{ entry.rank }}</span>
+            <div class="user-pill">
+              <div class="pill-avatar">
+                <img [src]="entry.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + entry.username" />
+              </div>
+              <span class="pill-name">{{ entry.username | uppercase }}</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <span class="rank-val">{{ entry.elo }} LP</span>
+          </div>
+        </div>
+
+        <!-- XP Content -->
+        <div class="history-list" *ngIf="activeLeaderboardTab === 'xp'">
+          <div class="rank-item" *ngFor="let entry of topXp$ | async">
+            <span class="rank-num">#{{ entry.rank }}</span>
+            <div class="user-pill">
+              <div class="pill-avatar">
+                <img [src]="entry.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + entry.username" />
+              </div>
+              <span class="pill-name">{{ entry.username | uppercase }}</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <span class="rank-val">{{ entry.totalXp | number }} XP</span>
+          </div>
+        </div>
       </section>
 
     </main>

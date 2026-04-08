@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
+import com.codearena.module2_battle.util.UserDisplayUtils;
 
 /**
  * Tracks WebSocket sessions to battle rooms and manages disconnect/reconnect lifecycle.
@@ -55,6 +56,10 @@ public class BattleConnectionTracker {
         sessionMap.put(sessionId, new SessionInfo(roomId, userId));
         connectionState.put(userId, true);
         heartbeats.put(userId, Instant.now());
+        
+        // Fix: Ensure forfeit timers are cancelled if they simply reconnect WS without calling the HTTP endpoint
+        onReconnect(roomId, userId);
+
         log.debug("Registered WS session {} for user {} in room {}", sessionId, userId, roomId);
     }
 
@@ -179,8 +184,6 @@ public class BattleConnectionTracker {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
 }

@@ -4,7 +4,8 @@ import com.codearena.module2_battle.dto.BattleProfileResponse;
 import com.codearena.module2_battle.service.BattleProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,16 +17,16 @@ public class BattleProfileController {
 
     @GetMapping("/me")
     public ResponseEntity<BattleProfileResponse> getMyProfile(
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(battleProfileService.getProfile(userId, userId));
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<BattleProfileResponse> getUserProfile(
             @PathVariable String userId,
-            JwtAuthenticationToken principal) {
-        String requestingUserId = principal != null ? principal.getToken().getSubject() : null;
+            @AuthenticationPrincipal Jwt jwt) {
+        String requestingUserId = jwt != null ? jwt.getSubject() : null;
         return ResponseEntity.ok(battleProfileService.getProfile(userId, requestingUserId));
     }
 }

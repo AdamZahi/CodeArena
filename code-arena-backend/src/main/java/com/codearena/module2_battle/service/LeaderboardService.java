@@ -2,7 +2,13 @@ package com.codearena.module2_battle.service;
 
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.LeaderboardPageResponse;
+import com.codearena.module2_battle.dto.LeaderboardPageRequest;
+import com.codearena.module2_battle.dto.XpLeaderboardPageResponse;
+import com.codearena.module2_battle.dto.DailyLeaderboardResponse;
+import com.codearena.module2_battle.dto.SeasonLeaderboardEntryResponse;
+import com.codearena.module2_battle.dto.XpLeaderboardEntryResponse;
+import com.codearena.module2_battle.dto.DailyLeaderboardEntryResponse;
 import com.codearena.module2_battle.entity.*;
 import com.codearena.module2_battle.enums.DailyEntryStatus;
 import com.codearena.module2_battle.enums.PlayerTier;
@@ -21,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.codearena.module2_battle.util.UserDisplayUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -72,12 +79,12 @@ public class LeaderboardService {
 
         for (int i = 0; i < ratings.size(); i++) {
             PlayerRating r = ratings.get(i);
-            User user = userRepository.findByKeycloakId(r.getUserId()).orElse(null);
+            User user = userRepository.findByAuth0Id(r.getUserId()).orElse(null);
             entries.add(SeasonLeaderboardEntryResponse.builder()
                     .rank(baseRank + i)
                     .userId(r.getUserId())
-                    .username(user != null ? (user.getNickname() != null ? user.getNickname() : user.getFirstName()) : r.getUserId())
-                    .avatarUrl(user != null ? user.getAvatarUrl() : null)
+                    .username(UserDisplayUtils.resolveDisplayName(user))
+                    .avatarUrl(UserDisplayUtils.resolveAvatarUrl(user))
                     .elo(r.getElo())
                     .tier(r.getTier().name())
                     .wins(r.getWins())
@@ -97,12 +104,12 @@ public class LeaderboardService {
                 long aboveCount = playerRatingRepository.countPlayersAboveElo(seasonId, ur.getElo());
                 requestingUserRank = (int) aboveCount + 1;
 
-                User user = userRepository.findByKeycloakId(requestingUserId).orElse(null);
+                User user = userRepository.findByAuth0Id(requestingUserId).orElse(null);
                 requestingUserEntry = SeasonLeaderboardEntryResponse.builder()
                         .rank(requestingUserRank)
                         .userId(ur.getUserId())
-                        .username(user != null ? (user.getNickname() != null ? user.getNickname() : user.getFirstName()) : ur.getUserId())
-                        .avatarUrl(user != null ? user.getAvatarUrl() : null)
+                        .username(UserDisplayUtils.resolveDisplayName(user))
+                        .avatarUrl(UserDisplayUtils.resolveAvatarUrl(user))
                         .elo(ur.getElo())
                         .tier(ur.getTier().name())
                         .wins(ur.getWins())
@@ -125,6 +132,61 @@ public class LeaderboardService {
                 .seasonEndsAt(activeSeason.getEndsAt())
                 .daysRemaining(daysRemaining)
                 .totalEntries((int) ratingsPage.getTotalElements())
+                .page(page)
+                .size(size)
+                .entries(entries)
+                .requestingUserRank(requestingUserRank)
+                .requestingUserEntry(requestingUserEntry)
+                .build();
+    }
+
+    public XpLeaderboardPageResponse getXpLeaderboard(
+            String requestingUserId, LeaderboardPageRequest request) {
+
+        int size = Math.min(Math.max(request.getSize(), 1), 100);
+        int page = Math.max(request.getPage(), 0);
+
+        Page<User> usersPage = userRepository.findAllByOrderByTotalXpDesc(PageRequest.of(page, size));
+
+        List<XpLeaderboardEntryResponse> entries = new ArrayList<>();
+        int baseRank = page * size + 1;
+        List<User> users = usersPage.getContent();
+
+        for (int i = 0; i < users.size(); i++) {
+            User u = users.get(i);
+            entries.add(XpLeaderboardEntryResponse.builder()
+                    .rank(baseRank + i)
+                    .userId(u.getAuth0Id())
+                    .username(UserDisplayUtils.resolveDisplayName(u))
+                    .avatarUrl(UserDisplayUtils.resolveAvatarUrl(u))
+                    .totalXp(u.getTotalXp())
+                    .level(u.getCurrentLevel())
+                    .title(u.getActiveTitle())
+                    .build());
+        }
+
+        Integer requestingUserRank = null;
+        XpLeaderboardEntryResponse requestingUserEntry = null;
+        if (requestingUserId != null) {
+            Optional<User> userOpt = userRepository.findByAuth0Id(requestingUserId);
+            if (userOpt.isPresent()) {
+                User u = userOpt.get();
+                requestingUserRank = userRepository.countUsersByTotalXpGreaterThan(u.getTotalXp());
+
+                requestingUserEntry = XpLeaderboardEntryResponse.builder()
+                        .rank(requestingUserRank)
+                        .userId(u.getAuth0Id())
+                        .username(UserDisplayUtils.resolveDisplayName(u))
+                        .avatarUrl(UserDisplayUtils.resolveAvatarUrl(u))
+                        .totalXp(u.getTotalXp())
+                        .level(u.getCurrentLevel())
+                        .title(u.getActiveTitle())
+                        .build();
+            }
+        }
+
+        return XpLeaderboardPageResponse.builder()
+                .totalEntries((int) usersPage.getTotalElements())
                 .page(page)
                 .size(size)
                 .entries(entries)
@@ -168,7 +230,7 @@ public class LeaderboardService {
             DailyEntry entry = completedEntries.get(i);
             int rank = i + 1;
 
-            User user = userRepository.findByKeycloakId(entry.getUserId()).orElse(null);
+            User user = userRepository.findByAuth0Id(entry.getUserId()).orElse(null);
             String tier = null;
             if (activeSeasonId != null) {
                 tier = playerRatingRepository.findByUserIdAndSeasonId(entry.getUserId(), activeSeasonId)
@@ -180,7 +242,7 @@ public class LeaderboardService {
             entries.add(DailyLeaderboardEntryResponse.builder()
                     .rank(rank)
                     .userId(entry.getUserId())
-                    .username(user != null ? (user.getNickname() != null ? user.getNickname() : user.getFirstName()) : entry.getUserId())
+                    .username(resolveUsername(entry.getUserId()))
                     .avatarUrl(user != null ? user.getAvatarUrl() : null)
                     .score(entry.getScore() != null ? entry.getScore() : 0)
                     .timeSeconds(entry.getTimeSeconds() != null ? entry.getTimeSeconds() : 0)
@@ -203,8 +265,6 @@ public class LeaderboardService {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
 }

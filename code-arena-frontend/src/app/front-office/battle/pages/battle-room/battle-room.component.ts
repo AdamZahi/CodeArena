@@ -89,8 +89,7 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
 
     this.battleService.getArenaState(this.roomId).subscribe({
       next: (state) => {
-        this.arenaState = state;
-        this.startCountdown();
+        this.updateArenaState(state);
         this.restoreAllDrafts();
       },
       error: () => {},
@@ -99,8 +98,7 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
     this.ws.arenaState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((e) => {
-        this.arenaState = e.payload;
-        this.startCountdown();
+        this.updateArenaState(e.payload);
       });
 
     this.ws.opponentProgress$
@@ -173,13 +171,19 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
     if (this.reconnectInterval) clearInterval(this.reconnectInterval);
   }
 
+  private updateArenaState(state: ArenaStateResponse): void {
+    this.arenaState = state;
+    this.startCountdown();
+  }
+
   get activeChallenge(): ArenaChallengeResponse | null {
     return this.arenaState?.challenges[this.activeChallengeIndex] ?? null;
   }
 
   formatTime(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
+    const validSeconds = Math.max(0, seconds);
+    const m = Math.floor(validSeconds / 60);
+    const s = validSeconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
@@ -419,8 +423,10 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
   attemptReconnect(): void {
     this.battleService.reconnect(this.roomId).subscribe({
       next: (state) => {
-        this.arenaState = state;
+        this.updateArenaState(state);
         this.disconnected = false;
+        // Fix: clear the stuck banners because we miss the WebSocket broadcast while reconnecting STOMP
+        this.opponentDisconnects = {};
         if (this.reconnectInterval) clearInterval(this.reconnectInterval);
         // Re-establish WebSocket
         this.ws.disconnect();

@@ -1,6 +1,9 @@
 package com.codearena.module2_battle.service;
 
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.SeasonSummaryResponse;
+import com.codearena.module2_battle.dto.SeasonResponse;
+import com.codearena.module2_battle.dto.CreateSeasonRequest;
+import com.codearena.module2_battle.dto.SeasonTopFinisherResponse;
 import com.codearena.module2_battle.entity.PlayerBadge;
 import com.codearena.module2_battle.entity.PlayerRating;
 import com.codearena.module2_battle.entity.Season;
@@ -145,7 +148,7 @@ public class SeasonService {
         List<SeasonTopFinisherResponse> topThree = new ArrayList<>();
         for (int i = 0; i < Math.min(3, standings.size()); i++) {
             PlayerRating pr = standings.get(i);
-            User user = userRepository.findByKeycloakId(pr.getUserId()).orElse(null);
+            User user = userRepository.findByAuth0Id(pr.getUserId()).orElse(null);
             topThree.add(SeasonTopFinisherResponse.builder()
                     .rank(i + 1)
                     .userId(pr.getUserId())
@@ -188,7 +191,7 @@ public class SeasonService {
     }
 
     private void verifyAdmin(String userId) {
-        User user = userRepository.findByKeycloakId(userId)
+        User user = userRepository.findByAuth0Id(userId)
                 .orElseThrow(() -> new AccessDeniedException("Access denied"));
         if (user.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("Access denied");
