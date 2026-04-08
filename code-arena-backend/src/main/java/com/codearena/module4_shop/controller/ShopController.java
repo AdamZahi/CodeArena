@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Slf4j
 @RestController
@@ -72,6 +73,7 @@ public class ShopController {
 
     // ── GET LOW STOCK PRODUCTS ───────────────────
     // GET /api/shop/products/low-stock
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/products/low-stock")
     public ResponseEntity<ApiResponse<List<ShopItemDto>>> getLowStockProducts() {
         return ResponseEntity.ok(
@@ -99,6 +101,7 @@ public class ShopController {
     // ── CREATE PRODUCT (Admin) ───────────────────
     // POST /api/shop/products
     // @Valid triggers our DTO validation annotations
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/products")
     public ResponseEntity<ApiResponse<ShopItemDto>> createProduct(
             @Valid @RequestBody ShopItemCreateDto dto
@@ -111,6 +114,7 @@ public class ShopController {
 
     // ── UPDATE PRODUCT (Admin) ───────────────────
     // PUT /api/shop/products/{id}
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/products/{id}")
     public ResponseEntity<ApiResponse<ShopItemDto>> updateProduct(
             @PathVariable UUID id,
@@ -126,6 +130,7 @@ public class ShopController {
 
     // ── DELETE PRODUCT (Admin) ───────────────────
     // DELETE /api/shop/products/{id}
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/products/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @PathVariable UUID id
@@ -138,6 +143,7 @@ public class ShopController {
 
     // ── ADMIN STATS ──────────────────────────────
     // GET /api/shop/stats
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<Object>> getStats() {
         var stats = new java.util.HashMap<String, Object>();
@@ -219,6 +225,7 @@ public class ShopController {
         );
     }
     // GET /api/shop/export/products
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/export/products")
     public ResponseEntity<byte[]> exportProducts() throws Exception {
         List<ShopItemDto> products = shopService.getAllProducts();

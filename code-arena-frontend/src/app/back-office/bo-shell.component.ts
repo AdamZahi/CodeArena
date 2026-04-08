@@ -3,11 +3,12 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../shared/layout/navbar.component';
 import { FooterComponent } from '../shared/layout/footer.component';
+import { NotificationComponent } from '../front-office/shop/notification/notification.component';
 
 @Component({
   selector: 'app-bo-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NavbarComponent, FooterComponent, NotificationComponent],
   template: `
     <div class="layout">
       <app-navbar />
@@ -56,6 +57,7 @@ import { FooterComponent } from '../shared/layout/footer.component';
       </div>
       <app-footer />
     </div>
+    <app-notification />
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
