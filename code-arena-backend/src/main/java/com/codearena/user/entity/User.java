@@ -29,8 +29,8 @@ public class User {
     @UuidGenerator
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String keycloakId;
+    @Column(name = "keycloak_id", nullable = false, unique = true)
+    private String auth0Id;
 
     private String email;
     private String firstName;
@@ -46,6 +46,43 @@ public class User {
     private String bio;
 
     private boolean isActive;
+
+    @Builder.Default
+    private Long totalXp = 0L;
+
+    @Builder.Default
+    private Integer currentLevel = 1;
+
+    private Integer level;
+
+    private String nickname;
+
+    private String rankTier;
+    private String rankDivision;
+
+    @Builder.Default
+    private Integer leaguePoints = 0;
+
+    @Builder.Default
+    private Integer matchesPlayed = 0;
+
+    @Builder.Default
+    private Integer matchesWon = 0;
+
+    @Builder.Default
+    private Integer honorLevel = 2;
+
+    @Builder.Default
+    private String activeIconId = "default_icon";
+
+    @Builder.Default
+    private String activeBorderId = "default_border";
+
+    private String activeTitle;
+
+    private String activeBadge1;
+    private String activeBadge2;
+    private String activeBadge3;
 
     @CreationTimestamp
     private Instant createdAt;

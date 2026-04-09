@@ -1,0 +1,250 @@
+<div class="profile-dashboard" *ngIf="{auth: user$ | async, db: currentUser$ | async} as data">
+  <ng-container *ngIf="data.auth as user">
+    <!-- SIDBAR -->
+    <aside class="identity-sidebar">
+      
+      <!-- User Avatar & Level -->
+      <div class="identity-card">
+        <div class="avatar-wrapper">
+          <!-- Premium CSS Borders -->
+          <div class="avatar-frame" [class]="data.db?.activeBorderId || 'border_default'"></div>
+          
+          <!-- Equipped Icon -->
+          <img [src]="data.db?.activeIconId ? 
+               ('https://api.dicebear.com/7.x/bottts/svg?seed=' + data.db?.activeIconId?.replace('icon_', '')) : 
+               (user.picture || 'https://api.dicebear.com/7.x/bottts/svg?seed=default')" 
+               class="avatar-img" [alt]="user.name">
+               
+          <div class="level-badge">{{ data.db?.level || 1 }}</div>
+          
+          <button class="edit-identity-btn" (click)="openCustomizeModal()" title="Customize Identity">
+            ✏️
+          </button>
+        </div>
+        <div class="user-names">
+          <span class="main-name">{{ data.db?.nickname || data.db?.firstName || user.nickname || 'Unknown Hacker' }}</span>
+          <span class="sub-name">[{{ (data.db?.activeTitle || 'Newbie') | uppercase }}]</span>
+          
+          <!-- XP Progress Bar (500 XP per level, matching backend) -->
+          <div class="xp-bar-container" [title]="(data.db?.totalXp || 0) + ' Total XP'">
+            <div class="xp-bar-fill" [style.width.%]="getXpProgress(data.db?.totalXp)"></div>
+          </div>
+          <span class="xp-text">{{ getXpCurrent(data.db?.totalXp) }} / {{ XP_PER_LEVEL }} XP to Next Level ({{ data.db?.totalXp || 0 }} total)</span>
+          
+          <!-- Equipped Badges / Medallions -->
+          <div class="equipped-badges">
+            <div class="medal-slot" [class.filled]="data.db?.activeBadge1">
+               <img *ngIf="data.db?.activeBadge1" 
+                    [src]="'https://api.dicebear.com/7.x/identicon/svg?seed=' + data.db?.activeBadge1?.replace('badge_', '')" />
+            </div>
+            <div class="medal-slot" [class.filled]="data.db?.activeBadge2">
+               <img *ngIf="data.db?.activeBadge2" 
+                    [src]="'https://api.dicebear.com/7.x/identicon/svg?seed=' + data.db?.activeBadge2?.replace('badge_', '')" />
+            </div>
+            <div class="medal-slot" [class.filled]="data.db?.activeBadge3">
+               <img *ngIf="data.db?.activeBadge3" 
+                    [src]="'https://api.dicebear.com/7.x/identicon/svg?seed=' + data.db?.activeBadge3?.replace('badge_', '')" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranked Solo Info -->
+      <div class="rank-card" *ngIf="battleProfile$ | async as profile">
+        <img [src]="getTierIcon(profile.currentTier)" class="rank-icon" [alt]="profile.currentTier">
+        <div class="rank-info">
+          <span class="stat-label">RANKED SOLO</span>
+          <span class="rank-tier" [attr.data-tier]="profile.currentTier">{{ profile.currentTier || 'UNRANKED' }}</span>
+          <span class="rank-division">
+            {{ profile.currentElo || 0 }} LP / {{ profile.seasonWins }}W {{ profile.seasonLosses }}L
+            ({{ (profile.seasonWins + profile.seasonLosses > 0) ? ((profile.seasonWins / (profile.seasonWins + profile.seasonLosses) * 100) | number:'1.0-0') : 0 }}%)
+          </span>
+        </div>
+      </div>
+
+      <!-- Honor Level -->
+      <div class="rank-card">
+         <span class="stat-label">HONOR LEVEL</span>
+         <span class="rank-tier" style="color: #fbbf24;">Lvl 5</span>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="identity-card" style="padding: 15px; margin-top: 10px;">
+        <span class="stat-label" style="margin-bottom: 15px; display: block;">NAVIGATION</span>
+        <div class="nav-links">
+          <a routerLink="/front-office/reward-profile/leaderboard" class="nav-btn">
+            <span class="icon">🏆</span>
+            <span class="label">GLOBAL LEADERBOARD</span>
+          </a>
+          <a routerLink="/front-office/challenge" class="nav-btn">
+            <span class="icon">⚔️</span>
+            <span class="label">TRAINING GROUNDS</span>
+          </a>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- PERFORMANCE & HISTORY MAIN -->
+    <main class="performance-main">
+
+      <!-- Key Performance Indicators -->
+      <div class="performance-header" *ngIf="battleProfile$ | async as profile">
+        <div class="stat-card">
+          <span class="stat-label">WIN RATE</span>
+          <span class="stat-value winrate">
+            {{ (profile.totalWins / (profile.totalMatchesPlayed || 1) * 100) | number:'1.1-1' }}%
+          </span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">SOLVED CHALLENGES</span>
+          <span class="stat-value kda">{{ profile.totalSolvedChallenges }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">AVG BATTLE POINTS</span>
+          <span class="stat-value dpm">{{ profile.averageScore }}</span>
+        </div>
+      </div>
+
+      <!-- Match History -->
+      <section class="history-section">
+        <div class="section-header">
+          <h3>CHALLENGE HISTORY</h3>
+          <span class="stat-label">LAST 10 ENTRIES</span>
+        </div>
+
+        <div class="history-list" *ngIf="submissions$ | async as submissions; else loadingSubmissions">
+          <div class="history-item" *ngFor="let sub of submissions">
+            <!-- Indicator based on verdict -->
+            <div class="status-indicator" [class.success]="sub.status === 'ACCEPTED'"></div>
+            <div class="item-mode">{{ sub.language | uppercase }}</div>
+            <div class="item-challenge">{{ sub.challengeTitle }}</div>
+            
+            <div class="item-result" 
+                 [class.win]="sub.status === 'ACCEPTED'" 
+                 [class.loss]="sub.status !== 'ACCEPTED'">
+              {{ sub.status }}
+            </div>
+            
+            <div class="item-meta">+{{ sub.xpEarned || 0 }} XP<br>{{ sub.submittedAt | date:'short' }}</div>
+          </div>
+          
+          <div *ngIf="submissions.length === 0" style="padding: 30px; text-align: center; color: #64748b;">
+             NO CHALLENGES SUBMITTED YET.
+          </div>
+        </div>
+        
+        <ng-template #loadingSubmissions>
+          <div style="padding: 30px; text-align: center; color: #64748b;">
+             LOADING HISTORY...
+          </div>
+        </ng-template>
+      </section>
+
+      <!-- Battle History -->
+      <section class="history-section" style="margin-top: 2rem;">
+        <div class="section-header">
+          <h3>BATTLE HISTORY</h3>
+          <span class="stat-label">LAST 10 MATCHES</span>
+        </div>
+
+        <div class="history-list" *ngIf="battleHistory$ | async as battles; else loadingBattles">
+          <div class="history-item" *ngFor="let battle of battles">
+            <div class="status-indicator" [class.success]="battle.isWinner"></div>
+            <div class="item-mode">{{ battle.mode | uppercase }}</div>
+            <div class="history-opponents" *ngIf="battle.opponents && battle.opponents.length > 0; else noOpponents">
+              <div class="user-pill opponent-pill" *ngFor="let opp of battle.opponents">
+                <div class="pill-avatar">
+                  <img [src]="opp.avatarUrl" [alt]="opp.username" />
+                </div>
+                <span class="pill-name">{{ opp.username | uppercase }}</span>
+              </div>
+            </div>
+            <ng-template #noOpponents>
+              <div class="item-challenge">{{ battle.totalPlayers }}-player match</div>
+            </ng-template>
+            
+            <div class="item-result" 
+                 [class.win]="battle.isWinner" 
+                 [class.loss]="!battle.isWinner">
+              {{ battle.isWinner ? 'VICTORY' : 'DEFEAT' }} (Rank #{{ battle.finalRank }})
+            </div>
+            
+            <div class="item-meta">
+              <span [style.color]="battle.eloChange >= 0 ? '#10b981' : '#ef4444'">
+                {{ battle.eloChange >= 0 ? '+' : '' }}{{ battle.eloChange }} ELO
+              </span>
+              <br>{{ battle.playedAt | date:'short' }}
+            </div>
+          </div>
+          
+          <div *ngIf="battles.length === 0" style="padding: 30px; text-align: center; color: #64748b;">
+             NO BATTLES JOINED YET.
+          </div>
+        </div>
+        
+        <ng-template #loadingBattles>
+          <div style="padding: 30px; text-align: center; color: #64748b;">
+             LOADING BATTLE HISTORY...
+          </div>
+        </ng-template>
+      </section>
+
+      <!-- LEADERBOARD PREVIEW SECTION -->
+      <section class="history-section" style="margin-top: 2rem;">
+        <div class="leaderboard-nav">
+          <div class="nav-title">TOP CODERS</div>
+          <div class="nav-toggle">
+            <button 
+              [class.active]="activeLeaderboardTab === 'elo'" 
+              (click)="setLeaderboardTab('elo')">
+              ELO RANKED
+            </button>
+            <button 
+              [class.active]="activeLeaderboardTab === 'xp'" 
+              (click)="setLeaderboardTab('xp')">
+              LEVEL / XP
+            </button>
+          </div>
+          <span class="stat-label">TOP 3</span>
+        </div>
+
+        <!-- ELO Content -->
+        <div class="history-list" *ngIf="activeLeaderboardTab === 'elo'">
+          <div class="rank-item" *ngFor="let entry of topElo$ | async">
+            <span class="rank-num">#{{ entry.rank }}</span>
+            <div class="user-pill">
+              <div class="pill-avatar">
+                <img [src]="entry.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + entry.username" />
+              </div>
+              <span class="pill-name">{{ entry.username | uppercase }}</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <span class="rank-val">{{ entry.elo }} LP</span>
+          </div>
+        </div>
+
+        <!-- XP Content -->
+        <div class="history-list" *ngIf="activeLeaderboardTab === 'xp'">
+          <div class="rank-item" *ngFor="let entry of topXp$ | async">
+            <span class="rank-num">#{{ entry.rank }}</span>
+            <div class="user-pill">
+              <div class="pill-avatar">
+                <img [src]="entry.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + entry.username" />
+              </div>
+              <span class="pill-name">{{ entry.username | uppercase }}</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <span class="rank-val">{{ entry.totalXp | number }} XP</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </ng-container>
+</div>
+
+<app-customize-identity 
+  [isOpen]="isCustomizeModalOpen" 
+  (close)="closeCustomizeModal()">
+</app-customize-identity>

@@ -2,11 +2,16 @@ package com.codearena.module1_challenge.service;
 
 import com.codearena.module1_challenge.entity.Submission;
 import com.codearena.module1_challenge.entity.TestCase;
+import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module1_challenge.repository.SubmissionRepository;
+import com.codearena.user.entity.User;
+import com.codearena.user.repository.UserRepository;
+import com.codearena.user.service.CustomizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -18,8 +23,13 @@ public class ExecutionService {
 
     private final Judge0Service judge0Service;
     private final SubmissionRepository submissionRepository;
+    private final ChallengeRepository challengeRepository;
+    private final UserRepository userRepository;
+    private final XpCalculatorService xpCalculatorService;
+    private final CustomizationService customizationService;
 
     @Async
+    @Transactional
     @SuppressWarnings("unchecked")
     public void executeSubmission(Submission sub, List<TestCase> testCases) {
         try {
@@ -90,11 +100,13 @@ public class ExecutionService {
                 String verdict = mapJudge0Status(statusId);
 
                 Object timeObj = result.get("time");
+                Object memoryObj = result.get("memory");
+                log.info("Test {}: statusId={}, time={}, memory={}", i + 1, statusId, timeObj, memoryObj);
+
                 if (timeObj != null) {
                     totalExecTime += Float.parseFloat(timeObj.toString());
                 }
 
-                Object memoryObj = result.get("memory");
                 if (memoryObj != null) {
                     maxMemory = Math.max(maxMemory, Float.parseFloat(memoryObj.toString()));
                 }
@@ -133,8 +145,9 @@ public class ExecutionService {
 
             if (allPassed) {
                 submission.setStatus("ACCEPTED");
-                submission.setXpEarned("10");
                 submission.setErrorOutput(outputLog.toString());
+                // === XP REWARD SYSTEM ===
+                awardXpToUser(submission);
             } else {
                 submission.setStatus(finalVerdict);
             }
@@ -152,9 +165,56 @@ public class ExecutionService {
     }
 
     private String buildRunner(String userCode, String stdin, String languageId) {
-        // User writes a complete program that reads from stdin and prints to stdout.
-        // Judge0 handles stdin injection and output comparison.
         return userCode;
+    }
+
+    /**
+     * Awards XP to the user after an ACCEPTED submission.
+     * Calculates XP based on challenge difficulty, updates user totalXp + level,
+     * and triggers cosmetic unlock checks.
+     */
+    private void awardXpToUser(Submission submission) {
+        try {
+            String userId = submission.getUserId();
+            if (userId == null || userId.isBlank()) {
+                log.warn("No userId on submission {}, skipping XP award", submission.getId());
+                return;
+            }
+
+            // Get challenge difficulty for XP calculation
+            var challenge = challengeRepository.findById(submission.getChallenge().getId()).orElse(null);
+            String difficulty = (challenge != null) ? challenge.getDifficulty() : null;
+            int xpAmount = xpCalculatorService.calculateXp(difficulty, null);
+
+            submission.setXpEarned(String.valueOf(xpAmount));
+
+            // Update user's totalXp and level
+            User user = userRepository.findByAuth0Id(userId).orElse(null);
+            if (user == null) {
+                log.warn("User not found by auth0Id '{}', skipping XP award", userId);
+                return;
+            }
+
+            long newTotalXp = (user.getTotalXp() != null ? user.getTotalXp() : 0L) + xpAmount;
+            user.setTotalXp(newTotalXp);
+
+            // Level up: every 500 XP = 1 level
+            int newLevel = (int) (newTotalXp / 500) + 1;
+            user.setLevel(newLevel);
+            user.setCurrentLevel(newLevel);
+            userRepository.save(user);
+
+            log.info("Awarded {} XP to user {} (total: {}, level: {})", xpAmount, userId, newTotalXp, newLevel);
+
+            // Trigger cosmetic unlock checks
+            try {
+                customizationService.checkAndGrantUnlocks(userId);
+            } catch (Exception e) {
+                log.warn("Cosmetic unlock check failed for user {}: {}", userId, e.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Failed to award XP for submission {}: {}", submission.getId(), e.getMessage());
+        }
     }
 
     private String mapJudge0Status(int statusId) {

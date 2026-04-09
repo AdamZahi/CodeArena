@@ -1,0 +1,60 @@
+<div class="share-bg">
+  <div class="grid-overlay"></div>
+</div>
+
+<!-- Loading -->
+<div class="share-loading" *ngIf="loading">
+  <div class="loader"></div>
+  <p>Loading result card...</p>
+</div>
+
+<!-- Not Found / Expired -->
+<div class="share-error" *ngIf="notFound">
+  <div class="error-icon">&#9888;</div>
+  <h1 class="error-title">RESULT UNAVAILABLE</h1>
+  <p class="error-text">This result has expired or does not exist.</p>
+  <a routerLink="/battle" class="cta-btn">EXPLORE BATTLES</a>
+</div>
+
+<!-- Result Card -->
+<div class="share-card" *ngIf="result && !loading && !notFound">
+  <header class="share-header">
+    <span class="mode-pill">{{ result.modeName }}</span>
+    <span class="match-date" *ngIf="result.matchFinishedAt">{{ formatDate(result.matchFinishedAt) }}</span>
+  </header>
+
+  <h1 class="share-title">MATCH RESULTS</h1>
+
+  <div class="standings-list">
+    <div class="standing-card"
+      *ngFor="let s of result.standings"
+      [class.rank-1]="s.rank === 1"
+      [class.rank-2]="s.rank === 2"
+      [class.rank-3]="s.rank === 3"
+    >
+      <span class="standing-rank">#{{ s.rank }}</span>
+      <div class="standing-main">
+        <div class="standing-name-row">
+          <span class="standing-name">{{ s.displayName }}</span>
+          <span class="standing-elo" *ngIf="s.eloChange != null"
+            [class.positive]="s.eloChange >= 0"
+            [class.negative]="s.eloChange < 0">
+            {{ s.eloChange >= 0 ? '+' : '' }}{{ s.eloChange }}
+          </span>
+        </div>
+        <div class="standing-meta">
+          <span class="standing-score">{{ s.totalScore }} pts</span>
+          <span class="standing-solved">{{ s.challengesSolved }}/{{ s.totalChallenges }} solved</span>
+          <span class="tier-pill" *ngIf="s.newTier" [attr.data-tier]="s.newTier">{{ s.newTier }}</span>
+        </div>
+        <div class="badges-row" *ngIf="s.badgesEarned && s.badgesEarned.length > 0">
+          <span class="badge-tag" *ngFor="let b of s.badgesEarned">{{ b }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="share-footer">
+    <a routerLink="/battle" class="play-cta">Play on Code Arena &#8594;</a>
+  </footer>
+</div>

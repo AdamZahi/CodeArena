@@ -1,0 +1,118 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>CUSTOMIZE IDENTITY</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body" *ngIf="currentUser$ | async as user">
+      
+      <!-- LEFT PANE: Live Preview -->
+      <div class="preview-pane">
+        <div class="banner-preview">
+          <!-- The border wrapping the icon -->
+          <div class="icon-container">
+            <!-- Background Border -->
+            <div class="avatar-frame" [class]="previewBorder" style="inset: -5px; width: 130px; height: 130px;"></div>
+            <!-- Inner Icon -->
+            <img [src]="'https://api.dicebear.com/7.x/bottts/svg?seed=' + previewIcon.replace('icon_', '')" 
+                 class="preview-icon" />
+            
+            <div class="rank-gem">
+               <!-- emerald gem overlay like in LoL -->
+               <div class="gem-inner"></div>
+            </div>
+          </div>
+          
+          <h3 class="preview-nickname">{{ user.nickname || user.firstName || 'Hacker' }}</h3>
+          <p class="preview-title">{{ (previewTitle || 'Newbie').toUpperCase() }}</p>
+
+          <div class="honor-slots">
+            <div class="honor-circle active" 
+                 *ngFor="let b of previewBadges"
+                 [title]="b">
+                 <img [src]="'https://api.dicebear.com/7.x/identicon/svg?seed=' + b.replace('badge_', '')"
+                      style="width: 100%; height: 100%;" />
+            </div>
+            <div class="honor-circle" *ngFor="let i of [].constructor(3 - previewBadges.length)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANE: Catalog & Unlocks -->
+      <div class="selector-pane">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button *ngFor="let tab of tabs" 
+                  [class.active]="activeTab === tab"
+                  (click)="setTab(tab)">
+            {{ tab }}
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" placeholder="Search" class="search-input" />
+          <select class="sort-select">
+            <option>All</option>
+            <option>Unlocked</option>
+            <option>Locked</option>
+          </select>
+        </div>
+
+        <!-- Items Grid -->
+        <div class="items-grid" *ngIf="!isLoading">
+          <div class="item-card" *ngFor="let item of catalogItems"
+               [class.locked]="!isUnlocked(item.itemKey)"
+               [class.selected]="previewIcon === item.itemKey || previewBorder === item.itemKey || previewTitle === item.itemKey || previewBadges.includes(item.itemKey)"
+               (click)="selectItem(item)"
+               [title]="item.description || item.label">
+            
+            <!-- Icon Display -->
+            <ng-container *ngIf="activeTab === 'ICONS'">
+               <img [src]="item.imageUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + item.itemKey.replace('icon_', '')" 
+                    class="item-img" />
+            </ng-container>
+
+            <!-- Border Display -->
+            <ng-container *ngIf="activeTab === 'BORDERS'">
+               <div class="avatar-frame" [class]="item.itemKey" style="inset: 5px; width: auto; height: auto;"></div>
+               <div *ngIf="item.itemKey === 'border_default'" class="border-placeholder">
+                  [ Default Frame ]
+               </div>
+            </ng-container>
+
+            <!-- Title Display -->
+            <ng-container *ngIf="activeTab === 'TITLES'">
+               <div class="title-placeholder">
+                 {{ item.label }}
+               </div>
+            </ng-container>
+
+            <!-- Badge Display -->
+            <ng-container *ngIf="activeTab === 'BADGES'">
+               <img [src]="item.imageUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + item.itemKey.replace('badge_', '')" 
+                    style="width: 50px; height: 50px; pointer-events: none;" />
+            </ng-container>
+
+            <div class="equipped-indicator" *ngIf="previewIcon === item.itemKey || previewBorder === item.itemKey || previewTitle === item.itemKey"></div>
+            <div class="lock-overlay" *ngIf="!isUnlocked(item.itemKey)">
+              <i class="lock-icon">🔒</i>
+              <div class="unlock-req">
+                <span *ngIf="item.unlockType === 'LEVEL'">Lvl {{ item.unlockThreshold }}</span>
+                <span *ngIf="item.unlockType === 'XP'">{{ item.unlockThreshold }} XP</span>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="spinner"></div> Syncing Neural Link...
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         if (jwt == null) {
             return buildAnonymousUser();
         }
-        User user = userRepository.findByKeycloakId(jwt.getSubject())
+        User user = userRepository.findByAuth0Id(jwt.getSubject())
             .orElse(null);
         if (user == null) {
             return buildAnonymousUser();
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         if (jwt == null) {
             return buildAnonymousUser();
         }
-        User user = userRepository.findByKeycloakId(jwt.getSubject())
+        User user = userRepository.findByAuth0Id(jwt.getSubject())
             .orElse(null);
         if (user == null) {
             return buildAnonymousUser();
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setRole(role);
         User saved = userRepository.save(user);
-        auth0ManagementService.updateUserRole(user.getKeycloakId(), role.name());
+        auth0ManagementService.updateUserRole(user.getAuth0Id(), role.name());
         return userMapper.toResponse(saved);
     }
 
@@ -89,13 +89,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void syncFromJwt(Jwt jwt) {
-        User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
+        String email = jwt.getClaimAsString("email");
+        String auth0Nickname = jwt.getClaimAsString("nickname");
+        String auth0Name = jwt.getClaimAsString("name");
+        String resolvedNickname = auth0Nickname != null ? auth0Nickname : 
+                                  (auth0Name != null ? auth0Name : 
+                                  (email != null ? email.split("@")[0] : null));
+
+        User user = userRepository.findByAuth0Id(jwt.getSubject()).orElse(null);
         if (user == null) {
             user = User.builder()
-                .keycloakId(jwt.getSubject())
-                .email(jwt.getClaimAsString("email"))
+                .auth0Id(jwt.getSubject())
+                .email(email)
                 .firstName(jwt.getClaimAsString("given_name"))
                 .lastName(jwt.getClaimAsString("family_name"))
+                .nickname(resolvedNickname)
+                .avatarUrl(jwt.getClaimAsString("picture"))
                 .role(resolveRole(jwt))
                 .authProvider(resolveAuthProvider(jwt))
                 .isActive(true)
@@ -103,11 +112,10 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             return;
         }
-
         boolean updated = false;
-        String email = jwt.getClaimAsString("email");
         String firstName = jwt.getClaimAsString("given_name");
         String lastName = jwt.getClaimAsString("family_name");
+        String picture = jwt.getClaimAsString("picture");
 
         if (email != null && !email.equals(user.getEmail())) {
             user.setEmail(email);
@@ -119,6 +127,14 @@ public class UserServiceImpl implements UserService {
         }
         if (lastName != null && !lastName.equals(user.getLastName())) {
             user.setLastName(lastName);
+            updated = true;
+        }
+        if (picture != null && !picture.equals(user.getAvatarUrl())) {
+            user.setAvatarUrl(picture);
+            updated = true;
+        }
+        if (resolvedNickname != null && !resolvedNickname.equals(user.getNickname())) {
+            user.setNickname(resolvedNickname);
             updated = true;
         }
 

@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BattleRoomDto {
-    private String placeholder;
+public class LobbyEvent {
+    private String type;
+    private String roomId;
+    private Object payload;
 }

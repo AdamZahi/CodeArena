@@ -6,6 +6,9 @@ spring:
     url: jdbc:mysql://localhost:3306/codearena?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: ""
+  sql:
+    init:
+      mode: never
   mail:
     host: smtp.gmail.com
     port: 587
@@ -19,7 +22,7 @@ spring:
             enable: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     open-in-view: true
   security:
     oauth2:
@@ -28,14 +31,30 @@ spring:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
 
-keycloak:
-  realm: code-arena
-  client-id: code-arena-backend
-  server-url: http://localhost:8081
+
+
+
+codearena:
+  base-url: https://codearena.app
 
 app:
   cors:
-    allowed-origins:
-      - http://localhost:4200
+    allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
+
+# Judge0 CE (Community Edition) — free, no API key required
+judge0:
+  base-url: https://ce.judge0.com
+  api-key:
+  timeout-seconds: 10
+
+# Battle time limits per mode (in minutes, -1 = no limit)
+battle:
+  time-limit:
+    duel-minutes: 30
+    team-minutes: 40
+    ranked-arena-minutes: 25
+    blitz-minutes: 15
+    practice-minutes: -1
+    daily-minutes: -1

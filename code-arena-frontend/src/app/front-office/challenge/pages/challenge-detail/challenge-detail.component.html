@@ -1,18 +1,20 @@
 <div class="lc-detail-container">
-
   <!-- ═══ TOP TOOLBAR ═══ -->
   <div class="lc-toolbar">
     <div class="toolbar-left">
-      <button class="toolbar-btn" routerLink="/">🏚 HOME</button>
       <button class="toolbar-btn" routerLink="/challenge">← SYSTEM_LIST</button>
       <span class="toolbar-title" *ngIf="challenge">{{ challenge.title }}</span>
     </div>
     <div class="toolbar-right">
-      <!-- USER PROFILE -->
-      <div class="toolbar-user-profile" *ngIf="auth.user$ | async as user">
-        <img [src]="user.picture" class="tb-user-avatar" [alt]="user.name" />
-        <span class="tb-user-name">{{ user.nickname || user.name }}</span>
-      </div>
+      <!-- Admin Anti-Cheat Toggle -->
+      <button *ngIf="isAdmin" 
+              class="toolbar-anticheat" 
+              (click)="toggleAntiCheat()"
+              [class.active]="antiCheatEnabled"
+              [title]="antiCheatEnabled ? 'Disable Anti-Cheat' : 'Enable Anti-Cheat'">
+        <span class="ac-icon">🛡️</span>
+        <span class="ac-text">ANTI_CHEAT: {{ antiCheatEnabled ? 'ON' : 'OFF' }}</span>
+      </button>
 
       <button class="toolbar-sound-btn" (click)="toggleSound()" [title]="isMuted ? 'Unmute Sounds' : 'Mute Sounds'">
         <span *ngIf="!isMuted">🔊</span>
@@ -40,7 +42,12 @@
       <div class="lc-tab-body" *ngIf="activeTab === 'description'">
         <div class="lc-loading-inner" *ngIf="isLoading">CONNECTING...</div>
 
-        <div *ngIf="!isLoading && challenge" class="desc-content" (copy)="$event.preventDefault()" (contextmenu)="$event.preventDefault()">
+        <div *ngIf="!isLoading && challenge" 
+             class="desc-content" 
+             [class.restricted]="antiCheatEnabled"
+             (copy)="blockEvent($event)" 
+             (contextmenu)="blockEvent($event)"
+             (selectstart)="blockEvent($event)">
           <!-- HACKER HEALTH BAR -->
           <div class="hacker-health-container">
             <div class="health-label">
@@ -240,9 +247,19 @@
     <div class="lc-right">
       <div class="editor-topbar">
         <span class="editor-label">TERMINAL_v1.0</span>
-        <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
-          <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
-        </select>
+        <div class="lang-select-wrapper">
+          <select class="lang-select" 
+                  [(ngModel)]="language" 
+                  (change)="onLanguageChange()"
+                  [disabled]="isLanguageLocked"
+                  [class.locked]="isLanguageLocked">
+            <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+          </select>
+          <span *ngIf="isLanguageLocked" class="lock-indicator" title="Language is enforced for this challenge">🔒</span>
+        </div>
+      </div>
+      <div class="lang-mismatch-banner" *ngIf="languageMismatchError">
+        {{ languageMismatchError }}
       </div>
 
       <div class="editor-body">
@@ -255,10 +272,10 @@
           [(ngModel)]="code"
           (input)="onCodeInput()"
           (keydown)="handleTab($event)"
-          (copy)="$event.preventDefault()"
-          (paste)="$event.preventDefault()"
-          (cut)="$event.preventDefault()"
-          (contextmenu)="$event.preventDefault()"
+          (copy)="blockEvent($event)"
+          (paste)="blockEvent($event)"
+          (cut)="blockEvent($event)"
+          (contextmenu)="blockEvent($event)"
           [disabled]="isGameOver"
         ></textarea>
 
@@ -266,7 +283,7 @@
         <div class="game-over-overlay" *ngIf="isGameOver">
           <div class="glitch-wrapper">
              <div class="glitch-text" data-text="LINK_SEVERED">LINK_SEVERED</div>
-             <button class="retry-btn" onclick="location.reload()">RE-ESTABLISH_CONNECTION</button>
+             <button class="retry-btn" style="cursor: not-allowed; opacity: 0.8;">RE-ESTABLISHING IN {{ autoReconnectTimer }}s...</button>
           </div>
         </div>
       </div>

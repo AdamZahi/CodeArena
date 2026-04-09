@@ -1,6 +1,6 @@
 export interface User {
   id: string;
-  keycloakId: string;
+  auth0Id: string;
   username: string;
   email: string;
   roles: string[];

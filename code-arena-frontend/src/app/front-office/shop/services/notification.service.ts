@@ -22,7 +22,12 @@ export interface PriceUpdate {
   indicator: string;
   changed: boolean;
 }
-
+export interface AdminOrderAlert {
+  orderId: string;
+  participantId: string;
+  total: number;
+  message: string;
+}
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
@@ -30,8 +35,9 @@ export class NotificationService implements OnDestroy {
   private notifications$ = new BehaviorSubject<OrderNotification | null>(null);
   private stockAlerts$ = new BehaviorSubject<StockAlert | null>(null);
   private priceUpdatesSubject$ = new BehaviorSubject<PriceUpdate[] | null>(null);
+  private adminOrderAlerts$ = new BehaviorSubject<AdminOrderAlert | null>(null);
 
-
+  adminOrderAlert$ = this.adminOrderAlerts$.asObservable();
   notification$ = this.notifications$.asObservable();
   stockAlert$ = this.stockAlerts$.asObservable();
   // ── PRICE UPDATES ─────────────────────────────
@@ -71,6 +77,14 @@ export class NotificationService implements OnDestroy {
             this.priceUpdatesSubject$.next(updates);
           }
         );
+        // ── ADMIN ORDER ALERTS ────────────────────────
+this.client?.subscribe(
+  `/topic/admin/new-order`,
+  (message: IMessage) => {
+    const alert: AdminOrderAlert = JSON.parse(message.body);
+    this.adminOrderAlerts$.next(alert);
+  }
+);
       },
       onDisconnect: () => console.log('WebSocket disconnected'),
       onStompError: (frame) => console.error('STOMP error', frame)
@@ -87,4 +101,5 @@ export class NotificationService implements OnDestroy {
   ngOnDestroy(): void {
     this.disconnect();
   }
+  
 }
