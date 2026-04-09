@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -45,6 +46,7 @@ public class InvitationServiceImpl implements InvitationService {
     private final EventRegistrationRepository registrationRepository;
     private final EventMapper eventMapper;
     private final ObjectMapper objectMapper;
+    private final SimpMessagingTemplate messagingTemplate;
     
     @Qualifier("eventEmailService")
     private final EmailService emailService;
@@ -156,6 +158,18 @@ public class InvitationServiceImpl implements InvitationService {
         event.setCurrentParticipants(current + 1);
         eventRepository.save(event);
         EventRegistration saved = registrationRepository.save(registrationToReturn);
+
+        // ── WEBSOCKET NOTIFICATION ─────────────────
+        messagingTemplate.convertAndSend(
+            "/topic/admin/invitations",
+            new java.util.HashMap<String, Object>() {{
+                put("type", "INVITATION_ACCEPTED");
+                put("eventId", event.getId().toString());
+                put("participantId", participantId);
+                put("message", "Player accepted VIP invitation for event: " + event.getTitle());
+            }}
+        );
+
         return eventMapper.toRegistrationResponseDTO(saved);
     }
 

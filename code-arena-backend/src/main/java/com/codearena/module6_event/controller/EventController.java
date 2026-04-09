@@ -33,6 +33,7 @@ public class EventController {
     private final EventService eventService;
     private final InvitationService invitationService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<EventDto>> getEvents(@RequestParam(name = "type", required = false) EventType type) {
         if (type != null) {
@@ -41,11 +42,13 @@ public class EventController {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<EventDto> getEventById(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(eventService.getEventById(id));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}/stats")
     public ResponseEntity<Map<String, Object>> getEventStats(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(eventService.getEventStats(id));

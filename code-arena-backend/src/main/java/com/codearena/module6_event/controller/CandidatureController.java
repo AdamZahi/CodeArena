@@ -30,6 +30,7 @@ public class CandidatureController {
 
     private final CandidatureService candidatureService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/candidature")
     public ResponseEntity<CandidatureResponseDTO> submitCandidature(
             @PathVariable("id") UUID eventId,
