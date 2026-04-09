@@ -36,6 +36,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final EventMapper eventMapper;
     private final EventInvitationRepository invitationRepository;
     private final CandidatureService candidatureService;
+    private final ParticipantIdentityService participantIdentityService;
 
     @Qualifier("eventEmailService")
     private final EmailService emailService;
@@ -91,6 +92,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     return RegistrationResponseDTO.builder()
                             .id(candidature.getId())
                             .participantId(participantId)
+                            .participantName(participantIdentityService.resolveDisplayName(participantId))
                             .eventId(eventId)
                             .status(EventStatus.WAITLIST)
                             .qrCode(null)
@@ -116,7 +118,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             }
         }
 
-        return eventMapper.toRegistrationResponseDTO(saved);
+        return withParticipantName(eventMapper.toRegistrationResponseDTO(saved));
     }
 
     private EventRegistration registerOpen(
@@ -229,6 +231,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
         return registrationRepository.findByEvent_Id(eventId).stream()
                 .map(eventMapper::toRegistrationResponseDTO)
+                .map(this::withParticipantName)
                 .toList();
     }
 
@@ -237,6 +240,12 @@ public class RegistrationServiceImpl implements RegistrationService {
     public List<RegistrationResponseDTO> getMyRegistrations(String participantId) {
         return registrationRepository.findByParticipantId(participantId).stream()
                 .map(eventMapper::toRegistrationResponseDTO)
+                .map(this::withParticipantName)
                 .toList();
+    }
+
+    private RegistrationResponseDTO withParticipantName(RegistrationResponseDTO dto) {
+        dto.setParticipantName(participantIdentityService.resolveDisplayName(dto.getParticipantId()));
+        return dto;
     }
 }

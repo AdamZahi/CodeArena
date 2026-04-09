@@ -34,6 +34,7 @@ public class CandidatureServiceImpl implements CandidatureService {
     private final EventRegistrationRepository registrationRepository;
     private final EventMapper eventMapper;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ParticipantIdentityService participantIdentityService;
 
     @Override
     @Transactional
@@ -168,6 +169,7 @@ public class CandidatureServiceImpl implements CandidatureService {
                 .id(candidature.getId())
                 .eventId(candidature.getEventId())
                 .participantId(candidature.getParticipantId())
+                .participantName(participantIdentityService.resolveDisplayName(candidature.getParticipantId()))
                 .motivation(candidature.getMotivation())
                 .status(candidature.getStatus())
                 .appliedAt(candidature.getAppliedAt())

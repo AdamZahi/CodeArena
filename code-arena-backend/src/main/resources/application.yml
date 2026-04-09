@@ -2,6 +2,11 @@ server:
   port: 8080
 
 spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: mistral
   datasource:
     url: jdbc:mysql://localhost:3306/codearena?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -30,6 +35,13 @@ spring:
         jwt:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
+
+auth0:
+  domain: ${AUTH0_DOMAIN:dev-70do2fpg2iw11ckn.us.auth0.com}
+  audience: ${AUTH0_AUDIENCE:https://codearena.com/api}
+  client-id: ${AUTH0_CLIENT_ID:}
+  client-secret: ${AUTH0_CLIENT_SECRET:}
+  management-api-audience: ${AUTH0_MANAGEMENT_API_AUDIENCE:https://dev-70do2fpg2iw11ckn.us.auth0.com/api/v2/}
 
 
 

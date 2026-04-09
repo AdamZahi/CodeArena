@@ -116,7 +116,7 @@
       </div>
       <div class="section-content">
         <div class="row" *ngFor="let p of participants">
-          <span>{{ p.participantId }}</span>
+          <span>{{ resolveParticipantLabel(p.participantName, p.participantId) }}</span>
           <span class="badge">{{ p.status }}</span>
         </div>
         <div class="muted" *ngIf="participants.length === 0">No participants yet.</div>
@@ -133,7 +133,7 @@
       <div class="section-content">
         <div class="candidature-item" *ngFor="let c of candidatures">
           <div class="row">
-            <span>{{ c.participantId }} - <span class="badge">{{ c.status }}</span></span>
+            <span>{{ resolveParticipantLabel(c.participantName, c.participantId) }} - <span class="badge">{{ c.status }}</span></span>
             <span *ngIf="c.status === 'PENDING'">
               <button class="btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
               <button class="btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
@@ -157,7 +157,7 @@
       </div>
       <div class="section-content">
         <div class="row" *ngFor="let i of invitations">
-          <span>{{ i.participantId }}</span>
+          <span>{{ resolveParticipantLabel(i.participantName, i.participantId) }}</span>
           <span class="badge">{{ i.status }}</span>
         </div>
         <div class="muted" *ngIf="invitations.length === 0">No invitations available.</div>

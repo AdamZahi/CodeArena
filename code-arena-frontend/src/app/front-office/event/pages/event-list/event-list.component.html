@@ -54,6 +54,31 @@
     <p>// NO EVENTS FOUND</p>
   </div>
 
+  <div class="recommended-section" *ngIf="!isLoading && recommendedEvents.length > 0">
+    <div class="section-title">🤖 AI RECOMMENDED FOR YOU</div>
+    <div class="recommended-grid">
+      <div
+        class="product-card recommended-card"
+        *ngFor="let event of recommendedEvents"
+        (click)="openDetail(event.id)"
+      >
+        <div class="event-image">
+          <div class="event-image-overlay"></div>
+          <div class="event-image-placeholder">AI PICK</div>
+        </div>
+
+        <span class="category-badge" [style.color]="getTypeColor(event.type)">
+          {{ event.type }}
+        </span>
+
+        <div class="product-info">
+          <h3>{{ event.title }}</h3>
+          <p class="product-desc">{{ event.category }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── EVENTS GRID ────────────────────────────────── -->
   <div class="product-grid" *ngIf="!isLoading && filteredEvents.length > 0">
     <div

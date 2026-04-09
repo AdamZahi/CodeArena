@@ -4,11 +4,14 @@ import com.codearena.module6_event.dto.CreateEventRequest;
 import com.codearena.module6_event.dto.EventDto;
 import com.codearena.module6_event.enums.EventType;
 import com.codearena.module6_event.service.EventService;
+import com.codearena.module6_event.service.EventRecommendationService;
 import com.codearena.module6_event.service.InvitationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +35,7 @@ public class EventController {
 
     private final EventService eventService;
     private final InvitationService invitationService;
+    private final EventRecommendationService recommendationService;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
@@ -52,6 +56,13 @@ public class EventController {
     @GetMapping("/{id}/stats")
     public ResponseEntity<Map<String, Object>> getEventStats(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(eventService.getEventStats(id));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/recommended")
+    public ResponseEntity<List<EventDto>> getRecommendedEvents(@AuthenticationPrincipal Jwt jwt) {
+        String participantId = jwt.getSubject();
+        return ResponseEntity.ok(recommendationService.getRecommendedEvents(participantId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -290,6 +290,37 @@
   box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
 }
 
+.recommended-section {
+  margin: 4px 0 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 8px 14px;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--neon3);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+}
+
+.recommended-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.recommended-card {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.12);
+}
+
 /* ── GRID ───────────────────────────────────────── */
 .product-grid {
   display: grid;

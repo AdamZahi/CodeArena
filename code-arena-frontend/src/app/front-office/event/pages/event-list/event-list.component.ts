@@ -16,6 +16,7 @@ import { ProgrammingEvent } from '../../models/event.model';
 export class EventListComponent implements OnInit, OnDestroy {
   events: any[] = [];
   filteredEvents: any[] = [];
+  recommendedEvents: ProgrammingEvent[] = [];
 
   selectedType: 'ALL' | 'OPEN' | 'EXCLUSIVE' = 'ALL';
   searchText = '';
@@ -42,6 +43,7 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadEvents();
+    this.loadRecommendedEvents();
     this.startCountdownLoop();
   }
 
@@ -160,6 +162,19 @@ export class EventListComponent implements OnInit, OnDestroy {
         console.error('Failed to load events', err);
         this.error = 'Failed to load events';
         this.isLoading = false;
+      }
+    });
+    this.subs.add(sub);
+  }
+
+  private loadRecommendedEvents(): void {
+    const sub = this.eventService.getRecommendedEvents().subscribe({
+      next: (events) => {
+        this.recommendedEvents = events ?? [];
+      },
+      error: (err) => {
+        console.warn('Failed to load recommended events', err);
+        this.recommendedEvents = [];
       }
     });
     this.subs.add(sub);

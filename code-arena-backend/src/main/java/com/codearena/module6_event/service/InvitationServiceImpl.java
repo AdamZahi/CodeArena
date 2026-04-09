@@ -47,6 +47,7 @@ public class InvitationServiceImpl implements InvitationService {
     private final EventMapper eventMapper;
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ParticipantIdentityService participantIdentityService;
     
     @Qualifier("eventEmailService")
     private final EmailService emailService;
@@ -65,7 +66,7 @@ public class InvitationServiceImpl implements InvitationService {
                 "google-oauth2|100499137846569783005",
                 "google-oauth2|108378133921738621575",
                 "google-oauth2|108133574113488267379",
-                "google-oauth2|110630587307020708631 7",
+                "google-oauth2|110630587307020708631",
                 "github|134744963",
                 "auth0|69c5a6978245aa1f8bde6caa");
 
@@ -136,7 +137,7 @@ public class InvitationServiceImpl implements InvitationService {
                     existing.setQrCode(qrCode);
                     registrationRepository.save(existing);
                 }
-                return eventMapper.toRegistrationResponseDTO(existing);
+                return withParticipantName(eventMapper.toRegistrationResponseDTO(existing));
             }
 
             existing.setStatus(EventStatus.CONFIRMED);
@@ -170,7 +171,7 @@ public class InvitationServiceImpl implements InvitationService {
             }}
         );
 
-        return eventMapper.toRegistrationResponseDTO(saved);
+        return withParticipantName(eventMapper.toRegistrationResponseDTO(saved));
     }
 
     @Override
@@ -193,10 +194,16 @@ public class InvitationServiceImpl implements InvitationService {
                 .id(invitation.getId())
                 .eventId(invitation.getEventId())
                 .participantId(invitation.getParticipantId())
+                .participantName(participantIdentityService.resolveDisplayName(invitation.getParticipantId()))
                 .status(invitation.getStatus())
                 .sentAt(invitation.getSentAt())
                 .respondedAt(invitation.getRespondedAt())
                 .build();
+    }
+
+    private RegistrationResponseDTO withParticipantName(RegistrationResponseDTO dto) {
+        dto.setParticipantName(participantIdentityService.resolveDisplayName(dto.getParticipantId()));
+        return dto;
     }
 
 

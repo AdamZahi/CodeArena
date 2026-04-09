@@ -85,6 +85,20 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
     this.subs.add(sub);
   }
 
+  resolveParticipantLabel(participantName?: string, participantId?: string): string {
+    const safeName = (participantName ?? '').trim();
+    if (safeName && !this.looksLikeTechnicalIdentifier(safeName)) {
+      return safeName;
+    }
+
+    const safeId = (participantId ?? '').trim();
+    if (safeId && !this.looksLikeTechnicalIdentifier(safeId)) {
+      return safeId;
+    }
+
+    return 'Unknown Hacker';
+  }
+
   inviteTop10(): void {
     const sub = this.eventService.inviteTop10(this.eventId).subscribe({
       next: () => (this.message = '10 invitations sent!'),
@@ -132,5 +146,18 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
       error: () => (this.invitations = [])
     });
     this.subs.add(inviteSub);
+  }
+
+  private looksLikeTechnicalIdentifier(value: string): boolean {
+    const lower = value.toLowerCase();
+    const compact = lower.replace(/[\s_-]/g, '');
+    return (
+      lower.startsWith('auth0|') ||
+      lower.startsWith('google-oauth2|') ||
+      lower.startsWith('github|') ||
+      lower.startsWith('facebook|') ||
+      lower.startsWith('user_') ||
+      /^\d{8,}$/.test(compact)
+    );
   }
 }
