@@ -59,6 +59,12 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return buildAnonymousUser();
         }
+
+        String requestedEmail = normalize(request.getEmail());
+        if (requestedEmail != null && (user.getEmail() == null || user.getEmail().isBlank())) {
+            user.setEmail(requestedEmail);
+        }
+
         userMapper.updateProfile(request, user);
         return userMapper.toResponse(userRepository.save(user));
     }
@@ -90,12 +96,36 @@ public class UserServiceImpl implements UserService {
     @Override
     public void syncFromJwt(Jwt jwt) {
         User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
+        String email = resolveEmail(jwt);
+        String firstName = resolveFirstName(jwt);
+        String lastName = resolveLastName(jwt, firstName);
+        String nickname = resolveNickname(jwt);
+
+        if (email == null || firstName == null || lastName == null || nickname == null) {
+            Auth0ManagementService.Auth0UserProfile profile = auth0ManagementService.getUserProfile(jwt.getSubject());
+            if (profile != null) {
+                email = firstNonBlank(email, normalize(profile.email()));
+                nickname = firstNonBlank(nickname, normalize(profile.nickname()));
+
+                String profileName = firstNonBlank(normalize(profile.name()), nickname);
+                String profileFirstName = firstNonBlank(normalize(profile.givenName()), extractFirstName(profileName));
+
+                firstName = firstNonBlank(firstName, profileFirstName);
+                lastName = firstNonBlank(
+                    lastName,
+                    normalize(profile.familyName()),
+                    extractLastName(profileName, firstName)
+                );
+            }
+        }
+
         if (user == null) {
             user = User.builder()
                 .keycloakId(jwt.getSubject())
-                .email(jwt.getClaimAsString("email"))
-                .firstName(jwt.getClaimAsString("given_name"))
-                .lastName(jwt.getClaimAsString("family_name"))
+                .email(email)
+                .firstName(firstName)
+                .lastName(lastName)
+                .nickname(nickname)
                 .role(resolveRole(jwt))
                 .authProvider(resolveAuthProvider(jwt))
                 .isActive(true)
@@ -105,9 +135,6 @@ public class UserServiceImpl implements UserService {
         }
 
         boolean updated = false;
-        String email = jwt.getClaimAsString("email");
-        String firstName = jwt.getClaimAsString("given_name");
-        String lastName = jwt.getClaimAsString("family_name");
 
         if (email != null && !email.equals(user.getEmail())) {
             user.setEmail(email);
@@ -121,10 +148,110 @@ public class UserServiceImpl implements UserService {
             user.setLastName(lastName);
             updated = true;
         }
+        if (nickname != null && !nickname.equals(user.getNickname())) {
+            user.setNickname(nickname);
+            updated = true;
+        }
 
         if (updated) {
             userRepository.save(user);
         }
+    }
+
+    private String resolveEmail(Jwt jwt) {
+        return firstNonBlank(
+            normalize(jwt.getClaimAsString("email")),
+            normalize(jwt.getClaimAsString("https://codearena.com/email")),
+            normalize(jwt.getClaimAsString("upn")),
+            normalize(jwt.getClaimAsString("preferred_username"))
+        );
+    }
+
+    private String resolveFirstName(Jwt jwt) {
+        String givenName = firstNonBlank(
+            normalize(jwt.getClaimAsString("given_name")),
+            normalize(jwt.getClaimAsString("https://codearena.com/given_name"))
+        );
+        if (givenName != null) {
+            return givenName;
+        }
+
+        String fullName = normalize(jwt.getClaimAsString("name"));
+        if (fullName == null) {
+            fullName = normalize(jwt.getClaimAsString("https://codearena.com/name"));
+        }
+        if (fullName != null) {
+            String[] parts = fullName.split("\\s+");
+            return parts.length > 0 ? normalize(parts[0]) : null;
+        }
+
+        return normalize(jwt.getClaimAsString("nickname"));
+    }
+
+    private String resolveLastName(Jwt jwt, String resolvedFirstName) {
+        String familyName = firstNonBlank(
+            normalize(jwt.getClaimAsString("family_name")),
+            normalize(jwt.getClaimAsString("https://codearena.com/family_name"))
+        );
+        if (familyName != null) {
+            return familyName;
+        }
+
+        String fullName = normalize(jwt.getClaimAsString("name"));
+        if (fullName == null) {
+            fullName = normalize(jwt.getClaimAsString("https://codearena.com/name"));
+        }
+        if (fullName == null || resolvedFirstName == null) {
+            return null;
+        }
+
+        return extractLastName(fullName, resolvedFirstName);
+    }
+
+    private String resolveNickname(Jwt jwt) {
+        return firstNonBlank(
+            normalize(jwt.getClaimAsString("nickname")),
+            normalize(jwt.getClaimAsString("preferred_username"))
+        );
+    }
+
+    private String extractFirstName(String fullName) {
+        String normalized = normalize(fullName);
+        if (normalized == null) {
+            return null;
+        }
+        String[] parts = normalized.split("\\s+");
+        return parts.length > 0 ? normalize(parts[0]) : null;
+    }
+
+    private String extractLastName(String fullName, String resolvedFirstName) {
+        String normalized = normalize(fullName);
+        if (normalized == null || resolvedFirstName == null) {
+            return null;
+        }
+
+        String[] parts = normalized.split("\\s+");
+        if (parts.length <= 1) {
+            return null;
+        }
+        return normalize(String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length)));
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private Role resolveRole(Jwt jwt) {

@@ -13,6 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 
@@ -22,6 +24,14 @@ import java.util.Map;
 public class Auth0ManagementService {
     private final Auth0Config auth0Config;
     private final RestTemplate restTemplate = new RestTemplate();
+
+    public record Auth0UserProfile(
+        String email,
+        String givenName,
+        String familyName,
+        String name,
+        String nickname
+    ) {}
 
     public void updateUserRole(String auth0UserId, String roleName) {
         String token = getManagementToken();
@@ -42,6 +52,37 @@ public class Auth0ManagementService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         Map<String, Object> payload = Map.of("roles", Collections.singletonList(roleId));
         restTemplate.exchange(url, HttpMethod.PATCH, new HttpEntity<>(payload, headers), Void.class);
+    }
+
+    public Auth0UserProfile getUserProfile(String auth0UserId) {
+        String token = getManagementToken();
+        if (token == null || auth0UserId == null || auth0UserId.isBlank()) {
+            return null;
+        }
+
+        try {
+            String encodedUserId = URLEncoder.encode(auth0UserId, StandardCharsets.UTF_8);
+            String url = String.format("https://%s/api/v2/users/%s", auth0Config.getDomain(), encodedUserId);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(token);
+
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+            Map<?, ?> body = response.getBody();
+            if (body == null) {
+                return null;
+            }
+
+            return new Auth0UserProfile(
+                asString(body.get("email")),
+                asString(body.get("given_name")),
+                asString(body.get("family_name")),
+                asString(body.get("name")),
+                asString(body.get("nickname"))
+            );
+        } catch (Exception ex) {
+            log.warn("Failed to load Auth0 profile for {}: {}", auth0UserId, ex.getMessage());
+            return null;
+        }
     }
 
     private String resolveRoleId(String token, String roleName) {
@@ -81,5 +122,9 @@ public class Auth0ManagementService {
         }
         Object token = response.getBody().get("access_token");
         return token == null ? null : token.toString();
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : value.toString();
     }
 }
