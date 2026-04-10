@@ -46,7 +46,10 @@ export class RegisterComponent {
 
   registerWithGitHub(): void {
     void this.auth.loginWithRedirect({
-      authorizationParams: { connection: 'github' },
+      authorizationParams: {
+        connection: 'github',
+        connection_scope: 'read:user user:email'
+      },
       appState: { target: this.returnUrl }
     });
   }
