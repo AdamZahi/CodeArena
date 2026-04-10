@@ -93,6 +93,35 @@ public class UserServiceImpl implements UserService {
         String auth0Nickname = jwt.getClaimAsString("nickname");
         String auth0Name = jwt.getClaimAsString("name");
         String givenName = jwt.getClaimAsString("given_name");
+        String familyName = jwt.getClaimAsString("family_name");
+        String picture = jwt.getClaimAsString("picture");
+
+        // Access token claims may not include profile fields; enrich from Auth0 Management API when needed.
+        Auth0ManagementService.Auth0UserProfile profile = null;
+        if (!hasText(email) || !hasText(givenName) || !hasText(auth0Name) || !hasText(auth0Nickname) || !hasText(picture)) {
+            profile = auth0ManagementService.fetchUserProfile(jwt.getSubject());
+            if (profile != null) {
+                if (!hasText(email)) {
+                    email = profile.getEmail();
+                }
+                if (!hasText(givenName)) {
+                    givenName = profile.getGivenName();
+                }
+                if (!hasText(familyName)) {
+                    familyName = profile.getFamilyName();
+                }
+                if (!hasText(auth0Name)) {
+                    auth0Name = profile.getName();
+                }
+                if (!hasText(auth0Nickname)) {
+                    auth0Nickname = profile.getNickname();
+                }
+                if (!hasText(picture)) {
+                    picture = profile.getPicture();
+                }
+            }
+        }
+
         String resolvedNickname = chooseBestDisplayName(auth0Nickname, auth0Name, givenName, email);
 
         User user = userRepository.findByAuth0Id(jwt.getSubject()).orElse(null);
@@ -101,9 +130,9 @@ public class UserServiceImpl implements UserService {
                 .auth0Id(jwt.getSubject())
                 .email(email)
                 .firstName(givenName)
-                .lastName(jwt.getClaimAsString("family_name"))
+                .lastName(familyName)
                 .nickname(resolvedNickname)
-                .avatarUrl(jwt.getClaimAsString("picture"))
+                .avatarUrl(picture)
                 .role(resolveRole(jwt))
                 .authProvider(resolveAuthProvider(jwt))
                 .isActive(true)
@@ -113,8 +142,7 @@ public class UserServiceImpl implements UserService {
         }
         boolean updated = false;
         String firstName = givenName;
-        String lastName = jwt.getClaimAsString("family_name");
-        String picture = jwt.getClaimAsString("picture");
+        String lastName = familyName;
 
         if (email != null && !email.equals(user.getEmail())) {
             user.setEmail(email);

@@ -31,7 +31,8 @@ public class ParticipantIdentityService {
                 .map(user -> {
                     String displayName = UserDisplayUtils.resolveDisplayName(user);
                     if (UNKNOWN_HACKER.equals(displayName)
-                            || isRawAuthIdentifier(displayName)) {
+                            || looksLikeMachineIdentifier(displayName)
+                            || hasMissingIdentityData(user)) {
                         return hydrateAndResolve(participantId);
                     }
                     return displayName;
@@ -95,17 +96,6 @@ public class ParticipantIdentityService {
         return value;
     }
 
-    private boolean isRawAuthIdentifier(String value) {
-        if (value == null || value.isBlank()) {
-            return false;
-        }
-        String v = value.trim().toLowerCase();
-        return v.startsWith("auth0|")
-                || v.startsWith("google-oauth2|")
-                || v.startsWith("github|")
-                || v.startsWith("facebook|");
-    }
-
     private AuthProvider resolveAuthProvider(String auth0Id) {
         if (auth0Id == null) {
             return AuthProvider.LOCAL;
@@ -152,5 +142,11 @@ public class ParticipantIdentityService {
             return true;
         }
         return lower.matches("^[0-9]{8,}$");
+    }
+
+    private boolean hasMissingIdentityData(User user) {
+        return !hasText(user.getNickname())
+                && !hasText(user.getFirstName())
+                && !hasText(user.getEmail());
     }
 }

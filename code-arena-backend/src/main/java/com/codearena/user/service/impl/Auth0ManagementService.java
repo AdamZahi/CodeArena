@@ -80,7 +80,8 @@ public class Auth0ManagementService {
                     .picture(asString(body.get("picture")))
                     .build();
         } catch (Exception e) {
-            log.debug("Could not fetch Auth0 profile for {}", auth0UserId, e);
+            log.warn("Could not fetch Auth0 profile for {}: {}", auth0UserId, e.getMessage());
+            log.debug("Auth0 profile fetch exception", e);
             return null;
         }
     }
@@ -134,7 +135,8 @@ public class Auth0ManagementService {
             Object token = response.getBody().get("access_token");
             return token == null ? null : token.toString();
         } catch (Exception e) {
-            log.debug("Failed to obtain Auth0 management token", e);
+            log.warn("Failed to obtain Auth0 management token: {}", e.getMessage());
+            log.debug("Auth0 management token exception", e);
             return null;
         }
     }
