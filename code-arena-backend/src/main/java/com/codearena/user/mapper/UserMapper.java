@@ -18,7 +18,7 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "auth0Id", ignore = true)
-    @Mapping(target = "email", ignore = true)
+    @Mapping(target = "email", source = "email")
     @Mapping(target = "firstName", source = "firstName")
     @Mapping(target = "lastName", source = "lastName")
     @Mapping(target = "nickname", source = "nickname")

@@ -2,6 +2,11 @@ server:
   port: 8080
 
 spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: mistral
   datasource:
     url: jdbc:mysql://localhost:3306/codearena?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -34,6 +39,8 @@ spring:
 
 
 
+
+
 codearena:
   base-url: https://codearena.app
 
@@ -42,7 +49,9 @@ app:
     allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
-
+    stripe:
+      secret-key: sk_test_dummy_key_for_now
+      publishable-key: pk_test_dummy_key_for_now
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
   base-url: https://ce.judge0.com

@@ -17,6 +17,7 @@ public class RegistrationResponseDTO {
 
     private UUID id;
     private String participantId;
+    private String participantName;
     private UUID eventId;
     private EventStatus status;
     private String qrCode;
