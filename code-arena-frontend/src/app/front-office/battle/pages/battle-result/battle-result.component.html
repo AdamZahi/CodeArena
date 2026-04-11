@@ -1,0 +1,209 @@
+<!-- ── Background ──────────────────────────────────────────── -->
+<div class="result-bg">
+  <div class="grid-overlay"></div>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="confetti-layer" *ngIf="summary && isWinner">
+    <div class="confetti-piece" *ngFor="let c of confettiPieces"
+      [style.left.%]="c.x"
+      [style.animation-delay]="c.delay + 's'"
+      [style.background]="c.color"
+    ></div>
+  </div>
+</div>
+
+<!-- ── Main Content ────────────────────────────────────────── -->
+<div class="result-container" *ngIf="summary">
+
+  <!-- Tier-Up Celebration Banner -->
+  <div class="tier-up-banner" *ngIf="showTierUpBanner && myStanding"
+    [attr.data-tier]="myStanding.tierAfter">
+    <span class="tier-up-icon">&#9733;</span>
+    <span class="tier-up-text">PROMOTED TO {{ myStanding.tierAfter }}</span>
+    <span class="tier-up-icon">&#9733;</span>
+  </div>
+
+  <!-- Victory / Defeat Header -->
+  <header class="result-header" [class.victory]="isWinner" [class.defeat]="!isWinner">
+    <div class="result-badge">MATCH COMPLETE</div>
+    <h1 class="result-title">
+      {{ isWinner ? 'VICTORY' : (myStanding ? 'DEFEAT' : 'MATCH OVER') }}
+    </h1>
+    <p class="result-subtitle">
+      {{ summary.mode }} &middot; {{ summary.challengeCount }} Challenges &middot;
+      {{ formatDuration(summary.durationSeconds) }}
+    </p>
+  </header>
+
+  <!-- Podium / Standings -->
+  <div class="podium-section" *ngIf="summary.standings.length <= 3">
+    <div class="podium">
+      <div class="podium-slot" *ngFor="let player of getPodiumOrder()"
+        [class.first]="player.finalRank === 1"
+        [class.second]="player.finalRank === 2"
+        [class.third]="player.finalRank === 3"
+        [style.animation-delay]="(player.finalRank - 1) * 200 + 'ms'"
+      >
+        <div class="podium-card">
+          <div class="rank-medal">
+            <span *ngIf="player.finalRank === 1" class="medal gold">&#9813;</span>
+            <span *ngIf="player.finalRank === 2" class="medal silver">&#9814;</span>
+            <span *ngIf="player.finalRank === 3" class="medal bronze">&#9814;</span>
+          </div>
+          <div class="podium-avatar">
+            <img *ngIf="player.avatarUrl" [src]="player.avatarUrl" alt="" />
+            <span *ngIf="!player.avatarUrl" class="avatar-letter">{{ player.username.charAt(0).toUpperCase() }}</span>
+          </div>
+          <span class="podium-name">{{ player.username }}</span>
+          <span class="podium-score">{{ player.finalScore }} PTS</span>
+          <div class="elo-change" [class.positive]="player.eloChange >= 0" [class.negative]="player.eloChange < 0">
+            {{ player.eloChange >= 0 ? '+' : '' }}{{ player.eloChange }} ELO
+          </div>
+          <div class="new-tier">
+            <span class="tier-badge" [attr.data-tier]="player.newTier">{{ player.newTier }}</span>
+            <span class="new-elo">{{ player.newElo }}</span>
+          </div>
+          <div class="badges-row" *ngIf="player.badgesAwarded.length > 0">
+            <span class="badge-chip" *ngFor="let badge of player.badgesAwarded">{{ badge }}</span>
+          </div>
+        </div>
+        <div class="podium-pillar">
+          <span class="pillar-rank">#{{ player.finalRank }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Standings Table (for more than 3 players) -->
+  <div class="standings-table-section" *ngIf="summary.standings.length > 3">
+    <h2 class="section-title">FINAL STANDINGS</h2>
+    <div class="standings-table">
+      <div class="standing-row" *ngFor="let player of summary.standings; let i = index"
+        [class.winner-row]="player.isWinner"
+        [style.animation-delay]="i * 80 + 'ms'"
+      >
+        <span class="standing-rank" [class.rank-1]="player.finalRank === 1">
+          {{ player.finalRank === 1 ? '\u2655' : '#' + player.finalRank }}
+        </span>
+        <div class="standing-avatar">
+          <img *ngIf="player.avatarUrl" [src]="player.avatarUrl" alt="" />
+          <span *ngIf="!player.avatarUrl">{{ player.username.charAt(0).toUpperCase() }}</span>
+        </div>
+        <span class="standing-name">{{ player.username }}</span>
+        <span class="standing-score">{{ player.finalScore }} PTS</span>
+        <span class="standing-elo" [class.positive]="player.eloChange >= 0" [class.negative]="player.eloChange < 0">
+          {{ player.eloChange >= 0 ? '+' : '' }}{{ player.eloChange }}
+        </span>
+        <span class="standing-tier tier-badge" [attr.data-tier]="player.newTier">{{ player.newTier }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Breakdown (for current user) -->
+  <div class="breakdown-section" *ngIf="myStanding && myStanding.challengeBreakdowns.length > 0">
+    <h2 class="section-title">YOUR SCORE BREAKDOWN</h2>
+    <div class="breakdown-grid">
+      <div class="breakdown-card" *ngFor="let bd of myStanding.challengeBreakdowns"
+        [class.solved]="bd.solved"
+      >
+        <div class="bd-header">
+          <span class="bd-position">Challenge {{ bd.challengePosition }}</span>
+          <span class="bd-status" [class.is-solved]="bd.solved">{{ bd.solved ? 'SOLVED' : 'UNSOLVED' }}</span>
+        </div>
+        <span class="bd-title">{{ bd.challengeTitle }}</span>
+        <div class="bd-scores" *ngIf="bd.solved">
+          <div class="bd-score-item">
+            <span class="bd-score-label">Correctness</span>
+            <span class="bd-score-value">{{ bd.correctnessScore }}</span>
+          </div>
+          <div class="bd-score-item">
+            <span class="bd-score-label">Speed</span>
+            <span class="bd-score-value">{{ bd.speedScore }}</span>
+          </div>
+          <div class="bd-score-item">
+            <span class="bd-score-label">Efficiency</span>
+            <span class="bd-score-value">{{ bd.efficiencyScore }}</span>
+          </div>
+          <div class="bd-score-item penalty" *ngIf="bd.attemptPenalty > 0">
+            <span class="bd-score-label">Penalty</span>
+            <span class="bd-score-value">-{{ bd.attemptPenalty }}</span>
+          </div>
+        </div>
+        <div class="bd-footer" *ngIf="bd.solved">
+          <span>{{ bd.attemptCount }} attempt{{ bd.attemptCount > 1 ? 's' : '' }}</span>
+          <span *ngIf="bd.bestRuntimeMs">{{ bd.bestRuntimeMs }}ms</span>
+          <span class="bd-total">{{ bd.totalChallengeScore }} pts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spectator Feed -->
+  <div class="feed-section" *ngIf="spectatorFeed.length > 0">
+    <h2 class="section-title">BATTLE FEED</h2>
+    <div class="feed-timeline">
+      <div class="feed-item" *ngFor="let item of spectatorFeed"
+        [class.accepted-feed]="item.submissionStatus === 'ACCEPTED'"
+        [class.failed-feed]="item.submissionStatus !== 'ACCEPTED'"
+      >
+        <span class="feed-dot"></span>
+        <span class="feed-user">{{ item.username }}</span>
+        <span class="feed-action">
+          {{ item.submissionStatus === 'ACCEPTED' ? 'solved' : 'attempted' }}
+          Challenge {{ item.challengePosition }}
+        </span>
+        <span class="feed-status" [attr.data-status]="item.submissionStatus">
+          {{ item.submissionStatus }}
+        </span>
+        <span class="feed-attempt">#{{ item.attemptNumber }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ELO Progression (current user, ranked modes only) -->
+  <div class="elo-progress-section" *ngIf="isRankedMode && myStanding && myStanding.eloBefore != null">
+    <h2 class="section-title">YOUR RATING</h2>
+    <div class="elo-progress-card">
+      <div class="elo-progress-header">
+        <span class="elo-from">{{ myStanding.eloBefore }}</span>
+        <span class="elo-delta"
+          [class.positive]="myStanding.eloChange >= 0"
+          [class.negative]="myStanding.eloChange < 0">
+          {{ animatedEloDelta >= 0 ? '+' : '' }}{{ animatedEloDelta }}
+        </span>
+        <span class="elo-to">{{ myStanding.eloAfter }}</span>
+      </div>
+      <div class="tier-progress-track">
+        <div class="tier-progress-fill"
+          [attr.data-tier]="myStanding.tierAfter"
+          [style.width.%]="tierProgress(myStanding.eloAfter)"></div>
+      </div>
+      <div class="tier-progress-labels">
+        <span class="tier-badge" [attr.data-tier]="myStanding.tierBefore">{{ myStanding.tierBefore }}</span>
+        <span class="tier-badge" [attr.data-tier]="myStanding.tierAfter">{{ myStanding.tierAfter }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="result-actions">
+    <button class="btn-primary" (click)="backToArena()">
+      <span>&#9876;</span> BACK TO ARENA
+    </button>
+    <button class="btn-outline" (click)="viewLeaderboard()">
+      <span>&#9733;</span> LEADERBOARD
+    </button>
+    <button class="btn-outline" (click)="shareResult()" [disabled]="shareLoading">
+      <span>&#128279;</span> {{ shareLoading ? 'CREATING...' : (shareUrl ? 'COPY LINK' : 'SHARE') }}
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="result-toast" *ngIf="toastMessage">{{ toastMessage }}</div>
+
+<!-- ── Loading ─────────────────────────────────────────────── -->
+<div class="result-loading" *ngIf="!summary">
+  <div class="loader"></div>
+  <p>Calculating results...</p>
+</div>

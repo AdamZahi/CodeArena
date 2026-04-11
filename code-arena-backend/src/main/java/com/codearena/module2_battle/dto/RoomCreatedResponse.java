@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateBattleRoomRequest {
-    private String placeholder;
+public class RoomCreatedResponse {
+    private BattleRoomResponse room;
+    private InviteLinkResponse invite;
 }

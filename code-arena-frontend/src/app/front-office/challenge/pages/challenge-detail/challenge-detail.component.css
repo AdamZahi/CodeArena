@@ -341,6 +341,36 @@
   outline: none;
 }
 
+.lang-select.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.lang-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lock-indicator {
+  font-size: 14px;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.4));
+}
+
+.lang-mismatch-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border-bottom: 2px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  padding: 8px 16px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: slideFadeIn 0.3s ease-out;
+}
+
 .editor-body {
   flex: 1;
   display: flex;

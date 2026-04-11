@@ -206,7 +206,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             // Look up participant's real email from our users table
             // using their Auth0 keycloakId (same as participantId)
             String participantEmail = userRepository
-                    .findByKeycloakId(request.getParticipantId())
+                    .findByAuth0Id(request.getParticipantId())
                     .map(user -> user.getEmail())
                     // .map() transforms Optional<User> to Optional<String>
                     .orElse(null);

@@ -7,6 +7,7 @@ import { SubmissionService } from '../../services/submission.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap, takeWhile, take } from 'rxjs/operators';
 import { AuthService } from '@auth0/auth0-angular';
+import { AuthUserSyncService } from '../../../../core/auth/auth-user-sync.service';
 
 @Component({
   selector: 'app-challenge-detail',
@@ -35,6 +36,8 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public submissionResult: any = null;
   public mySubmissions: any[] = [];
   public lineCount = 1;
+  public languageMismatchError: string | null = null;
+  public isLanguageLocked = false;
   private pollSub?: Subscription;
 
   // Accordion toggles
@@ -51,6 +54,8 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public healthPercent = 100;
   public isGameOver = false;
   public isMuted = false;
+  public autoReconnectTimer = 20;
+  private reconnectInterval: any;
 
   // Discussion & Voting
   public comments: any[] = [];
@@ -61,12 +66,14 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public userVote: string | null = null;
   public currentUserSub: string | null = null;
   public isAdmin = false;
+  public antiCheatEnabled = true; // Anti-cheat ON by default
 
   constructor(
     private route: ActivatedRoute,
     private challengeService: ChallengeService,
     private submissionService: SubmissionService,
-    public auth: AuthService
+    public auth: AuthService,
+    private authUserSync: AuthUserSyncService
   ) {}
 
   ngOnInit(): void {
@@ -82,17 +89,17 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.loadVotes();
       this.loadComments();
 
+      // Get Auth0 user info (for sub claim)
       this.auth.user$.subscribe(user => {
         if (user) {
           this.currentUserSub = user.sub || null;
-          // Admin check - looking for 'ADMIN' role in custom claims, or nickname toggle
-          const roles: string[] = (user as any)['https://codearena.com/roles'] || (user as any)['roles'] || [];
-          const nickname = user.nickname?.toUpperCase() || '';
-          
-          this.isAdmin = roles.includes('ADMIN') || 
-                         nickname.includes('ADMIN') || 
-                         nickname === 'GABABHIMZAKATAKA' || // Dev bypass
-                         this.currentUserSub === this.challenge?.authorId;
+        }
+      });
+
+      // Check admin role from backend (the real source of truth)
+      this.authUserSync.currentUser$.subscribe(backendUser => {
+        if (backendUser) {
+          this.isAdmin = backendUser.role === 'ADMIN';
         }
       });
     }
@@ -108,17 +115,53 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     return `codearena_health_${this.challengeId}`;
   }
 
+  private getReconnectTimeKey(): string {
+    return `codearena_reconnect_time_${this.challengeId}`;
+  }
+
   private loadHealthState(): void {
     const saved = localStorage.getItem(this.getHealthKey());
     if (saved !== null) {
       this.trialsLeft = parseInt(saved, 10);
       this.healthPercent = (this.trialsLeft / this.maxTrials) * 100;
       this.isGameOver = this.trialsLeft <= 0;
+      if (this.isGameOver) {
+        this.startReconnectTimer();
+      }
     } else {
       this.trialsLeft = this.maxTrials;
       this.healthPercent = 100;
       this.isGameOver = false;
     }
+  }
+
+  private startReconnectTimer(): void {
+    const reconnectKey = this.getReconnectTimeKey();
+    const reconnectTimeStr = localStorage.getItem(reconnectKey);
+    let reconnectTime = reconnectTimeStr ? parseInt(reconnectTimeStr, 10) : Date.now() + 20000;
+    
+    if (!reconnectTimeStr) {
+        localStorage.setItem(reconnectKey, reconnectTime.toString());
+    }
+
+    if (this.reconnectInterval) {
+      clearInterval(this.reconnectInterval);
+    }
+
+    const initialDiff = reconnectTime - Date.now();
+    this.autoReconnectTimer = initialDiff > 0 ? Math.ceil(initialDiff / 1000) : 0;
+
+    this.reconnectInterval = setInterval(() => {
+      const now = Date.now();
+      const difference = reconnectTime - now;
+
+      if (difference <= 0) {
+        clearInterval(this.reconnectInterval);
+        this.reestablishConnection();
+      } else {
+        this.autoReconnectTimer = Math.ceil(difference / 1000);
+      }
+    }, 1000);
   }
 
   private saveHealthState(): void {
@@ -199,6 +242,7 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.pollSub) this.pollSub.unsubscribe();
+    if (this.reconnectInterval) clearInterval(this.reconnectInterval);
   }
 
   public loadChallenge(): void {
@@ -215,6 +259,11 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
         
         this.code = this.getBoilerplate(this.language);
         this.updateLineNumbers();
+
+        // Lock the language dropdown if the challenge enforces a specific language
+        if (this.challenge?.language) {
+          this.isLanguageLocked = true;
+        }
       },
       error: (e) => {
         console.error('Error loading challenge:', e);
@@ -224,11 +273,12 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   }
 
   public onLanguageChange(): void {
+    this.languageMismatchError = null;
     if (this.challenge?.language) {
       const challengeLang = this.challenge.language.toString().trim();
       if (this.language !== challengeLang) {
-        const langName = this.getLanguageName(challengeLang);
-        alert(`The required language for this problem is ${langName}. Unsupported languages are disabled.`);
+        const requiredName = this.getLanguageName(challengeLang);
+        this.languageMismatchError = `⚠ PROTOCOL VIOLATION: This challenge requires ${requiredName}. Language has been reset.`;
         this.language = challengeLang;
         this.code = this.getBoilerplate(this.language);
         return;
@@ -262,6 +312,24 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   public submitCode(): void {
     if (!this.code.trim() || this.isSubmitting || this.isGameOver) return;
+
+    // Language enforcement check
+    if (this.challenge?.language) {
+      const requiredLang = this.challenge.language.toString().trim();
+      if (this.language !== requiredLang) {
+        const requiredName = this.getLanguageName(requiredLang);
+        const selectedName = this.getLanguageName(this.language);
+        this.submissionResult = {
+          status: 'LANGUAGE_MISMATCH',
+          errorOutput: `⛔ SUBMISSION BLOCKED: This challenge requires ${requiredName}, but you selected ${selectedName}. Please use the correct language.`
+        };
+        this.activeTab = 'submissions';
+        this.playSound('fail');
+        return;
+      }
+    }
+
+    this.languageMismatchError = null;
     this.isSubmitting = true;
     this.submissionResult = null;
     this.activeTab = 'submissions';
@@ -323,13 +391,20 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.isGameOver = true;
       this.healthPercent = 0;
       this.saveHealthState();
+      
+      const reconnectKey = this.getReconnectTimeKey();
+      if (!localStorage.getItem(reconnectKey)) {
+        localStorage.setItem(reconnectKey, (Date.now() + 20000).toString());
+      }
+      
       this.playSound('gameover');
-      alert('⚡ SYSTEM TERMINATED: OUT OF TRIALS. HACKER NEURAL LINK SEVERED.');
+      this.startReconnectTimer();
     }
   }
 
   public loadMySubmissions(): void {
-    this.submissionService.getUserSubmissions('user-123').subscribe({
+    if (!this.currentUserSub) return;
+    this.submissionService.getUserSubmissions(this.currentUserSub).subscribe({
       next: (res) => {
         const currentChallengeSubs = res.filter((s: any) => s.challengeId == this.challengeId);
         this.mySubmissions = currentChallengeSubs.sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
@@ -443,16 +518,16 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     this.healthPercent = 100;
     this.isGameOver = false;
     this.saveHealthState();
+    localStorage.removeItem(this.getReconnectTimeKey());
     window.location.reload();
   }
 
   public toggleAntiCheat(): void {
-    if (!this.challenge) return;
-    this.challenge.antiCheatEnabled = !this.challenge.antiCheatEnabled;
+    this.antiCheatEnabled = !this.antiCheatEnabled;
   }
 
   public blockEvent(event: Event): void {
-    if (this.challenge?.antiCheatEnabled) {
+    if (this.antiCheatEnabled) {
       event.preventDefault();
     }
   }

@@ -4,13 +4,16 @@ import com.codearena.module1_challenge.dto.SubmissionDto;
 import com.codearena.module1_challenge.dto.SubmitCodeRequest;
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.entity.Submission;
+import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module1_challenge.repository.SubmissionRepository;
+import com.codearena.module1_challenge.repository.TestCaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     private final SubmissionRepository submissionRepository;
     private final ChallengeRepository challengeRepository;
+    private final TestCaseRepository testCaseRepository;
     private final ExecutionService executionService;
 
     @Override
@@ -40,11 +44,11 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         submission = submissionRepository.save(submission);
 
-        // FATAL FIX: Force initialize the lazy testcases bag BEFORE moving to the separate @Async thread
-        challenge.getTestCases().size();
+        // Read test cases via sanitized native query to avoid legacy schema type-mismatch during lazy loading.
+        List<TestCase> testCases = loadSanitizedTestCases(challenge.getId());
 
         // TRUE Async execution of test cases via separate service
-        executionService.executeSubmission(submission, challenge.getTestCases());
+        executionService.executeSubmission(submission, testCases);
 
         return mapToDto(submission);
     }
@@ -88,5 +92,37 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .errorOutput(sub.getErrorOutput())
                 .challengeTitle(sub.getChallenge().getTitle())
                 .build();
+    }
+
+    private List<TestCase> loadSanitizedTestCases(Long challengeId) {
+        List<Object[]> rows = testCaseRepository.findRawByNumericChallengeId(challengeId);
+        List<TestCase> testCases = new ArrayList<>(rows.size());
+
+        for (Object[] row : rows) {
+            TestCase tc = new TestCase();
+            tc.setInput(row[0] == null ? "" : row[0].toString());
+            tc.setExpectedOutput(row[1] == null ? "" : row[1].toString());
+            tc.setIsHidden(asBoolean(row[2]));
+            testCases.add(tc);
+        }
+
+        return testCases;
+    }
+
+    private boolean asBoolean(Object raw) {
+        if (raw == null) {
+            return false;
+        }
+        if (raw instanceof Boolean value) {
+            return value;
+        }
+        if (raw instanceof Number number) {
+            return number.intValue() != 0;
+        }
+        if (raw instanceof byte[] bytes && bytes.length > 0) {
+            return bytes[0] != 0;
+        }
+        String text = raw.toString().trim();
+        return "1".equals(text) || "true".equalsIgnoreCase(text);
     }
 }

@@ -16,9 +16,9 @@ public interface CustomizationService {
     void deleteItem(Long id);
 
     // === USER: Profile customization ===
-    List<UserUnlockDTO> getMyUnlocks(String keycloakId);
-    List<UserUnlockDTO> getMyUnlocksByType(String keycloakId, String itemType);
-    void equipItem(String keycloakId, EquipItemRequest request);
-    void checkAndGrantUnlocks(String keycloakId);
-    void grantDefaultItems(String keycloakId);
+    List<UserUnlockDTO> getMyUnlocks(String auth0Id);
+    List<UserUnlockDTO> getMyUnlocksByType(String auth0Id, String itemType);
+    void equipItem(String auth0Id, EquipItemRequest request);
+    void checkAndGrantUnlocks(String auth0Id);
+    void grantDefaultItems(String auth0Id);
 }

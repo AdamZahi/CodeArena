@@ -10,10 +10,10 @@
       <button *ngIf="isAdmin" 
               class="toolbar-anticheat" 
               (click)="toggleAntiCheat()"
-              [class.active]="challenge?.antiCheatEnabled"
-              [title]="challenge?.antiCheatEnabled ? 'Disable Anti-Cheat' : 'Enable Anti-Cheat'">
+              [class.active]="antiCheatEnabled"
+              [title]="antiCheatEnabled ? 'Disable Anti-Cheat' : 'Enable Anti-Cheat'">
         <span class="ac-icon">🛡️</span>
-        <span class="ac-text">ANTI_CHEAT: {{ challenge?.antiCheatEnabled ? 'ON' : 'OFF' }}</span>
+        <span class="ac-text">ANTI_CHEAT: {{ antiCheatEnabled ? 'ON' : 'OFF' }}</span>
       </button>
 
       <button class="toolbar-sound-btn" (click)="toggleSound()" [title]="isMuted ? 'Unmute Sounds' : 'Mute Sounds'">
@@ -44,9 +44,10 @@
 
         <div *ngIf="!isLoading && challenge" 
              class="desc-content" 
-             [class.restricted]="challenge?.antiCheatEnabled"
+             [class.restricted]="antiCheatEnabled"
              (copy)="blockEvent($event)" 
-             (contextmenu)="blockEvent($event)">
+             (contextmenu)="blockEvent($event)"
+             (selectstart)="blockEvent($event)">
           <!-- HACKER HEALTH BAR -->
           <div class="hacker-health-container">
             <div class="health-label">
@@ -246,9 +247,19 @@
     <div class="lc-right">
       <div class="editor-topbar">
         <span class="editor-label">TERMINAL_v1.0</span>
-        <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
-          <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
-        </select>
+        <div class="lang-select-wrapper">
+          <select class="lang-select" 
+                  [(ngModel)]="language" 
+                  (change)="onLanguageChange()"
+                  [disabled]="isLanguageLocked"
+                  [class.locked]="isLanguageLocked">
+            <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+          </select>
+          <span *ngIf="isLanguageLocked" class="lock-indicator" title="Language is enforced for this challenge">🔒</span>
+        </div>
+      </div>
+      <div class="lang-mismatch-banner" *ngIf="languageMismatchError">
+        {{ languageMismatchError }}
       </div>
 
       <div class="editor-body">
@@ -272,7 +283,7 @@
         <div class="game-over-overlay" *ngIf="isGameOver">
           <div class="glitch-wrapper">
              <div class="glitch-text" data-text="LINK_SEVERED">LINK_SEVERED</div>
-             <button class="retry-btn" (click)="reestablishConnection()">RE-ESTABLISH_CONNECTION</button>
+             <button class="retry-btn" style="cursor: not-allowed; opacity: 0.8;">RE-ESTABLISHING IN {{ autoReconnectTimer }}s...</button>
           </div>
         </div>
       </div>

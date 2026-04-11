@@ -1,12 +1,17 @@
-<section class="auth-shell register-shell">
+<section class="auth-shell">
+  <div class="grid-overlay"></div>
+  <div class="scan-line"></div>
+  <div class="glow glow-purple"></div>
+  <div class="glow glow-cyan"></div>
+
   <article class="auth-card">
-    <p class="auth-kicker">Join Code Arena</p>
+    <p class="auth-kicker">CODE ARENA // NEW RECRUIT</p>
     <h1>Create Your Profile</h1>
     <p class="auth-subtitle">
-      Start competing in coding battles, track your progress, and unlock coaching challenges.
+      Build your identity, enter coding battles, and start your climb through the ranked arena.
     </p>
 
-    <div class="auth-actions">
+    <div class="auth-actions" *ngIf="!showEmailForm">
       <button type="button" class="auth-btn auth-btn-primary" (click)="registerWithEmail()">
         Sign Up with Email
       </button>
@@ -19,6 +24,59 @@
         Sign Up with GitHub
       </button>
     </div>
+
+    <form class="email-signup-form" *ngIf="showEmailForm" [formGroup]="emailSignupForm" (ngSubmit)="submitEmailRegistration()">
+      <div class="field-grid">
+        <label class="field">
+          <span>Full Name</span>
+          <input type="text" formControlName="fullName" placeholder="e.g. Adam Zahi" />
+          <small *ngIf="fullName.touched && fullName.invalid">Please enter your full name.</small>
+        </label>
+
+        <label class="field">
+          <span>Username</span>
+          <input type="text" formControlName="username" placeholder="e.g. adam_dev" />
+          <small *ngIf="username.touched && username.invalid">Use at least 3 chars: letters, digits, ., _, -</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Bio</span>
+        <textarea formControlName="bio" rows="3" placeholder="A short intro for your battle profile"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Avatar URL</span>
+        <input type="url" formControlName="avatarUrl" placeholder="https://..." />
+      </label>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="you@example.com" />
+          <small *ngIf="email.touched && email.invalid">Enter a valid email address.</small>
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input type="password" formControlName="password" placeholder="At least 8 characters" />
+          <small *ngIf="password.touched && password.invalid">Password must be at least 8 characters.</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Confirm Password</span>
+        <input type="password" formControlName="confirmPassword" placeholder="Repeat password" />
+        <small *ngIf="confirmPassword.touched && confirmPassword.invalid">Please confirm your password.</small>
+      </label>
+
+      <p class="form-note">Your account is created securely via Auth0, then your profile is completed in Code Arena.</p>
+      <p class="form-error" *ngIf="formError">{{ formError }}</p>
+
+      <button type="submit" class="auth-btn auth-btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Creating account...' : 'Create Account' }}
+      </button>
+    </form>
 
     <p class="auth-footer">
       Already have an account?
