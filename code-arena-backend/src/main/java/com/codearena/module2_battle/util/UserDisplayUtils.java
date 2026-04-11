@@ -30,10 +30,10 @@ public final class UserDisplayUtils {
             return user.getNickname();
         }
         if (user.getFirstName() != null && !user.getFirstName().isBlank()) {
+            if (user.getLastName() != null && !user.getLastName().isBlank()) {
+                return user.getFirstName() + " " + user.getLastName();
+            }
             return user.getFirstName();
-        }
-        if (user.getLastName() != null && !user.getLastName().isBlank()) {
-            return user.getLastName();
         }
         if (user.getEmail() != null && user.getEmail().contains("@")) {
             return user.getEmail().split("@")[0];

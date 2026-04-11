@@ -90,7 +90,7 @@ public class ParticipantIdentityService {
             return UNKNOWN_HACKER;
         }
         String value = participantId.contains("|") ? participantId.split("\\|", 2)[1] : participantId;
-        if (value.length() > 12) {
+        if (value.length() > 20) {
             return "user_" + value.substring(value.length() - 8);
         }
         return value;
