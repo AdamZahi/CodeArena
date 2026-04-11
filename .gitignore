@@ -53,3 +53,6 @@ pnpm-debug.log*
 **/.idea/
 **/.DS_Store
 **/Thumbs.db
+# Environment files — contain API keys, never commit these
+code-arena-frontend/src/environments/environment.ts
+code-arena-frontend/src/environments/environment.prod.ts
