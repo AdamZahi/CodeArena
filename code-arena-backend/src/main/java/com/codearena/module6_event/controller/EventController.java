@@ -65,6 +65,18 @@ public class EventController {
         return ResponseEntity.ok(recommendationService.getRecommendedEvents(participantId));
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{id}/recommendation-score")
+    public ResponseEntity<Map<String, Object>> getRecommendationScore(
+            @PathVariable("id") UUID eventId,
+            @AuthenticationPrincipal Jwt jwt) {
+        String participantId = jwt.getSubject();
+        return ResponseEntity.ok(
+            recommendationService.getRecommendationExplanation(
+                participantId, eventId)
+        );
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<EventDto> createEvent(@RequestBody CreateEventRequest dto) {
