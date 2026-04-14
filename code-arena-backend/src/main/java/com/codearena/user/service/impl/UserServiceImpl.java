@@ -37,28 +37,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getCurrentUser() {
         Jwt jwt = getCurrentJwtOrNull();
-        if (jwt == null) {
-            return buildAnonymousUser();
-        }
-        User user = userRepository.findByKeycloakId(jwt.getSubject())
-            .orElse(null);
-        if (user == null) {
-            return buildAnonymousUser();
-        }
+        if (jwt == null) return buildAnonymousUser();
+
+        User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
+        if (user == null) return buildAnonymousUser();
+
         return userMapper.toResponse(user);
     }
 
     @Override
     public UserResponseDTO updateCurrentUser(ProfileUpdateDTO request) {
         Jwt jwt = getCurrentJwtOrNull();
-        if (jwt == null) {
-            return buildAnonymousUser();
-        }
-        User user = userRepository.findByKeycloakId(jwt.getSubject())
-            .orElse(null);
-        if (user == null) {
-            return buildAnonymousUser();
-        }
+        if (jwt == null) return buildAnonymousUser();
+
+        User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
+        if (user == null) return buildAnonymousUser();
+
         userMapper.updateProfile(request, user);
         return userMapper.toResponse(userRepository.save(user));
     }
@@ -66,13 +60,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getById(UUID id) {
         return userRepository.findById(id).map(userMapper::toResponse)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @Override
     public UserResponseDTO updateRole(UUID id, Role role) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setRole(role);
         User saved = userRepository.save(user);
         auth0ManagementService.updateUserRole(user.getKeycloakId(), role.name());
@@ -82,75 +76,88 @@ public class UserServiceImpl implements UserService {
     @Override
     public void softDelete(UUID id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         user.setActive(false);
         userRepository.save(user);
     }
-
     @Override
     public void syncFromJwt(Jwt jwt) {
+        log.info("=== JWT CLAIMS ===: {}", jwt.getClaims());
+
+        String namespace = "https://codearena.com/";
+        String email     = jwt.getClaimAsString(namespace + "email");
+        String avatarUrl = jwt.getClaimAsString(namespace + "picture");
+        String firstName = resolveFirstName(jwt, namespace);
+        String lastName  = resolveLastName(jwt, namespace);
+
         User user = userRepository.findByKeycloakId(jwt.getSubject()).orElse(null);
+
         if (user == null) {
             user = User.builder()
-                .keycloakId(jwt.getSubject())
-                .email(jwt.getClaimAsString("email"))
-                .firstName(jwt.getClaimAsString("given_name"))
-                .lastName(jwt.getClaimAsString("family_name"))
-                .role(resolveRole(jwt))
-                .authProvider(resolveAuthProvider(jwt))
-                .isActive(true)
-                .build();
+                    .keycloakId(jwt.getSubject())
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .avatarUrl(avatarUrl)
+                    .role(resolveRole(jwt))
+                    .authProvider(resolveAuthProvider(jwt))
+                    .isActive(true)
+                    .build();
             userRepository.save(user);
             return;
         }
 
         boolean updated = false;
-        String email = jwt.getClaimAsString("email");
-        String firstName = jwt.getClaimAsString("given_name");
-        String lastName = jwt.getClaimAsString("family_name");
-
-        if (email != null && !email.equals(user.getEmail())) {
-            user.setEmail(email);
-            updated = true;
+        if (email != null && (user.getEmail() == null || !email.equals(user.getEmail()))) {
+            user.setEmail(email); updated = true;
         }
-        if (firstName != null && !firstName.equals(user.getFirstName())) {
-            user.setFirstName(firstName);
-            updated = true;
+        if (firstName != null && (user.getFirstName() == null || !firstName.equals(user.getFirstName()))) {
+            user.setFirstName(firstName); updated = true;
         }
-        if (lastName != null && !lastName.equals(user.getLastName())) {
-            user.setLastName(lastName);
-            updated = true;
+        if (lastName != null && (user.getLastName() == null || !lastName.equals(user.getLastName()))) {
+            user.setLastName(lastName); updated = true;
         }
-
-        if (updated) {
-            userRepository.save(user);
+        if (avatarUrl != null && (user.getAvatarUrl() == null || !avatarUrl.equals(user.getAvatarUrl()))) {
+            user.setAvatarUrl(avatarUrl); updated = true;
         }
+        if (updated) userRepository.save(user);
     }
 
+    private String resolveFirstName(Jwt jwt, String ns) {
+        String given = jwt.getClaimAsString(ns + "given_name");
+        if (given != null && !given.isBlank()) return given;
+
+        String fullName = jwt.getClaimAsString(ns + "name");
+        if (fullName != null && !fullName.isBlank())
+            return fullName.trim().split(" ", 2)[0];
+
+        return null;
+    }
+
+    private String resolveLastName(Jwt jwt, String ns) {
+        String family = jwt.getClaimAsString(ns + "family_name");
+        if (family != null && !family.isBlank()) return family;
+
+        String fullName = jwt.getClaimAsString(ns + "name");
+        if (fullName != null && fullName.trim().contains(" "))
+            return fullName.trim().split(" ", 2)[1];
+
+        return null;
+    }
     private Role resolveRole(Jwt jwt) {
         List<String> roles = jwt.getClaimAsStringList("https://codearena.com/roles");
         if (roles != null) {
-            if (roles.contains("ADMIN")) {
-                return Role.ADMIN;
-            }
-            if (roles.contains("COACH")) {
-                return Role.COACH;
-            }
+            if (roles.contains("ADMIN")) return Role.ADMIN;
+            if (roles.contains("COACH")) return Role.COACH;
         }
         return Role.PARTICIPANT;
     }
 
     private AuthProvider resolveAuthProvider(Jwt jwt) {
         String sub = jwt.getSubject();
-        if (sub == null) {
-            return AuthProvider.LOCAL;
-        }
-        if (sub.startsWith("google-oauth2|")) {
-                return AuthProvider.GOOGLE;
-        }
-        if (sub.startsWith("github|")) {
-                return AuthProvider.GITHUB;
-        }
+        if (sub == null) return AuthProvider.LOCAL;
+        if (sub.startsWith("google-oauth2|")) return AuthProvider.GOOGLE;
+        if (sub.startsWith("github|")) return AuthProvider.GITHUB;
         return AuthProvider.LOCAL;
     }
 
@@ -164,12 +171,12 @@ public class UserServiceImpl implements UserService {
 
     private UserResponseDTO buildAnonymousUser() {
         return UserResponseDTO.builder()
-            .email("guest@local")
-            .firstName("Guest")
-            .lastName("User")
-            .role(Role.PARTICIPANT)
-            .authProvider(AuthProvider.LOCAL)
-            .isActive(true)
-            .build();
+                .email("guest@local")
+                .firstName("Guest")
+                .lastName("User")
+                .role(Role.PARTICIPANT)
+                .authProvider(AuthProvider.LOCAL)
+                .isActive(true)
+                .build();
     }
 }

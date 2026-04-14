@@ -1,4 +1,6 @@
 package com.codearena.module9_arenatalk.entity;
 
-public class HubVisibility {
+public enum HubVisibility {
+    PUBLIC,
+    PRIVATE
 }

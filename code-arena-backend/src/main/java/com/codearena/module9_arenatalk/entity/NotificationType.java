@@ -1,4 +1,6 @@
 package com.codearena.module9_arenatalk.entity;
 
-public class NotificationType {
+public enum NotificationType {
+    ACCEPTED,
+    REJECTED
 }

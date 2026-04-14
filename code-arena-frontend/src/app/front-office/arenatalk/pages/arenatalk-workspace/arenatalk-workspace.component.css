@@ -701,7 +701,29 @@ app-message-reactions {
 .icon-btn[title="Unpin"]:hover {
   background: rgba(255, 215, 90, 0.08);
 }
+.messages-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 280px);
+}
 
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.message-input-bar {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: #0a0d1a;
+}
 /* ── EDIT MESSAGE ── */
 .edit-message-box {
   margin-top: 10px;

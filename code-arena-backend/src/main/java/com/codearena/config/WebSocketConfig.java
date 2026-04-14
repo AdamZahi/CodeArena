@@ -18,8 +18,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // TODO: Tune broker channels for battle throughput.
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue"); // added /queue for voice signaling
         registry.setApplicationDestinationPrefixes("/app");
+        registry.setUserDestinationPrefix("/user"); // added for user-specific voice messages
     }
 
     /**

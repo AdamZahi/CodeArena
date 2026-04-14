@@ -21,13 +21,14 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
-          jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
-
+  spring:
+    security:
+      oauth2:
+        resourceserver:
+          jwt:
+            issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
+            jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
+            audiences: https://codearena.com/api  # ← ajouter cette ligne
 keycloak:
   realm: code-arena
   client-id: code-arena-backend

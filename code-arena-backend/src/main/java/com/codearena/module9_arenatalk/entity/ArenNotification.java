@@ -25,6 +25,7 @@ public class ArenNotification {
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
+    @Column(name = "is_read")
     private boolean read = false;
 
     private LocalDateTime createdAt;

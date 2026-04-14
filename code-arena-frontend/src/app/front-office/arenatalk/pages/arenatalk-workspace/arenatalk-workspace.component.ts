@@ -12,13 +12,26 @@ import { VoiceChannelComponent } from '../voice-channel/voice-channel.component'
 import { MessageReactionsComponent } from '../message-reactions/message-reactions.component';
 import { ReactionService } from '../../services/reaction.service';
 import { MessageSearchComponent } from '../message-search/message-search.component';
+import { ChannelSummaryComponent } from '../channel-summary/channel-summary.component';
+import { MessageModerationComponent } from '../message-moderation/message-moderation.component';
+import { SmartReplyComponent } from '../smart-reply/smart-reply.component';
+import { AiModerationService } from '../../services/ai/ai-moderation.service';
 
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
   selector: 'app-arenatalk-workspace',
   standalone: true,
-  imports: [CommonModule, FormsModule, VoiceChannelComponent, MessageReactionsComponent, MessageSearchComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    VoiceChannelComponent,
+    MessageReactionsComponent,
+    MessageSearchComponent,
+    ChannelSummaryComponent,
+    MessageModerationComponent,
+    SmartReplyComponent
+  ],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
 })
@@ -56,13 +69,19 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   editingMessageId: number | null = null;
   editedMessageContent = '';
 
+  showModerationWarning = false;
+  moderationWarningText = '';
+  pendingMessage = '';
+  isCheckingMessage = false;
+
   constructor(
     private router: Router,
     private arenaService: ArenatalkService,
     private hubMemberService: HubMemberService,
     private authUserSync: AuthUserSyncService,
     private auth: AuthService,
-    private reactionService: ReactionService
+    private reactionService: ReactionService,
+    private aiModerationService: AiModerationService
   ) {}
 
   ngOnInit(): void {
@@ -132,13 +151,9 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
     if (hub.id) {
       this.arenaService.getChannelsByHub(hub.id).subscribe({
-        next: (data) => {
-          this.channels = data;
-          this.selectFirstChannel();
-        },
+        next: (data) => { this.channels = data; this.selectFirstChannel(); },
         error: (err) => console.error('Error loading channels', err)
       });
-
       this.loadMembers(hub.id);
       this.setCurrentUserOnline();
     }
@@ -146,10 +161,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   loadMembers(hubId: number): void {
     this.hubMemberService.getMembers(hubId).subscribe({
-      next: (members) => {
-        this.members = members;
-        this.detectCurrentUser(members);
-      },
+      next: (members) => { this.members = members; this.detectCurrentUser(members); },
       error: (err) => console.error('Error loading members', err)
     });
   }
@@ -157,7 +169,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   private detectCurrentUser(members: HubMember[]): void {
     this.authUserSync.currentUser$.pipe(take(1)).subscribe((currentUser: CurrentUser | null) => {
       if (!currentUser?.id) return;
-
       this.currentUserMember = members.find(m => m.user.id === currentUser.id) ?? null;
       this.currentUserName =
         `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim()
@@ -233,7 +244,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
         this.messages = data;
         this.loadPinnedMessages(channelId);
         this.loadReactions();
-        this.markChannelAsRead(channelId);
       },
       error: (err) => {
         console.error('Error loading messages', err);
@@ -247,7 +257,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   loadPinnedMessages(channelId: number): void {
     this.arenaService.getPinnedMessages(channelId).subscribe({
       next: (data) => this.pinnedMessages = data,
-      error: (err) => console.error('Error loading pinned messages', err)
+      error: () => this.pinnedMessages = []
     });
   }
 
@@ -260,65 +270,74 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  markChannelAsRead(channelId: number): void {
-    if (!this.currentKeycloakId) return;
-
-    this.arenaService.markChannelAsRead(channelId, this.currentKeycloakId).subscribe({
-      next: () => this.loadReadReceipts(),
-      error: (err) => console.error('Error marking channel as read', err)
-    });
-  }
-
-  loadReadReceipts(): void {
-    if (!this.currentKeycloakId) return;
-
-    this.messages.forEach(msg => {
-      if (!msg.id) return;
-      this.arenaService.getReadStatus(msg.id, this.currentKeycloakId).subscribe({
-        next: (data) => this.readReceipts[msg.id!] = data,
-        error: () => {}
-      });
-    });
-  }
-
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
-    this.arenaService.sendMessage(this.selectedChannel.id, { content: this.newMessage.trim() }).subscribe({
+    if (this.isCheckingMessage) return;
+
+    this.isCheckingMessage = true;
+    const content = this.newMessage.trim();
+
+    this.aiModerationService.moderate(content).subscribe({
+      next: (result) => {
+        this.isCheckingMessage = false;
+        if (!result.safe) {
+          this.pendingMessage = content;
+          this.moderationWarningText = result.reason;
+          this.showModerationWarning = true;
+        } else {
+          this.doSendMessage(content);
+        }
+      },
+      error: () => {
+        this.isCheckingMessage = false;
+        this.doSendMessage(content);
+      }
+    });
+  }
+
+  doSendMessage(content: string): void {
+    if (!this.selectedChannel?.id) return;
+    this.arenaService.sendMessage(this.selectedChannel.id, { content }).subscribe({
       next: (savedMessage) => {
         this.messages.push(savedMessage);
         this.newMessage = '';
         this.loadReactions();
-        this.loadReadReceipts();
       },
       error: (err) => console.error('Error sending message', err)
     });
   }
 
+  onSendAnyway(): void {
+    this.showModerationWarning = false;
+    this.doSendMessage(this.pendingMessage);
+    this.newMessage = '';
+    this.pendingMessage = '';
+  }
+
+  onModerationCancel(): void {
+    this.showModerationWarning = false;
+    this.pendingMessage = '';
+  }
+
+  onSmartReplySelected(reply: string): void {
+    this.newMessage = reply;
+  }
+
   pinMessage(messageId: number): void {
     this.arenaService.pinMessage(messageId).subscribe({
-      next: () => {
-        if (this.selectedChannel?.id) {
-          this.loadMessagesByChannel(this.selectedChannel.id);
-        }
-      },
+      next: () => { if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id); },
       error: (err) => console.error('Error pinning message', err)
     });
   }
 
   unpinMessage(messageId: number): void {
     this.arenaService.unpinMessage(messageId).subscribe({
-      next: () => {
-        if (this.selectedChannel?.id) {
-          this.loadMessagesByChannel(this.selectedChannel.id);
-        }
-      },
+      next: () => { if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id); },
       error: (err) => console.error('Error unpinning message', err)
     });
   }
 
-  openCreateChannelForm(): void {
-    this.showCreateChannelForm = true;
-  }
+  openCreateChannelForm(): void { this.showCreateChannelForm = true; }
 
   closeCreateChannelForm(): void {
     this.showCreateChannelForm = false;
@@ -330,7 +349,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     const rawName = this.newChannel.name?.trim();
     const topic = this.newChannel.topic?.trim() || '';
     if (!rawName) return;
-
     const normalizedName = rawName.toLowerCase().replace(/\s+/g, '-');
     if (normalizedName.length < 3 || normalizedName.length > 20) return;
     if (!/^[a-z0-9-_]+$/.test(normalizedName)) return;
@@ -354,13 +372,11 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.deleteTargetType = type;
     this.deleteTargetId = id;
     this.showDeleteModal = true;
-
     const messages: Record<string, string> = {
       hub: 'Are you sure you want to delete this community? This action is irreversible.',
       channel: 'Are you sure you want to delete this channel and all its messages?',
       message: 'Are you sure you want to delete this message?'
     };
-
     this.deleteMessageText = messages[type!] || '';
   }
 
@@ -380,10 +396,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   deleteHubConfirmed(hubId: number): void {
     this.arenaService.deleteHub(hubId).subscribe({
-      next: () => {
-        this.closeDeleteModal();
-        this.router.navigate(['/arenatalk']);
-      },
+      next: () => { this.closeDeleteModal(); this.router.navigate(['/arenatalk']); },
       error: (err) => console.error('Error deleting hub', err)
     });
   }
@@ -395,11 +408,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
         if (this.selectedChannel?.id === channelId) {
           this.selectedChannel = this.channels[0] || null;
           if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
-          else {
-            this.messages = [];
-            this.pinnedMessages = [];
-            this.readReceipts = {};
-          }
+          else { this.messages = []; this.pinnedMessages = []; this.readReceipts = {}; }
         }
         this.closeDeleteModal();
       },
@@ -453,10 +462,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   onHubImageError(event: Event, type: 'icon' | 'banner'): void {
     const img = event.target as HTMLImageElement;
     if (type === 'icon') img.style.display = 'none';
-    if (type === 'banner') {
-      const c = img.parentElement;
-      if (c) c.style.display = 'none';
-    }
+    if (type === 'banner') { const c = img.parentElement; if (c) c.style.display = 'none'; }
   }
 
   scrollToMessage(msg: Message): void {
@@ -471,19 +477,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  get hasMessages(): boolean {
-    return this.messages.length > 0;
-  }
-
-  get categoryLabel(): string {
-    return this.selectedHub?.category || 'COMMUNITY';
-  }
-
-  get activeMembers(): HubMember[] {
-    return this.members.filter(m => m.status === 'ACTIVE');
-  }
-
-  get onlineMembers(): HubMember[] {
-    return this.activeMembers.filter(m => m.online);
-  }
+  get hasMessages(): boolean { return this.messages.length > 0; }
+  get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }
+  get activeMembers(): HubMember[] { return this.members.filter(m => m.status === 'ACTIVE'); }
+  get onlineMembers(): HubMember[] { return this.activeMembers.filter(m => m.online); }
 }

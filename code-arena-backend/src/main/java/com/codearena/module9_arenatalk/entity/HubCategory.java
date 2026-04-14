@@ -1,4 +1,9 @@
 package com.codearena.module9_arenatalk.entity;
 
-public class HubCategory {
+public enum HubCategory {
+    GAMING,
+    PROGRAMMING,
+    ESPORT,
+    STUDY,
+    CUSTOM
 }
