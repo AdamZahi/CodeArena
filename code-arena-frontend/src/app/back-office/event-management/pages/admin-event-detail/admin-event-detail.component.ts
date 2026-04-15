@@ -99,7 +99,7 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
   resolveParticipantLabel(participantName?: string, participantId?: string): string {
     const safeId = (participantId ?? '').trim();
 
-    // 1. If it's the current user, get name directly from Auth0 SDK (most up to date)
+    // 1. Same method as navbar/customize profile: if it's the current user, get name directly from Auth0 SDK
     if (this.loggedInUser && safeId && this.loggedInUser.sub === safeId) {
       const authName = this.loggedInUser.nickname || this.loggedInUser.name;
       if (authName && !this.looksLikeTechnicalIdentifier(authName)) {
@@ -110,26 +110,9 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
     // 2. Fetch from backend user map (for other users)
     if (safeId && this.userMap[safeId]) {
       const u = this.userMap[safeId];
-      
-      // Try Nickname first
-      if (u.nickname && !this.looksLikeTechnicalIdentifier(u.nickname)) {
-        return u.nickname;
-      }
-
-      // Try Firstname + Lastname
-      if (u.firstName || u.lastName) {
-        const full = [u.firstName, u.lastName].filter(x => !!x).join(' ').trim();
-        if (full && !this.looksLikeTechnicalIdentifier(full)) {
-          return full;
-        }
-      }
-
-      // Try Email prefix
-      if (u.email) {
-        const prefix = u.email.split('@')[0];
-        if (prefix && !this.looksLikeTechnicalIdentifier(prefix)) {
-          return prefix;
-        }
+      const nickname = u.nickname || u.firstName || (u.email ? u.email.split('@')[0] : null);
+      if (nickname && !this.looksLikeTechnicalIdentifier(nickname)) {
+        return nickname;
       }
     }
 
@@ -139,17 +122,11 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
       return safeName;
     }
 
-    // 4. If we still have a technical name but found a user in the map with ANY info, try one last time
-    if (this.userMap[safeId]) {
-       const u = this.userMap[safeId];
-       if (u.email) return u.email.split('@')[0];
-    }
-
     if (safeId && !this.looksLikeTechnicalIdentifier(safeId)) {
       return safeId;
     }
 
-    // 5. Default dynamic user_xxx format for unmapped users
+    // 4. Default dynamic user_xxx format for unmapped users
     if (safeId) {
        const parts = safeId.split('|');
        const idPart = parts.length > 1 ? parts[1] : parts[0];
@@ -217,9 +194,6 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
           if (u.auth0Id) {
             this.userMap[u.auth0Id] = u;
           }
-          if (u.id) {
-            this.userMap[u.id] = u;
-          }
         });
         // Force refresh GUI
         this.participants = [...this.participants];
@@ -239,7 +213,7 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
       lower.startsWith('google-oauth2|') ||
       lower.startsWith('github|') ||
       lower.startsWith('facebook|') ||
-      /^\d{12,}$/.test(compact)
+      /^\d{8,}$/.test(compact)
     );
   }
 }
