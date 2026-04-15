@@ -112,7 +112,12 @@ public class RegistrationServiceImpl implements RegistrationService {
             try {
                 String userEmail = participantIdentityService.resolveEmail(participantId);
                 if (userEmail != null && !userEmail.isBlank()) {
-                    emailService.sendRegistrationConfirmationEmail(userEmail, event.getTitle(), saved.getQrCode());
+                    emailService.sendRegistrationConfirmationEmail(
+                        userEmail, 
+                        event.getTitle(),
+                        event.getStartDate() != null ? event.getStartDate().toString() : "TBD",
+                        event.getLocation() != null ? event.getLocation() : "TBD"
+                    );
                     log.info("Registration confirmation email sent to real address: {} ({})", participantId, userEmail);
                 } else {
                     log.warn("Skipping registration email for participant {} - No email found.", participantId);
@@ -213,7 +218,12 @@ public class RegistrationServiceImpl implements RegistrationService {
         try {
             String userEmail = participantIdentityService.resolveEmail(promoted.getParticipantId());
             if (userEmail != null && !userEmail.isBlank()) {
-                emailService.sendRegistrationConfirmationEmail(userEmail, event.getTitle(), promoted.getQrCode());
+                emailService.sendRegistrationConfirmationEmail(
+                    userEmail, 
+                    event.getTitle(),
+                    event.getStartDate() != null ? event.getStartDate().toString() : "TBD",
+                    event.getLocation() != null ? event.getLocation() : "TBD"
+                );
                 log.info("Registration confirmation email sent to real address: {} ({}) (promoted from waitlist)",
                         promoted.getParticipantId(), userEmail);
             } else {

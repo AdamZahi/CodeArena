@@ -17,36 +17,86 @@ public class EmailService {
     
     public void sendInvitationEmail(String to, String eventTitle, 
                                      String eventDate, String location) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("codearenapi@gmail.com");
-        message.setTo(to);
-        message.setSubject("⭐ VIP Invitation - " + eventTitle);
-        message.setText(
-            "You have been selected as a TOP 10 player!\n\n" +
-            "You are invited to: " + eventTitle + "\n" +
-            "Date: " + eventDate + "\n" +
-            "Location: " + location + "\n\n" +
-            "Login to CodeArena to accept or decline your invitation.\n\n" +
-            "CodeArena Team"
-        );
-        mailSender.send(message);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("codearenapi@gmail.com");
+            helper.setTo(to);
+            helper.setSubject("⭐ VIP INVITATION - " + eventTitle);
+            helper.setText("""
+                <div style="font-family: Arial, sans-serif;
+                            background: #0a0a0f;
+                            color: #e2e8f0;
+                            padding: 40px;
+                            border-radius: 12px;">
+                    <h1 style="color: #f59e0b;">⭐ VIP INVITATION</h1>
+                    <h2 style="color: #e2e8f0;">%s</h2>
+                    <p style="color: #06b6d4; font-size: 18px;">
+                        Congratulations! You have been selected as a TOP 10 player.
+                    </p>
+                    <div style="background: #0d0d15;
+                                border: 1px solid #1a1a2e;
+                                border-radius: 8px;
+                                padding: 20px;
+                                margin: 20px 0;">
+                        <p>📅 <strong>Date:</strong> %s</p>
+                        <p>📍 <strong>Location:</strong> %s</p>
+                    </div>
+                    <p style="color: #e2e8f0;">
+                        Login to CodeArena now to accept or decline your exclusive invitation.
+                    </p>
+                    <p style="color: #1a1a2e; margin-top: 32px; font-size: 11px;">
+                        CodeArena Team
+                    </p>
+                </div>
+                """.formatted(eventTitle, eventDate, location), true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("Failed to send invitation email: {}", e.getMessage());
+        }
     }
     
     public void sendRegistrationConfirmationEmail(String to, 
                                                    String eventTitle,
-                                                   String qrCode) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("codearenapi@gmail.com");
-        message.setTo(to);
-        message.setSubject("✅ Registration Confirmed - " + eventTitle);
-        message.setText(
-            "Your registration is confirmed!\n\n" +
-            "Event: " + eventTitle + "\n" +
-            "Your QR Code: " + qrCode + "\n\n" +
-            "Show this QR code at the event entrance.\n\n" +
-            "CodeArena Team"
-        );
-        mailSender.send(message);
+                                                   String eventDate,
+                                                   String location) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("codearenapi@gmail.com");
+            helper.setTo(to);
+            helper.setSubject("✅ REGISTRATION CONFIRMED - " + eventTitle);
+            helper.setText("""
+                <div style="font-family: Arial, sans-serif;
+                            background: #0a0a0f;
+                            color: #e2e8f0;
+                            padding: 40px;
+                            border-radius: 12px;">
+                    <h1 style="color: #10b981;">✅ REGISTRATION CONFIRMED</h1>
+                    <h2 style="color: #e2e8f0;">%s</h2>
+                    <p style="color: #e2e8f0; font-size: 18px;">
+                        ⚡ Your spot is secured!
+                    </p>
+                    <div style="background: #0d0d15;
+                                border: 1px solid #1a1a2e;
+                                border-radius: 8px;
+                                padding: 20px;
+                                margin: 20px 0;">
+                        <p>📅 <strong>Date:</strong> %s</p>
+                        <p>📍 <strong>Location:</strong> %s</p>
+                    </div>
+                    <p style="color: #64748b;">
+                        Don't forget to bring your QR code!
+                    </p>
+                    <p style="color: #1a1a2e; margin-top: 32px; font-size: 11px;">
+                        CodeArena Team
+                    </p>
+                </div>
+                """.formatted(eventTitle, eventDate, location), true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("Failed to send registration confirmation email: {}", e.getMessage());
+        }
     }
 
     public void sendReminderEmail(String to, String eventTitle,
