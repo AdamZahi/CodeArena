@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -106,6 +107,10 @@ public class Auth0ManagementService {
     }
 
     private String getManagementToken() {
+        if (!hasManagementConfig()) {
+            return null;
+        }
+
         String tokenUrl = String.format("https://%s/oauth/token", auth0Config.getDomain());
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -122,6 +127,13 @@ public class Auth0ManagementService {
         }
         Object token = response.getBody().get("access_token");
         return token == null ? null : token.toString();
+    }
+
+    private boolean hasManagementConfig() {
+        return StringUtils.hasText(auth0Config.getDomain())
+            && StringUtils.hasText(auth0Config.getClientId())
+            && StringUtils.hasText(auth0Config.getClientSecret())
+            && StringUtils.hasText(auth0Config.getManagementApiAudience());
     }
 
     private String asString(Object value) {
