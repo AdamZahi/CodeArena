@@ -110,9 +110,13 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         if (saved.getStatus() == EventStatus.CONFIRMED && saved.getQrCode() != null) {
             try {
-                String testEmail = "codearenapi@gmail.com";
-                emailService.sendRegistrationConfirmationEmail(testEmail, event.getTitle(), saved.getQrCode());
-                log.info("Registration confirmation email sent to {}", participantId);
+                String userEmail = participantIdentityService.resolveEmail(participantId);
+                if (userEmail != null && !userEmail.isBlank()) {
+                    emailService.sendRegistrationConfirmationEmail(userEmail, event.getTitle(), saved.getQrCode());
+                    log.info("Registration confirmation email sent to real address: {} ({})", participantId, userEmail);
+                } else {
+                    log.warn("Skipping registration email for participant {} - No email found.", participantId);
+                }
             } catch (Exception e) {
                 log.error("Failed to send registration confirmation email to {}", participantId, e);
             }
@@ -207,10 +211,15 @@ public class RegistrationServiceImpl implements RegistrationService {
         registrationRepository.save(promoted);
 
         try {
-            String testEmail = "codearenapi@gmail.com";
-            emailService.sendRegistrationConfirmationEmail(testEmail, event.getTitle(), promoted.getQrCode());
-            log.info("Registration confirmation email sent to {} (promoted from waitlist)",
-                    promoted.getParticipantId());
+            String userEmail = participantIdentityService.resolveEmail(promoted.getParticipantId());
+            if (userEmail != null && !userEmail.isBlank()) {
+                emailService.sendRegistrationConfirmationEmail(userEmail, event.getTitle(), promoted.getQrCode());
+                log.info("Registration confirmation email sent to real address: {} ({}) (promoted from waitlist)",
+                        promoted.getParticipantId(), userEmail);
+            } else {
+                log.warn("Skipping registration email for promoted participant {} - No email found.",
+                        promoted.getParticipantId());
+            }
         } catch (Exception e) {
             log.error("Failed to send registration confirmation email to {} (promoted from waitlist)",
                     promoted.getParticipantId(), e);

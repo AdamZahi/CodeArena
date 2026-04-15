@@ -40,6 +40,30 @@ public class ParticipantIdentityService {
                 .orElseGet(() -> hydrateAndResolve(participantId));
     }
 
+    @Transactional
+    public String resolveEmail(String participantId) {
+        if (participantId == null || participantId.isBlank()) {
+            return null;
+        }
+
+        return userRepository.findByAuth0Id(participantId)
+                .map(user -> {
+                    if (hasText(user.getEmail())) {
+                        return user.getEmail();
+                    }
+                    hydrateAndResolve(participantId);
+                    return userRepository.findByAuth0Id(participantId)
+                            .map(User::getEmail)
+                            .orElse(null);
+                })
+                .orElseGet(() -> {
+                    hydrateAndResolve(participantId);
+                    return userRepository.findByAuth0Id(participantId)
+                            .map(User::getEmail)
+                            .orElse(null);
+                });
+    }
+
     private String hydrateAndResolve(String participantId) {
         Auth0ManagementService.Auth0UserProfile profile = auth0ManagementService.fetchUserProfile(participantId);
         if (profile == null) {

@@ -55,6 +55,7 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("codearenapi@gmail.com");
             helper.setTo(to);
             helper.setSubject("⏰ REMINDER - " + eventTitle + " starts in 24h!");
             helper.setText("""
@@ -79,21 +80,11 @@ public class EmailService {
                     <p style="color: #64748b;">
                         Don't forget to bring your QR code!
                     </p>
-                    <div style="background: #0d0d15;
-                                border: 1px solid #8b5cf6;
-                                border-radius: 8px;
-                                padding: 12px;
-                                font-family: monospace;
-                                font-size: 11px;
-                                color: #8b5cf6;
-                                word-break: break-all;">
-                        %s
-                    </div>
                     <p style="color: #1a1a2e; margin-top: 32px; font-size: 11px;">
                         CodeArena Team
                     </p>
                 </div>
-                """.formatted(eventTitle, eventDate, location, qrCode), true);
+                """.formatted(eventTitle, eventDate, location), true);
             mailSender.send(message);
         } catch (Exception e) {
             log.error("Failed to send reminder email: {}", e.getMessage());

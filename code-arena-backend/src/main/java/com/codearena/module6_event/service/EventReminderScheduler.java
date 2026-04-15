@@ -21,9 +21,10 @@ public class EventReminderScheduler {
     private final EventRepository eventRepository;
     private final EventRegistrationRepository registrationRepository;
     private final EmailService emailService;
+    private final ParticipantIdentityService participantIdentityService;
 
     // Runs every hour to check for events starting in 24 hours
-    @Scheduled(fixedRate = 3600000)
+    @Scheduled(fixedRate = 360000)
     public void sendEventReminders() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime in24h = now.plusHours(24);
@@ -31,30 +32,36 @@ public class EventReminderScheduler {
 
         // Find events starting between 24h and 25h from now
         List<ProgrammingEvent> upcomingEvents = eventRepository
-            .findByStartDateBetween(in24h, in25h);
+                .findByStartDateBetween(in24h, in25h);
 
         for (ProgrammingEvent event : upcomingEvents) {
             // Get all CONFIRMED registrations for this event
-            List<EventRegistration> registrations = 
-                registrationRepository.findByEvent_IdAndStatus(
-                    event.getId(), EventStatus.CONFIRMED
-                );
+            List<EventRegistration> registrations = registrationRepository.findByEvent_IdAndStatus(
+                    event.getId(), EventStatus.CONFIRMED);
 
             log.info("Sending reminders for event: {} to {} participants",
-                event.getTitle(), registrations.size());
+                    event.getTitle(), registrations.size());
 
             for (EventRegistration registration : registrations) {
                 try {
-                    emailService.sendReminderEmail(
-                        "ness09358@gmail.com", // hardcoded for now
-                        event.getTitle(),
-                        event.getStartDate().toString(),
-                        event.getLocation() != null ? 
-                            event.getLocation() : "CODEARENA HQ",
-                        registration.getQrCode()
-                    );
+                    String userEmail = participantIdentityService.resolveEmail(registration.getParticipantId());
+
+                    if (userEmail != null && !userEmail.isBlank()) {
+                        emailService.sendReminderEmail(
+                                userEmail,
+                                event.getTitle(),
+                                event.getStartDate().toString(),
+                                event.getLocation() != null ? event.getLocation() : "CODEARENA HQ",
+                                registration.getQrCode());
+                        log.info("Reminder email sent to real address: {} for event: {}",
+                                userEmail, event.getTitle());
+                    } else {
+                        log.warn("Skipping reminder for participant {} - No email found.",
+                                registration.getParticipantId());
+                    }
                 } catch (Exception e) {
-                    log.error("Failed to send reminder: {}", e.getMessage());
+                    log.error("Failed to send reminder to participant {}: {}",
+                            registration.getParticipantId(), e.getMessage());
                 }
             }
         }
