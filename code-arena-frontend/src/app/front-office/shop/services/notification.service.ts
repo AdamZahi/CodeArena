@@ -28,6 +28,15 @@ export interface AdminOrderAlert {
   total: number;
   message: string;
 }
+
+export interface CandidatureAlert {
+  type: string;
+  eventId: string;
+  eventTitle: string;
+  participantId: string;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
@@ -36,18 +45,22 @@ export class NotificationService implements OnDestroy {
   private stockAlerts$ = new BehaviorSubject<StockAlert | null>(null);
   private priceUpdatesSubject$ = new BehaviorSubject<PriceUpdate[] | null>(null);
   private adminOrderAlerts$ = new BehaviorSubject<AdminOrderAlert | null>(null);
+  private candidatureAlerts$ = new BehaviorSubject<CandidatureAlert | null>(null);
 
   adminOrderAlert$ = this.adminOrderAlerts$.asObservable();
   notification$ = this.notifications$.asObservable();
   stockAlert$ = this.stockAlerts$.asObservable();
+  candidatureAlert$ = this.candidatureAlerts$.asObservable();
   // ── PRICE UPDATES ─────────────────────────────
   priceUpdates$ = this.priceUpdatesSubject$.asObservable();
-  connect(participantId: string): void {
+
+  connect(participantId: string, token?: string): void {
     if (this.client?.active) return;
 
     this.client = new Client({
       brokerURL: 'ws://localhost:8080/ws/websocket',
       reconnectDelay: 5000,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
         console.log('WebSocket connected');
 
@@ -78,13 +91,22 @@ export class NotificationService implements OnDestroy {
           }
         );
         // ── ADMIN ORDER ALERTS ────────────────────────
-this.client?.subscribe(
-  `/topic/admin/new-order`,
-  (message: IMessage) => {
-    const alert: AdminOrderAlert = JSON.parse(message.body);
-    this.adminOrderAlerts$.next(alert);
-  }
-);
+        this.client?.subscribe(
+          `/topic/admin/new-order`,
+          (message: IMessage) => {
+            const alert: AdminOrderAlert = JSON.parse(message.body);
+            this.adminOrderAlerts$.next(alert);
+          }
+        );
+
+        // ── ADMIN CANDIDATURE ALERTS ──────────────────
+        this.client?.subscribe(
+          `/topic/admin/candidatures`,
+          (message: IMessage) => {
+            const alert: CandidatureAlert = JSON.parse(message.body);
+            this.candidatureAlerts$.next(alert);
+          }
+        );
       },
       onDisconnect: () => console.log('WebSocket disconnected'),
       onStompError: (frame) => console.error('STOMP error', frame)
@@ -92,6 +114,7 @@ this.client?.subscribe(
 
     this.client.activate();
   }
+
 
   disconnect(): void {
     this.client?.deactivate();
