@@ -16,7 +16,7 @@ import { ChannelSummaryComponent } from '../channel-summary/channel-summary.comp
 import { MessageModerationComponent } from '../message-moderation/message-moderation.component';
 import { SmartReplyComponent } from '../smart-reply/smart-reply.component';
 import { AiModerationService } from '../../services/ai/ai-moderation.service';
-
+import { SemanticSearchComponent } from '../semantic-search/semantic-search.component';
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
@@ -30,7 +30,8 @@ type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
     MessageSearchComponent,
     ChannelSummaryComponent,
     MessageModerationComponent,
-    SmartReplyComponent
+    SmartReplyComponent,
+    SemanticSearchComponent
   ],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
@@ -39,6 +40,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   hubs: Hub[] = [];
   selectedHub: Hub | null = null;
+  hubReady = false;
   currentUserName = '';
 
   channels: TextChannel[] = [];
@@ -96,15 +98,44 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       const createdChannels = (state?.createdChannels as TextChannel[] | undefined) || [];
 
       if (createdHub) {
+        localStorage.setItem('selectedHubId', String(createdHub.id));
         this.hubs = [createdHub];
+        this.hubReady = false;
         this.selectedHub = createdHub;
+        this.hubReady = true;
         this.loadMembers(createdHub.id!);
         this.setCurrentUserOnline();
+        if (createdChannels.length > 0) {
+          this.channels = createdChannels;
+          this.selectFirstChannel();
+        } else if (createdHub.id) {
+          this.arenaService.getChannelsByHub(createdHub.id).subscribe({
+            next: (data) => { this.channels = data; this.selectFirstChannel(); },
+            error: (err) => console.error(err)
+          });
+        }
+        return;
       }
 
-      if (createdChannels.length > 0) {
-        this.channels = createdChannels;
-        this.selectFirstChannel();
+      const savedHubId = localStorage.getItem('selectedHubId');
+      if (savedHubId) {
+        this.arenaService.getHubById(Number(savedHubId)).subscribe({
+          next: (hub) => {
+            this.hubs = [hub];
+            this.hubReady = false;
+            this.selectedHub = hub;
+            this.hubReady = true;
+            this.loadMembers(hub.id!);
+            this.setCurrentUserOnline();
+            if (hub.id) {
+              this.arenaService.getChannelsByHub(hub.id).subscribe({
+                next: (data) => { this.channels = data; this.selectFirstChannel(); },
+                error: (err) => console.error(err)
+              });
+            }
+          },
+          error: () => localStorage.removeItem('selectedHubId')
+        });
       }
     });
   }
@@ -138,7 +169,10 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       this.setCurrentUserOffline();
     }
 
-    this.selectedHub = hub;
+    localStorage.setItem('selectedHubId', String(hub.id));
+    this.hubReady = false;
+
+    this.selectedHub = null;
     this.channels = [];
     this.messages = [];
     this.pinnedMessages = [];
@@ -149,14 +183,19 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.pendingRequests = [];
     this.showPendingRequests = false;
 
-    if (hub.id) {
-      this.arenaService.getChannelsByHub(hub.id).subscribe({
-        next: (data) => { this.channels = data; this.selectFirstChannel(); },
-        error: (err) => console.error('Error loading channels', err)
-      });
-      this.loadMembers(hub.id);
-      this.setCurrentUserOnline();
-    }
+    setTimeout(() => {
+      this.selectedHub = hub;
+      this.hubReady = true;
+
+      if (hub.id) {
+        this.arenaService.getChannelsByHub(hub.id).subscribe({
+          next: (data) => { this.channels = data; this.selectFirstChannel(); },
+          error: (err) => console.error('Error loading channels', err)
+        });
+        this.loadMembers(hub.id);
+        this.setCurrentUserOnline();
+      }
+    }, 0);
   }
 
   loadMembers(hubId: number): void {
@@ -396,7 +435,11 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   deleteHubConfirmed(hubId: number): void {
     this.arenaService.deleteHub(hubId).subscribe({
-      next: () => { this.closeDeleteModal(); this.router.navigate(['/arenatalk']); },
+      next: () => {
+        localStorage.removeItem('selectedHubId');
+        this.closeDeleteModal();
+        this.router.navigate(['/arenatalk']);
+      },
       error: (err) => console.error('Error deleting hub', err)
     });
   }
@@ -454,7 +497,10 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   leaveHub(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.leaveHub(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      next: () => this.router.navigate(['/arenatalk']),
+      next: () => {
+        localStorage.removeItem('selectedHubId');
+        this.router.navigate(['/arenatalk']);
+      },
       error: (err) => console.error('Error leaving hub', err)
     });
   }

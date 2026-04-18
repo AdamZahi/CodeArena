@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth0/auth0-angular';
@@ -14,7 +14,7 @@ import { VoiceSignalingService, VoiceParticipant } from '../../services/voice-si
   templateUrl: './voice-channel.component.html',
   styleUrl: './voice-channel.component.css'
 })
-export class VoiceChannelComponent implements OnInit, OnDestroy {
+export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() hubId: number | null | undefined = null;
   @Input() isOwner = false;
@@ -27,8 +27,11 @@ export class VoiceChannelComponent implements OnInit, OnDestroy {
   inRoom = false;
   isMuted = false;
   roomFull = false;
+  kicked = false;
   showCreateForm = false;
   newChannelName = '';
+  localSpeaking = false;
+  maxParticipants = 8;
 
   private subs: Subscription[] = [];
 
@@ -39,14 +42,27 @@ export class VoiceChannelComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.hubId) this.loadChannels();
+    if (this.hubId) {
+      this.loadChannels();
+    }
 
     this.subs.push(
       this.signalingService.participants$.subscribe(p => this.participants = p),
       this.signalingService.inRoom$.subscribe(v => this.inRoom = v),
       this.signalingService.isMuted$.subscribe(v => this.isMuted = v),
-      this.signalingService.roomFull$.subscribe(v => this.roomFull = v)
+      this.signalingService.roomFull$.subscribe(v => this.roomFull = v),
+      this.signalingService.kicked$.subscribe(v => {
+        if (v) { this.kicked = true; this.activeChannelId = null; }
+      }),
+      this.signalingService.localSpeaking$.subscribe(v => this.localSpeaking = v)
     );
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['hubId'] && this.hubId) {
+      this.voiceChannels = [];
+      this.loadChannels();
+    }
   }
 
   loadChannels(): void {
@@ -58,6 +74,7 @@ export class VoiceChannelComponent implements OnInit, OnDestroy {
   }
 
   joinChannel(channel: VoiceChannel): void {
+    this.kicked = false;
     if (this.inRoom) {
       this.signalingService.leaveRoom().then(() => {
         this.activeChannelId = null;
@@ -89,6 +106,14 @@ export class VoiceChannelComponent implements OnInit, OnDestroy {
 
   toggleMute(): void {
     this.signalingService.toggleMute();
+  }
+
+  kickParticipant(userId: string): void {
+    this.signalingService.kickParticipant(userId);
+  }
+
+  get participantCount(): number {
+    return this.participants.length + (this.inRoom ? 1 : 0);
   }
 
   createChannel(): void {

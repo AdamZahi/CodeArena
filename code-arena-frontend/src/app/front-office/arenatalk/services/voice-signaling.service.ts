@@ -7,6 +7,7 @@ export interface VoiceParticipant {
   userId: string;
   userName: string;
   muted: boolean;
+  speaking?: boolean;
   stream?: MediaStream;
 }
 
@@ -20,11 +21,15 @@ export class VoiceSignalingService {
   private currentChannelId: string | null = null;
   private currentUserId: string | null = null;
   private currentUserName: string | null = null;
+  private audioContexts: Map<string, AudioContext> = new Map();
+  private speakingDetectionInterval: any = null;
 
   participants$ = new BehaviorSubject<VoiceParticipant[]>([]);
   inRoom$ = new BehaviorSubject<boolean>(false);
   isMuted$ = new BehaviorSubject<boolean>(false);
   roomFull$ = new BehaviorSubject<boolean>(false);
+  kicked$ = new BehaviorSubject<boolean>(false);
+  localSpeaking$ = new BehaviorSubject<boolean>(false);
 
   private iceServers = {
     iceServers: [
@@ -40,6 +45,7 @@ export class VoiceSignalingService {
 
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      this.startLocalSpeakingDetection();
     } catch (err) {
       console.error('Microphone access denied', err);
       return;
@@ -74,6 +80,11 @@ export class VoiceSignalingService {
     switch (msg.type) {
       case 'room-full':
         this.roomFull$.next(true);
+        await this.leaveRoom();
+        break;
+
+      case 'kicked':
+        this.kicked$.next(true);
         await this.leaveRoom();
         break;
 
@@ -170,6 +181,8 @@ export class VoiceSignalingService {
       audio.srcObject = remoteStream;
       audio.play();
 
+      this.startRemoteSpeakingDetection(targetUserId, remoteStream);
+
       const current = this.participants$.value;
       const updated = current.map(p =>
         p.userId === targetUserId ? { ...p, stream: remoteStream } : p
@@ -191,6 +204,63 @@ export class VoiceSignalingService {
     };
 
     return pc;
+  }
+
+  private startLocalSpeakingDetection(): void {
+    if (!this.localStream) return;
+    try {
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(this.localStream);
+      source.connect(analyser);
+      analyser.fftSize = 512;
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      this.speakingDetectionInterval = setInterval(() => {
+        analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        this.localSpeaking$.next(avg > 10);
+      }, 100);
+    } catch (err) {
+      console.error('Speaking detection error', err);
+    }
+  }
+
+  private startRemoteSpeakingDetection(userId: string, stream: MediaStream): void {
+    try {
+      const audioContext = new AudioContext();
+      this.audioContexts.set(userId, audioContext);
+      const analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      analyser.fftSize = 512;
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      setInterval(() => {
+        analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        const speaking = avg > 10;
+        const current = this.participants$.value;
+        const updated = current.map(p =>
+          p.userId === userId ? { ...p, speaking } : p
+        );
+        this.participants$.next(updated);
+      }, 100);
+    } catch (err) {
+      console.error('Remote speaking detection error', err);
+    }
+  }
+
+  kickParticipant(targetUserId: string): void {
+    this.sendSignal({
+      type: 'kick',
+      fromUserId: this.currentUserId!,
+      toUserId: targetUserId,
+      channelId: this.currentChannelId!,
+      payload: '',
+      userName: this.currentUserName!
+    });
+    this.removeParticipant(targetUserId);
   }
 
   private sendJoin(): void {
@@ -222,6 +292,14 @@ export class VoiceSignalingService {
       })
     });
 
+    if (this.speakingDetectionInterval) {
+      clearInterval(this.speakingDetectionInterval);
+      this.speakingDetectionInterval = null;
+    }
+
+    this.audioContexts.forEach(ctx => ctx.close());
+    this.audioContexts.clear();
+
     this.peerConnections.forEach(pc => pc.close());
     this.peerConnections.clear();
 
@@ -235,6 +313,7 @@ export class VoiceSignalingService {
     this.participants$.next([]);
     this.inRoom$.next(false);
     this.isMuted$.next(false);
+    this.localSpeaking$.next(false);
     this.currentChannelId = null;
   }
 
@@ -250,13 +329,15 @@ export class VoiceSignalingService {
   private addParticipant(userId: string, userName: string): void {
     const current = this.participants$.value;
     if (!current.find(p => p.userId === userId)) {
-      this.participants$.next([...current, { userId, userName, muted: false }]);
+      this.participants$.next([...current, { userId, userName, muted: false, speaking: false }]);
     }
   }
 
   private removeParticipant(userId: string): void {
     const pc = this.peerConnections.get(userId);
     if (pc) { pc.close(); this.peerConnections.delete(userId); }
+    const ctx = this.audioContexts.get(userId);
+    if (ctx) { ctx.close(); this.audioContexts.delete(userId); }
     this.participants$.next(this.participants$.value.filter(p => p.userId !== userId));
   }
 }

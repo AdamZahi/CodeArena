@@ -1,7 +1,6 @@
 <section class="workspace-page">
   <div class="workspace-shell">
 
-    <!-- ── Sidebar Hubs ─────────────────────────────────────── -->
     <aside class="sidebar hubs-sidebar">
       <div class="sidebar-header with-action">
         <div>
@@ -44,7 +43,6 @@
       </ng-template>
     </aside>
 
-    <!-- ── Sidebar Channels ───────────────────────────────────── -->
     <aside class="sidebar channels-sidebar">
       <div class="sidebar-header with-action">
         <div>
@@ -58,7 +56,6 @@
         </button>
       </div>
 
-      <!-- Create Channel Form -->
       <div class="create-channel-box" *ngIf="showCreateChannelForm">
         <div class="form-header">
           <h3>Create Channel</h3>
@@ -93,7 +90,6 @@
         </div>
       </div>
 
-      <!-- Channel List -->
       <div class="channel-list" *ngIf="channels.length > 0; else noChannels">
         <div class="channel-card"
           *ngFor="let channel of channels"
@@ -118,7 +114,6 @@
         <div class="empty-box"><p>No channels available.</p></div>
       </ng-template>
 
-      <!-- Pending Requests -->
       <div class="pending-section" *ngIf="isOwner && selectedHub">
         <button class="request-mini-btn" (click)="loadPendingRequests()">
           ⏳ Pending Requests
@@ -148,9 +143,9 @@
         </div>
       </div>
 
-      <!-- Voice Channels -->
       <app-voice-channel
-        [hubId]="selectedHub?.id"
+        *ngIf="hubReady && selectedHub"
+        [hubId]="selectedHub.id"
         [isOwner]="isOwner"
         [currentUserId]="currentKeycloakId"
         [currentUserName]="currentUserName">
@@ -158,10 +153,8 @@
 
     </aside>
 
-    <!-- ── Main Panel ─────────────────────────────────────────── -->
     <main class="main-panel">
 
-      <!-- Channel Header -->
       <div class="main-header" *ngIf="selectedChannel">
         <div class="hub-banner" *ngIf="selectedHub?.bannerUrl">
           <img [src]="selectedHub?.bannerUrl" alt="Hub banner"
@@ -184,10 +177,16 @@
               [channelName]="selectedChannel.name">
             </app-channel-summary>
           </div>
+
+          <!-- 🧠 AI Semantic Search -->
+          <app-semantic-search
+            *ngIf="selectedChannel?.id"
+            [channelId]="selectedChannel!.id!">
+          </app-semantic-search>
+
         </div>
       </div>
 
-      <!-- Pinned Messages -->
       <div class="pinned-box" *ngIf="pinnedMessages.length > 0">
         <h3>📌 Pinned Messages</h3>
         <div class="pinned-item"
@@ -197,7 +196,6 @@
         </div>
       </div>
 
-      <!-- Welcome State -->
       <div class="welcome-state" *ngIf="selectedChannel && !hasMessages">
         <div class="welcome-card">
           <p class="eyebrow">// COMMUNITY READY</p>
@@ -220,7 +218,6 @@
         </div>
       </div>
 
-      <!-- Messages -->
       <div class="messages-panel" *ngIf="selectedChannel && hasMessages">
         <div class="message-card" *ngFor="let msg of messages" [id]="'msg-' + msg.id">
 
@@ -250,7 +247,6 @@
                 </div>
               </ng-template>
 
-              <!-- Reactions -->
               <app-message-reactions
                 *ngIf="msg.id"
                 [messageId]="msg.id!"
@@ -261,7 +257,6 @@
             </div>
           </div>
 
-          <!-- Message Actions — only for message owner -->
           <div class="message-actions"
             *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
             <button class="icon-btn edit-btn"
@@ -279,7 +274,6 @@
         </div>
       </div>
 
-      <!-- Message Input with Smart Reply -->
       <div class="message-input-bar" *ngIf="selectedChannel">
         <div class="input-tools">
           <app-smart-reply
@@ -300,7 +294,6 @@
 
     </main>
 
-    <!-- ── Sidebar Members ────────────────────────────────────── -->
     <aside class="sidebar members-sidebar">
       <div class="sidebar-header">
         <p class="sidebar-kicker">MEMBERS</p>
@@ -338,7 +331,6 @@
 
   </div>
 
-  <!-- Delete Modal -->
   <div class="modal-backdrop" *ngIf="showDeleteModal">
     <div class="modal-card">
       <h3>Confirm deletion</h3>
@@ -350,7 +342,6 @@
     </div>
   </div>
 
-  <!-- AI Moderation Warning -->
   <app-message-moderation
     [show]="showModerationWarning"
     [warning]="moderationWarningText"

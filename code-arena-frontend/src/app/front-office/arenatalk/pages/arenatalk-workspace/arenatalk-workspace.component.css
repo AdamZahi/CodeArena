@@ -715,7 +715,7 @@ app-message-reactions {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .message-input-bar {
@@ -917,4 +917,16 @@ app-message-reactions {
   .channels-sidebar {
     max-height: unset;
   }
+}
+app-semantic-search {
+  display: block;
+  margin-top: 12px;
+}
+
+.main-header-content {
+  overflow: visible !important;
+}
+
+.main-header {
+  overflow: visible !important;
 }

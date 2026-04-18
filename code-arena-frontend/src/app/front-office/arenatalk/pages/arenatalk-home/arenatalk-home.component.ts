@@ -100,18 +100,19 @@ export class ArenatalkHomeComponent implements OnInit {
     });
   }
 
-  selectHub(hub: Hub): void {
-    if (!hub.id) return;
-    this.arenaService.getChannelsByHub(hub.id).subscribe({
-      next: (channels: TextChannel[]) => {
-        this.showHubSelector = false;
-        this.router.navigate(['/arenatalk/workspace'], {
-          state: { selectedHub: hub, createdChannels: channels }
-        });
-      },
-      error: (err) => console.error('Error loading channels', err)
-    });
-  }
+selectHub(hub: Hub): void {
+  if (!hub.id) return;
+  this.arenaService.getChannelsByHub(hub.id).subscribe({
+    next: (channels: TextChannel[]) => {
+      this.showHubSelector = false;
+      localStorage.setItem('selectedHubId', String(hub.id));
+      this.router.navigate(['/arenatalk/workspace'], {
+        state: { selectedHub: hub, createdChannels: channels }
+      });
+    },
+    error: (err) => console.error('Error loading channels', err)
+  });
+}
 
   closeSelector(): void { this.showHubSelector = false; }
 }

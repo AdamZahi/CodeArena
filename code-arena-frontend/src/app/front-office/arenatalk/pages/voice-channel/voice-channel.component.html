@@ -12,9 +12,8 @@
     </div>
   </div>
 
-  <div class="room-full-msg" *ngIf="roomFull">
-    ⚠️ Room is full (max 8 users)
-  </div>
+  <div class="room-full-msg" *ngIf="roomFull">⚠️ Room is full (max 8 users)</div>
+  <div class="kicked-msg" *ngIf="kicked">🚫 You were kicked from the voice channel</div>
 
   <div class="voice-list">
     <div class="voice-card" *ngFor="let channel of voiceChannels"
@@ -23,6 +22,12 @@
       <div class="voice-card-top">
         <span class="voice-icon">🔊</span>
         <span class="voice-name">{{ channel.name }}</span>
+
+        <!-- Participant counter -->
+        <span class="participant-counter" *ngIf="activeChannelId === channel.id">
+          {{ participantCount }}/{{ maxParticipants }}
+        </span>
+
         <div class="voice-actions">
           <button class="join-voice-btn"
             *ngIf="activeChannelId !== channel.id"
@@ -42,20 +47,42 @@
         </div>
       </div>
 
+      <!-- Room controls -->
       <div class="room-controls" *ngIf="activeChannelId === channel.id && inRoom">
         <button class="mute-btn" (click)="toggleMute()" [class.muted]="isMuted">
           {{ isMuted ? '🔇 Unmute' : '🎙️ Mute' }}
         </button>
       </div>
 
-      <div class="participants-list"
-        *ngIf="activeChannelId === channel.id && participants.length > 0">
-        <div class="participant" *ngFor="let p of participants">
-          <div class="participant-avatar">{{ p.userName.charAt(0).toUpperCase() }}</div>
-          <span>{{ p.userName }}</span>
-        </div>
-      </div>
+      <!-- Current user in room -->
+      <div class="participants-list" *ngIf="activeChannelId === channel.id && inRoom">
 
+        <!-- Me -->
+        <div class="participant me" [class.speaking]="localSpeaking && !isMuted">
+          <div class="participant-avatar" [class.speaking-avatar]="localSpeaking && !isMuted">
+            {{ currentUserName.charAt(0).toUpperCase() }}
+          </div>
+          <span class="participant-name">{{ currentUserName }} <small>(you)</small></span>
+          <span class="muted-icon" *ngIf="isMuted">🔇</span>
+        </div>
+
+        <!-- Other participants -->
+        <div class="participant" *ngFor="let p of participants"
+          [class.speaking]="p.speaking">
+          <div class="participant-avatar" [class.speaking-avatar]="p.speaking">
+            {{ p.userName.charAt(0).toUpperCase() }}
+          </div>
+          <span class="participant-name">{{ p.userName }}</span>
+          <span class="muted-icon" *ngIf="p.muted">🔇</span>
+          <button class="kick-btn"
+            *ngIf="isOwner && p.userId !== currentUserId"
+            (click)="kickParticipant(p.userId)"
+            title="Kick from voice">
+            ✕
+          </button>
+        </div>
+
+      </div>
     </div>
   </div>
 
