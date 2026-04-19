@@ -57,18 +57,20 @@ export class VoiceSignalingService {
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 0,
-      onConnect: () => {
-        if (this.hasJoined) {
-          console.log('⚠️ Already joined, skipping...');
-          return;
-        }
-        console.log('✅ STOMP connected, userId:', this.currentUserId);
-        this.subscribeToSignaling();
-        setTimeout(() => {
-          this.hasJoined = true;
-          this.sendJoin();
-        }, 500);
-      },
+    onConnect: () => {
+  if (this.hasJoined) {
+    console.log('⚠️ Already joined, skipping...');
+    return;
+  }
+  console.log('✅ STOMP connected, userId:', this.currentUserId);
+  this.subscribeToSignaling();
+  setTimeout(() => {
+    if (!this.hasJoined) {  // ← double check
+      this.hasJoined = true;
+      this.sendJoin();
+    }
+  }, 500);
+},
       onDisconnect: () => console.log('STOMP disconnected'),
       onStompError: (frame) => console.error('STOMP error:', frame)
     });
@@ -77,13 +79,13 @@ export class VoiceSignalingService {
     this.inRoom$.next(true);
   }
 
-  private subscribeToSignaling(): void {
+private subscribeToSignaling(): void {
     if (!this.stompClient || !this.currentUserId) return;
 
     console.log('📡 Subscribing for userId:', this.currentUserId);
 
     this.subscription = this.stompClient.subscribe(
-      `/user/${this.currentUserId}/queue/voice`,
+      `/topic/voice/${this.currentUserId}`,  // ← /topic au lieu de /user
       (message: IMessage) => {
         const msg = JSON.parse(message.body);
         console.log('📨 Received signal:', msg.type, msg);

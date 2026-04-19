@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <div class="voice-grid">
+<div class="voice-grid">
       <!-- Current user tile -->
       <div class="voice-tile me" [class.speaking]="voiceLocalSpeaking">
         <div class="voice-tile-avatar" [class.speaking-glow]="voiceLocalSpeaking">
@@ -189,8 +189,13 @@
           {{ p.userName }}
           <span *ngIf="p.muted">🔇</span>
         </div>
+        <button class="kick-tile-btn" *ngIf="isOwner"
+          (click)="kickVoiceParticipant(p.userId)">
+          ✕ Kick
+        </button>
       </div>
-    </div>
+
+    </div>  <!-- ← ferme voice-grid ici -->
 
     <div class="voice-room-controls">
       <button class="voice-ctrl-btn mute-ctrl" (click)="toggleVoiceMute()" [class.muted]="voiceIsMuted">
@@ -202,7 +207,8 @@
         <span>Leave</span>
       </button>
     </div>
-  </div>
+
+  </div>  <!-- ← ferme voice-room-full ici -->
 
   <!-- 💬 CHAT MODE (normal) -->
   <ng-container *ngIf="!activeVoiceChannelId">

@@ -563,6 +563,9 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
+  kickVoiceParticipant(userId: string): void {
+  this.voiceSignalingService.kickParticipant(userId);
+}
 
   get hasMessages(): boolean { return this.messages.length > 0; }
   get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }
