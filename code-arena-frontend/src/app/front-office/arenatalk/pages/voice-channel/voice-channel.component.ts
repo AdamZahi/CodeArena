@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, OnDestroy, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@auth0/auth0-angular';
@@ -20,9 +20,11 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOwner = false;
   @Input() currentUserId = '';
   @Input() currentUserName = '';
+  @Output() voiceRoomChanged = new EventEmitter<{channelId: number | null, channelName: string}>();
 
   voiceChannels: VoiceChannel[] = [];
   activeChannelId: number | null = null;
+  activeChannelName = '';
   participants: VoiceParticipant[] = [];
   inRoom = false;
   isMuted = false;
@@ -42,9 +44,7 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.hubId) {
-      this.loadChannels();
-    }
+    if (this.hubId) this.loadChannels();
 
     this.subs.push(
       this.signalingService.participants$.subscribe(p => this.participants = p),
@@ -52,7 +52,11 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
       this.signalingService.isMuted$.subscribe(v => this.isMuted = v),
       this.signalingService.roomFull$.subscribe(v => this.roomFull = v),
       this.signalingService.kicked$.subscribe(v => {
-        if (v) { this.kicked = true; this.activeChannelId = null; }
+        if (v) {
+          this.kicked = true;
+          this.activeChannelId = null;
+          this.voiceRoomChanged.emit({ channelId: null, channelName: '' });
+        }
       }),
       this.signalingService.localSpeaking$.subscribe(v => this.localSpeaking = v)
     );
@@ -88,6 +92,7 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
   private startJoin(channel: VoiceChannel): void {
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       this.activeChannelId = channel.id;
+      this.activeChannelName = channel.name;
       this.roomFull = false;
       this.signalingService.joinRoom(
         String(channel.id),
@@ -95,12 +100,15 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
         this.currentUserName,
         token
       );
+      this.voiceRoomChanged.emit({ channelId: channel.id, channelName: channel.name });
     });
   }
 
   leaveChannel(): void {
     this.signalingService.leaveRoom().then(() => {
       this.activeChannelId = null;
+      this.activeChannelName = '';
+      this.voiceRoomChanged.emit({ channelId: null, channelName: '' });
     });
   }
 
@@ -135,6 +143,7 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
         if (this.activeChannelId === channelId) {
           this.signalingService.leaveRoom();
           this.activeChannelId = null;
+          this.voiceRoomChanged.emit({ channelId: null, channelName: '' });
         }
       },
       error: (err) => console.error('Error deleting voice channel', err)

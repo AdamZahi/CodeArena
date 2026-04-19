@@ -8,6 +8,7 @@ import { HubMemberService, HubMember } from '../../services/hub-member.service';
 import { AuthUserSyncService, CurrentUser } from '../../../../core/auth/auth-user-sync.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { take } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { VoiceChannelComponent } from '../voice-channel/voice-channel.component';
 import { MessageReactionsComponent } from '../message-reactions/message-reactions.component';
 import { ReactionService } from '../../services/reaction.service';
@@ -17,6 +18,8 @@ import { MessageModerationComponent } from '../message-moderation/message-modera
 import { SmartReplyComponent } from '../smart-reply/smart-reply.component';
 import { AiModerationService } from '../../services/ai/ai-moderation.service';
 import { SemanticSearchComponent } from '../semantic-search/semantic-search.component';
+import { VoiceSignalingService } from '../../services/voice-signaling.service';
+
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
@@ -76,6 +79,16 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   pendingMessage = '';
   isCheckingMessage = false;
 
+  // Voice room
+  activeVoiceChannelId: number | null = null;
+  activeVoiceChannelName = '';
+  voiceParticipants: any[] = [];
+  voiceInRoom = false;
+  voiceIsMuted = false;
+  voiceLocalSpeaking = false;
+
+  private voiceSubs: Subscription[] = [];
+
   constructor(
     private router: Router,
     private arenaService: ArenatalkService,
@@ -83,10 +96,19 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     private authUserSync: AuthUserSyncService,
     private auth: AuthService,
     private reactionService: ReactionService,
-    private aiModerationService: AiModerationService
+    private aiModerationService: AiModerationService,
+    private voiceSignalingService: VoiceSignalingService
   ) {}
 
   ngOnInit(): void {
+    // Subscribe to voice state
+    this.voiceSubs.push(
+      this.voiceSignalingService.participants$.subscribe(p => this.voiceParticipants = p),
+      this.voiceSignalingService.isMuted$.subscribe(v => this.voiceIsMuted = v),
+      this.voiceSignalingService.localSpeaking$.subscribe(v => this.voiceLocalSpeaking = v),
+      this.voiceSignalingService.inRoom$.subscribe(v => this.voiceInRoom = v)
+    );
+
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.currentKeycloakId = payload.sub;
@@ -141,6 +163,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.voiceSubs.forEach(s => s.unsubscribe());
     this.setCurrentUserOffline();
   }
 
@@ -149,6 +172,24 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.setCurrentUserOffline();
   }
 
+  // ── VOICE ROOM ──
+  onVoiceRoomChanged(event: {channelId: number | null, channelName: string}): void {
+    this.activeVoiceChannelId = event.channelId;
+    this.activeVoiceChannelName = event.channelName;
+  }
+
+  toggleVoiceMute(): void {
+    this.voiceSignalingService.toggleMute();
+  }
+
+  leaveVoiceRoom(): void {
+    this.voiceSignalingService.leaveRoom().then(() => {
+      this.activeVoiceChannelId = null;
+      this.activeVoiceChannelName = '';
+    });
+  }
+
+  // ── HUB ──
   private setCurrentUserOnline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.setOnline(this.selectedHub.id, this.currentKeycloakId).subscribe({

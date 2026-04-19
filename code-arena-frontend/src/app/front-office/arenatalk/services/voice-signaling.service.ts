@@ -23,6 +23,7 @@ export class VoiceSignalingService {
   private currentUserName: string | null = null;
   private audioContexts: Map<string, AudioContext> = new Map();
   private speakingDetectionInterval: any = null;
+  private hasJoined = false;
 
   participants$ = new BehaviorSubject<VoiceParticipant[]>([]);
   inRoom$ = new BehaviorSubject<boolean>(false);
@@ -42,6 +43,7 @@ export class VoiceSignalingService {
     this.currentChannelId = channelId;
     this.currentUserId = userId;
     this.currentUserName = userName;
+    this.hasJoined = false;
 
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -54,10 +56,21 @@ export class VoiceSignalingService {
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       connectHeaders: { Authorization: `Bearer ${token}` },
+      reconnectDelay: 0,
       onConnect: () => {
+        if (this.hasJoined) {
+          console.log('⚠️ Already joined, skipping...');
+          return;
+        }
+        console.log('✅ STOMP connected, userId:', this.currentUserId);
         this.subscribeToSignaling();
-        this.sendJoin();
-      }
+        setTimeout(() => {
+          this.hasJoined = true;
+          this.sendJoin();
+        }, 500);
+      },
+      onDisconnect: () => console.log('STOMP disconnected'),
+      onStompError: (frame) => console.error('STOMP error:', frame)
     });
 
     this.stompClient.activate();
@@ -67,10 +80,13 @@ export class VoiceSignalingService {
   private subscribeToSignaling(): void {
     if (!this.stompClient || !this.currentUserId) return;
 
+    console.log('📡 Subscribing for userId:', this.currentUserId);
+
     this.subscription = this.stompClient.subscribe(
       `/user/${this.currentUserId}/queue/voice`,
       (message: IMessage) => {
         const msg = JSON.parse(message.body);
+        console.log('📨 Received signal:', msg.type, msg);
         this.handleSignalingMessage(msg);
       }
     );
@@ -89,9 +105,11 @@ export class VoiceSignalingService {
         break;
 
       case 'room-participants':
+        console.log('🏠 Room participants:', msg.payload);
         if (msg.payload) {
           const existingUsers = msg.payload.split(',')
             .filter((id: string) => id && id !== this.currentUserId);
+          console.log('👥 Existing users to connect:', existingUsers);
           for (const userId of existingUsers) {
             await this.createOffer(userId);
           }
@@ -99,10 +117,12 @@ export class VoiceSignalingService {
         break;
 
       case 'user-joined':
+        console.log('👋 User joined:', msg.fromUserId, msg.userName);
         this.addParticipant(msg.fromUserId, msg.userName);
         break;
 
       case 'user-left':
+        console.log('👋 User left:', msg.fromUserId);
         this.removeParticipant(msg.fromUserId);
         break;
 
@@ -264,6 +284,7 @@ export class VoiceSignalingService {
   }
 
   private sendJoin(): void {
+    console.log('🚀 Sending join for:', this.currentUserId, 'channel:', this.currentChannelId);
     this.stompClient?.publish({
       destination: '/app/voice/join',
       body: JSON.stringify({
@@ -283,6 +304,8 @@ export class VoiceSignalingService {
   }
 
   async leaveRoom(): Promise<void> {
+    this.hasJoined = false;
+
     this.stompClient?.publish({
       destination: '/app/voice/leave',
       body: JSON.stringify({
@@ -307,6 +330,7 @@ export class VoiceSignalingService {
     this.localStream = null;
 
     this.subscription?.unsubscribe();
+    this.subscription = null;
     this.stompClient?.deactivate();
     this.stompClient = null;
 
