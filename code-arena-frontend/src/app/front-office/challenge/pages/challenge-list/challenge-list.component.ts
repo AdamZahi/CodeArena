@@ -75,13 +75,16 @@ export class ChallengeListComponent implements OnInit {
   }
 
   public getLanguageName(id: string): string {
-    switch (id) {
-      case '62': return 'JAVA (13)';
-      case '71': return 'PYTHON (3.8)';
-      case '50': return 'C (GCC 9.2)';
-      case '54': return 'C++ (GCC 9.2)';
-      case '63': return 'JS (NODE 12)';
-      default: return 'UNKNOWN';
+    switch ((id || '').toLowerCase()) {
+      case 'python':     return 'PYTHON 3.12';
+      case 'javascript': return 'JS (NODE 20)';
+      case 'java':       return 'JAVA 15';
+      case 'go':         return 'GO 1.16';
+      case 'rust':       return 'RUST 1.50';
+      case 'csharp':     return 'C# (.NET 5)';
+      case 'php':        return 'PHP 8.2';
+      case 'bash':       return 'BASH 5.2';
+      default:           return (id || 'UNKNOWN').toUpperCase();
     }
   }
 }
