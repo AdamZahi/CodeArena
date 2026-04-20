@@ -23,13 +23,16 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public activeTab: 'description' | 'submissions' = 'description';
 
   public code = '';
-  public language = '62'; // Java Default
+  public language = 'python'; // Default Piston runtime
   public languages = [
-    { id: '62', name: 'Java (OpenJDK 13)' },
-    { id: '71', name: 'Python (3.8)' },
-    { id: '50', name: 'C (GCC 9.2)' },
-    { id: '54', name: 'C++ (GCC 9.2)' },
-    { id: '63', name: 'JavaScript (Node 12)' }
+    { id: 'python',     name: 'Python 3.12' },
+    { id: 'javascript', name: 'JavaScript (Node 20)' },
+    { id: 'java',       name: 'Java 15' },
+    { id: 'go',         name: 'Go 1.16' },
+    { id: 'rust',       name: 'Rust 1.50' },
+    { id: 'csharp',     name: 'C# (.NET 5)' },
+    { id: 'php',        name: 'PHP 8.2' },
+    { id: 'bash',       name: 'Bash 5.2' }
   ];
 
   public isSubmitting = false;
@@ -438,11 +441,14 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   private getBoilerplate(langId: string): string {
     switch (langId) {
-      case '62': return 'import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String line = sc.nextLine().trim();\n        \n        // TODO: Solve the problem here\n        \n        System.out.println(line);\n    }\n}';
-      case '71': return 'import sys\n\n# Read input from stdin\nline = input().strip()\n\n# TODO: Solve the problem\n\n# Print result to stdout\nprint(line)';
-      case '50': return '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main() {\n    char line[1024];\n    // Read input from stdin\n    fgets(line, sizeof(line), stdin);\n    \n    // TODO: Solve the problem\n    \n    // Print result to stdout\n    printf("%s", line);\n    return 0;\n}';
-      case '54': return '#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\nint main() {\n    string line;\n    // Read input from stdin\n    getline(cin, line);\n    \n    // TODO: Solve the problem\n    \n    // Print result to stdout\n    cout << line << endl;\n    return 0;\n}';
-      case '63': return '// Read input from stdin\nconst input = require("fs").readFileSync("/dev/stdin", "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nconsole.log(lines[0]);';
+      case 'java': return 'import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String line = sc.nextLine().trim();\n        \n        // TODO: Solve the problem here\n        \n        System.out.println(line);\n    }\n}';
+      case 'python': return 'import sys\n\n# Read input from stdin\nline = input().strip()\n\n# TODO: Solve the problem\n\n# Print result to stdout\nprint(line)';
+      case 'javascript': return '// Read input from stdin\nconst input = require("fs").readFileSync("/dev/stdin", "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nconsole.log(lines[0]);';
+      case 'go': return 'package main\n\nimport (\n    "bufio"\n    "fmt"\n    "os"\n)\n\nfunc main() {\n    reader := bufio.NewReader(os.Stdin)\n    line, _ := reader.ReadString(\'\\n\')\n    // TODO: Solve the problem\n    fmt.Print(line)\n}';
+      case 'rust': return 'use std::io::{self, BufRead};\n\nfn main() {\n    let stdin = io::stdin();\n    let line = stdin.lock().lines().next().unwrap().unwrap();\n    // TODO: Solve the problem\n    println!("{}", line);\n}';
+      case 'csharp': return 'using System;\n\nclass Main {\n    static void Main() {\n        string line = Console.ReadLine();\n        // TODO: Solve the problem\n        Console.WriteLine(line);\n    }\n}';
+      case 'php': return '<?php\n$line = trim(fgets(STDIN));\n// TODO: Solve the problem\necho $line;\n';
+      case 'bash': return '#!/bin/bash\nread line\n# TODO: Solve the problem\necho "$line"\n';
       default: return '// Write your solution here\n// Read from stdin, print to stdout\n';
     }
   }

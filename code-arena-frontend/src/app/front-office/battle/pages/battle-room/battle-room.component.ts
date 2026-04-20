@@ -44,7 +44,7 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
   lastSubmissionResult: SubmissionResultResponse | null = null;
 
   activeChallengeIndex = 0;
-  selectedLanguage = 'javascript';
+  selectedLanguage = 'python';
   code = '';
   submitting = false;
   lineCount = 20;
@@ -494,7 +494,7 @@ export class BattleRoomComponent implements OnInit, OnDestroy {
       if (raw) {
         const draft = JSON.parse(raw);
         this.code = draft.code || '';
-        this.selectedLanguage = draft.language || 'javascript';
+        this.selectedLanguage = draft.language || 'python';
         this.lineCount = Math.max(20, this.code.split('\n').length + 5);
         return;
       }
