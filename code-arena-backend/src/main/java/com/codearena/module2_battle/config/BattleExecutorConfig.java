@@ -8,7 +8,7 @@ import java.util.concurrent.Executor;
 
 /**
  * Configures a dedicated thread pool for asynchronous submission judging.
- * Judge0 polling runs on this executor, never on HTTP request threads.
+ * Piston execution runs on this executor, never on HTTP request threads.
  */
 @Configuration
 public class BattleExecutorConfig {

@@ -15,7 +15,8 @@ import com.codearena.module2_battle.repository.BattleParticipantRepository;
 import com.codearena.module2_battle.repository.BattleRoomChallengeRepository;
 import com.codearena.module2_battle.repository.BattleRoomRepository;
 import com.codearena.module2_battle.repository.BattleSubmissionRepository;
-import com.codearena.module2_battle.util.Judge0LanguageMapper;
+import com.codearena.module2_battle.util.PistonLanguageMapper;
+import com.codearena.module2_battle.util.PistonLanguageMapper.PistonLang;
 import com.codearena.user.entity.User;
 import com.codearena.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +51,8 @@ public class BattleArenaService {
     private final ChallengeRepository challengeRepository;
     private final TestCaseRepository testCaseRepository;
     private final UserRepository userRepository;
-    private final Judge0Client judge0Client;
-    private final Judge0LanguageMapper languageMapper;
+    private final PistonClient pistonClient;
+    private final PistonLanguageMapper languageMapper;
     private final ArenaBroadcastService arenaBroadcastService;
     private final BattleRoomStateMachineService stateMachineService;
     private final com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties;
@@ -74,8 +75,8 @@ public class BattleArenaService {
             ChallengeRepository challengeRepository,
             TestCaseRepository testCaseRepository,
             UserRepository userRepository,
-            Judge0Client judge0Client,
-            Judge0LanguageMapper languageMapper,
+            PistonClient pistonClient,
+            PistonLanguageMapper languageMapper,
             ArenaBroadcastService arenaBroadcastService,
             BattleRoomStateMachineService stateMachineService,
             com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties,
@@ -89,7 +90,7 @@ public class BattleArenaService {
         this.challengeRepository = challengeRepository;
         this.testCaseRepository = testCaseRepository;
         this.userRepository = userRepository;
-        this.judge0Client = judge0Client;
+        this.pistonClient = pistonClient;
         this.languageMapper = languageMapper;
         this.arenaBroadcastService = arenaBroadcastService;
         this.stateMachineService = stateMachineService;
@@ -143,8 +144,8 @@ public class BattleArenaService {
 
     /**
      * Submits a solution for judging. The submission is persisted immediately with PENDING status
-     * and returned to the caller. Judge0 execution and result processing happen asynchronously
-     * on the submissionExecutor thread pool — the HTTP response is never blocked by Judge0.
+     * and returned to the caller. Piston execution and result processing happen asynchronously
+     * on the submissionExecutor thread pool — the HTTP response is never blocked by Piston.
      */
     @Transactional
     public SubmissionResultResponse submitSolution(String userId, SubmitSolutionRequest request) {
@@ -187,7 +188,7 @@ public class BattleArenaService {
         int attemptNumber = (int) submissionRepository
                 .countByParticipantIdAndRoomChallengeId(participantId, request.getRoomChallengeId()) + 1;
 
-        // Persist submission immediately with PENDING status before calling Judge0
+        // Persist submission immediately with PENDING status before calling Piston
         BattleSubmission submission = BattleSubmission.builder()
                 .participantId(participantId)
                 .roomChallengeId(request.getRoomChallengeId())
@@ -209,15 +210,15 @@ public class BattleArenaService {
             throw new InvalidParticipantActionException("Challenge has no valid test cases");
         }
 
-        // Map language to Judge0 language ID
-        int languageId = languageMapper.toJudge0Id(request.getLanguage());
+        // Map language to Piston runtime (name + version)
+        PistonLang pistonLang = languageMapper.toPistonLang(request.getLanguage());
         String sourceCode = request.getCode();
 
-        // Submit to Judge0 and process result asynchronously on the submissionExecutor thread pool.
-        // Each test case is run as a separate Judge0 submission.
+        // Execute on Piston and process result asynchronously on the submissionExecutor thread pool.
+        // Each test case is run as a separate Piston execution.
         String language = request.getLanguage();
-        submissionExecutor.execute(() -> processJudge0Submission(
-                sourceCode, languageId, language, allTestCases, submissionId, roomId, participantId,
+        submissionExecutor.execute(() -> processPistonSubmission(
+                sourceCode, pistonLang, language, allTestCases, submissionId, roomId, participantId,
                 request.getRoomChallengeId(), challengePosition, userId,
                 room.getChallengeCount(), attemptNumber
         ));
@@ -288,11 +289,11 @@ public class BattleArenaService {
     }
 
     /**
-     * Async callback: runs each test case as a separate Judge0 submission, polls for results,
+     * Async callback: runs each test case as a separate Piston execution (synchronous call),
      * updates the submission record, and broadcasts results to arena subscribers.
      */
-    private void processJudge0Submission(
-            String sourceCode, int languageId, String language, List<TestCase> testCases,
+    private void processPistonSubmission(
+            String sourceCode, PistonLang pistonLang, String language, List<TestCase> testCases,
             String submissionId, String roomId, String participantId,
             String roomChallengeId, int challengePosition, String userId,
             int challengeCount, int attemptNumber) {
@@ -323,31 +324,31 @@ public class BattleArenaService {
                 String wrappedCode = codeWrapperService.wrapCode(sourceCode, language, tc.getInput());
                 boolean wrapped = wrappedCode != null;
 
-                Judge0SubmissionRequest judge0Request = Judge0SubmissionRequest.builder()
-                        .languageId(languageId)
+                PistonExecutionRequest pistonRequest = PistonExecutionRequest.builder()
+                        .language(pistonLang.language())
+                        .version(pistonLang.version())
                         .sourceCode(wrapped ? wrappedCode : sourceCode)
+                        .fileName(pistonFileName(pistonLang.language(), wrapped, sourceCode))
                         .stdin(wrapped ? null : tc.getInput())
-                        .expectedOutput(tc.getExpectedOutput())
                         .build();
 
-                String token = judge0Client.submitCode(judge0Request);
-                Judge0SubmissionResult result = pollJudge0Result(token);
-                BattleSubmissionStatus tcStatus = mapJudge0Status(result);
+                PistonExecutionResult result = pistonClient.execute(pistonRequest);
+                BattleSubmissionStatus tcStatus = mapPistonStatus(result, tc.getExpectedOutput());
 
                 // Accumulate runtime and memory
-                if (result.getTime() != null) {
-                    int ms = (int) (result.getTime() * 1000);
+                if (result.getCpuTimeMs() != null) {
+                    int ms = result.getCpuTimeMs();
                     totalRuntimeMs = (totalRuntimeMs == null) ? ms : totalRuntimeMs + ms;
                 }
-                if (result.getMemory() != null) {
-                    maxMemoryKb = (maxMemoryKb == null) ? result.getMemory()
-                            : Math.max(maxMemoryKb, result.getMemory());
+                Integer memKb = result.getMemoryKb();
+                if (memKb != null) {
+                    maxMemoryKb = (maxMemoryKb == null) ? memKb : Math.max(maxMemoryKb, memKb);
                 }
 
                 if (tcStatus != BattleSubmissionStatus.ACCEPTED) {
-                    log.debug("Judge0 returned status {} for submission {}: stdout=[{}], expected=[{}]",
-                            result.getStatus().getId(), submissionId,
-                            result.getStdout(), tc.getExpectedOutput());
+                    log.debug("Piston returned non-accepted status {} for submission {}: stdout=[{}], stderr=[{}], expected=[{}]",
+                            tcStatus, submissionId,
+                            result.getStdout(), result.getStderr(), tc.getExpectedOutput());
                     finalStatus = tcStatus;
                     failCompileOutput = result.getCompileOutput();
 
@@ -360,26 +361,6 @@ public class BattleArenaService {
                         arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
                                 .submissionId(submissionId).testCaseIndex(rem).totalTestCases(totalTestCases)
                                 .status(com.codearena.module2_battle.enums.TestCaseStatus.ERROR).errorType(errorType).build());
-                    }
-                    break;
-                }
-
-                // Safety-net: if Judge0 said ACCEPTED but output still doesn't match,
-                // fall back to our own normalized comparison.
-                if (!outputsMatch(tc.getExpectedOutput(), result.getStdout())) {
-                    log.debug("Judge0 status ACCEPTED but outputsMatch failed for submission {}: " +
-                                    "stdout=[{}], expected=[{}]",
-                            submissionId, result.getStdout(), tc.getExpectedOutput());
-                    finalStatus = BattleSubmissionStatus.WRONG_ANSWER;
-
-                    // Feature 2: broadcast FAILED for this, ERROR for remaining
-                    arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
-                            .submissionId(submissionId).testCaseIndex(tcIndex).totalTestCases(totalTestCases)
-                            .status(com.codearena.module2_battle.enums.TestCaseStatus.FAILED).errorType("WRONG_ANSWER").build());
-                    for (int rem = tcIndex + 1; rem < totalTestCases; rem++) {
-                        arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
-                                .submissionId(submissionId).testCaseIndex(rem).totalTestCases(totalTestCases)
-                                .status(com.codearena.module2_battle.enums.TestCaseStatus.ERROR).errorType("WRONG_ANSWER").build());
                     }
                     break;
                 }
@@ -455,8 +436,8 @@ public class BattleArenaService {
                 }
             }
 
-        } catch (Judge0UnavailableException e) {
-            log.error("Judge0 unavailable for submission {}: {}", submissionId, e.getMessage());
+        } catch (CodeExecutionUnavailableException e) {
+            log.error("Piston unavailable for submission {}: {}", submissionId, e.getMessage());
             failSubmissionAndNotify(userId, submissionId, roomChallengeId, attemptNumber,
                     BattleSubmissionStatus.COMPILE_ERROR,
                     "Code execution service is temporarily unavailable - please retry");
@@ -492,59 +473,58 @@ public class BattleArenaService {
     }
 
     /**
-     * Polls Judge0 at 1-second intervals until the submission result is final (statusId >= 3)
-     * or the configured timeout is reached.
+     * Returns the filename Piston should use for this submission. Only matters for Java
+     * (Piston derives the main-class name from the filename). The wrapper always emits
+     * {@code class Main}, so wrapped Java goes to Main.java; unwrapped Java uses the
+     * detected class name.
      */
-    private Judge0SubmissionResult pollJudge0Result(String token) {
-        int timeoutSeconds = judge0Client.getTimeoutSeconds();
-        int elapsed = 0;
-
-        while (elapsed < timeoutSeconds) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-            elapsed++;
-
-            Judge0SubmissionResult result = judge0Client.getResult(token);
-            if (result != null && result.getStatus() != null && result.getStatus().getId() >= 3) {
-                return result;
-            }
-        }
-
-        // Timeout — treat as TIME_LIMIT
-        Judge0SubmissionResult timeoutResult = new Judge0SubmissionResult();
-        Judge0SubmissionResult.Judge0Status timeoutStatus = new Judge0SubmissionResult.Judge0Status();
-        timeoutStatus.setId(5); // Time Limit Exceeded
-        timeoutStatus.setDescription("Time Limit Exceeded (polling timeout)");
-        timeoutResult.setStatus(timeoutStatus);
-        timeoutResult.setTime((double) timeoutSeconds);
-        timeoutResult.setToken(token);
-        return timeoutResult;
+    private String pistonFileName(String pistonLanguage, boolean wrapped, String userCode) {
+        if (!"java".equals(pistonLanguage)) return null;
+        if (wrapped) return "Main.java";
+        String detected = CodeWrapperService.detectJavaClass(userCode);
+        return (detected != null) ? detected + ".java" : "Main.java";
     }
 
     /**
-     * Maps Judge0 status ID to our BattleSubmissionStatus.
+     * Maps a Piston execution result into our BattleSubmissionStatus.
+     * Piston returns exit code, signal, compile stage output, and run stage stdout/stderr.
+     * Precedence: compile error → time-limit (SIGKILL) → runtime error → wrong answer → accepted.
      */
-    private BattleSubmissionStatus mapJudge0Status(Judge0SubmissionResult result) {
-        if (result == null || result.getStatus() == null) {
+    private BattleSubmissionStatus mapPistonStatus(PistonExecutionResult result, String expectedOutput) {
+        if (result == null) {
             return BattleSubmissionStatus.RUNTIME_ERROR;
         }
-        int statusId = result.getStatus().getId();
-        return switch (statusId) {
-            case 3 -> BattleSubmissionStatus.ACCEPTED;
-            case 4 -> BattleSubmissionStatus.WRONG_ANSWER;
-            case 5 -> BattleSubmissionStatus.TIME_LIMIT;
-            case 6 -> BattleSubmissionStatus.COMPILE_ERROR;
-            default -> {
-                if (statusId >= 7 && statusId <= 12) {
-                    yield BattleSubmissionStatus.RUNTIME_ERROR;
-                }
-                yield BattleSubmissionStatus.PENDING;
+
+        // Top-level Piston error (e.g., invalid language/version) is surfaced as errorMessage.
+        if (result.getErrorMessage() != null) {
+            return BattleSubmissionStatus.COMPILE_ERROR;
+        }
+
+        // Compile stage failure (compiled languages only)
+        if (result.getCompileOutput() != null && !result.getCompileOutput().isBlank()) {
+            return BattleSubmissionStatus.COMPILE_ERROR;
+        }
+
+        // Process was killed (typically SIGKILL on timeout/OOM)
+        String signal = result.getSignal();
+        if (signal != null && !signal.isBlank()) {
+            if ("SIGKILL".equals(signal) || "SIGXCPU".equals(signal)) {
+                return BattleSubmissionStatus.TIME_LIMIT;
             }
-        };
+            return BattleSubmissionStatus.RUNTIME_ERROR;
+        }
+
+        // Non-zero exit code = runtime error
+        if (result.getExitCode() != 0) {
+            return BattleSubmissionStatus.RUNTIME_ERROR;
+        }
+
+        // Exit 0 — compare output
+        if (!outputsMatch(expectedOutput, result.getStdout())) {
+            return BattleSubmissionStatus.WRONG_ANSWER;
+        }
+
+        return BattleSubmissionStatus.ACCEPTED;
     }
 
     /**
@@ -694,7 +674,7 @@ public class BattleArenaService {
 
     /**
      * Builds an ArenaChallengeResponse, exposing only non-hidden test cases.
-     * Hidden test cases are used by Judge0 for judging but never appear in any response DTO.
+     * Hidden test cases are used by the execution engine for judging but never appear in any response DTO.
      */
     private ArenaChallengeResponse buildArenaChallengeResponse(BattleRoomChallenge rc) {
         long challengeId;

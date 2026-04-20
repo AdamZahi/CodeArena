@@ -189,7 +189,7 @@ public class ChallengeServiceImpl implements ChallengeService {
             candidate = System.currentTimeMillis();
         }
 
-        while (testCaseRepository.existsByNumericId(candidate)) {
+        while (existsTestCaseWithNumericId(candidate)) {
             candidate++;
         }
         return candidate;
@@ -203,9 +203,19 @@ public class ChallengeServiceImpl implements ChallengeService {
             candidate = System.currentTimeMillis();
         }
 
-        while (challengeRepository.existsByNumericId(candidate)) {
+        while (existsChallengeWithNumericId(candidate)) {
             candidate++;
         }
         return candidate;
+    }
+
+    private boolean existsTestCaseWithNumericId(long id) {
+        Integer count = testCaseRepository.existsByNumericId(id);
+        return count != null && count > 0;
+    }
+
+    private boolean existsChallengeWithNumericId(long id) {
+        Integer count = challengeRepository.existsByNumericId(id);
+        return count != null && count > 0;
     }
 }

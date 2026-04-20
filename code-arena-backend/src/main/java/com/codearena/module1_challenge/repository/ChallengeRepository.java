@@ -30,13 +30,13 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
             """, nativeQuery = true)
     Long findNextNumericId();
 
-        @Query(value = """
-            SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END
-            FROM challenge c
-            WHERE TRIM(c.id) REGEXP '^[0-9]+$'
-              AND CAST(TRIM(c.id) AS UNSIGNED) = :id
-            """, nativeQuery = true)
-        boolean existsByNumericId(@Param("id") Long id);
+                @Query(value = """
+                        SELECT COUNT(*)
+                        FROM challenge c
+                        WHERE TRIM(c.id) REGEXP '^[0-9]+$'
+                            AND CAST(TRIM(c.id) AS UNSIGNED) = :id
+                        """, nativeQuery = true)
+                Integer existsByNumericId(@Param("id") Long id);
 
         @Modifying
         @Query(value = """

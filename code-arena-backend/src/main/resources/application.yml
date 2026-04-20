@@ -43,11 +43,11 @@ app:
   shop:
     admin-email: islemazzouz04@gmail.com
 
-# Judge0 CE (Community Edition) — free, no API key required
-judge0:
-  base-url: https://ce.judge0.com
-  api-key:
-  timeout-seconds: 10
+# Piston (self-hosted code execution engine)
+piston:
+  base-url: http://192.168.0.195:2000
+  run-timeout-ms: 15000
+  memory-limit-bytes: 256000000
 
 # Battle time limits per mode (in minutes, -1 = no limit)
 battle:

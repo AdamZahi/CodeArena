@@ -137,8 +137,8 @@ public class GlobalExceptionHandler {
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
     }
 
-    @ExceptionHandler(Judge0UnavailableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleJudge0Unavailable(Judge0UnavailableException ex) {
+    @ExceptionHandler(CodeExecutionUnavailableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCodeExecutionUnavailable(CodeExecutionUnavailableException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse.<Void>builder()
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
     }

@@ -13,6 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SubmitCodeRequest {
     private String code;
-    private String language; // ID from Judge0 or standard name e.g. "JAVA" -> "62"
+    private String language; // Piston runtime name: python, javascript, java, go, rust, csharp, php, bash
     private Long challengeId;
 }

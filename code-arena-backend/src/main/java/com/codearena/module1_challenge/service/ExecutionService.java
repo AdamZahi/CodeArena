@@ -4,6 +4,14 @@ import com.codearena.module1_challenge.entity.Submission;
 import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module1_challenge.repository.SubmissionRepository;
+import com.codearena.module2_battle.dto.PistonExecutionRequest;
+import com.codearena.module2_battle.dto.PistonExecutionResult;
+import com.codearena.module2_battle.exception.CodeExecutionUnavailableException;
+import com.codearena.module2_battle.exception.UnsupportedLanguageException;
+import com.codearena.module2_battle.service.CodeWrapperService;
+import com.codearena.module2_battle.service.PistonClient;
+import com.codearena.module2_battle.util.PistonLanguageMapper;
+import com.codearena.module2_battle.util.PistonLanguageMapper.PistonLang;
 import com.codearena.user.entity.User;
 import com.codearena.user.repository.UserRepository;
 import com.codearena.user.service.CustomizationService;
@@ -14,14 +22,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExecutionService {
 
-    private final Judge0Service judge0Service;
+    private final PistonClient pistonClient;
+    private final PistonLanguageMapper pistonLanguageMapper;
+    private final CodeWrapperService codeWrapperService;
     private final SubmissionRepository submissionRepository;
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
@@ -30,12 +39,11 @@ public class ExecutionService {
 
     @Async
     @Transactional
-    @SuppressWarnings("unchecked")
     public void executeSubmission(Submission sub, List<TestCase> testCases) {
         try {
             // Prevent Race Condition: Wait for the main thread's INSERT transaction to commit
             Thread.sleep(800);
-            
+
             Submission submission = submissionRepository.findById(sub.getId()).orElse(sub);
 
             boolean allPassed = true;
@@ -46,7 +54,17 @@ public class ExecutionService {
             submissionRepository.save(submission);
 
             if (testCases == null || testCases.isEmpty()) {
-                submission.setStatus("ACCEPTED"); // No test cases means pass
+                submission.setStatus("ACCEPTED");
+                submissionRepository.save(submission);
+                return;
+            }
+
+            PistonLang pistonLang;
+            try {
+                pistonLang = pistonLanguageMapper.toPistonLang(submission.getLanguage());
+            } catch (UnsupportedLanguageException ex) {
+                submission.setStatus("INTERNAL_ERROR");
+                submission.setErrorOutput("Unsupported language: " + submission.getLanguage());
                 submissionRepository.save(submission);
                 return;
             }
@@ -57,88 +75,74 @@ public class ExecutionService {
 
             for (int i = 0; i < testCases.size(); i++) {
                 TestCase tc = testCases.get(i);
-                
-                // Wrap code like module3
-                String wrappedCode = buildRunner(submission.getCode(), tc.getInput(), submission.getLanguage());
 
-                String token = judge0Service.submit(
-                        wrappedCode,
-                        submission.getLanguage(),
-                        tc.getExpectedOutput(),
-                        tc.getInput()
-                );
+                // Wrap user code so the function defined in the submission is invoked with the
+                // test-case input (LeetCode-style). Falls back to raw stdin if wrapping fails.
+                String wrappedCode = codeWrapperService.wrapCode(
+                        submission.getCode(), submission.getLanguage(), tc.getInput());
+                boolean wrapped = wrappedCode != null;
 
-                if (token == null) {
+                PistonExecutionRequest request = PistonExecutionRequest.builder()
+                        .language(pistonLang.language())
+                        .version(pistonLang.version())
+                        .sourceCode(wrapped ? wrappedCode : submission.getCode())
+                        .fileName(pistonFileName(pistonLang.language(), wrapped, submission.getCode()))
+                        .stdin(wrapped ? null : tc.getInput())
+                        .build();
+
+                PistonExecutionResult result;
+                try {
+                    result = pistonClient.execute(request);
+                } catch (CodeExecutionUnavailableException ex) {
                     submission.setStatus("INTERNAL_ERROR");
-                    submission.setErrorOutput(outputLog.toString() + "\nJudge0 API refused the submission or returned null token. Wait 1 min or check your code.");
+                    submission.setErrorOutput(outputLog + "\nCode execution service is temporarily unavailable — please retry.");
                     submissionRepository.save(submission);
                     return;
                 }
 
-                // Polling
-                Map<String, Object> result = null;
-                for (int attempt = 0; attempt < 30; attempt++) {
-                    Thread.sleep(2000);
-                    result = judge0Service.getSubmissionStatus(token);
-                    if (result != null && result.get("status") instanceof Map) {
-                        Map<String, Object> statusObj = (Map<String, Object>) result.get("status");
-                        int statusId = ((Number) statusObj.get("id")).intValue();
-                        if (statusId != 1 && statusId != 2) {
-                            break;
-                        }
-                    }
+                if (result.getCpuTimeMs() != null) {
+                    totalExecTime += result.getCpuTimeMs() / 1000f;
+                }
+                Integer memKb = result.getMemoryKb();
+                if (memKb != null) {
+                    maxMemory = Math.max(maxMemory, memKb.floatValue());
                 }
 
-                if (result == null || !(result.get("status") instanceof Map)) {
-                    submission.setStatus("TIMEOUT");
-                    submissionRepository.save(submission);
-                    return;
-                }
-
-                Map<String, Object> statusObj = (Map<String, Object>) result.get("status");
-                int statusId = ((Number) statusObj.get("id")).intValue();
-                String verdict = mapJudge0Status(statusId);
-
-                Object timeObj = result.get("time");
-                Object memoryObj = result.get("memory");
-                log.info("Test {}: statusId={}, time={}, memory={}", i + 1, statusId, timeObj, memoryObj);
-
-                if (timeObj != null) {
-                    totalExecTime += Float.parseFloat(timeObj.toString());
-                }
-
-                if (memoryObj != null) {
-                    maxMemory = Math.max(maxMemory, Float.parseFloat(memoryObj.toString()));
-                }
-
-                String compileOutput = judge0Service.decodeBase64((String) result.get("compile_output")).trim();
-                String stderr = judge0Service.decodeBase64((String) result.get("stderr")).trim();
-                String stdout = judge0Service.decodeBase64((String) result.get("stdout")).trim();
+                String compileOutput = result.getCompileOutput() != null ? result.getCompileOutput().trim() : "";
+                String stderr = result.getStderr() != null ? result.getStderr().trim() : "";
+                String stdoutRaw = result.getStdout() != null ? result.getStdout() : "";
+                String expectedRaw = tc.getExpectedOutput() != null ? tc.getExpectedOutput() : "";
+                String stdout = normalizeOutput(stdoutRaw);
+                String expectedOut = normalizeOutput(expectedRaw);
 
                 outputLog.append("Test ").append(i + 1).append(": ");
 
-                if (statusId == 3) {
-                    // Judge0 confirmed: output matches expected — trust it
-                    outputLog.append("Passed ✓\n");
-                    passedTests++;
-                } else if (statusId == 4) {
-                    // Wrong Answer — show expected vs actual
-                    allPassed = false;
-                    finalVerdict = "WRONG_ANSWER";
-                    String expectedOut = tc.getExpectedOutput() != null ? tc.getExpectedOutput().trim() : "";
-                    outputLog.append("WRONG_ANSWER | Expected: [").append(expectedOut)
-                             .append("] Got: [").append(stdout).append("]\n");
-                    submission.setErrorOutput(outputLog.toString());
-                    break;
-                } else {
-                    // Compilation error, runtime error, TLE, etc.
-                    allPassed = false;
-                    finalVerdict = verdict;
-                    outputLog.append(verdict);
-                    if (!compileOutput.isEmpty()) outputLog.append(" | ").append(compileOutput);
-                    if (!stderr.isEmpty()) outputLog.append(" | ").append(stderr);
-                    outputLog.append("\n");
-                    submission.setErrorOutput(outputLog.toString());
+                String verdict = mapPistonResult(result, expectedOut, stdout);
+
+                switch (verdict) {
+                    case "ACCEPTED" -> {
+                        outputLog.append("Passed \u2713\n");
+                        passedTests++;
+                    }
+                    case "WRONG_ANSWER" -> {
+                        allPassed = false;
+                        finalVerdict = "WRONG_ANSWER";
+                        outputLog.append("WRONG_ANSWER | Expected: [").append(expectedOut)
+                                .append("] Got: [").append(stdout).append("]\n");
+                        submission.setErrorOutput(outputLog.toString());
+                    }
+                    default -> {
+                        allPassed = false;
+                        finalVerdict = verdict;
+                        outputLog.append(verdict);
+                        if (!compileOutput.isEmpty()) outputLog.append(" | ").append(compileOutput);
+                        if (!stderr.isEmpty()) outputLog.append(" | ").append(stderr);
+                        outputLog.append("\n");
+                        submission.setErrorOutput(outputLog.toString());
+                    }
+                }
+
+                if (!"ACCEPTED".equals(verdict)) {
                     break;
                 }
             }
@@ -146,7 +150,6 @@ public class ExecutionService {
             if (allPassed) {
                 submission.setStatus("ACCEPTED");
                 submission.setErrorOutput(outputLog.toString());
-                // === XP REWARD SYSTEM ===
                 awardXpToUser(submission);
             } else {
                 submission.setStatus(finalVerdict);
@@ -164,14 +167,66 @@ public class ExecutionService {
         }
     }
 
-    private String buildRunner(String userCode, String stdin, String languageId) {
-        return userCode;
+    /**
+     * Returns the filename Piston should use for this submission. Only matters for Java, where
+     * Piston's runner derives the main-class name from the file's basename. The wrapper always
+     * generates a {@code class Main}, so wrapped Java goes to {@code Main.java}; unwrapped Java
+     * uses the user's detected class name; everything else is left to Piston's defaults.
+     */
+    private String pistonFileName(String pistonLanguage, boolean wrapped, String userCode) {
+        if (!"java".equals(pistonLanguage)) return null;
+        if (wrapped) return "Main.java";
+        String detected = CodeWrapperService.detectJavaClass(userCode);
+        return (detected != null) ? detected + ".java" : "Main.java";
+    }
+
+    /**
+     * Normalizes output for comparison: collapses CRLF/CR to LF, strips trailing whitespace from
+     * each line, and drops trailing blank lines. Matches BattleArenaService's logic so a correct
+     * solution isn't rejected for cosmetic newline differences between the test-case data and
+     * Piston's stdout.
+     */
+    private String normalizeOutput(String value) {
+        if (value == null) return "";
+        String normalized = value.replace("\r\n", "\n").replace("\r", "\n");
+        java.util.List<String> lines = new java.util.ArrayList<>(java.util.Arrays.asList(normalized.split("\n", -1)));
+        for (int i = 0; i < lines.size(); i++) {
+            lines.set(i, lines.get(i).stripTrailing());
+        }
+        while (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+        return String.join("\n", lines);
+    }
+
+    /**
+     * Maps a Piston execution result to a verdict string compatible with legacy Submission.status values.
+     */
+    private String mapPistonResult(PistonExecutionResult result, String expectedOutput, String stdout) {
+        if (result.getErrorMessage() != null) {
+            return "COMPILATION_ERROR";
+        }
+        if (result.getCompileOutput() != null && !result.getCompileOutput().isBlank()) {
+            return "COMPILATION_ERROR";
+        }
+        String signal = result.getSignal();
+        if (signal != null && !signal.isBlank()) {
+            if ("SIGKILL".equals(signal) || "SIGXCPU".equals(signal)) {
+                return "TIME_LIMIT_EXCEEDED";
+            }
+            return "RUNTIME_ERROR";
+        }
+        if (result.getExitCode() != 0) {
+            return "RUNTIME_ERROR";
+        }
+        if (!stdout.equals(expectedOutput)) {
+            return "WRONG_ANSWER";
+        }
+        return "ACCEPTED";
     }
 
     /**
      * Awards XP to the user after an ACCEPTED submission.
-     * Calculates XP based on challenge difficulty, updates user totalXp + level,
-     * and triggers cosmetic unlock checks.
      */
     private void awardXpToUser(Submission submission) {
         try {
@@ -181,14 +236,12 @@ public class ExecutionService {
                 return;
             }
 
-            // Get challenge difficulty for XP calculation
             var challenge = challengeRepository.findById(submission.getChallenge().getId()).orElse(null);
             String difficulty = (challenge != null) ? challenge.getDifficulty() : null;
             int xpAmount = xpCalculatorService.calculateXp(difficulty, null);
 
             submission.setXpEarned(String.valueOf(xpAmount));
 
-            // Update user's totalXp and level
             User user = userRepository.findByAuth0Id(userId).orElse(null);
             if (user == null) {
                 log.warn("User not found by auth0Id '{}', skipping XP award", userId);
@@ -198,7 +251,6 @@ public class ExecutionService {
             long newTotalXp = (user.getTotalXp() != null ? user.getTotalXp() : 0L) + xpAmount;
             user.setTotalXp(newTotalXp);
 
-            // Level up: every 500 XP = 1 level
             int newLevel = (int) (newTotalXp / 500) + 1;
             user.setLevel(newLevel);
             user.setCurrentLevel(newLevel);
@@ -206,7 +258,6 @@ public class ExecutionService {
 
             log.info("Awarded {} XP to user {} (total: {}, level: {})", xpAmount, userId, newTotalXp, newLevel);
 
-            // Trigger cosmetic unlock checks
             try {
                 customizationService.checkAndGrantUnlocks(userId);
             } catch (Exception e) {
@@ -214,17 +265,6 @@ public class ExecutionService {
             }
         } catch (Exception e) {
             log.error("Failed to award XP for submission {}: {}", submission.getId(), e.getMessage());
-        }
-    }
-
-    private String mapJudge0Status(int statusId) {
-        switch (statusId) {
-            case 3: return "ACCEPTED";
-            case 4: return "WRONG_ANSWER";
-            case 5: return "TIME_LIMIT_EXCEEDED";
-            case 6: return "COMPILATION_ERROR";
-            case 13: return "INTERNAL_ERROR";
-            default: return "RUNTIME_ERROR";
         }
     }
 }

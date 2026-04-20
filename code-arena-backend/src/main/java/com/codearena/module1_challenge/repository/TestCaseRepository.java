@@ -18,12 +18,12 @@ public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
 		Long findNextNumericId();
 
 		@Query(value = """
-						SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END
+						SELECT COUNT(*)
 						FROM test_case tc
 						WHERE TRIM(tc.id) REGEXP '^[0-9]+$'
 							AND CAST(TRIM(tc.id) AS UNSIGNED) = :id
 						""", nativeQuery = true)
-		boolean existsByNumericId(@Param("id") Long id);
+		Integer existsByNumericId(@Param("id") Long id);
 
 		@Modifying
 		@Query(value = """
