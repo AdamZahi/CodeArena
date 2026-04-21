@@ -5,6 +5,7 @@ import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module2_battle.dto.*;
 import com.codearena.module2_battle.entity.*;
 import com.codearena.module2_battle.enums.BattleRoomStatus;
+import com.codearena.module2_battle.enums.BattleSubmissionStatus;
 import com.codearena.module2_battle.enums.ParticipantRole;
 import com.codearena.module2_battle.exception.ActiveSeasonNotFoundException;
 import com.codearena.module2_battle.exception.BattleRoomNotFoundException;
@@ -151,6 +152,180 @@ public class BattleResultsService {
                 .finalStandings(summary.getStandings())
                 .totalDurationSeconds(totalDuration)
                 .build();
+    }
+
+    /**
+     * Returns the post-match transparency comparison: every challenge with
+     * every player's metrics side-by-side, including the accepted source code
+     * so participants can see exactly why the winner won.
+     *
+     * Only ACCEPTED submission code is exposed — rejected drafts stay private.
+     */
+    @Transactional(readOnly = true)
+    public MatchComparisonResponse getMatchComparison(String roomId, String requestingUserId) {
+        BattleRoom room = battleRoomRepository.findById(UUID.fromString(roomId))
+                .orElseThrow(() -> new BattleRoomNotFoundException(roomId));
+
+        if (room.getStatus() != BattleRoomStatus.FINISHED) {
+            throw new ResultsNotReadyException(roomId, room.getStatus());
+        }
+
+        // Caller must have been in this room (player or spectator).
+        participantRepository.findByRoomIdAndUserId(roomId, requestingUserId)
+                .orElseThrow(() -> new ParticipantNotFoundException(roomId));
+
+        List<BattleParticipant> players = participantRepository
+                .findByRoomIdAndRole(roomId, ParticipantRole.PLAYER);
+        List<BattleRoomChallenge> roomChallenges = roomChallengeRepository
+                .findByRoomIdOrderByPositionAsc(roomId);
+
+        // Pre-load the standings (drives final-rank labels and per-challenge breakdowns).
+        PostMatchSummaryResponse summary = scoringService.buildPostMatchSummary(room, players);
+
+        // Index per-player breakdowns by roomChallengeId for O(1) lookup.
+        // standings entries carry a challengeBreakdowns list in the same order
+        // as roomChallenges; we collapse them into (participantId, rcId) -> breakdown.
+        Map<String, Map<String, ScoreBreakdownResponse>> breakdownIndex = new HashMap<>();
+        for (PlayerScoreResponse standing : summary.getStandings()) {
+            Map<String, ScoreBreakdownResponse> perChallenge = new HashMap<>();
+            for (ScoreBreakdownResponse bd : standing.getChallengeBreakdowns()) {
+                perChallenge.put(bd.getRoomChallengeId(), bd);
+            }
+            breakdownIndex.put(standing.getParticipantId(), perChallenge);
+        }
+
+        // Resolve user-facing fields once per participant.
+        Map<String, PlayerScoreResponse> standingByParticipantId = summary.getStandings().stream()
+                .collect(Collectors.toMap(PlayerScoreResponse::getParticipantId, s -> s));
+
+        boolean[] anyAi = { false };
+
+        List<ChallengeComparisonResponse> challengeViews = new ArrayList<>();
+        for (BattleRoomChallenge rc : roomChallenges) {
+            String rcId = rc.getId().toString();
+
+            // Resolve challenge metadata.
+            Challenge challenge = null;
+            try {
+                challenge = challengeRepository.findById(Long.parseLong(rc.getChallengeId())).orElse(null);
+            } catch (NumberFormatException ignored) { /* leave as null */ }
+            String title = challenge != null ? challenge.getTitle() : "Challenge " + rc.getPosition();
+            String difficulty = challenge != null && challenge.getDifficulty() != null
+                    ? challenge.getDifficulty() : null;
+
+            // For each player, find their accepted submission for this challenge (if any).
+            List<PlayerChallengeAttemptResponse> attempts = new ArrayList<>();
+            for (BattleParticipant player : players) {
+                String pid = player.getId().toString();
+                ScoreBreakdownResponse bd = breakdownIndex
+                        .getOrDefault(pid, Map.of()).get(rcId);
+
+                List<BattleSubmission> subs = submissionRepository
+                        .findByParticipantIdOrderBySubmittedAtAsc(pid).stream()
+                        .filter(s -> rcId.equals(s.getRoomChallengeId()))
+                        .toList();
+                BattleSubmission accepted = subs.stream()
+                        .filter(s -> s.getStatus() == BattleSubmissionStatus.ACCEPTED)
+                        .findFirst().orElse(null);
+
+                PlayerScoreResponse standing = standingByParticipantId.get(pid);
+                if (accepted != null && accepted.getAiScore() != null) anyAi[0] = true;
+
+                attempts.add(PlayerChallengeAttemptResponse.builder()
+                        .participantId(pid)
+                        .userId(player.getUserId())
+                        .username(standing != null ? standing.getUsername() : resolveUsername(player.getUserId()))
+                        .avatarUrl(standing != null ? standing.getAvatarUrl() : null)
+                        .finalRank(standing != null ? standing.getFinalRank() : 0)
+                        .solved(accepted != null)
+                        .attemptCount(subs.size())
+                        .solvedInSeconds(bd != null ? bd.getSolvedInSeconds() : -1)
+                        .runtimeMs(accepted != null ? accepted.getRuntimeMs() : null)
+                        .memoryKb(accepted != null ? accepted.getMemoryKb() : null)
+                        .aiScore(accepted != null ? accepted.getAiScore() : null)
+                        .aiScoreFallback(accepted != null ? accepted.getAiScoreFallback() : null)
+                        .correctnessScore(bd != null ? bd.getCorrectnessScore() : 0)
+                        .speedScore(bd != null ? bd.getSpeedScore() : 0)
+                        .efficiencyScore(bd != null ? bd.getEfficiencyScore() : 0)
+                        .attemptPenalty(bd != null ? bd.getAttemptPenalty() : 0)
+                        .totalChallengeScore(bd != null ? bd.getTotalChallengeScore() : 0)
+                        .acceptedCode(accepted != null ? accepted.getCode() : null)
+                        .language(accepted != null ? accepted.getLanguage() : null)
+                        .build());
+            }
+
+            // Compute per-challenge highlights so the UI can mark "Fastest", etc.
+            decorateHighlights(attempts);
+
+            // Sort: solved first, then by total challenge score DESC, then by solve time ASC.
+            attempts.sort(Comparator
+                    .comparing(PlayerChallengeAttemptResponse::isSolved).reversed()
+                    .thenComparing(PlayerChallengeAttemptResponse::getTotalChallengeScore,
+                            Comparator.reverseOrder())
+                    .thenComparingLong(a -> a.getSolvedInSeconds() < 0
+                            ? Long.MAX_VALUE : a.getSolvedInSeconds()));
+
+            challengeViews.add(ChallengeComparisonResponse.builder()
+                    .roomChallengeId(rcId)
+                    .position(rc.getPosition())
+                    .title(title)
+                    .difficulty(difficulty)
+                    .attempts(attempts)
+                    .build());
+        }
+
+        long totalDuration = 0;
+        if (room.getStartsAt() != null && room.getEndsAt() != null) {
+            totalDuration = Duration.between(room.getStartsAt(), room.getEndsAt()).getSeconds();
+        }
+
+        return MatchComparisonResponse.builder()
+                .roomId(roomId)
+                .mode(room.getMode().name())
+                .durationSeconds(totalDuration)
+                .standings(summary.getStandings())
+                .challenges(challengeViews)
+                .scoringFormulaLines(scoringFormulaExplanation())
+                .aiScoringAvailable(anyAi[0])
+                .build();
+    }
+
+    /**
+     * Mark the fastest solver, the most-optimized solver (highest aiScore),
+     * and the first solver among the players who solved this challenge.
+     */
+    private static void decorateHighlights(List<PlayerChallengeAttemptResponse> attempts) {
+        List<PlayerChallengeAttemptResponse> solvers = attempts.stream()
+                .filter(PlayerChallengeAttemptResponse::isSolved)
+                .toList();
+        if (solvers.isEmpty()) return;
+
+        solvers.stream()
+                .filter(a -> a.getRuntimeMs() != null)
+                .min(Comparator.comparingInt(PlayerChallengeAttemptResponse::getRuntimeMs))
+                .ifPresent(a -> a.setFastest(true));
+
+        solvers.stream()
+                .filter(a -> a.getAiScore() != null)
+                .max(Comparator.comparingDouble(PlayerChallengeAttemptResponse::getAiScore))
+                .ifPresent(a -> a.setMostOptimized(true));
+
+        solvers.stream()
+                .filter(a -> a.getSolvedInSeconds() >= 0)
+                .min(Comparator.comparingLong(PlayerChallengeAttemptResponse::getSolvedInSeconds))
+                .ifPresent(a -> a.setFirstSolver(true));
+    }
+
+    private static List<String> scoringFormulaExplanation() {
+        return List.of(
+                "Total = Σ challenge scores. Per-challenge max is 950.",
+                "Correctness: 500 pts for solving (0 otherwise).",
+                "Speed: up to 300 pts, linear decay vs match time. Solve early, score higher.",
+                "Efficiency: up to 150 pts vs the global runtime/memory baseline for this challenge.",
+                "Attempt penalty: −10 per failed attempt, capped at −50.",
+                "AI Score (0–100) is an extra optimization rating from the Score Ranker model.",
+                "Tiebreak order: total score → total accepted-time → total attempts."
+        );
     }
 
     /**

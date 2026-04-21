@@ -21,4 +21,10 @@ public class SubmissionResultResponse {
 
     @JsonProperty("isAccepted")
     private boolean isAccepted;
+
+    /** Optimization score (0–100) from the Score Ranker; null when not scored. */
+    private Double aiScore;
+
+    /** True when aiScore came from the local fallback (ranker unreachable). */
+    private Boolean aiScoreFallback;
 }

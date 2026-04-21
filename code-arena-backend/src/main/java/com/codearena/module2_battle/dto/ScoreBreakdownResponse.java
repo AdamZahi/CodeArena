@@ -23,4 +23,10 @@ public class ScoreBreakdownResponse {
     private Integer bestRuntimeMs;
     private Integer bestMemoryKb;
     private long solvedInSeconds;
+
+    /** Optimization score (0–100) from the Score Ranker for the accepted submission. */
+    private Double aiScore;
+
+    /** True when aiScore came from the local fallback (ranker unreachable). */
+    private Boolean aiScoreFallback;
 }

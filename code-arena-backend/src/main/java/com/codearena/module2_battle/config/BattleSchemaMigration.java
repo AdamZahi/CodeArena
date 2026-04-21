@@ -24,6 +24,35 @@ public class BattleSchemaMigration {
         dropChallengeIdFromBattleRoom();
         dropOldStatusStringValues();
         fixParticipantJoinedAtType();
+        addRankerScoreColumns();
+    }
+
+    /**
+     * Add ai_score / ai_score_fallback columns to battle_submission so the
+     * Score Ranker microservice can persist its optimization score per
+     * submission. ddl-auto=none, so this idempotent ALTER is required.
+     */
+    private void addRankerScoreColumns() {
+        addColumnIfMissing("battle_submission", "ai_score",
+                "DOUBLE DEFAULT NULL");
+        addColumnIfMissing("battle_submission", "ai_score_fallback",
+                "BIT(1) DEFAULT NULL");
+    }
+
+    private void addColumnIfMissing(String table, String column, String definition) {
+        try {
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM information_schema.COLUMNS " +
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+                    Integer.class, table, column);
+            if (count != null && count == 0) {
+                jdbcTemplate.execute(
+                        "ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+                log.info("Added column {}.{}", table, column);
+            }
+        } catch (Exception e) {
+            log.debug("Skipping add column {}.{}: {}", table, column, e.getMessage());
+        }
     }
 
     /**

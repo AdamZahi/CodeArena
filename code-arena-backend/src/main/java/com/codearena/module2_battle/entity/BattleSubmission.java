@@ -56,6 +56,17 @@ public class BattleSubmission {
     // Computed after judging; null until then
     private Integer score;
 
+    // Optimization score (0–100) returned by the Score Ranker microservice.
+    // Null until the ranker has scored the submission (only ACCEPTED submissions
+    // are sent to the ranker).
+    @Column(name = "ai_score")
+    private Double aiScore;
+
+    // True when aiScore came from the local time-based fallback because the
+    // ranker was unreachable. Surfaced to the UI for transparency.
+    @Column(name = "ai_score_fallback")
+    private Boolean aiScoreFallback;
+
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 

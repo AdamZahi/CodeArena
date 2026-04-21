@@ -59,6 +59,7 @@ public class BattleArenaService {
     private final CodeWrapperService codeWrapperService;
     private final BattleConnectionTracker connectionTracker;
     private final Executor submissionExecutor;
+    private final RankerBridgeService rankerBridgeService;
 
     // Lock object for thread-safe match completion checks
     private final Object matchCompletionLock = new Object();
@@ -82,7 +83,8 @@ public class BattleArenaService {
             com.codearena.module2_battle.config.TimeLimitProperties timeLimitProperties,
             CodeWrapperService codeWrapperService,
             BattleConnectionTracker connectionTracker,
-            @Qualifier("submissionExecutor") Executor submissionExecutor) {
+            @Qualifier("submissionExecutor") Executor submissionExecutor,
+            RankerBridgeService rankerBridgeService) {
         this.battleRoomRepository = battleRoomRepository;
         this.participantRepository = participantRepository;
         this.roomChallengeRepository = roomChallengeRepository;
@@ -98,6 +100,7 @@ public class BattleArenaService {
         this.codeWrapperService = codeWrapperService;
         this.connectionTracker = connectionTracker;
         this.submissionExecutor = submissionExecutor;
+        this.rankerBridgeService = rankerBridgeService;
     }
 
     // ──────────────────────────────────────────────
@@ -303,6 +306,7 @@ public class BattleArenaService {
             Integer totalRuntimeMs = null;
             Integer maxMemoryKb = null;
             String failCompileOutput = null;
+            int passedTestCases = 0;
 
             // Feature 2: broadcast initial PENDING state for all test cases
             for (int i = 0; i < totalTestCases; i++) {
@@ -366,12 +370,32 @@ public class BattleArenaService {
                 }
 
                 // Feature 2: broadcast PASSED for this test case
+                passedTestCases++;
                 arenaBroadcastService.sendTestCaseProgress(userId, TestCaseProgressEvent.builder()
                         .submissionId(submissionId).testCaseIndex(tcIndex).totalTestCases(totalTestCases)
                         .status(com.codearena.module2_battle.enums.TestCaseStatus.PASSED).build());
             }
 
             String feedback = buildFeedback(finalStatus, totalRuntimeMs, failCompileOutput, totalTestCases);
+            boolean isAccepted = finalStatus == BattleSubmissionStatus.ACCEPTED;
+
+            // Score the submission with the Score Ranker only when accepted —
+            // failed submissions get their score implicitly via attempt penalties
+            // in BattleScoringService and don't need an AI optimization grade.
+            com.codearena.module2_battle.dto.RankerScoreResult rankerResult = null;
+            if (isAccepted) {
+                com.codearena.module2_battle.dto.PistonExecutionResult aggregated =
+                        com.codearena.module2_battle.dto.PistonExecutionResult.builder()
+                                .exitCode(0)
+                                .cpuTimeMs(totalRuntimeMs)
+                                .memoryBytes(maxMemoryKb != null ? (long) maxMemoryKb * 1024L : null)
+                                .build();
+                rankerResult = rankerBridgeService.score(
+                        sourceCode, language, aggregated, totalTestCases, passedTestCases);
+                log.debug("Ranker scored submission {} → {} (fallback={}, error={})",
+                        submissionId, rankerResult.getScore(),
+                        rankerResult.isFallback(), rankerResult.getError());
+            }
 
             // Update the submission record
             BattleSubmission submission = submissionRepository.findById(UUID.fromString(submissionId)).orElse(null);
@@ -379,10 +403,12 @@ public class BattleArenaService {
                 submission.setStatus(finalStatus);
                 submission.setRuntimeMs(totalRuntimeMs);
                 submission.setMemoryKb(maxMemoryKb);
+                if (rankerResult != null) {
+                    submission.setAiScore(rankerResult.getScore());
+                    submission.setAiScoreFallback(rankerResult.isFallback());
+                }
                 submissionRepository.save(submission);
             }
-
-            boolean isAccepted = finalStatus == BattleSubmissionStatus.ACCEPTED;
 
             // Send result to the submitting player only
             SubmissionResultResponse resultResponse = SubmissionResultResponse.builder()
@@ -394,6 +420,8 @@ public class BattleArenaService {
                     .memoryKb(maxMemoryKb)
                     .feedback(feedback)
                     .isAccepted(isAccepted)
+                    .aiScore(rankerResult != null ? rankerResult.getScore() : null)
+                    .aiScoreFallback(rankerResult != null ? rankerResult.isFallback() : null)
                     .build();
             arenaBroadcastService.sendSubmissionResult(userId, resultResponse);
 
@@ -639,6 +667,8 @@ public class BattleArenaService {
                         .memoryKb(s.getMemoryKb())
                         .feedback(null)
                         .isAccepted(s.getStatus() == BattleSubmissionStatus.ACCEPTED)
+                        .aiScore(s.getAiScore())
+                        .aiScoreFallback(s.getAiScoreFallback())
                         .build())
                 .toList();
     }

@@ -254,6 +254,8 @@ public class BattleScoringService {
                 .bestRuntimeMs(runtimeMs)
                 .bestMemoryKb(memoryKb)
                 .solvedInSeconds(solvedInSeconds)
+                .aiScore(acceptedSub.getAiScore())
+                .aiScoreFallback(acceptedSub.getAiScoreFallback())
                 .build();
     }
 

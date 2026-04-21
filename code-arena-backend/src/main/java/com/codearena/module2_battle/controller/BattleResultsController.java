@@ -36,6 +36,19 @@ public class BattleResultsController {
         return ResponseEntity.ok(replay);
     }
 
+    /**
+     * Post-match transparency view: per-challenge cross-player metrics plus
+     * the accepted source code for each player. Only callable by participants
+     * (player or spectator) of the room.
+     */
+    @GetMapping("/{roomId}/compare")
+    public ResponseEntity<MatchComparisonResponse> getMatchComparison(
+            @PathVariable String roomId,
+            JwtAuthenticationToken principal) {
+        String userId = principal.getToken().getSubject();
+        return ResponseEntity.ok(battleResultsService.getMatchComparison(roomId, userId));
+    }
+
     @GetMapping("/leaderboard/season")
     public ResponseEntity<SeasonLeaderboardResponse> getSeasonLeaderboard(
             JwtAuthenticationToken principal) {
