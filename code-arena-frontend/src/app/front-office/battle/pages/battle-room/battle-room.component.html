@@ -223,6 +223,13 @@
         <span *ngIf="lastSubmissionResult.memoryKb !== null">
           <span class="detail-label">Memory:</span> {{ lastSubmissionResult.memoryKb }}KB
         </span>
+        <span *ngIf="lastSubmissionResult.aiScore != null"
+              class="ai-score"
+              [class.fallback]="lastSubmissionResult.aiScoreFallback">
+          <span class="detail-label">AI Score:</span>
+          {{ lastSubmissionResult.aiScore | number:'1.0-1' }} / 100
+          <span *ngIf="lastSubmissionResult.aiScoreFallback" class="ai-score-tag" title="Ranker offline — fallback estimate">~</span>
+        </span>
       </div>
       <div class="result-feedback" *ngIf="lastSubmissionResult.feedback">
         {{ lastSubmissionResult.feedback }}
