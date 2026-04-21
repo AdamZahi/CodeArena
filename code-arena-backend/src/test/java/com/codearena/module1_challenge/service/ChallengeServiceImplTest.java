@@ -132,9 +132,9 @@ class ChallengeServiceImplTest {
                     .build();
 
             when(challengeRepository.findNextNumericId()).thenReturn(1_000_001L);
-            when(challengeRepository.existsByNumericId(1_000_001L)).thenReturn(false);
+            when(challengeRepository.existsByNumericId(1_000_001L)).thenReturn(0);
             when(testCaseRepository.findNextNumericId()).thenReturn(1_000_001L);
-            when(testCaseRepository.existsByNumericId(1_000_001L)).thenReturn(false);
+            when(testCaseRepository.existsByNumericId(1_000_001L)).thenReturn(0);
 
             Object[] createdRow = new Object[]{
                     1_000_001L, "New Problem", "Solve this", "MEDIUM", "Array", "Python", "author1",
@@ -167,7 +167,7 @@ class ChallengeServiceImplTest {
                     .build();
 
             when(challengeRepository.findNextNumericId()).thenReturn(1_000_002L);
-            when(challengeRepository.existsByNumericId(1_000_002L)).thenReturn(false);
+            when(challengeRepository.existsByNumericId(1_000_002L)).thenReturn(0);
 
             Object[] createdRow = new Object[]{
                     1_000_002L, "No Tests", "Desc", "EASY", "Math", "Java", "author1",
@@ -197,7 +197,7 @@ class ChallengeServiceImplTest {
             when(challengeRepository.findByIdSanitized(1L)).thenReturn(rows);
             when(testCaseRepository.findRawByNumericChallengeId(1L)).thenReturn(Collections.emptyList());
             when(testCaseRepository.findNextNumericId()).thenReturn(1_000_001L);
-            when(testCaseRepository.existsByNumericId(1_000_001L)).thenReturn(false);
+            when(testCaseRepository.existsByNumericId(1_000_001L)).thenReturn(0);
 
             CreateChallengeRequest request = CreateChallengeRequest.builder()
                     .title("Updated Title")

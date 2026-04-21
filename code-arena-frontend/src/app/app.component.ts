@@ -44,9 +44,9 @@ export class AppComponent {
       )
     ).subscribe(({ user, token }) => {
       if (user?.sub) {
-        this.notificationService.connect(user.sub, token);
+        this.notificationService.connect(user.sub);
       }
     });
 
   }
-}
+}

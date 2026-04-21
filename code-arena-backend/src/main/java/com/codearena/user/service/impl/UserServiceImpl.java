@@ -137,7 +137,11 @@ public class UserServiceImpl implements UserService {
                 .authProvider(resolveAuthProvider(jwt))
                 .isActive(true)
                 .build();
-            userRepository.save(user);
+            try {
+                userRepository.save(user);
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                log.warn("Concurrent user creation detected for auth0Id: {}. Ignoring since another thread succeeded.", jwt.getSubject());
+            }
             return;
         }
         boolean updated = false;

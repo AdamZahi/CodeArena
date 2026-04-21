@@ -196,7 +196,7 @@ public class LeaderboardService {
     }
 
     public DailyLeaderboardResponse getDailyLeaderboard(LocalDate date, String requestingUserId) {
-        DailyChallenge dailyChallenge = dailyChallengeRepository.findByChallengeDate(date)
+        DailyChallenge dailyChallenge = dailyChallengeRepository.findFirstByChallengeDate(date)
                 .orElseThrow(() -> new DailyChallengeNotFoundException(date));
 
         String dcId = dailyChallenge.getId().toString();

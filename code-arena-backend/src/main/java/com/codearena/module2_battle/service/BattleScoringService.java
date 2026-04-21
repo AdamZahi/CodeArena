@@ -444,7 +444,7 @@ public class BattleScoringService {
     // ──────────────────────────────────────────────
 
     private void updateDailyEntries(String roomId, BattleRoom room, List<BattleParticipant> players) {
-        Optional<DailyChallenge> dailyOpt = dailyChallengeRepository.findByChallengeDate(LocalDate.now());
+        Optional<DailyChallenge> dailyOpt = dailyChallengeRepository.findFirstByChallengeDate(LocalDate.now());
         if (dailyOpt.isEmpty()) {
             log.warn("No DailyChallenge found for today — skipping daily entry update for room {}", roomId);
             return;
