@@ -20,7 +20,8 @@ export const appConfig: ApplicationConfig = {
       clientId: environment.auth0ClientId,
       authorizationParams: {
         redirect_uri: window.location.origin,
-        audience: environment.auth0Audience
+        audience: environment.auth0Audience,
+        scope: 'openid profile email'
       },
       httpInterceptor: {
         allowedList: [

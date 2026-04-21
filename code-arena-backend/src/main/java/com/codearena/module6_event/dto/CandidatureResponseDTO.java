@@ -18,6 +18,7 @@ public class CandidatureResponseDTO {
     private UUID id;
     private UUID eventId;
     private String participantId;
+    private String participantName;
     private String motivation;
     private CandidatureStatus status;
     private LocalDateTime appliedAt;

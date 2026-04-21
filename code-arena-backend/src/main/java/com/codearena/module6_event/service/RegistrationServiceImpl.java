@@ -36,6 +36,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final EventMapper eventMapper;
     private final EventInvitationRepository invitationRepository;
     private final CandidatureService candidatureService;
+    private final ParticipantIdentityService participantIdentityService;
 
     @Qualifier("eventEmailService")
     private final EmailService emailService;
@@ -91,6 +92,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     return RegistrationResponseDTO.builder()
                             .id(candidature.getId())
                             .participantId(participantId)
+                            .participantName(participantIdentityService.resolveDisplayName(participantId))
                             .eventId(eventId)
                             .status(EventStatus.WAITLIST)
                             .qrCode(null)
@@ -108,15 +110,24 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         if (saved.getStatus() == EventStatus.CONFIRMED && saved.getQrCode() != null) {
             try {
-                String testEmail = "codearenapi@gmail.com";
-                emailService.sendRegistrationConfirmationEmail(testEmail, event.getTitle(), saved.getQrCode());
-                log.info("Registration confirmation email sent to {}", participantId);
+                String userEmail = participantIdentityService.resolveEmail(participantId);
+                if (userEmail != null && !userEmail.isBlank()) {
+                    emailService.sendRegistrationConfirmationEmail(
+                        userEmail, 
+                        event.getTitle(),
+                        event.getStartDate() != null ? event.getStartDate().toString() : "TBD",
+                        event.getLocation() != null ? event.getLocation() : "TBD"
+                    );
+                    log.info("Registration confirmation email sent to real address: {} ({})", participantId, userEmail);
+                } else {
+                    log.warn("Skipping registration email for participant {} - No email found.", participantId);
+                }
             } catch (Exception e) {
                 log.error("Failed to send registration confirmation email to {}", participantId, e);
             }
         }
 
-        return eventMapper.toRegistrationResponseDTO(saved);
+        return withParticipantName(eventMapper.toRegistrationResponseDTO(saved));
     }
 
     private EventRegistration registerOpen(
@@ -205,10 +216,20 @@ public class RegistrationServiceImpl implements RegistrationService {
         registrationRepository.save(promoted);
 
         try {
-            String testEmail = "codearenapi@gmail.com";
-            emailService.sendRegistrationConfirmationEmail(testEmail, event.getTitle(), promoted.getQrCode());
-            log.info("Registration confirmation email sent to {} (promoted from waitlist)",
-                    promoted.getParticipantId());
+            String userEmail = participantIdentityService.resolveEmail(promoted.getParticipantId());
+            if (userEmail != null && !userEmail.isBlank()) {
+                emailService.sendRegistrationConfirmationEmail(
+                    userEmail, 
+                    event.getTitle(),
+                    event.getStartDate() != null ? event.getStartDate().toString() : "TBD",
+                    event.getLocation() != null ? event.getLocation() : "TBD"
+                );
+                log.info("Registration confirmation email sent to real address: {} ({}) (promoted from waitlist)",
+                        promoted.getParticipantId(), userEmail);
+            } else {
+                log.warn("Skipping registration email for promoted participant {} - No email found.",
+                        promoted.getParticipantId());
+            }
         } catch (Exception e) {
             log.error("Failed to send registration confirmation email to {} (promoted from waitlist)",
                     promoted.getParticipantId(), e);
@@ -229,6 +250,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
         return registrationRepository.findByEvent_Id(eventId).stream()
                 .map(eventMapper::toRegistrationResponseDTO)
+                .map(this::withParticipantName)
                 .toList();
     }
 
@@ -237,6 +259,12 @@ public class RegistrationServiceImpl implements RegistrationService {
     public List<RegistrationResponseDTO> getMyRegistrations(String participantId) {
         return registrationRepository.findByParticipantId(participantId).stream()
                 .map(eventMapper::toRegistrationResponseDTO)
+                .map(this::withParticipantName)
                 .toList();
+    }
+
+    private RegistrationResponseDTO withParticipantName(RegistrationResponseDTO dto) {
+        dto.setParticipantName(participantIdentityService.resolveDisplayName(dto.getParticipantId()));
+        return dto;
     }
 }

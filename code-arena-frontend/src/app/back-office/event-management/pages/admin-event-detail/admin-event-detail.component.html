@@ -5,19 +5,19 @@
         ← BACK TO EVENT LIST
       </button>
       <div class="header-right">
-        <span [class]="event?.type === 'OPEN' ? 
+        <span [class]="event.type === 'OPEN' ? 
           'type-badge open' : 'type-badge exclusive'">
-          {{ event?.type }}
+          {{ event.type }}
         </span>
-        <span [class]="'status-badge ' + (event?.status || '').toLowerCase()">
-          {{ event?.status }}
+        <span [class]="'status-badge ' + (event.status || '').toLowerCase()">
+          {{ event.status }}
         </span>
       </div>
     </div>
 
     <div class="event-title-section">
-      <h1 class="event-title">{{ event?.title }}</h1>
-      <p class="event-desc">{{ event?.description }}</p>
+      <h1 class="event-title">{{ event.title }}</h1>
+      <p class="event-desc">{{ event.description }}</p>
     </div>
 
     <div class="message" *ngIf="message">{{ message }}</div>
@@ -29,8 +29,8 @@
         <div class="info-content">
           <div class="info-label">DATES</div>
           <div class="info-value">
-            {{ event?.startDate | date:'dd MMM yyyy, HH:mm' }}
-            → {{ event?.endDate | date:'dd MMM yyyy, HH:mm' }}
+            {{ event.startDate | date:'dd MMM yyyy, HH:mm' }}
+            → {{ event.endDate | date:'dd MMM yyyy, HH:mm' }}
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
         <div class="info-content">
           <div class="info-label">LOCATION</div>
           <div class="info-value">
-            {{ event?.location || 'CODEARENA HQ' }}
+            {{ event.location || 'CODEARENA HQ' }}
           </div>
         </div>
       </div>
@@ -47,25 +47,25 @@
         <span class="info-icon">🎯</span>
         <div class="info-content">
           <div class="info-label">CATEGORY</div>
-          <div class="info-value">{{ event?.category }}</div>
+          <div class="info-value">{{ event.category }}</div>
         </div>
       </div>
       <div class="info-card">
         <span class="info-icon">👥</span>
         <div class="info-content">
-        <div class="info-label">PARTICIPANTS</div>
-        <div class="info-value">
-          {{ event?.currentParticipants }} / {{ event?.maxParticipants }} ({{ event?.availablePlaces }} LEFT)
+          <div class="info-label">PARTICIPANTS</div>
+          <div class="info-value">
+            {{ event.currentParticipants }} / {{ event.maxParticipants }} ({{ event.availablePlaces }} LEFT)
+          </div>
         </div>
-      </div>
       </div>
     </div>
 
-    <button class="invite-btn" (click)="inviteTop10()" *ngIf="event?.type === 'EXCLUSIVE'">
+    <button class="invite-btn" (click)="inviteTop10()" *ngIf="event.type === 'EXCLUSIVE'">
       ⭐ INVITE TOP 10
     </button>
 
-    <div class="stats-grid" *ngIf="event?.type === 'EXCLUSIVE'">
+    <div class="stats-grid" *ngIf="event.type === 'EXCLUSIVE'">
       <div class="stat-box">
         <div class="stat-title">INVITATIONS</div>
         <div class="stat-row">
@@ -111,29 +111,30 @@
       <div class="section-header">
         <h2 class="section-title">👥 PARTICIPANTS</h2>
         <span class="section-count">
-          {{ participants?.length || 0 }}
+          {{ participants.length || 0 }}
         </span>
       </div>
       <div class="section-content">
         <div class="row" *ngFor="let p of participants">
-          <span>{{ p.participantId }}</span>
+          <span>{{ resolveParticipantLabel(p.participantName, p.participantId) }}</span>
           <span class="badge">{{ p.status }}</span>
         </div>
-        <div class="muted" *ngIf="participants.length === 0">No participants yet.</div>
+        <div class="muted" *ngIf="!participants || participants.length === 0">No participants yet.</div>
       </div>
     </div>
 
-    <div class="section" *ngIf="event?.type === 'EXCLUSIVE'">
+    <div class="section" *ngIf="event.type === 'EXCLUSIVE'">
       <div class="section-header">
         <h2 class="section-title">📩 CANDIDATURES</h2>
         <span class="section-count">
-          {{ candidatures?.length || 0 }}
+          {{ candidatures.length || 0 }}
         </span>
       </div>
       <div class="section-content">
         <div class="candidature-item" *ngFor="let c of candidatures">
           <div class="row">
-            <span>{{ c.participantId }} - <span class="badge">{{ c.status }}</span></span>
+            <span>{{ resolveParticipantLabel(c.participantName, c.participantId) }} - <span class="badge">{{ c.status
+                }}</span></span>
             <span *ngIf="c.status === 'PENDING'">
               <button class="btn-accept" (click)="acceptCandidature(c.id)">[ ACCEPT ]</button>
               <button class="btn-reject" (click)="rejectCandidature(c.id)">[ REJECT ]</button>
@@ -148,16 +149,16 @@
       </div>
     </div>
 
-    <div class="section" *ngIf="event?.type === 'EXCLUSIVE'">
+    <div class="section" *ngIf="event.type === 'EXCLUSIVE'">
       <div class="section-header">
         <h2 class="section-title">🤝 INVITATIONS</h2>
         <span class="section-count">
-          {{ invitations?.length || 0 }}
+          {{ invitations.length || 0 }}
         </span>
       </div>
       <div class="section-content">
         <div class="row" *ngFor="let i of invitations">
-          <span>{{ i.participantId }}</span>
+          <span>{{ resolveParticipantLabel(i.participantName, i.participantId) }}</span>
           <span class="badge">{{ i.status }}</span>
         </div>
         <div class="muted" *ngIf="invitations.length === 0">No invitations available.</div>

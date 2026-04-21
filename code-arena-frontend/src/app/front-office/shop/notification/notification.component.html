@@ -1,10 +1,6 @@
 <div class="notification-container">
-  <div
-    *ngFor="let notif of notifications"
-    class="notification-toast"
-    [class]="getStatusColor(notif.status)"
-    [class.visible]="notif.visible"
-    [class.hidden]="!notif.visible">
+  <div *ngFor="let notif of notifications" class="notification-toast" [class]="getStatusColor(notif.status)"
+    [class.visible]="notif.visible" [class.hidden]="!notif.visible">
 
     <div class="notif-icon">{{ getStatusIcon(notif.status) }}</div>
 
@@ -16,11 +12,8 @@
     <button class="notif-close" (click)="dismiss(notif.id)">✕</button>
 
   </div>
-    <!-- ── STOCK ALERTS ─────────────────────── -->
-  <div
-    *ngFor="let alert of stockAlerts"
-    class="notification-toast notif-stock"
-    [class.visible]="alert.visible"
+  <!-- ── STOCK ALERTS ─────────────────────── -->
+  <div *ngFor="let alert of stockAlerts" class="notification-toast notif-stock" [class.visible]="alert.visible"
     [class.hidden]="!alert.visible">
     <div class="notif-icon">🔥</div>
     <div class="notif-body">
@@ -29,19 +22,24 @@
     </div>
     <button class="notif-close" (click)="dismissStock(alert.id)">✕</button>
   </div>
-<!-- ── ADMIN ORDER ALERTS ─────────────────── -->
-<div
-  *ngFor="let alert of adminAlerts"
-  class="notification-toast notif-admin"
-  [class.visible]="alert.visible"
-  [class.hidden]="!alert.visible">
-  <div class="notif-icon">🛒</div>
-  <div class="notif-body">
-    <div class="notif-title">NEW ORDER #{{ alert.orderId }}</div>
-    <div class="notif-message">{{ alert.message }}</div>
+  <!-- ── ADMIN ORDER ALERTS ─────────────────── -->
+  <div *ngFor="let alert of adminAlerts" class="notification-toast notif-admin" [class.visible]="alert.visible"
+    [class.hidden]="!alert.visible">
+    <div class="notif-icon">🛒</div>
+    <div class="notif-body">
+      <div class="notif-title">NEW ORDER #{{ alert.orderId }}</div>
+      <div class="notif-message">{{ alert.message }}</div>
+    </div>
+    <button class="notif-close" (click)="dismissAdmin(alert.id)">✕</button>
+  </div> <!-- ── ADMIN CANDIDATURE ALERTS ───────────── -->
+  <div *ngFor="let alert of candidatureAlerts" class="notification-toast notif-candidature"
+    [class.visible]="alert.visible" [class.hidden]="!alert.visible">
+    <div class="notif-icon">📝</div>
+    <div class="notif-body">
+      <div class="notif-title">NEW CANDIDATURE</div>
+      <div class="notif-message">{{ alert.message }}</div>
+    </div>
+    <button class="notif-close" (click)="dismissCandidature(alert.id)">✕</button>
   </div>
-  <button class="notif-close" (click)="dismissAdmin(alert.id)">✕</button>
-</div>
-
 
 </div>

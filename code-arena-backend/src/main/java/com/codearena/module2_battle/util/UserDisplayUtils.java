@@ -22,32 +22,49 @@ public final class UserDisplayUtils {
      * Falls back gracefully — never returns null or "OPERATOR".
      */
     public static String resolveDisplayName(User user) {
-        if (user == null) return "Unknown";
+        if (user == null) return "Unknown Hacker";
 
-        if (user.getNickname() != null && !user.getNickname().isBlank()) {
+        if (user.getNickname() != null
+                && !user.getNickname().isBlank()
+                && !looksLikeAuth0Identifier(user.getNickname())) {
             return user.getNickname();
         }
         if (user.getFirstName() != null && !user.getFirstName().isBlank()) {
+            if (user.getLastName() != null && !user.getLastName().isBlank()) {
+                return user.getFirstName() + " " + user.getLastName();
+            }
             return user.getFirstName();
         }
         if (user.getEmail() != null && user.getEmail().contains("@")) {
             return user.getEmail().split("@")[0];
         }
-        // Last resort: derive from auth0Id
-        if (user.getAuth0Id() != null) {
+        // Last resort: derive a readable fallback from auth0Id
+        if (user.getAuth0Id() != null && !user.getAuth0Id().isBlank()) {
             return cleanAuth0Id(user.getAuth0Id());
         }
-        return "Unknown";
+        return "Unknown Hacker";
+    }
+
+    public static boolean looksLikeAuth0Identifier(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        String v = value.trim().toLowerCase();
+        return v.startsWith("auth0|")
+                || v.startsWith("google-oauth2|")
+                || v.startsWith("github|")
+                || v.startsWith("facebook|")
+                || v.startsWith("user_");
     }
 
     /**
      * Resolve display name from an auth0 user ID by looking up the DB.
      */
     public static String resolveDisplayName(String auth0Id, UserRepository userRepository) {
-        if (auth0Id == null) return "Unknown";
+        if (auth0Id == null) return "Unknown Hacker";
         return userRepository.findByAuth0Id(auth0Id)
                 .map(UserDisplayUtils::resolveDisplayName)
-                .orElseGet(() -> cleanAuth0Id(auth0Id));
+                .orElse("Unknown Hacker");
     }
 
     /**

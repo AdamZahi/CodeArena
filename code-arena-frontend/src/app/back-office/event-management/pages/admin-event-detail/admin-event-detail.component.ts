@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
 import {
   EventCandidature,
   EventInvitation,
@@ -10,6 +11,7 @@ import {
   ProgrammingEvent
 } from '../../../../front-office/event/models/event.model';
 import { EventService } from '../../../../front-office/event/services/event.service';
+import { AdminUserService, AdminUser } from '../../../user-management/services/admin-user.service';
 
 @Component({
   selector: 'app-admin-event-detail',
@@ -38,14 +40,23 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
   rejectedCandidatures: number = 0;
 
   private subs = new Subscription();
+  userMap: { [auth0Id: string]: AdminUser } = {};
+  loggedInUser: any = null;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly adminUserService: AdminUserService,
+    private readonly auth: AuthService
   ) {}
 
   ngOnInit(): void {
+    const authSub = this.auth.user$.subscribe(user => {
+      this.loggedInUser = user;
+    });
+    this.subs.add(authSub);
+
     const sub = this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (!id) return;
@@ -83,6 +94,49 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
       error: () => (this.error = 'Failed to reject candidature.')
     });
     this.subs.add(sub);
+  }
+
+  resolveParticipantLabel(participantName?: string, participantId?: string): string {
+    const safeId = (participantId ?? '').trim();
+
+    // 1. Same method as navbar/customize profile: if it's the current user, get name directly from Auth0 SDK
+    if (this.loggedInUser && safeId && this.loggedInUser.sub === safeId) {
+      const authName = this.loggedInUser.nickname || this.loggedInUser.name;
+      if (authName && !this.looksLikeTechnicalIdentifier(authName)) {
+        return authName;
+      }
+    }
+
+    // 2. Fetch from backend user map (for other users)
+    if (safeId && this.userMap[safeId]) {
+      const u = this.userMap[safeId];
+      const nickname = u.nickname || u.firstName || (u.email ? u.email.split('@')[0] : null);
+      if (nickname && !this.looksLikeTechnicalIdentifier(nickname)) {
+        return nickname;
+      }
+    }
+
+    // 3. Fallback to ParticipantName provided by event service
+    const safeName = (participantName ?? '').trim();
+    if (safeName && !this.looksLikeTechnicalIdentifier(safeName)) {
+      return safeName;
+    }
+
+    if (safeId && !this.looksLikeTechnicalIdentifier(safeId)) {
+      return safeId;
+    }
+
+    // 4. Default dynamic user_xxx format for unmapped users
+    if (safeId) {
+       const parts = safeId.split('|');
+       const idPart = parts.length > 1 ? parts[1] : parts[0];
+       if (idPart.length > 8) {
+         return 'user_' + idPart.substring(idPart.length - 8);
+       }
+       return 'user_' + idPart;
+    }
+
+    return 'Unknown Hacker';
   }
 
   inviteTop10(): void {
@@ -132,5 +186,34 @@ export class AdminEventDetailComponent implements OnInit, OnDestroy {
       error: () => (this.invitations = [])
     });
     this.subs.add(inviteSub);
+
+    const userSub = this.adminUserService.listUsers().subscribe({
+      next: (res) => {
+        const users = res.content || [];
+        users.forEach((u) => {
+          if (u.auth0Id) {
+            this.userMap[u.auth0Id] = u;
+          }
+        });
+        // Force refresh GUI
+        this.participants = [...this.participants];
+        this.candidatures = [...this.candidatures];
+        this.invitations = [...this.invitations];
+      },
+      error: () => console.warn('Failed to load users for mapping.')
+    });
+    this.subs.add(userSub);
+  }
+
+  private looksLikeTechnicalIdentifier(value: string): boolean {
+    const lower = value.toLowerCase();
+    const compact = lower.replace(/[\s_-]/g, '');
+    return (
+      lower.startsWith('auth0|') ||
+      lower.startsWith('google-oauth2|') ||
+      lower.startsWith('github|') ||
+      lower.startsWith('facebook|') ||
+      /^\d{8,}$/.test(compact)
+    );
   }
 }

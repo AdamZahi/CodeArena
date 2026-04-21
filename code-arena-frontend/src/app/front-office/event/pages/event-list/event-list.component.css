@@ -290,6 +290,80 @@
   box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
 }
 
+.recommended-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    border: 1px solid var(--neon);
+    border-radius: 12px;
+    background: rgba(139,92,246,0.05);
+    position: relative;
+    z-index: 1;
+}
+.recommended-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.ai-badge {
+    background: var(--neon);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'Orbitron', monospace;
+}
+.recommended-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    margin: 0;
+}
+.recommended-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.recommended-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.recommended-card:hover {
+    border-color: var(--neon);
+    transform: translateY(-2px);
+}
+.rec-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    color: var(--text);
+    margin: 8px 0 4px;
+}
+.rec-category {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+.rec-match {
+    font-size: 10px;
+    color: var(--neon3);
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 1px;
+}
+.rec-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-family: 'Orbitron', monospace;
+    margin-bottom: 4px;
+}
+/* badge-open and badge-exclusive already exist below but let's make sure they work here too */
+
 /* ── GRID ───────────────────────────────────────── */
 .product-grid {
   display: grid;

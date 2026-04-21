@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +28,7 @@ public class InvitationController {
 
     private final InvitationService invitationService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me/invitations")
     public ResponseEntity<List<InvitationResponseDTO>> getMyInvitations(
             @AuthenticationPrincipal Jwt jwt) {
@@ -34,6 +36,7 @@ public class InvitationController {
         return ResponseEntity.ok(invitationService.getMyInvitations(participantId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}/invitation/accept")
     public ResponseEntity<ApiResponse<RegistrationResponseDTO>> acceptInvitation(
             @PathVariable("id") UUID eventId,
@@ -53,6 +56,7 @@ public class InvitationController {
                 .build();
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}/invitation/decline")
     public ResponseEntity<Void> declineInvitation(
             @PathVariable("id") UUID eventId,

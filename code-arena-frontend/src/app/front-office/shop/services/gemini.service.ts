@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class GeminiService {
@@ -9,7 +10,7 @@ export class GeminiService {
   // ── GEMINI API CONFIG ─────────────────────────
   // Free tier: 15 requests/minute, 1 million tokens/day
   // We use gemini-1.5-flash — fastest and free
-  private readonly API_KEY = 'AIzaSyCfOqWTvnx56lfAk-s0bMZoEEk9rzHMAVE';
+  private readonly API_KEY = environment.geminiKey;
   private readonly API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.API_KEY}`;
 
   constructor(private http: HttpClient) {}

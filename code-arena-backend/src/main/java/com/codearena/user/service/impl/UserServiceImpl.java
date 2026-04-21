@@ -92,19 +92,47 @@ public class UserServiceImpl implements UserService {
         String email = jwt.getClaimAsString("email");
         String auth0Nickname = jwt.getClaimAsString("nickname");
         String auth0Name = jwt.getClaimAsString("name");
-        String resolvedNickname = auth0Nickname != null ? auth0Nickname : 
-                                  (auth0Name != null ? auth0Name : 
-                                  (email != null ? email.split("@")[0] : null));
+        String givenName = jwt.getClaimAsString("given_name");
+        String familyName = jwt.getClaimAsString("family_name");
+        String picture = jwt.getClaimAsString("picture");
+
+        // Access token claims may not include profile fields; enrich from Auth0 Management API when needed.
+        Auth0ManagementService.Auth0UserProfile profile = null;
+        if (!hasText(email) || !hasText(givenName) || !hasText(auth0Name) || !hasText(auth0Nickname) || !hasText(picture)) {
+            profile = auth0ManagementService.fetchUserProfile(jwt.getSubject());
+            if (profile != null) {
+                if (!hasText(email)) {
+                    email = profile.getEmail();
+                }
+                if (!hasText(givenName)) {
+                    givenName = profile.getGivenName();
+                }
+                if (!hasText(familyName)) {
+                    familyName = profile.getFamilyName();
+                }
+                if (!hasText(auth0Name)) {
+                    auth0Name = profile.getName();
+                }
+                if (!hasText(auth0Nickname)) {
+                    auth0Nickname = profile.getNickname();
+                }
+                if (!hasText(picture)) {
+                    picture = profile.getPicture();
+                }
+            }
+        }
+
+        String resolvedNickname = chooseBestDisplayName(auth0Nickname, auth0Name, givenName, email);
 
         User user = userRepository.findByAuth0Id(jwt.getSubject()).orElse(null);
         if (user == null) {
             user = User.builder()
                 .auth0Id(jwt.getSubject())
                 .email(email)
-                .firstName(jwt.getClaimAsString("given_name"))
-                .lastName(jwt.getClaimAsString("family_name"))
+                .firstName(givenName)
+                .lastName(familyName)
                 .nickname(resolvedNickname)
-                .avatarUrl(jwt.getClaimAsString("picture"))
+                .avatarUrl(picture)
                 .role(resolveRole(jwt))
                 .authProvider(resolveAuthProvider(jwt))
                 .isActive(true)
@@ -113,9 +141,8 @@ public class UserServiceImpl implements UserService {
             return;
         }
         boolean updated = false;
-        String firstName = jwt.getClaimAsString("given_name");
-        String lastName = jwt.getClaimAsString("family_name");
-        String picture = jwt.getClaimAsString("picture");
+        String firstName = givenName;
+        String lastName = familyName;
 
         if (email != null && !email.equals(user.getEmail())) {
             user.setEmail(email);
@@ -141,6 +168,41 @@ public class UserServiceImpl implements UserService {
         if (updated) {
             userRepository.save(user);
         }
+    }
+
+    private String chooseBestDisplayName(String auth0Nickname, String auth0Name, String givenName, String email) {
+        if (hasText(givenName)) {
+            return givenName;
+        }
+        if (hasText(auth0Name) && !looksLikeMachineIdentifier(auth0Name)) {
+            return auth0Name;
+        }
+        if (hasText(auth0Nickname) && !looksLikeMachineIdentifier(auth0Nickname)) {
+            return auth0Nickname;
+        }
+        if (hasText(email) && email.contains("@")) {
+            return email.split("@")[0];
+        }
+        return auth0Nickname;
+    }
+
+    private boolean looksLikeMachineIdentifier(String value) {
+        if (!hasText(value)) {
+            return false;
+        }
+        String lower = value.trim().toLowerCase();
+        if (lower.startsWith("auth0|")
+                || lower.startsWith("google-oauth2|")
+                || lower.startsWith("github|")
+                || lower.startsWith("facebook|")
+                || lower.startsWith("user_")) {
+            return true;
+        }
+        return lower.matches("^[0-9]{8,}$");
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private Role resolveRole(Jwt jwt) {
