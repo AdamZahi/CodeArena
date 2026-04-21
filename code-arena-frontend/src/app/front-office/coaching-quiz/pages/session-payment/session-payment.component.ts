@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { FormsModule } from '@angular/forms';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { HttpClient } from '@angular/common/http';
@@ -162,7 +163,8 @@ export class SessionPaymentComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private coachingService: CoachingService,
-    private http: HttpClient
+    private http: HttpClient,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -235,15 +237,15 @@ export class SessionPaymentComponent implements OnInit {
               this.cardError = result.error.message;
               this.processing = false;
             } else if (result.paymentIntent.status === 'succeeded') {
-              this.processing = false;
-              alert('PAIEMENT RÉEL RÉUSSI ! La transaction apparaîtra dans votre dashboard Stripe.');
+              const msg = 'PAIEMENT RÉEL RÉUSSI ! La transaction apparaîtra dans votre dashboard Stripe.';
+              this.alertService.success(msg, 'TRANSACTION_COMPLETE');
               this.router.navigate(['/coaching-quiz/my-training']);
             }
           });
         },
         error: (err) => {
           this.processing = false;
-          alert('Erreur Backend : Vérifiez votre STRIPE_SECRET_KEY dans application.yml');
+          this.alertService.error('Erreur Backend : Vérifiez votre STRIPE_SECRET_KEY dans application.yml', 'GATEWAY_ERROR');
         }
       });
   }

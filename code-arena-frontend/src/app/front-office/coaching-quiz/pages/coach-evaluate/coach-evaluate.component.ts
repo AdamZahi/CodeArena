@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { Coach, SessionFeedback } from '../../models/coaching-session.model';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 
@@ -253,7 +254,8 @@ export class CoachEvaluateComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private coachingService: CoachingService
+    private coachingService: CoachingService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -284,13 +286,13 @@ export class CoachEvaluateComponent implements OnInit {
             this.coachId = this.feedback.coachId;
             this.loading = false;
           } else {
-            alert('Mentor non trouvé.');
+            this.alertService.error('Mentor non trouvé.', 'SIGNAL_LOST');
             this.goBack();
           }
         }
       },
       error: () => {
-        alert('Erreur lors du chargement des mentors.');
+        this.alertService.error('Erreur lors du chargement des mentors.', 'DATA_FETCH_ERROR');
         this.goBack();
       }
     });
@@ -325,7 +327,7 @@ export class CoachEvaluateComponent implements OnInit {
       next: (response: any) => {
         if (response && response.success === false) {
           console.error('Feedback submission failed:', response.message);
-          alert('Erreur: ' + (response.message || 'Soumission échouée'));
+          this.alertService.error('Erreur: ' + (response.message || 'Soumission échouée'), 'TRANSMISSION_FAILURE');
           this.submitting = false;
         } else {
           this.submitting = false;
@@ -334,7 +336,7 @@ export class CoachEvaluateComponent implements OnInit {
       },
       error: (err) => {
         console.error('Feedback submission error:', err);
-        alert('Erreur lors de la soumission du feedback. Veuillez réessayer.');
+        this.alertService.error('Erreur lors de la soumission du feedback. Veuillez réessayer.', 'UPLINK_FAILURE');
         this.submitting = false;
       }
     });

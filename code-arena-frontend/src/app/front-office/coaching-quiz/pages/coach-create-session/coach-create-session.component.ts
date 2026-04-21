@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { CoachingSession } from '../../models/coaching-session.model';
 import { AuthService } from '@auth0/auth0-angular';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
@@ -217,6 +218,7 @@ export class CoachCreateSessionComponent {
 
   constructor(
     private coachingService: CoachingService,
+    private alertService: AlertService,
     private auth: AuthService,
     private router: Router
   ) {
@@ -239,7 +241,7 @@ export class CoachCreateSessionComponent {
       },
       error: () => {
         this.loading = false;
-        alert('Erreur lors de la création de la session. Vérifiez vos droits ou la connexion.');
+        this.alertService.error('Erreur lors de la création de la session. Vérifiez vos droits ou la connexion.', 'PROTOCOL_ERROR');
       }
     });
   }

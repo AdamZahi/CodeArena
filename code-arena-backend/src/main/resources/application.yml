@@ -65,6 +65,9 @@ stripe:
   secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
   publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
 
+huggingface:
+  api-key: ${HUGGINGFACE_API_KEY:}
+
 application:
   admin:
     email: ${ADMIN_EMAIL:hazem@gmail.com}

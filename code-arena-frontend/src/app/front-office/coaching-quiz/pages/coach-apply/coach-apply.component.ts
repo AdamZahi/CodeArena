@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { CoachApplication } from '../../models/coaching-session.model';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { AuthService } from '@auth0/auth0-angular';
@@ -244,6 +245,7 @@ export class CoachApplyComponent implements OnInit {
 
   constructor(
     private coachingService: CoachingService,
+    private alertService: AlertService,
     private auth: AuthService,
     private router: Router
   ) {}
@@ -271,7 +273,7 @@ export class CoachApplyComponent implements OnInit {
 
   onSubmit() {
     if (this.fileLoading) {
-      alert('Please wait, the PDF file is still loading...');
+      this.alertService.info('Please wait, the PDF file is still loading...', 'FILE_LOADING');
       return;
     }
     this.submitting = true;
@@ -295,7 +297,7 @@ export class CoachApplyComponent implements OnInit {
       error: (err) => {
         this.submitting = false;
         console.error('Submit error:', err);
-        alert(err.error?.message || 'Error submitting application.');
+        this.alertService.error(err.error?.message || 'Error submitting application.', 'SUBMISSION_FAILURE');
       }
     });
   }
@@ -329,7 +331,7 @@ export class CoachApplyComponent implements OnInit {
 
   processFile(file: File) {
     if (file.type !== 'application/pdf') {
-      alert('Please upload a valid PDF file.');
+      this.alertService.warning('Please upload a valid PDF file.', 'INVALID_FILE_TYPE');
       return;
     }
     
@@ -344,7 +346,7 @@ export class CoachApplyComponent implements OnInit {
     };
     reader.onerror = () => {
       this.fileLoading = false;
-      alert('Error reading the PDF file.');
+      this.alertService.error('Error reading the PDF file.', 'FILE_ERROR');
     };
     reader.readAsDataURL(file);
   }

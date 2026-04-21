@@ -66,7 +66,7 @@ public class CoachSeederService implements CommandLineRunner {
                 var userOpt = userRepository.findByKeycloakId(auth0UserId);
                 if (userOpt.isEmpty()) {
                     userRepository.save(User.builder()
-                            .keycloakId(auth0UserId)
+                            .auth0Id(auth0UserId)
                             .email(def.email)
                             .firstName(def.name.split(" ")[0])
                             .lastName(def.name.split(" ").length > 1 ? def.name.split(" ")[1] : "")

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
@@ -11,16 +11,21 @@ import { AuthService } from '@auth0/auth0-angular';
 })
 export class RegisterComponent {
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   private get returnUrl(): string {
     return this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
   }
 
-  /** Navigate to the custom email registration form */
+  /** Navigate directly to Auth0 signup */
   registerWithEmail(): void {
-    this.router.navigate(['/register/email']);
+    void this.auth.loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup',
+        connection: 'Username-Password-Authentication'
+      },
+      appState: { target: this.returnUrl }
+    });
   }
 
   registerWithGoogle(): void {

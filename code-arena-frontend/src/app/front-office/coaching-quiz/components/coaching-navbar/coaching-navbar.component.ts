@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
+import { CyberAlertComponent } from '../cyber-alert/cyber-alert.component';
 
 @Component({
   selector: 'app-coaching-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, CyberAlertComponent],
   template: `
+    <app-cyber-alert></app-cyber-alert>
     <nav class="lc-header">
       <div class="lc-logo" routerLink="/coaching-quiz/coaches">
         CODE<span class="accent">ARENA</span>
@@ -20,6 +22,7 @@ import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
           <a class="lc-nav-item" routerLink="/coaching-quiz/sessions" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Dashboard</a>
           <a class="lc-nav-item" routerLink="/coaching-quiz/my-training" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Training</a>
           <a class="lc-nav-item" routerLink="/coaching-quiz/quizzes" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Quizzes</a>
+          <a class="lc-nav-item mentor-link" routerLink="/coaching-quiz/ai-code-mentor" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🎓 AI Mentor</a>
           <a class="lc-nav-item apply-link" routerLink="/coaching-quiz/apply-coach" routerLinkActive="active">Become Coach</a>
         </ng-container>
 
@@ -27,6 +30,7 @@ import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
           <a class="lc-nav-item" routerLink="/coaching-quiz/coach-dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Dashboard</a>
           <a class="lc-nav-item" routerLink="/coaching-quiz/coach-reservations" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">My Sessions</a>
           <a class="lc-nav-item" routerLink="/coaching-quiz/coach-create-session" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">+ New Session</a>
+          <a class="lc-nav-item ai-link" routerLink="/coaching-quiz/coach-ai-assistant" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🧠 AI Architect</a>
         </ng-container>
 
         <ng-container *ngIf="isAdmin">
@@ -148,6 +152,12 @@ import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
     .apply-link:hover { text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
     .admin-link { color: #f43f5e !important; }
     .admin-link:hover { text-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
+    .ai-link { color: #06b6d4 !important; background: rgba(6,182,212,0.08); padding: 4px 12px; border: 1px solid rgba(6,182,212,0.2); border-radius: 2px; }
+    .ai-link:hover { text-shadow: 0 0 12px rgba(6, 182, 212, 0.6); background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.4); }
+    .ai-link.active { background: rgba(6,182,212,0.2) !important; border-color: #06b6d4 !important; box-shadow: 0 0 15px rgba(6,182,212,0.2); }
+    .mentor-link { color: #3b82f6 !important; background: rgba(59,130,246,0.08); padding: 4px 12px; border: 1px solid rgba(59,130,246,0.2); border-radius: 2px; }
+    .mentor-link:hover { text-shadow: 0 0 12px rgba(59, 130, 246, 0.6); background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
+    .mentor-link.active { background: rgba(59,130,246,0.2) !important; border-color: #3b82f6 !important; box-shadow: 0 0 15px rgba(59,130,246,0.2); }
   `]
 })
 export class CoachingNavbarComponent implements OnInit {

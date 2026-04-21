@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { RouterLink } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
@@ -8,7 +9,7 @@ import { Quiz } from '../../models/quiz.model';
 @Component({
   selector: 'app-quiz-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, CoachingNavbarComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CoachingNavbarComponent],
   template: `
     <app-coaching-navbar></app-coaching-navbar>
     <div class="lc-container">
@@ -18,14 +19,28 @@ import { Quiz } from '../../models/quiz.model';
           <p class="hero-desc">Achieve mastery through neural calibration. Break the encryption of logic.</p>
         </div>
 
-        <div class="carousel-container" *ngIf="!loading && quizzes.length > 0">
+        <div class="neo-search-bar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Search by topic, category, description, points..." class="neon-input search-input">
+          </div>
+          
+          <select [(ngModel)]="filterLevel" class="neon-select level-filter">
+            <option value="">ALL LEVELS</option>
+            <option value="EASY">EASY</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HARD">HARD</option>
+          </select>
+        </div>
+
+        <div class="carousel-container" *ngIf="!loading && filteredQuizzes.length > 0">
           <button class="carousel-btn prev" (click)="scrollCarousel(-1)">
              <span class="btn-box"> < </span>
           </button>
           
           <div class="carousel-viewport" #carouselViewport>
             <div class="carousel-track">
-              <div class="quiz-card" *ngFor="let quiz of quizzes">
+              <div class="quiz-card" *ngFor="let quiz of filteredQuizzes">
                 <div class="card-inner">
                   <div class="card-header">
                     <span class="diff-pill" [class]="quiz.difficulty.toLowerCase()">
@@ -64,8 +79,8 @@ import { Quiz } from '../../models/quiz.model';
           </button>
         </div>
 
-        <div class="lc-empty" *ngIf="quizzes.length === 0 && !loading">
-          <p>NO_DATA_STREAMS_AVAILABLE.</p>
+        <div class="lc-empty" *ngIf="filteredQuizzes.length === 0 && !loading">
+          <p>NO_DATA_STREAMS_AVAILABLE. ADJUST YOUR FREQUENCY (FILTERS).</p>
         </div>
 
         <div class="lc-loading" *ngIf="loading">
@@ -105,6 +120,16 @@ import { Quiz } from '../../models/quiz.model';
     .glitch-title { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 900; color: var(--text); letter-spacing: 4px; margin-bottom: 1.5rem; }
     .glitch-title span { color: var(--neon); text-shadow: 0 0 15px var(--neon); }
     .hero-desc { font-size: 1.1rem; color: var(--muted); max-width: 700px; margin: 0 auto; line-height: 1.6; letter-spacing: 1px; }
+
+    /* SEARCH BAR */
+    .neo-search-bar { display: flex; gap: 1rem; align-items: center; max-width: 800px; margin: 0 auto 3rem; }
+    .search-input-wrapper { position: relative; flex-grow: 1; }
+    .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; }
+    .neon-input.search-input { width: 100%; border: 1px solid var(--border); box-sizing: border-box; background: rgba(0,0,0,0.5); color: var(--text); padding: 1rem 1rem 1rem 3rem; font-family: 'Fira Code', monospace; transition: all 0.3s; }
+    .neon-input.search-input:focus { border-color: var(--neon); box-shadow: 0 0 15px rgba(139, 92, 246, 0.15); outline: none; }
+    .neon-select.level-filter { border: 1px solid var(--border); background: rgba(0,0,0,0.5); color: var(--text); padding: 1rem; font-family: 'Orbitron', sans-serif; cursor: pointer; transition: all 0.3s; outline: none; width: 220px; }
+    .neon-select.level-filter option { background: var(--card); color: var(--text); }
+    .neon-select.level-filter:focus { border-color: var(--neon2); box-shadow: 0 0 15px rgba(6, 182, 212, 0.15); }
 
     /* CAROUSEL */
     .carousel-container { position: relative; display: flex; align-items: center; gap: 1.5rem; }
@@ -165,6 +190,23 @@ export class QuizListComponent implements OnInit {
   @ViewChild('carouselViewport') carouselViewport!: ElementRef;
   quizzes: Quiz[] = [];
   loading = true;
+
+  searchQuery: string = '';
+  filterLevel: string = '';
+
+  get filteredQuizzes(): Quiz[] {
+    return this.quizzes.filter(quiz => {
+      const matchLevel = this.filterLevel ? quiz.difficulty?.toUpperCase() === this.filterLevel : true;
+      const term = this.searchQuery.toLowerCase();
+      const matchSearch = term ? 
+        (quiz.title?.toLowerCase().includes(term) || 
+         quiz.category?.toLowerCase().includes(term) || 
+         quiz.description?.toLowerCase().includes(term) ||
+         quiz.totalPoints?.toString().includes(term)) : true;
+         
+      return matchLevel && matchSearch;
+    });
+  }
 
   constructor(private quizService: QuizService) { }
 

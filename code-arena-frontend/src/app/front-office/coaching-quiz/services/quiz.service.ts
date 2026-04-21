@@ -24,7 +24,15 @@ export class QuizService extends ApiService {
     return this.http.post<any>(`${this.baseUrl}/submit`, request).pipe(map(res => res.data));
   }
 
+  createQuiz(quiz: Partial<Quiz>): Observable<Quiz> {
+    return this.http.post<any>(`${this.baseUrl}`, quiz).pipe(map(res => res.data));
+  }
+
   getHistory(): Observable<QuizResult[]> {
     return this.http.get<any>(`${this.baseUrl}/history`).pipe(map(res => res.data));
+  }
+
+  deleteQuiz(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/${id}`);
   }
 }

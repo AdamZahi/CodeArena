@@ -41,9 +41,9 @@ public class CoachingServiceImpl implements CoachingService {
         public List<CoachDto> getAllCoaches() {
                 return userRepository.findByRole(Role.COACH).stream()
                                 .map(user -> {
-                                        Coach coachProfile = coachRepository.findByUserId(user.getKeycloakId())
+                                        Coach coachProfile = coachRepository.findByUserId(user.getAuth0Id())
                                                         .orElseGet(() -> Coach.builder()
-                                                                        .userId(user.getKeycloakId())
+                                                                        .userId(user.getAuth0Id())
                                                                         .bio("Hi! I'm " + (user.getFirstName() != null
                                                                                         ? user.getFirstName()
                                                                                         : "a coach")
@@ -55,12 +55,12 @@ public class CoachingServiceImpl implements CoachingService {
                                                                         .build());
 
                                         // Compute real session count from DB
-                                        int realSessionCount = sessionRepository.findByCoachId(user.getKeycloakId())
+                                        int realSessionCount = sessionRepository.findByCoachId(user.getAuth0Id())
                                                         .size();
 
                                         // Compute real rating from feedbacks
                                         List<SessionFeedback> feedbacks = feedbackRepository
-                                                        .findByCoachId(user.getKeycloakId());
+                                                        .findByCoachId(user.getAuth0Id());
                                         double realRating = feedbacks.stream()
                                                         .mapToDouble(SessionFeedback::getRating)
                                                         .average()
@@ -72,7 +72,7 @@ public class CoachingServiceImpl implements CoachingService {
                                         return CoachDto.builder()
                                                         .id(coachProfile.getId() != null ? coachProfile.getId()
                                                                         : UUID.randomUUID())
-                                                        .userId(user.getKeycloakId())
+                                                        .userId(user.getAuth0Id())
                                                         .name(((user.getFirstName() != null ? user.getFirstName() : "")
                                                                         + " "
                                                                         + (user.getLastName() != null

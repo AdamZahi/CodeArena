@@ -1,3 +1,9 @@
+/*
+ * SOURCE ONLY: RegistrationController.java
+ * From SOURCE — public registration endpoint
+ * Updated: keycloakId references → auth0Id (TARGET naming convention)
+ * Uses auth0ManagementService.createUser() (now available post-merge)
+ */
 package com.codearena.user.controller;
 
 import com.codearena.config.Auth0Config;
@@ -71,7 +77,6 @@ public class RegistrationController {
         if (fullName.isBlank()) fullName = email.split("@")[0];
 
         // ── Step 1: Create user via Auth0 public signup endpoint ───
-        // This endpoint does NOT require the Management API / client_credentials grant.
         String signupUrl = String.format("https://%s/dbconnections/signup", auth0Config.getDomain());
 
         HttpHeaders headers = new HttpHeaders();
@@ -94,10 +99,8 @@ public class RegistrationController {
                 Map.class
             );
             if (resp.getBody() != null) {
-                // Auth0 returns _id for /dbconnections/signup
                 Object rawId = resp.getBody().get("_id");
                 if (rawId != null) {
-                    // Convert short _id to full sub format: auth0|<_id>
                     auth0UserId = "auth0|" + rawId.toString();
                 }
             }
@@ -120,10 +123,10 @@ public class RegistrationController {
         if (auth0UserId != null) {
             final String userId = auth0UserId;
             
-            // 2a. Save into users table
-            if (userRepository.findByKeycloakId(userId).isEmpty()) {
+            // 2a. Save into users table (using auth0Id — TARGET naming)
+            if (userRepository.findByAuth0Id(userId).isEmpty()) {
                 userRepository.save(User.builder()
-                    .keycloakId(userId)
+                    .auth0Id(userId)
                     .email(email)
                     .firstName(firstName.isBlank() ? null : firstName)
                     .lastName(lastName.isBlank() ? null : lastName)

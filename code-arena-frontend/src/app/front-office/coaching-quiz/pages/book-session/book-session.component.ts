@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { Dashboard, CoachingSession } from '../../models/coaching-session.model';
 
 @Component({
@@ -76,7 +77,7 @@ import { Dashboard, CoachingSession } from '../../models/coaching-session.model'
                      <span class="lbl tag-ai">PREDICTIVE_SYNC_PATH</span>
                      <p class="prediction-text">
                        "Based on your current trajectory, you are 3 sessions away from reaching <b>{{ getNextRank() }}</b> status. Focus on 
-                       <span>{{ dashboard.skills[0]?.language || 'SECURITY' }} & PROFILING</span> to balance your profile."
+                       <span>{{ dashboard.skills.length > 0 ? dashboard.skills[0].language : 'SECURITY' }} & PROFILING</span> to balance your profile."
                      </p>
                   </div>
                 </div>
@@ -368,7 +369,7 @@ export class BookSessionComponent implements OnInit {
   dashboard: Dashboard | null = null;
   loading = true;
 
-  constructor(private coachingService: CoachingService) { }
+  constructor(private coachingService: CoachingService, private alertService: AlertService) { }
 
   ngOnInit() {
     this.loadDashboard();
@@ -383,7 +384,7 @@ export class BookSessionComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        alert('Erreur lors du chargement du tableau de bord.');
+        this.alertService.error('Erreur lors du chargement du tableau de bord.', 'DATA_FETCH_ERROR');
       }
     });
   }
@@ -401,11 +402,11 @@ export class BookSessionComponent implements OnInit {
   bookSession(sessionId: string) {
     this.coachingService.bookSession(sessionId).subscribe({
       next: () => {
-        alert('Session réservée avec succès !');
+        this.alertService.success('Session réservée avec succès !', 'PROTOCOL_COMPLETE');
         this.loadDashboard();
       },
       error: (err) => {
-        alert(err.error?.message || 'Erreur lors de la réservation.');
+        this.alertService.error(err.error?.message || 'Erreur lors de la réservation.', 'SYSTEM_ERROR');
       }
     });
   }

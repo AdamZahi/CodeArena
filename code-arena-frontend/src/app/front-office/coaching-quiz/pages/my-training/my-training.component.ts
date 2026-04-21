@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { Dashboard, CoachingSession } from '../../models/coaching-session.model';
 import { RouterModule } from '@angular/router';
 
@@ -177,7 +178,7 @@ export class MyTrainingComponent implements OnInit {
   dashboard: Dashboard | null = null;
   loading = true;
 
-  constructor(private coachingService: CoachingService) { }
+  constructor(private coachingService: CoachingService, private alertService: AlertService) { }
 
   ngOnInit() {
     this.loadDashboard();
@@ -192,7 +193,7 @@ export class MyTrainingComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        alert('Erreur lors du chargement des sessions.');
+        this.alertService.error('Erreur lors du chargement des sessions.', 'DATA_FETCH_ERROR');
       }
     });
   }
@@ -202,14 +203,16 @@ export class MyTrainingComponent implements OnInit {
     this.carouselViewport.nativeElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   }
 
-  cancelSession(sessionId: string) {
-    if (confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+  async cancelSession(sessionId: string) {
+    const confirmed = await this.alertService.showConfirm('TERMINATION_PROTOCOL', 'Êtes-vous sûr de vouloir annuler cette réservation ?');
+    if (confirmed) {
       this.coachingService.cancelReservation(sessionId).subscribe({
         next: () => {
+          this.alertService.success('Réservation annulée avec succès.', 'PROTOCOL_COMPLETE');
           this.loadDashboard();
         },
         error: () => {
-          alert('Erreur lors de l\'annulation.');
+          this.alertService.error('Erreur lors de l\'annulation.', 'TERMINATION_FAILURE');
         }
       });
     }

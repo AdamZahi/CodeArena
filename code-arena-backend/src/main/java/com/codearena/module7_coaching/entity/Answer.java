@@ -19,10 +19,10 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "question_id", nullable = false)
     private UUID questionId;
 
-    @Column(nullable = false)
+    @Column(name = "quiz_attempt_id", nullable = false)
     private UUID quizAttemptId;
 
     @Column(nullable = false)

@@ -1,3 +1,8 @@
+/*
+ * MERGED: UserController.java
+ * Base: TARGET
+ * Added from SOURCE: explicit @PathVariable(name = "id") and @RequestParam(name = "role")
+ */
 package com.codearena.user.controller;
 
 import com.codearena.user.dto.ProfileUpdateDTO;

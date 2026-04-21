@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { Coach, CoachingSession, SessionFeedback } from '../../models/coaching-session.model';
 import { AuthService } from '@auth0/auth0-angular';
 
@@ -255,7 +256,11 @@ export class CoachDashboardComponent implements OnInit {
   totalLearnersScheduled: number = 0;
   loading = true;
 
-  constructor(private coachingService: CoachingService, private auth: AuthService) { }
+  constructor(
+    private coachingService: CoachingService,
+    private alertService: AlertService,
+    private auth: AuthService
+  ) { }
 
   ngOnInit() {
     this.auth.user$.subscribe((user: any) => {
@@ -328,33 +333,37 @@ export class CoachDashboardComponent implements OnInit {
     });
   }
 
-  rejectSession(session: CoachingSession) {
+  async rejectSession(session: CoachingSession) {
     if (!session.id) return;
-    if (confirm(`Etes-vous sûr de vouloir rejeter cette session ("${session.title}")? Les participants recevront un e-mail d'annulation.`)) {
+    const msg = `Etes-vous sûr de vouloir rejeter cette session ("${session.title}")? Les participants recevront un e-mail d'annulation.`;
+    const confirmed = await this.alertService.showConfirm('REJECTION_PROTOCOL', msg);
+    if (confirmed) {
       this.coachingService.rejectSession(session.id).subscribe({
         next: () => {
-          alert('Session rejetée avec succès.');
+          this.alertService.success('Session rejetée avec succès.', 'PROTOCOL_COMPLETE');
           this.fetchSessions();
         },
         error: (err) => {
           console.error(err);
-          alert('Erreur lors du rejet de la session.');
+          this.alertService.error('Erreur lors du rejet de la session.', 'SYSTEM_ERROR');
         }
       });
     }
   }
 
-  deleteSession(session: CoachingSession) {
+  async deleteSession(session: CoachingSession) {
     if (!session.id) return;
-    if (confirm(`⚠️ ATTENTION: Voulez-vous supprimer définitivement cette session ("${session.title}")? Cette action est irréversible.`)) {
+    const msg = `⚠️ ATTENTION: Voulez-vous supprimer définitivement cette session ("${session.title}")? Cette action est irréversible.`;
+    const confirmed = await this.alertService.showConfirm('PURGE_PROTOCOL', msg);
+    if (confirmed) {
       this.coachingService.deleteSession(session.id).subscribe({
         next: () => {
-          alert('Session supprimée définitivement.');
+          this.alertService.success('Session supprimée définitivement.', 'PROTOCOL_COMPLETE');
           this.fetchSessions();
         },
         error: (err) => {
           console.error(err);
-          alert('Erreur lors de la suppression de la session.');
+          this.alertService.error('Erreur lors de la suppression de la session.', 'SYSTEM_ERROR');
         }
       });
     }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { Coach, CoachingSession } from '../../models/coaching-session.model';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { AuthService } from '@auth0/auth0-angular';
@@ -174,7 +175,11 @@ export class CoachReservationsComponent implements OnInit {
   reservedSessions: CoachingSession[] = [];
   loading = true;
 
-  constructor(private coachingService: CoachingService, private auth: AuthService) { }
+  constructor(
+    private coachingService: CoachingService,
+    private alertService: AlertService,
+    private auth: AuthService
+  ) { }
 
   ngOnInit() {
     this.auth.user$.subscribe((user: any) => {
@@ -197,7 +202,7 @@ export class CoachReservationsComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        alert('Erreur lors du chargement des réservations.');
+        this.alertService.error('Erreur lors du chargement des réservations.', 'DATA_FETCH_ERROR');
       }
     });
   }
@@ -213,16 +218,16 @@ export class CoachReservationsComponent implements OnInit {
       next: (res) => {
         this.sendingEmails[session.id] = false;
         if (res.success) {
-          alert('Les e-mails contenant le lien ont été envoyés avec succès aux participants !');
+          this.alertService.success('Les e-mails contenant le lien ont été envoyés avec succès aux participants !', 'EMAIL_SENT');
         } else {
-          alert('Erreur lors de l\'envoi : ' + res.message);
+          this.alertService.error('Erreur lors de l\'envoi : ' + res.message, 'SMTP_FAILURE');
         }
       },
       error: (err) => {
         this.sendingEmails[session.id] = false;
         console.error('Email sending error:', err);
         const errorMsg = err.error?.message || 'Erreur inconnue (Vérifiez votre connexion SMTP ou le moniteur réseau).';
-        alert('Erreur: ' + errorMsg);
+        this.alertService.error('Erreur: ' + errorMsg, 'TRANSMISSION_ERROR');
       }
     });
   }

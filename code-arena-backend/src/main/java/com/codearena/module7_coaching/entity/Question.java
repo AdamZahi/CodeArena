@@ -22,7 +22,7 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "quiz_id", nullable = false)
     private UUID quizId;
 
     @Column(nullable = false, columnDefinition = "TEXT")

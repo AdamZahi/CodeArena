@@ -54,7 +54,7 @@ public class Quiz {
     private Instant createdAt;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quizId", insertable = false, updatable = false)
+    @JoinColumn(name = "quiz_id", insertable = false, updatable = false)
     @Builder.Default
     private List<Question> questions = new ArrayList<>();
 }

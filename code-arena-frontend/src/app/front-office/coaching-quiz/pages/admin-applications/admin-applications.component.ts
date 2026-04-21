@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { CoachApplication } from '../../models/coaching-session.model';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-admin-applications',
   standalone: true,
-  imports: [CommonModule, FormsModule, CoachingNavbarComponent],
+  imports: [CommonModule, FormsModule, CoachingNavbarComponent, RouterLink],
   template: `
     <app-coaching-navbar></app-coaching-navbar>
     <div class="lc-container">
@@ -26,6 +28,7 @@ import { CoachingNavbarComponent } from '../../components/coaching-navbar/coachi
             <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'; loadData()">
               ALL_LOGS
             </button>
+            <a routerLink="/coaching-quiz/admin/quizzes" class="tab-btn">QUIZ_MANAGER</a>
           </div>
         </div>
 
@@ -267,7 +270,7 @@ export class AdminApplicationsComponent implements OnInit {
   processing: { [key: string]: boolean } = {};
   expandedCv: { [key: string]: boolean } = {};
 
-  constructor(private coachingService: CoachingService) {}
+  constructor(private coachingService: CoachingService, private alertService: AlertService) {}
 
   ngOnInit() {
     this.loadData();
@@ -287,7 +290,7 @@ export class AdminApplicationsComponent implements OnInit {
         error: (err) => {
           this.loading = false;
           if (err.status === 403) {
-            alert('Access denied. Admin credentials required.');
+            this.alertService.error('Access denied. Admin credentials required.', 'SECURITY_BREACH');
           }
         }
       });
@@ -301,47 +304,49 @@ export class AdminApplicationsComponent implements OnInit {
         error: (err) => {
           this.loading = false;
           if (err.status === 403) {
-            alert('Access denied. Admin credentials required.');
+            this.alertService.error('Access denied. Admin credentials required.', 'SECURITY_BREACH');
           }
         }
       });
     }
   }
 
-  approve(app: CoachApplication) {
+  async approve(app: CoachApplication) {
     if (!app.id) return;
-    if (!confirm(`Approve ${app.applicantName} as a coach?`)) return;
+    const confirmed = await this.alertService.showConfirm('APPROVAL_PROTOCOL', `Approve ${app.applicantName} as a coach?`);
+    if (!confirmed) return;
 
     this.processing[app.id] = true;
     const note = this.adminNotes[app.id] || '';
     this.coachingService.approveApplication(app.id, note).subscribe({
       next: (res) => {
         this.processing[app.id!] = false;
-        alert(`✅ ${app.applicantName} has been approved as a coach.`);
+        this.alertService.success(`✅ ${app.applicantName} has been approved as a coach.`, 'PROTOCOL_COMPLETE');
         this.loadData();
       },
       error: (err) => {
         this.processing[app.id!] = false;
-        alert(err.error?.message || 'Error approving application.');
+        this.alertService.error(err.error?.message || 'Error approving application.', 'SYSTEM_ERROR');
       }
     });
   }
 
-  reject(app: CoachApplication) {
+  async reject(app: CoachApplication) {
     if (!app.id) return;
-    if (!confirm(`Reject ${app.applicantName}'s application?`)) return;
+    const confirmed = await this.alertService.showConfirm('REJECTION_PROTOCOL', `Reject ${app.applicantName}'s application?`);
+    if (!confirmed) return;
 
     this.processing[app.id] = true;
     const note = this.adminNotes[app.id] || '';
     this.coachingService.rejectApplication(app.id, note).subscribe({
       next: () => {
         this.processing[app.id!] = false;
-        alert(`❌ ${app.applicantName}'s application has been rejected.`);
+        this.alertService.warning(`❌ ${app.applicantName}'s application has been rejected.`, 'PROTOCOL_COMPLETE');
         this.loadData();
       },
       error: (err) => {
         this.processing[app.id!] = false;
-        alert(err.error?.message || 'Error rejecting application.');
+        this.alertService.error(err.error?.message || 'Error rejecting application.', 'SYSTEM_ERROR');
       }
     });
   }

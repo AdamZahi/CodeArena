@@ -24,7 +24,7 @@ public class QuizAttempt {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "quiz_id", nullable = false)
     private UUID quizId;
 
     @Column(nullable = false)
@@ -48,7 +48,7 @@ public class QuizAttempt {
     private Instant completedAt;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quizAttemptId", insertable = false, updatable = false)
+    @JoinColumn(name = "quiz_attempt_id", insertable = false, updatable = false)
     @Builder.Default
     private List<Answer> answers = new ArrayList<>();
 }

@@ -23,10 +23,6 @@ export const routes: Routes = [
     loadComponent: () => import('./register/register.component').then((m) => m.RegisterComponent)
   },
   {
-    path: 'register/email',
-    loadComponent: () => import('./register/email-register/email-register.component').then((m) => m.EmailRegisterComponent)
-  },
-  {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () => import('./profile/profile.component').then((m) => m.ProfileComponent)

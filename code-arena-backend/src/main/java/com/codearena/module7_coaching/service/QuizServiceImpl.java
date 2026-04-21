@@ -220,8 +220,21 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    @Transactional
     public void deleteQuiz(UUID quizId) {
+        // 1. Delete associated answers for all attempts of this quiz (bulk)
+        answerRepository.deleteByQuizId(quizId);
+        
+        // 2. Delete the attempts
+        quizAttemptRepository.deleteByQuizId(quizId);
+        
+        // 3. Delete the questions
+        questionRepository.deleteByQuizId(quizId);
+        
+        // 4. Finally delete the quiz
         quizRepository.deleteById(quizId);
+        
+        log.info("Quiz {} and all its associated data (attempts, answers, questions) have been deleted.", quizId);
     }
 
     // ─── Private helpers ───

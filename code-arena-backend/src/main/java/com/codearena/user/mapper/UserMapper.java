@@ -1,3 +1,8 @@
+/*
+ * MERGED: UserMapper.java
+ * Base: TARGET — permissive updateProfile (allows firstName, lastName, nickname, email)
+ * Naming: uses auth0Id (TARGET convention)
+ */
 package com.codearena.user.mapper;
 
 import com.codearena.user.dto.ProfileUpdateDTO;
@@ -17,10 +22,11 @@ public interface UserMapper {
     User toEntity(UserRequestDTO request);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "keycloakId", ignore = true)
-    @Mapping(target = "email", ignore = true)
-    @Mapping(target = "firstName", ignore = true)
-    @Mapping(target = "lastName", ignore = true)
+    @Mapping(target = "auth0Id", ignore = true)
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "firstName", source = "firstName")
+    @Mapping(target = "lastName", source = "lastName")
+    @Mapping(target = "nickname", source = "nickname")
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "authProvider", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

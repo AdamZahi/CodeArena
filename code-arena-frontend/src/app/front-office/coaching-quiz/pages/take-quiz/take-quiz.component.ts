@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
+import { AlertService } from '../../services/alert.service';
 import { Quiz, Question, QuizResult, SubmitQuizRequest } from '../../models/quiz.model';
 
 @Component({
@@ -324,7 +325,8 @@ export class TakeQuizComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private quizService: QuizService
+    private quizService: QuizService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -373,7 +375,7 @@ export class TakeQuizComponent implements OnInit {
     this.submitting = true;
     this.quizService.submitQuiz(request).subscribe({
       next: (res) => { this.result = res; this.submitting = false; },
-      error: () => { this.submitting = false; alert('Erreur lors de la soumission'); }
+      error: () => { this.submitting = false; this.alertService.error('UPLINK_FAILURE: Security breach or network instability detected.', 'TRANSMISSION_ERROR'); }
     });
   }
 
