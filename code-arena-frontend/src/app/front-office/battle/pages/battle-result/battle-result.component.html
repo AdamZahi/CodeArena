@@ -185,6 +185,152 @@
     </div>
   </div>
 
+  <!-- Match Comparison (Transparency View) -->
+  <div class="comparison-section" *ngIf="comparison && comparison.challenges.length > 0">
+    <h2 class="section-title">MATCH BREAKDOWN</h2>
+    <p class="comparison-intro">
+      See exactly how each player performed on every challenge. Code is shown only
+      for accepted submissions.
+    </p>
+
+    <div class="comparison-tabs">
+      <button class="comparison-tab"
+        *ngFor="let ch of comparison.challenges; let i = index"
+        [class.active]="i === activeChallengeIndex"
+        (click)="selectChallenge(i)">
+        <span class="tab-position">#{{ ch.position }}</span>
+        <span class="tab-title">{{ ch.title }}</span>
+        <span class="tab-difficulty" [attr.data-difficulty]="ch.difficulty.toLowerCase()">
+          {{ ch.difficulty }}
+        </span>
+      </button>
+    </div>
+
+    <div class="comparison-body" *ngIf="activeChallenge as challenge">
+      <div class="comparison-attempts">
+        <div class="attempt-card"
+          *ngFor="let att of challenge.attempts"
+          [class.is-me]="isCurrentUser(att)"
+          [class.solved]="att.solved"
+          [class.unsolved]="!att.solved">
+          <div class="attempt-head">
+            <div class="attempt-player">
+              <div class="attempt-avatar">
+                <img *ngIf="att.avatarUrl" [src]="att.avatarUrl" alt="" />
+                <span *ngIf="!att.avatarUrl">{{ att.username.charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="attempt-id">
+                <span class="attempt-name">
+                  {{ att.username }}
+                  <span class="me-pill" *ngIf="isCurrentUser(att)">YOU</span>
+                </span>
+                <span class="attempt-rank">Final rank #{{ att.finalRank }}</span>
+              </div>
+            </div>
+            <div class="attempt-status" [class.solved-tag]="att.solved" [class.unsolved-tag]="!att.solved">
+              {{ att.solved ? 'SOLVED' : 'UNSOLVED' }}
+            </div>
+          </div>
+
+          <div class="attempt-tags" *ngIf="attemptHighlights(att).length > 0">
+            <span class="tag-pill" *ngFor="let tag of attemptHighlights(att)" [attr.data-tag]="tag">
+              {{ tag }}
+            </span>
+          </div>
+
+          <div class="attempt-metrics" *ngIf="att.solved">
+            <div class="metric">
+              <span class="metric-label">Runtime</span>
+              <span class="metric-value">{{ formatRuntime(att.runtimeMs) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Memory</span>
+              <span class="metric-value">{{ formatMemory(att.memoryKb) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Solved In</span>
+              <span class="metric-value">{{ formatSolvedTime(att.solvedInSeconds) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Attempts</span>
+              <span class="metric-value">{{ att.attemptCount }}</span>
+            </div>
+            <div class="metric ai-metric" *ngIf="att.aiScore != null">
+              <span class="metric-label">
+                AI Score
+                <span class="ai-fallback-badge" *ngIf="att.aiScoreFallback">est.</span>
+              </span>
+              <span class="metric-value">{{ formatAiScore(att.aiScore) }}</span>
+            </div>
+            <div class="metric language-metric" *ngIf="att.language">
+              <span class="metric-label">Language</span>
+              <span class="metric-value">{{ att.language }}</span>
+            </div>
+          </div>
+
+          <div class="attempt-scores" *ngIf="att.solved">
+            <div class="score-pill">
+              <span class="score-label">Correctness</span>
+              <span class="score-val">{{ att.correctnessScore }}</span>
+            </div>
+            <div class="score-pill">
+              <span class="score-label">Speed</span>
+              <span class="score-val">{{ att.speedScore }}</span>
+            </div>
+            <div class="score-pill">
+              <span class="score-label">Efficiency</span>
+              <span class="score-val">{{ att.efficiencyScore }}</span>
+            </div>
+            <div class="score-pill penalty" *ngIf="att.attemptPenalty > 0">
+              <span class="score-label">Penalty</span>
+              <span class="score-val">-{{ att.attemptPenalty }}</span>
+            </div>
+            <div class="score-pill total">
+              <span class="score-label">Total</span>
+              <span class="score-val">{{ att.totalChallengeScore }}</span>
+            </div>
+          </div>
+
+          <div class="attempt-code-toggle" *ngIf="att.solved && att.acceptedCode">
+            <button class="code-toggle-btn"
+              (click)="toggleAttemptCode(attemptKey(challenge.roomChallengeId, att.participantId))">
+              {{ isAttemptExpanded(attemptKey(challenge.roomChallengeId, att.participantId))
+                  ? 'HIDE CODE'
+                  : 'VIEW ACCEPTED CODE' }}
+            </button>
+          </div>
+
+          <pre class="attempt-code"
+            *ngIf="att.solved && att.acceptedCode && isAttemptExpanded(attemptKey(challenge.roomChallengeId, att.participantId))"><code>{{ att.acceptedCode }}</code></pre>
+
+          <p class="attempt-empty" *ngIf="!att.solved">
+            Did not solve this challenge.
+          </p>
+        </div>
+      </div>
+
+      <div class="formula-section" *ngIf="comparison.scoringFormulaLines.length > 0">
+        <h3 class="formula-title">HOW THE WINNER WAS DECIDED</h3>
+        <ul class="formula-list">
+          <li *ngFor="let line of comparison.scoringFormulaLines">{{ line }}</li>
+        </ul>
+        <p class="formula-note" *ngIf="comparison.aiScoringAvailable">
+          AI Score is produced by the Code Arena Score Ranker — a trained model
+          that evaluates the optimization quality of each accepted solution.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison-section comparison-loading" *ngIf="comparisonLoading && !comparison">
+    <div class="loader small"></div>
+    <p>Loading match breakdown...</p>
+  </div>
+
+  <div class="comparison-section comparison-error" *ngIf="comparisonError && !comparison">
+    <p>{{ comparisonError }}</p>
+  </div>
+
   <!-- Actions -->
   <div class="result-actions">
     <button class="btn-primary" (click)="backToArena()">

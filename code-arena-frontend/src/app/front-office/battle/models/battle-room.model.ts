@@ -188,6 +188,11 @@ export interface SubmissionResultResponse {
   memoryKb: number | null;
   feedback: string;
   isAccepted: boolean;
+  // Optimization score (0–100) returned by the Score Ranker microservice.
+  // Null on rejected submissions; aiScoreFallback=true when the ranker was
+  // unreachable and a time-based estimate was used instead.
+  aiScore?: number | null;
+  aiScoreFallback?: boolean | null;
 }
 
 // ── Feature 1: Opponent Activity ───────────────────────────
@@ -290,6 +295,8 @@ export interface ScoreBreakdownResponse {
   bestRuntimeMs: number | null;
   bestMemoryKb: number | null;
   solvedInSeconds: number;
+  aiScore?: number | null;
+  aiScoreFallback?: boolean | null;
 }
 
 export interface PlayerScoreResponse {
@@ -322,4 +329,55 @@ export interface PostMatchSummaryResponse {
   finishReason: string;
   standings: PlayerScoreResponse[];
   maxPossibleScore: number;
+}
+
+// ── Post-match comparison view (transparency) ───────────────
+
+export interface PlayerChallengeAttemptResponse {
+  participantId: string;
+  userId: string;
+  username: string;
+  avatarUrl: string;
+  finalRank: number;
+
+  solved: boolean;
+  attemptCount: number;
+  solvedInSeconds: number;
+
+  runtimeMs: number | null;
+  memoryKb: number | null;
+
+  aiScore: number | null;
+  aiScoreFallback: boolean | null;
+
+  correctnessScore: number;
+  speedScore: number;
+  efficiencyScore: number;
+  attemptPenalty: number;
+  totalChallengeScore: number;
+
+  isFastest: boolean;
+  isMostOptimized: boolean;
+  isFirstSolver: boolean;
+
+  acceptedCode: string | null;
+  language: string | null;
+}
+
+export interface ChallengeComparisonResponse {
+  roomChallengeId: string;
+  position: number;
+  title: string;
+  difficulty: string;
+  attempts: PlayerChallengeAttemptResponse[];
+}
+
+export interface MatchComparisonResponse {
+  roomId: string;
+  mode: string;
+  durationSeconds: number;
+  standings: PlayerScoreResponse[];
+  challenges: ChallengeComparisonResponse[];
+  scoringFormulaLines: string[];
+  aiScoringAvailable: boolean;
 }

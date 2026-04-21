@@ -10,6 +10,9 @@ import {
   SpectatorFeedEvent,
   PostMatchSummaryResponse,
   PlayerScoreResponse,
+  MatchComparisonResponse,
+  ChallengeComparisonResponse,
+  PlayerChallengeAttemptResponse,
 } from '../../models/battle-room.model';
 
 interface ConfettiPiece {
@@ -50,6 +53,13 @@ export class BattleResultComponent implements OnInit, OnDestroy {
   animatedEloDelta = 0;
   showTierUpBanner = false;
   private readonly UNRANKED_MODES = ['PRACTICE', 'BLITZ', 'DAILY'];
+
+  // Comparison panel
+  comparison: MatchComparisonResponse | null = null;
+  comparisonLoading = false;
+  comparisonError = '';
+  activeChallengeIndex = 0;
+  expandedAttempts = new Set<string>();
 
   get isRankedMode(): boolean {
     return !!this.summary && !this.UNRANKED_MODES.includes(this.summary.mode);
@@ -93,6 +103,9 @@ export class BattleResultComponent implements OnInit, OnDestroy {
       },
       error: () => {},
     });
+
+    // Load post-match comparison (transparency view)
+    this.loadComparison();
 
     // Also listen via WebSocket for spectator feed
     this.ws.connect(this.roomId);
@@ -191,6 +204,79 @@ export class BattleResultComponent implements OnInit, OnDestroy {
         setTimeout(() => (this.showTierUpBanner = false), 5000);
       }, 1500);
     }
+  }
+
+  private loadComparison(): void {
+    this.comparisonLoading = true;
+    this.battleService.getMatchComparison(this.roomId).subscribe({
+      next: (data) => {
+        this.comparison = data;
+        this.comparisonLoading = false;
+        this.activeChallengeIndex = 0;
+      },
+      error: (err) => {
+        this.comparisonLoading = false;
+        this.comparisonError = err?.status === 403
+          ? 'Only match participants can view this comparison.'
+          : 'Comparison data is not available yet.';
+      },
+    });
+  }
+
+  selectChallenge(index: number): void {
+    this.activeChallengeIndex = index;
+  }
+
+  get activeChallenge(): ChallengeComparisonResponse | null {
+    if (!this.comparison) return null;
+    return this.comparison.challenges[this.activeChallengeIndex] ?? null;
+  }
+
+  isCurrentUser(attempt: PlayerChallengeAttemptResponse): boolean {
+    return attempt.userId === this.currentUserId;
+  }
+
+  toggleAttemptCode(attemptKey: string): void {
+    if (this.expandedAttempts.has(attemptKey)) {
+      this.expandedAttempts.delete(attemptKey);
+    } else {
+      this.expandedAttempts.add(attemptKey);
+    }
+  }
+
+  isAttemptExpanded(attemptKey: string): boolean {
+    return this.expandedAttempts.has(attemptKey);
+  }
+
+  attemptKey(challengeId: string, participantId: string): string {
+    return `${challengeId}::${participantId}`;
+  }
+
+  formatRuntime(ms: number | null): string {
+    return ms == null ? '—' : `${ms} ms`;
+  }
+
+  formatMemory(kb: number | null): string {
+    if (kb == null) return '—';
+    if (kb >= 1024) return `${(kb / 1024).toFixed(1)} MB`;
+    return `${kb} KB`;
+  }
+
+  formatAiScore(score: number | null): string {
+    return score == null ? '—' : score.toFixed(1);
+  }
+
+  formatSolvedTime(seconds: number): string {
+    if (!seconds || seconds <= 0) return '—';
+    return this.formatDuration(seconds);
+  }
+
+  attemptHighlights(attempt: PlayerChallengeAttemptResponse): string[] {
+    const tags: string[] = [];
+    if (attempt.isFirstSolver) tags.push('FIRST');
+    if (attempt.isFastest) tags.push('FASTEST');
+    if (attempt.isMostOptimized) tags.push('MOST OPTIMIZED');
+    return tags;
   }
 
   private generateConfetti(): void {
