@@ -5,19 +5,19 @@
         ← BACK TO EVENT LIST
       </button>
       <div class="header-right">
-        <span [class]="event?.type === 'OPEN' ? 
+        <span [class]="event.type === 'OPEN' ? 
           'type-badge open' : 'type-badge exclusive'">
-          {{ event?.type }}
+          {{ event.type }}
         </span>
-        <span [class]="'status-badge ' + (event?.status || '').toLowerCase()">
-          {{ event?.status }}
+        <span [class]="'status-badge ' + (event.status || '').toLowerCase()">
+          {{ event.status }}
         </span>
       </div>
     </div>
 
     <div class="event-title-section">
-      <h1 class="event-title">{{ event?.title }}</h1>
-      <p class="event-desc">{{ event?.description }}</p>
+      <h1 class="event-title">{{ event.title }}</h1>
+      <p class="event-desc">{{ event.description }}</p>
     </div>
 
     <div class="message" *ngIf="message">{{ message }}</div>
@@ -29,8 +29,8 @@
         <div class="info-content">
           <div class="info-label">DATES</div>
           <div class="info-value">
-            {{ event?.startDate | date:'dd MMM yyyy, HH:mm' }}
-            → {{ event?.endDate | date:'dd MMM yyyy, HH:mm' }}
+            {{ event.startDate | date:'dd MMM yyyy, HH:mm' }}
+            → {{ event.endDate | date:'dd MMM yyyy, HH:mm' }}
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
         <div class="info-content">
           <div class="info-label">LOCATION</div>
           <div class="info-value">
-            {{ event?.location || 'CODEARENA HQ' }}
+            {{ event.location || 'CODEARENA HQ' }}
           </div>
         </div>
       </div>
@@ -47,7 +47,7 @@
         <span class="info-icon">🎯</span>
         <div class="info-content">
           <div class="info-label">CATEGORY</div>
-          <div class="info-value">{{ event?.category }}</div>
+          <div class="info-value">{{ event.category }}</div>
         </div>
       </div>
       <div class="info-card">
@@ -55,7 +55,7 @@
         <div class="info-content">
           <div class="info-label">PARTICIPANTS</div>
           <div class="info-value">
-            {{ event?.currentParticipants }} / {{ event?.maxParticipants }} ({{ event?.availablePlaces }} LEFT)
+            {{ event.currentParticipants }} / {{ event.maxParticipants }} ({{ event.availablePlaces }} LEFT)
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
       <div class="section-header">
         <h2 class="section-title">👥 PARTICIPANTS</h2>
         <span class="section-count">
-          {{ participants?.length || 0 }}
+          {{ participants.length || 0 }}
         </span>
       </div>
       <div class="section-content">
@@ -123,11 +123,11 @@
       </div>
     </div>
 
-    <div class="section" *ngIf="event?.type === 'EXCLUSIVE'">
+    <div class="section" *ngIf="event.type === 'EXCLUSIVE'">
       <div class="section-header">
         <h2 class="section-title">📩 CANDIDATURES</h2>
         <span class="section-count">
-          {{ candidatures?.length || 0 }}
+          {{ candidatures.length || 0 }}
         </span>
       </div>
       <div class="section-content">
@@ -149,11 +149,11 @@
       </div>
     </div>
 
-    <div class="section" *ngIf="event?.type === 'EXCLUSIVE'">
+    <div class="section" *ngIf="event.type === 'EXCLUSIVE'">
       <div class="section-header">
         <h2 class="section-title">🤝 INVITATIONS</h2>
         <span class="section-count">
-          {{ invitations?.length || 0 }}
+          {{ invitations.length || 0 }}
         </span>
       </div>
       <div class="section-content">
