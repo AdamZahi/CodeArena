@@ -41,9 +41,21 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionService.getUserSubmissions(userId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<SubmissionDto>> getUserSubmissions(@PathVariable("userId") String userId) {
+    public ResponseEntity<List<SubmissionDto>> getUserSubmissions(
+            @PathVariable("userId") String userId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String requesterId = jwt.getSubject();
+        boolean isAdmin = jwt.getClaimAsStringList("https://codearena.com/roles") != null
+                && jwt.getClaimAsStringList("https://codearena.com/roles").contains("ADMIN");
+
+        // Participant can only see their own submissions
+        // Admin can see anyone's
+        if (!isAdmin && !requesterId.equals(userId)) {
+            return ResponseEntity.status(403).build();
+        }
+
         return ResponseEntity.ok(submissionService.getUserSubmissions(userId));
     }
 }

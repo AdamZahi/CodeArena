@@ -147,10 +147,14 @@ public class LeaderboardService {
         int page = Math.max(request.getPage(), 0);
 
         Page<User> usersPage = userRepository.findAllByOrderByTotalXpDesc(PageRequest.of(page, size));
+        // Fix NPE: filter out users with null totalXp
+        List<User> users = usersPage.getContent().stream()
+                .filter(u -> u.getTotalXp() != null)
+                .collect(java.util.stream.Collectors.toList());
 
         List<XpLeaderboardEntryResponse> entries = new ArrayList<>();
         int baseRank = page * size + 1;
-        List<User> users = usersPage.getContent();
+
 
         for (int i = 0; i < users.size(); i++) {
             User u = users.get(i);
@@ -159,8 +163,8 @@ public class LeaderboardService {
                     .userId(u.getAuth0Id())
                     .username(UserDisplayUtils.resolveDisplayName(u))
                     .avatarUrl(UserDisplayUtils.resolveAvatarUrl(u))
-                    .totalXp(u.getTotalXp())
-                    .level(u.getCurrentLevel())
+                    .totalXp(u.getTotalXp() != null ? u.getTotalXp() : 0L)
+                    .level(u.getCurrentLevel() != null ? u.getCurrentLevel() : 0)
                     .title(u.getActiveTitle())
                     .build());
         }
@@ -171,15 +175,17 @@ public class LeaderboardService {
             Optional<User> userOpt = userRepository.findByAuth0Id(requestingUserId);
             if (userOpt.isPresent()) {
                 User u = userOpt.get();
-                requestingUserRank = userRepository.countUsersByTotalXpGreaterThan(u.getTotalXp());
+                requestingUserRank = u.getTotalXp() != null
+    ? userRepository.countUsersByTotalXpGreaterThan(u.getTotalXp())
+    : 0;
 
                 requestingUserEntry = XpLeaderboardEntryResponse.builder()
                         .rank(requestingUserRank)
                         .userId(u.getAuth0Id())
                         .username(UserDisplayUtils.resolveDisplayName(u))
                         .avatarUrl(UserDisplayUtils.resolveAvatarUrl(u))
-                        .totalXp(u.getTotalXp())
-                        .level(u.getCurrentLevel())
+                        .totalXp(u.getTotalXp() != null ? u.getTotalXp() : 0L)
+                        .level(u.getCurrentLevel() != null ? u.getCurrentLevel() : 0)
                         .title(u.getActiveTitle())
                         .build();
             }
