@@ -2,8 +2,7 @@ name: SonarQube
 
 on:
   push:
-    branches:
-      - arenatalk-clean
+    branches: [ "arenatalk-clean" ]
 
 jobs:
   build:
@@ -39,6 +38,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd code-arena-backend
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=CodeArena \
-            -Dsonar.organization=ghofranbenhassen
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=CodeArena -Dsonar.organization=ghofranbenhassen
