@@ -33,6 +33,15 @@ keycloak:
   client-id: code-arena-backend
   server-url: http://localhost:8081
 
+
+
+
+gemini:
+  api-key: AIzaSyDJw4MEX6UT0kPc2f23PTyLFGvQtJNSU-k
+
+ai-model:
+  url: http://localhost:5000
+
 app:
   cors:
     allowed-origins:

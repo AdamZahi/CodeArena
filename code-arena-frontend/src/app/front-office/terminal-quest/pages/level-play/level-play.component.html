@@ -63,6 +63,47 @@
       <p class="task-text">{{ mission.task }}</p>
     </div>
 
+    <!-- ── AI ADAPTIVE LEARNING (ODD 9) ────────────────────────────────── -->
+    <div class="adaptive-block" *ngIf="adaptivePrediction || isAdaptiveLoading">
+      <div class="adaptive-header">
+        <span class="adaptive-icon">🧠</span>
+        <span class="adaptive-label">AI ADAPTIVE LEARNING</span>
+        <span class="adaptive-badge" *ngIf="adaptivePrediction"
+              [ngClass]="{
+                'badge-assist': adaptivePrediction.playerLevel === 'STRUGGLING',
+                'badge-maintain': adaptivePrediction.playerLevel === 'LEARNING',
+                'badge-challenge': adaptivePrediction.playerLevel === 'PROFICIENT'
+              }">
+          {{ adaptivePrediction.playerLevel }}
+        </span>
+      </div>
+      <div class="adaptive-loader" *ngIf="isAdaptiveLoading">
+        <span class="dot-blink">.</span><span class="dot-blink delay-1">.</span><span class="dot-blink delay-2">.</span>
+        Analyzing your skill profile...
+      </div>
+      <div class="adaptive-content" *ngIf="!isAdaptiveLoading && adaptivePrediction">
+        <div class="adaptive-bar-container">
+          <div class="adaptive-bar-label">Success prediction</div>
+          <div class="adaptive-bar">
+            <div class="adaptive-bar-fill"
+                 [style.width.%]="adaptivePrediction.successProbability * 100"
+                 [ngClass]="{
+                   'bar-low': adaptivePrediction.successProbability < 0.4,
+                   'bar-mid': adaptivePrediction.successProbability >= 0.4 && adaptivePrediction.successProbability <= 0.7,
+                   'bar-high': adaptivePrediction.successProbability > 0.7
+                 }">
+            </div>
+          </div>
+          <div class="adaptive-bar-value">{{ (adaptivePrediction.successProbability * 100).toFixed(0) }}%</div>
+        </div>
+        <p class="adaptive-message" *ngIf="adaptiveMessage">{{ adaptiveMessage }}</p>
+        <div class="adaptive-adjustments" *ngIf="adaptivePrediction.timerAdjustment !== 0">
+          <span *ngIf="adaptivePrediction.timerAdjustment > 0">⏱ +{{ adaptivePrediction.timerAdjustment }}s added to timer</span>
+          <span *ngIf="adaptivePrediction.timerAdjustment < 0">⏱ {{ adaptivePrediction.timerAdjustment }}s timer challenge</span>
+        </div>
+      </div>
+    </div>
+
     <!-- ── HINT ──────────────────────────────────────── -->
     <div class="hint-section">
       <button class="hint-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick(); toggleHint()">

@@ -38,6 +38,22 @@
       <div class="card-cta survival">ENTER SURVIVAL →</div>
     </a>
 
+    <!-- SKILL REPORT CARD -->
+    <button class="mode-card skill-card"
+            (mouseenter)="audio.playHover()"
+            (click)="audio.playClick(); goToSkillReport()">
+      <div class="card-glow skill"></div>
+      <div class="card-icon">📈</div>
+      <h2 class="card-title">SKILL REPORT</h2>
+      <p class="card-sub">AI-powered analysis of your Linux skills. Track progress toward certifications.</p>
+      <ul class="card-features">
+        <li><span class="feat-dot skill-dot">◈</span> Profil de compétences</li>
+        <li><span class="feat-dot skill-dot">◈</span> Readiness RHCSA / LPIC-1</li>
+        <li><span class="feat-dot skill-dot">◈</span> Recommandations IA</li>
+      </ul>
+      <div class="card-cta skill-cta">VIEW REPORT →</div>
+    </button>
+
   </div>
 
   <!-- ── LEADERBOARD LINK ───────────────────────────── -->

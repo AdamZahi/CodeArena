@@ -20,5 +20,9 @@ export const TERMINAL_QUEST_ROUTES: Routes = [
   {
     path: 'survival/leaderboard',
     loadComponent: () => import('./pages/survival-leaderboard/survival-leaderboard.component').then((m) => m.SurvivalLeaderboardComponent)
+  },
+  {
+    path: 'skill-report',
+    loadComponent: () => import('./pages/skill-report/skill-report.component').then((m) => m.SkillReportComponent)
   }
 ];

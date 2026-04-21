@@ -7,7 +7,8 @@ import { TimerAudioService } from '../../services/timer-audio.service';
 import { TtsService } from '../../services/tts.service';
 import { MissionVoiceService } from '../../services/mission-voice.service';
 import { CommandExplainerService } from '../../services/command-explainer.service';
-import { StoryMission, SubmitAnswerResponse } from '../../models/terminal-quest.model';
+import { AdaptiveLearningService } from '../../services/adaptive-learning.service';
+import { AdaptivePrediction, StoryMission, SubmitAnswerResponse } from '../../models/terminal-quest.model';
 
 interface TerminalLine {
   text: string;
@@ -45,6 +46,10 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
   explanation = '';
   isExplaining = false;
 
+  adaptivePrediction: AdaptivePrediction | null = null;
+  isAdaptiveLoading = false;
+  adaptiveMessage = '';
+
   readonly ledRange = [1, 2, 3, 4, 5];
   readonly userId = 'test-user-001';
   private missionId = '';
@@ -56,7 +61,8 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
     public audio: TimerAudioService,
     public ttsService: TtsService,
     private missionVoice: MissionVoiceService,
-    private explainerService: CommandExplainerService
+    private explainerService: CommandExplainerService,
+    private readonly adaptiveService: AdaptiveLearningService
   ) {}
 
   ngOnInit(): void {
@@ -72,6 +78,28 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
         this.totalTime = this.audio.getTimeForDifficulty(mission.difficulty, mission.isBoss);
         this.timeRemaining = this.totalTime;
         this.startTimer();
+
+        this.isAdaptiveLoading = true;
+        this.adaptiveService.predictAdaptation(this.userId, this.missionId).subscribe({
+          next: (prediction) => {
+            console.log('[adaptive] response from backend:', prediction);
+            this.adaptivePrediction = prediction;
+            this.isAdaptiveLoading = false;
+            this.totalTime = this.audio.getTimeForDifficulty(mission.difficulty, mission.isBoss) + prediction.timerAdjustment;
+            this.timeRemaining = this.totalTime;
+            if (prediction.showHint) {
+              this.showHint = true;
+            }
+            if (prediction.playerLevel === 'STRUGGLING') {
+              this.adaptiveMessage = '🤖 AI detects you may need help — extra time and hints enabled.';
+            } else if (prediction.playerLevel === 'PROFICIENT') {
+              this.adaptiveMessage = '🤖 AI challenge mode — reduced timer for experienced players.';
+            }
+          },
+          error: () => {
+            this.isAdaptiveLoading = false;
+          }
+        });
       },
       error: () => {
         this.isLoading = false;

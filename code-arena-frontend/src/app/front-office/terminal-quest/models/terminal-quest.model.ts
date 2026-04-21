@@ -107,6 +107,41 @@ export interface ChapterCompletionStats {
   completionRate: number;
 }
 
+export interface AdaptivePrediction {
+  successProbability: number;
+  recommendedAction: 'ASSIST' | 'MAINTAIN' | 'CHALLENGE';
+  timerAdjustment: number;
+  showHint: boolean;
+  difficultyLabel: string;
+  playerLevel: 'STRUGGLING' | 'LEARNING' | 'PROFICIENT';
+}
+
+export interface SkillAnalysis {
+  skillProfile: { [category: string]: number };
+  overallScore: number;
+  predictedWeakness: string;
+  weaknessConfidence: number;
+  certificationReadiness: { [cert: string]: CertReadiness };
+  recommendations: SkillRecommendation[];
+  playerTitle: string;
+  nextTitle: string;
+  progressToNextTitle: number;
+}
+
+export interface CertReadiness {
+  ready: boolean;
+  overallMatch: number;
+  gaps: { category: string; current: number; required: number; gap: number }[];
+  strengths: { category: string; current: number; required: number; surplus: number }[];
+}
+
+export interface SkillRecommendation {
+  priority: number;
+  category: string;
+  message: string;
+  suggestedMissions: string[];
+}
+
 export interface GlobalStats {
   totalActivePlayers: number;
   totalSurvivalSessions: number;

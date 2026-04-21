@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TimerAudioService } from '../../services/timer-audio.service';
 
 @Component({
@@ -11,5 +11,9 @@ import { TimerAudioService } from '../../services/timer-audio.service';
   styleUrls: ['./quest-home.component.css']
 })
 export class QuestHomeComponent {
-  constructor(public audio: TimerAudioService) {}
+  constructor(public audio: TimerAudioService, private readonly router: Router) {}
+
+  goToSkillReport(): void {
+    this.router.navigate(['/terminal-quest/skill-report']);
+  }
 }
