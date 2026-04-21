@@ -42,6 +42,25 @@ app:
     allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
+    stripe:
+      secret-key: sk_test_51...
+      publishable-key: pk_test_51...
+      endpoint-secret: whsec_...
+
+# Auth0 Management API
+auth0:
+  domain: dev-70do2fpg2iw11ckn.us.auth0.com
+  client-id: ""
+  client-secret: ""
+  audience: https://dev-70do2fpg2iw11ckn.us.auth0.com/api/v2/
+
+# Stripe (used by coaching)
+stripe:
+  secret-key: sk_test_...
+
+# Gemini AI (for Terminal Quest)
+gemini:
+  api-key: ""
 
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:

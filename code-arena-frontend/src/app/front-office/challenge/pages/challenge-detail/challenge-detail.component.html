@@ -101,6 +101,44 @@
           <!-- ═══ LUXURY LEETCODE ACCORDION ═══ -->
           <div class="lc-premium-accordion">
 
+            <!-- Section: AI Database Analysis -->
+            <div class="acc-box" *ngIf="aiDifficulty">
+              <div class="acc-header" (click)="langInfoOpen = !langInfoOpen" [class.active]="langInfoOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon ai-icon">🧠</i>
+                  <span class="acc-label">AI Analysis</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="langInfoOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="langInfoOpen">
+                <div class="ai-analysis-card">
+                  <div class="ai-stat-row">
+                    <span>True AI Difficulty:</span>
+                    <span class="ai-score" [style.color]="aiDifficulty.aiDifficultyScore > 66 ? '#ef4444' : aiDifficulty.aiDifficultyScore > 33 ? '#f59e0b' : '#10b981'">
+                      {{ aiDifficulty.aiDifficultyScore | number:'1.0-1' }} / 100
+                    </span>
+                  </div>
+                  <div class="ai-gauge-bg">
+                    <div class="ai-gauge-fill" 
+                         [style.width.%]="aiDifficulty.aiDifficultyScore"
+                         [style.background]="aiDifficulty.aiDifficultyScore > 66 ? '#ef4444' : aiDifficulty.aiDifficultyScore > 33 ? '#f59e0b' : '#10b981'">
+                    </div>
+                  </div>
+                  <div class="ai-stat-row" style="margin-top: 15px;">
+                    <span>Global Pass Rate:</span>
+                    <span>{{ (aiDifficulty.passRate * 100) | number:'1.0-1' }}%</span>
+                  </div>
+                  <div class="ai-stat-row">
+                    <span>Avg. Attempts Required:</span>
+                    <span>{{ aiDifficulty.avgAttempts | number:'1.0-1' }}</span>
+                  </div>
+                  <p class="ai-insight" *ngIf="aiDifficulty.aiDifficultyScore > 75">
+                    ⚠️ The Neural Network warns that this challenge is significantly harder than its original classification.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Section: Topics -->
             <div class="acc-box" *ngIf="getTags(challenge.tags).length > 0">
               <div class="acc-header" (click)="topicsOpen = !topicsOpen" [class.active]="topicsOpen">
@@ -139,17 +177,25 @@
             </div>
 
             <!-- Section: Hint -->
-            <div class="acc-box" *ngIf="challenge.difficulty !== 'EASY'">
+            <div class="acc-box">
               <div class="acc-header" (click)="hintsOpen = !hintsOpen" [class.active]="hintsOpen">
                 <div class="acc-title-group">
                   <i class="acc-icon hint-icon">💡</i>
-                  <span class="acc-label">Hint</span>
+                  <span class="acc-label">AI Hint Generator</span>
                 </div>
                 <div class="acc-chevron" [class.rotated]="hintsOpen"></div>
               </div>
               <div class="acc-body" *ngIf="hintsOpen">
-                <div class="hint-card">
-                  <p>Analyzing the constraints is key. Can you find a solution with O(N) complexity using a hash table to store indices?</p>
+                <div class="hint-card" style="padding: 10px;">
+                  <button class="ai-hint-btn" (click)="generateAiHint()" *ngIf="!aiHint && !isHintLoading">
+                     💡 DEMAND AI HINT
+                  </button>
+                  <div class="ai-hint-loading" *ngIf="isHintLoading">
+                     PROCESSING NEURAL VECTORS...
+                  </div>
+                  <div class="ai-hint-text" *ngIf="aiHint">
+                     <span class="ai-bot-icon">🤖</span> {{ aiHint }}
+                  </div>
                 </div>
               </div>
             </div>
