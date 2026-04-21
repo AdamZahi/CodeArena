@@ -6,19 +6,18 @@ import com.codearena.module6_event.entity.ProgrammingEvent;
 import com.codearena.module6_event.mapper.EventMapper;
 import com.codearena.module6_event.repository.EventRegistrationRepository;
 import com.codearena.module6_event.repository.EventRepository;
+import com.codearena.module6_event.service.recommendation.EventFeatureVector;
+import com.codearena.module6_event.service.recommendation.RecommendationModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -27,98 +26,101 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EventRecommendationService {
 
-    private static final int RECOMMENDED_LIMIT = 3;
-
-    private final OllamaChatModel chatModel;
     private final EventRepository eventRepository;
     private final EventRegistrationRepository registrationRepository;
+    private final RecommendationModel recommendationModel;
     private final EventMapper eventMapper;
 
-    @Transactional(readOnly = true)
     public List<EventDto> getRecommendedEvents(String participantId) {
-        List<EventRegistration> history = registrationRepository.findByParticipantId(participantId);
-
-        List<ProgrammingEvent> upcomingEvents = eventRepository.findAll().stream()
-                .filter(event -> event.getStartDate() != null && event.getStartDate().isAfter(LocalDateTime.now()))
-                .toList();
-
-        if (upcomingEvents.isEmpty()) {
+        
+        // 1. Get participant's confirmed event history
+        List<EventRegistration> history = 
+            registrationRepository.findByParticipantId(participantId)
+            .stream()
+            .filter(r -> r.getStatus().name().equals("CONFIRMED"))
+            .toList();
+        
+        List<ProgrammingEvent> participantHistory = history.stream()
+            .map(EventRegistration::getEvent)
+            .toList();
+        
+        log.info("Participant {} has {} events in history",
+            participantId, participantHistory.size());
+        
+        // 2. Get upcoming events not yet joined by participant
+        Set<UUID> joinedEventIds = history.stream()
+            .map(r -> r.getEvent().getId())
+            .collect(Collectors.toSet());
+        
+        List<ProgrammingEvent> candidateEvents = eventRepository
+            .findAll()
+            .stream()
+            .filter(e -> e.getStartDate().isAfter(LocalDateTime.now()))
+            .filter(e -> !joinedEventIds.contains(e.getId()))
+            .filter(e -> !e.isFull())
+            .toList();
+        
+        if (candidateEvents.isEmpty()) {
+            log.info("No candidate events available");
             return List.of();
         }
-
-        String historyText = history.stream()
-                .map(registration -> registration.getEvent().getTitle() + " (" + registration.getEvent().getCategory() + ")")
-                .collect(Collectors.joining(", "));
-
-        String eventsText = upcomingEvents.stream()
-                .map(event -> event.getId() + ": " + event.getTitle() + " (" + event.getCategory() + ") - " + event.getType())
-                .collect(Collectors.joining("\n"));
-
-        String prompt = """
-                You are an event recommendation system for CodeArena,
-                a competitive programming platform.
-
-                Player's event history: %s
-
-                Available upcoming events:
-                %s
-
-                Based on the player's history, recommend the TOP 3
-                most suitable events.
-
-                Reply ONLY with the event IDs separated by commas.
-                Example: uuid1,uuid2,uuid3
-                """.formatted(historyText.isEmpty() ? "No history yet" : historyText, eventsText);
-
-        try {
-            String response = chatModel.call(prompt).trim();
-            log.info("AI recommendation response: {}", response);
-
-            List<UUID> recommendedIds = Arrays.stream(response.split(","))
-                    .map(String::trim)
-                    .map(this::toUuidOrNull)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toCollection(LinkedHashSet::new))
-                    .stream()
-                    .limit(RECOMMENDED_LIMIT)
-                    .toList();
-
-            if (recommendedIds.isEmpty()) {
-                return fallbackRecommendations(upcomingEvents);
-            }
-
-            List<EventDto> recommendedEvents = upcomingEvents.stream()
-                    .filter(event -> recommendedIds.contains(event.getId()))
-                    .sorted((a, b) -> Integer.compare(recommendedIds.indexOf(a.getId()), recommendedIds.indexOf(b.getId())))
-                    .limit(RECOMMENDED_LIMIT)
-                    .map(eventMapper::toResponseDTO)
-                    .toList();
-
-            if (recommendedEvents.isEmpty()) {
-                return fallbackRecommendations(upcomingEvents);
-            }
-
-            return recommendedEvents;
-        } catch (Exception e) {
-            log.error("AI recommendation failed: {}", e.getMessage());
-            return fallbackRecommendations(upcomingEvents);
-        }
+        
+        // 3. Build participant profile using the model
+        double[] participantProfile = recommendationModel
+            .buildParticipantProfile(participantHistory);
+        
+        // 4. Score all candidate events
+        Map<UUID, Double> scores = recommendationModel
+            .scoreEvents(participantProfile, candidateEvents);
+        
+        // 5. Return top 3 events sorted by score
+        return candidateEvents.stream()
+            .sorted((a, b) -> Double.compare(
+                scores.getOrDefault(b.getId(), 0.0),
+                scores.getOrDefault(a.getId(), 0.0)
+            ))
+            .limit(3)
+            .map(eventMapper::toResponseDTO)
+            .toList();
     }
-
-    private UUID toUuidOrNull(String rawId) {
-        try {
-            return UUID.fromString(rawId);
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private List<EventDto> fallbackRecommendations(List<ProgrammingEvent> upcomingEvents) {
-        List<ProgrammingEvent> randomized = new ArrayList<>(upcomingEvents);
-        Collections.shuffle(randomized);
-        return randomized.stream()
-                .limit(RECOMMENDED_LIMIT)
-                .map(eventMapper::toResponseDTO)
-                .toList();
+    
+    /**
+     * Get recommendation explanation for a specific event.
+     * Shows why this event was recommended.
+     */
+    public Map<String, Object> getRecommendationExplanation(
+            String participantId, UUID eventId) {
+        
+        List<EventRegistration> history = 
+            registrationRepository.findByParticipantId(participantId);
+        
+        List<ProgrammingEvent> participantHistory = history.stream()
+            .map(EventRegistration::getEvent)
+            .toList();
+        
+        ProgrammingEvent event = eventRepository.findById(eventId)
+            .orElseThrow();
+        
+        double[] profile = recommendationModel
+            .buildParticipantProfile(participantHistory);
+        double[] eventVector = EventFeatureVector.toVector(event);
+        double score = recommendationModel
+            .cosineSimilarity(profile, eventVector);
+        
+        Map<String, Object> explanation = new LinkedHashMap<>();
+        explanation.put("eventTitle", event.getTitle());
+        explanation.put("similarityScore", 
+            Math.round(score * 100) + "%");
+        explanation.put("basedOnHistory", 
+            participantHistory.stream()
+                .map(ProgrammingEvent::getTitle)
+                .toList());
+        explanation.put("matchingCategory", 
+            event.getCategory().name());
+        explanation.put("recommendation", 
+            score > 0.7 ? "HIGHLY RECOMMENDED" :
+            score > 0.4 ? "RECOMMENDED" : "SUGGESTED");
+        
+        return explanation;
     }
 }

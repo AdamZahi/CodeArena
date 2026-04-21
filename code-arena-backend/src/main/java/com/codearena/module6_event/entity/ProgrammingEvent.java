@@ -70,4 +70,8 @@ public class ProgrammingEvent {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public boolean isFull() {
+        return maxParticipants > 0 && currentParticipants >= maxParticipants;
+    }
 }

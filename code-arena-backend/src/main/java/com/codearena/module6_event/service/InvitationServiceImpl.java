@@ -15,9 +15,13 @@ import com.codearena.module6_event.mapper.EventMapper;
 import com.codearena.module6_event.repository.EventInvitationRepository;
 import com.codearena.module6_event.repository.EventRegistrationRepository;
 import com.codearena.module6_event.repository.EventRepository;
+import com.codearena.user.repository.UserRepository;
+import com.codearena.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -48,6 +52,8 @@ public class InvitationServiceImpl implements InvitationService {
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final ParticipantIdentityService participantIdentityService;
+    private final UserRepository userRepository;
+
     
     @Qualifier("eventEmailService")
     private final EmailService emailService;
@@ -58,20 +64,15 @@ public class InvitationServiceImpl implements InvitationService {
         ProgrammingEvent event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("Event not found: " + eventId));
 
-        List<String> top10 = List.of(
-                "google-oauth2|115542530890235890362",
-                "google-oauth2|115948396210140607346",
-                "google-oauth2|115021199274267292708",
-                "google-oauth2|112255744825732358525",
-                "google-oauth2|100499137846569783005",
-                "google-oauth2|108378133921738621575",
-                "google-oauth2|108133574113488267379",
-                "google-oauth2|110630587307020708631",
-                "github|134744963",
-                "auth0|69c5a6978245aa1f8bde6caa");
+        List<User> top10Users = userRepository.findAllByOrderByTotalXpDesc(PageRequest.of(0, 10)).getContent();
 
         List<EventInvitation> toSave = new ArrayList<>();
-        for (String participantId : top10) {
+        for (User user : top10Users) {
+            String participantId = user.getAuth0Id();
+            String userEmail = user.getEmail();
+            
+            if (participantId == null) continue;
+
             Optional<EventInvitation> existing = invitationRepository.findFirstByEventIdAndParticipantId(eventId,
                     participantId);
             if (existing.isPresent()) {
@@ -82,20 +83,25 @@ public class InvitationServiceImpl implements InvitationService {
                     .eventId(eventId)
                     .participantId(participantId)
                     .status(InvitationStatus.PENDING)
+                    .sentAt(LocalDateTime.now())
                     .build();
             invitation = invitationRepository.save(invitation);
             toSave.add(invitation);
 
             try {
-                String testEmail = "codearenapi@gmail.com";
-                emailService.sendInvitationEmail(testEmail, event.getTitle(),
-                        event.getStartDate() != null ? event.getStartDate().toString() : "",
-                        event.getLocation() != null ? event.getLocation() : "");
-                log.info("Invitation email sent to {}", participantId);
+                if (userEmail != null && !userEmail.isBlank()) {
+                    emailService.sendInvitationEmail(userEmail, event.getTitle(),
+                            event.getStartDate() != null ? event.getStartDate().toString() : "",
+                            event.getLocation() != null ? event.getLocation() : "");
+                    log.info("Invitation email sent to real address: {} ({})", participantId, userEmail);
+                } else {
+                    log.warn("Skipping invitation email for user {} - No email configured.", participantId);
+                }
             } catch (Exception e) {
                 log.error("Failed to send invitation email to {}", participantId, e);
             }
         }
+
 
         return toSave.size();
     }
