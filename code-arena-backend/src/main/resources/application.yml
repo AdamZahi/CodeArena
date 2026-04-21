@@ -52,6 +52,9 @@ app:
     stripe:
       secret-key: sk_test_dummy_key_for_now
       publishable-key: pk_test_dummy_key_for_now
+
+
+
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
   base-url: https://ce.judge0.com

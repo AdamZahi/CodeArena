@@ -34,9 +34,33 @@ import { NotificationComponent } from '../front-office/shop/notification/notific
             <a routerLink="/admin/battles" routerLinkActive="active">
               <span class="icon">⚔</span> BATTLES
             </a>
-            <a routerLink="/admin/shop" routerLinkActive="active">
-              <span class="icon">🛒</span> SHOP
-            </a>
+
+            <!-- ── SHOP DROPDOWN ─────────────────── -->
+            <div class="dropdown-group">
+              <button
+                class="dropdown-trigger"
+                [class.active]="shopOpen"
+                (click)="shopOpen = !shopOpen">
+                <span class="icon">🛒</span> SHOP
+                <span class="arrow" [class.open]="shopOpen">▾</span>
+              </button>
+              <div class="dropdown-items" *ngIf="shopOpen">
+                <a routerLink="/admin/shop" routerLinkActive="active"
+                   [routerLinkActiveOptions]="{exact: true}">
+                  <span class="icon">📋</span> PRODUCTS
+                </a>
+                <a routerLink="/admin/shop/orders" routerLinkActive="active">
+                  <span class="icon">📦</span> ORDERS
+                </a>
+                <a routerLink="/admin/shop/dashboard" routerLinkActive="active">
+                  <span class="icon">📊</span> DASHBOARD
+                </a>
+                <a routerLink="/admin/shop/eco-alerts" routerLinkActive="active">
+                  <span class="icon">🌍</span> ECO ALERTS
+                </a>
+              </div>
+            </div>
+
             <a routerLink="/admin/reports" routerLinkActive="active">
               <span class="icon">🗒</span> REPORTS
             </a>
@@ -72,7 +96,6 @@ import { NotificationComponent } from '../front-office/shop/notification/notific
       position: relative;
     }
 
-    /* Animated background effects */
     .layout::before {
       content: '';
       position: fixed;
@@ -89,7 +112,7 @@ import { NotificationComponent } from '../front-office/shop/notification/notific
       content: '';
       position: fixed;
       inset: 0;
-      background-image: 
+      background-image:
         linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
       background-size: 40px 40px;
@@ -193,6 +216,70 @@ import { NotificationComponent } from '../front-office/shop/notification/notific
 
     .sidebar-menu a.active .icon { color: #8b5cf6; }
 
+    /* ── DROPDOWN ─────────────────────────────── */
+    .dropdown-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dropdown-trigger {
+      color: #94a3b8;
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      width: 100%;
+      text-align: left;
+    }
+
+    .dropdown-trigger:hover {
+      background: rgba(139, 92, 246, 0.05);
+      color: #8b5cf6;
+      border-color: rgba(139, 92, 246, 0.2);
+    }
+
+    .dropdown-trigger.active {
+      color: #8b5cf6;
+    }
+
+    .arrow {
+      margin-left: auto;
+      font-size: 10px;
+      transition: transform 0.3s;
+      color: #64748b;
+    }
+
+    .arrow.open {
+      transform: rotate(180deg);
+      color: #8b5cf6;
+    }
+
+    .dropdown-items {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-left: 16px;
+      border-left: 1px solid rgba(139,92,246,0.2);
+      margin-left: 20px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    .dropdown-items a {
+      font-size: 10px;
+      padding: 8px 12px;
+      clip-path: none;
+    }
+
     .sidebar-footer {
       padding: 20px;
       border-top: 1px solid #1a1a2e;
@@ -215,4 +302,6 @@ import { NotificationComponent } from '../front-office/shop/notification/notific
     }
   `]
 })
-export class BoShellComponent {}
+export class BoShellComponent {
+  shopOpen = false;
+}

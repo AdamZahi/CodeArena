@@ -22,5 +22,10 @@ public class ShopItemDto {
     private Integer stock;
     private String imageUrl;
     private ItemType category;
+    private Integer ecoScore;
+    // AI eco score (1-10) — null if not yet scored
+    // Used by frontend to show badge and alternative suggestions
+    // Used by admin panel to flag low-eco products
     private LocalDateTime createdAt;
+
 }

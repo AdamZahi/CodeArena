@@ -177,13 +177,28 @@ public class PurchaseController {
         );
     }
 
-    // ── QR CODE (Admin ONLY) ──────────────────────
-    // GET /api/shop/orders/{id}/qr
-    // FIX 5: QR generation — admin only
-    @PreAuthorize("hasRole('ADMIN')")
+    // ── QR CODE ───────────────────────────────────
+// GET /api/shop/orders/{id}/qr
+// Participant gets QR for their OWN order only
+// Admin gets QR for any order
     @GetMapping("/orders/{id}/qr")
-    public ResponseEntity<ApiResponse<String>> getOrderQr(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<String>> getOrderQr(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
         PurchaseResponse order = purchaseService.getOrderById(id);
+
+        // SECURITY: verify ownership unless admin
+        String participantId = jwt.getSubject();
+        boolean isOwner = order.getParticipantId().equals(participantId);
+        boolean isAdmin = jwt.getClaimAsStringList("https://codearena.com/roles") != null
+                && jwt.getClaimAsStringList("https://codearena.com/roles").contains("ADMIN");
+
+        if (!isOwner && !isAdmin) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponse.error("Access denied — not your order"));
+        }
+
         String qr = qrCodeService.generateOrderQr(
                 order.getId().toString(),
                 order.getParticipantId(),

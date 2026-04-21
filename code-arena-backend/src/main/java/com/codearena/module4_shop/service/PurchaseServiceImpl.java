@@ -231,16 +231,37 @@ public class PurchaseServiceImpl implements PurchaseService {
             // Order is already committed at this point
         }
 
-        // ── STEP 8: EARN LOYALTY POINTS ──────────
-        // 1 point per $1 spent
-        // Also wrapped in try-catch — points failure doesn't cancel the order
+// ── STEP 8: EARN LOYALTY POINTS + ECO BONUS ──
+// Standard: 1 point per $1 spent
+// Eco bonus: extra points for buying sustainable products (SDG 12)
         try {
             int earned = loyaltyService.earnPoints(
                     request.getParticipantId(), totalPrice
             );
-            // earnPoints() adds (int)totalPrice points to user's balance
-            // $29.99 → 29 points (floor of total)
             log.info("Participant earned {} loyalty points", earned);
+
+            // ── ECO BONUS: reward sustainable purchases ──
+            // Calculate average eco score across all ordered items
+            // Items with ecoScore stored in DB get bonus points
+            int totalEcoScore = 0;
+            int scoredItems = 0;
+            for (PurchaseItem item : orderItems) {
+                Integer ecoScore = item.getShopItem().getEcoScore();
+                if (ecoScore != null) {
+                    totalEcoScore += ecoScore;
+                    scoredItems++;
+                }
+            }
+            if (scoredItems > 0) {
+                int avgEcoScore = totalEcoScore / scoredItems;
+                int ecoBonus = loyaltyService.earnEcoBonus(
+                        request.getParticipantId(), avgEcoScore
+                );
+                if (ecoBonus > 0) {
+                    log.info("🌱 Eco bonus: +{} points for avg ECO {}/10",
+                            ecoBonus, avgEcoScore);
+                }
+            }
         } catch (Exception e) {
             log.warn("Loyalty points failed but order placed: {}", e.getMessage());
         }
@@ -375,7 +396,23 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
 
         purchase.setStatus(OrderStatus.CANCELLED);
-        return toResponse(purchaseRepository.save(purchase), purchase.getItems());
+        Purchase saved = purchaseRepository.save(purchase);
+
+// ── DEDUCT LOYALTY POINTS ─────────────────────
+// Remove points earned from this order when cancelled
+// Prevents exploit: place order → earn points → cancel → keep points
+        try {
+            int pointsToDeduct = purchase.getTotalPrice() != null
+    ? (int) Math.floor(purchase.getTotalPrice())
+    : 0;
+            loyaltyService.deductPoints(participantId, pointsToDeduct);
+            log.info("Deducted {} loyalty points for cancelled order {}",
+                    pointsToDeduct, id.toString().substring(0, 8).toUpperCase());
+        } catch (Exception e) {
+            log.warn("Point deduction failed but order cancelled: {}", e.getMessage());
+        }
+
+        return toResponse(saved, purchase.getItems());
     }
 
     // ── MÉTIERS AVANCÉS ───────────────────────────

@@ -45,4 +45,5 @@ export class WishlistComponent implements OnInit {
   clearWishlist(): void {
     this.wishlistService.clear();
   }
+
 }

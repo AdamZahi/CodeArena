@@ -150,6 +150,15 @@
           {{ product.stock > 0 ? '◆ ' + product.stock + ' IN STOCK' : '✕ OUT OF STOCK' }}
         </p>
 
+        <!-- ── BETTER ALTERNATIVE SUGGESTION ── -->
+<div class="better-alt" 
+     *ngIf="ecoScores[product.id] && ecoScores[product.id].score <= 4">
+  🌿 <strong>Eco tip:</strong> 
+  Consider <span class="alt-link" 
+    (click)="filterByCategory(product.category)">
+    greener {{ product.category }} alternatives
+  </span>
+</div>
 <button
   class="add-to-cart-btn"
   [class.btn-pop]="animatingProductId === product.id"
@@ -238,6 +247,38 @@
     </div>
 
   </div>
+  <!-- ── AI RECOMMENDATIONS ─────────────────────────────── -->
+<!-- ── AI RECOMMENDATIONS ─────────────────────────────── -->
+<div class="recommendations-section" *ngIf="recommendations.length > 0">
+  <div class="reco-header">
+    <div class="reco-header-left">
+      <div class="reco-ai-badge">🤖 AI</div>
+      <div>
+        <h3 class="reco-title">⚡ RECOMMENDED FOR YOU</h3>
+        <p class="reco-sub">Our AI analyzed your {{ recommendations.length }} picks based on your order history</p>
+      </div>
+    </div>
+    <div class="reco-pulse-dot"></div>
+  </div>
+
+  <div class="reco-grid">
+    <div class="reco-card" *ngFor="let product of recommendations; let i = index"
+         [style.animation-delay]="i * 150 + 'ms'">
+      <div class="reco-card-badge">AI PICK #{{ i + 1 }}</div>
+      <img [src]="product.imageUrl" [alt]="product.name" (error)="onImageError($event)">
+      <div class="reco-info">
+        <span class="reco-name">{{ product.name }}</span>
+        <span class="reco-price">{{ product.price | currency }}</span>
+        <span class="reco-eco" *ngIf="ecoScores[product.id]">
+          {{ ecoScores[product.id].emoji }} ECO {{ ecoScores[product.id].score }}/10
+        </span>
+      </div>
+      <button class="reco-btn" (click)="addToCart(product)">
+        + ADD TO CART
+      </button>
+    </div>
+  </div>
+</div>
   <!-- ── CART TOAST ─────────────────────────────── -->
 <div class="shop-toast cart-toast" *ngIf="cartToast">
   {{ cartToast }}
@@ -247,5 +288,12 @@
 <div class="shop-toast wishlist-toast" *ngIf="wishlistToast">
   {{ wishlistToast }}
 </div>
+<!-- ── MILESTONE TOAST ──────────────────────── -->
+<div class="shop-toast milestone-toast" *ngIf="milestoneToast">
+  {{ milestoneToast }}
+  <div class="milestone-code">{{ milestoneCode }}</div>
+</div>
+
+
 
 </div>
