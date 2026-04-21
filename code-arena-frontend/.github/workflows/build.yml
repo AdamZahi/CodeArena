@@ -38,4 +38,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd code-arena-backend
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=CodeArena -Dsonar.organization=ghofranbenhassen
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=CodeArena \
+            -Dsonar.organization=ghofranbenhassen \
+            -Dsonar.branch.name=arenatalk-clean
