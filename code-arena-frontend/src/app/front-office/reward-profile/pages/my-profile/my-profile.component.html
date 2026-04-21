@@ -68,6 +68,20 @@
          <span class="rank-tier" style="color: #fbbf24;">Lvl 5</span>
       </div>
 
+      <!-- AI Skill Radar -->
+      <div class="identity-card" style="margin-top: 1rem; padding: 15px; position: relative;" *ngIf="aiSkillProfile">
+        <span class="stat-label" style="display: block; margin-bottom: 5px; color: var(--neon2); display: flex; align-items: center; justify-content: space-between;">
+          <span>🧠 NEURAL SKILL RADAR</span>
+          <span style="font-size: 10px; color: #10b981;" *ngIf="aiSkillProfile.overallRating > 0">{{ aiSkillProfile.overallRating | number:'1.0-1' }} Rating</span>
+        </span>
+        <div style="width: 100%; height: 180px; display: flex; justify-content: center; align-items: center;">
+          <canvas #skillRadar width="220" height="180"></canvas>
+        </div>
+        <div style="font-size: 10px; color: #64748b; text-align: center; margin-top: 5px;" *ngIf="aiSkillProfile.strongestTag">
+          Strongest: <span style="color: #06b6d4">{{ aiSkillProfile.strongestTag }}</span>
+        </div>
+      </div>
+
       <!-- Quick Links -->
       <div class="identity-card" style="padding: 15px; margin-top: 10px;">
         <span class="stat-label" style="margin-bottom: 15px; display: block;">NAVIGATION</span>

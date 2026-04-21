@@ -65,14 +65,14 @@ public class CandidatureServiceImpl implements CandidatureService {
 
         // ── WEBSOCKET NOTIFICATION ─────────────────
         messagingTemplate.convertAndSend(
-            "/topic/admin/candidatures",
-            new java.util.HashMap<String, Object>() {{
-                put("type", "NEW_CANDIDATURE");
-                put("eventId", event.getId().toString());
-                put("eventTitle", event.getTitle());
-                put("participantId", participantId);
-                put("message", "New candidature submitted for event: " + event.getTitle());
-            }}
+                "/topic/admin/candidatures",
+                new java.util.HashMap<String, Object>() {{
+                    put("type", "NEW_CANDIDATURE");
+                    put("eventId", event.getId().toString());
+                    put("eventTitle", event.getTitle());
+                    put("participantId", participantId);
+                    put("message", "New candidature submitted for event: " + event.getTitle());
+                }}
         );
 
         return toResponseDTO(saved);
@@ -183,4 +183,3 @@ public class CandidatureServiceImpl implements CandidatureService {
                 + "|TOKEN:" + UUID.randomUUID();
     }
 }
-
