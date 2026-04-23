@@ -79,9 +79,10 @@ public class EventController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<EventDto> createEvent(@RequestBody CreateEventRequest dto) {
+    public ResponseEntity<EventDto> createEvent(@jakarta.validation.Valid @RequestBody CreateEventRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(dto));
     }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")

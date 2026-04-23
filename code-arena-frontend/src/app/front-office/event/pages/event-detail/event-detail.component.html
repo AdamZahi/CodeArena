@@ -201,7 +201,16 @@
             <label class="form-label" for="motivation-reapply">MOTIVATION</label>
             <textarea id="motivation-reapply" class="event-textarea" [(ngModel)]="motivationText" rows="6"
               placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
-            <button *ngIf="!countdownEnded" class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+            <div class="motivation-hint" *ngIf="motivationText.length > 0 && motivationText.length < 20">
+              <span class="error-text">⚠️ Motivation must be at least 20 characters.</span>
+            </div>
+            <div class="char-counter">
+              <span [class.error-text]="motivationText.length < 20 && motivationText.length > 0">
+                {{ motivationText.length }}
+              </span>/500
+            </div>
+            <button *ngIf="!countdownEnded" class="checkout-btn btn-exclusive-detail candidature-submit-btn" 
+              [disabled]="motivationText.length < 20" (click)="submitCandidature()">
               [ SUBMIT CANDIDATURE ]
             </button>
             <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
@@ -213,7 +222,16 @@
           <label class="form-label" for="motivation">MOTIVATION</label>
           <textarea id="motivation" class="event-textarea" [(ngModel)]="motivationText" rows="6"
             placeholder="WHY DO YOU WANT TO JOIN THIS EVENT?"></textarea>
-          <button *ngIf="!countdownEnded" class="checkout-btn btn-exclusive-detail candidature-submit-btn" (click)="submitCandidature()">
+          <div class="motivation-hint" *ngIf="motivationText.length > 0 && motivationText.length < 20">
+            <span class="error-text">⚠️ Motivation must be at least 20 characters.</span>
+          </div>
+          <div class="char-counter">
+            <span [class.error-text]="motivationText.length < 20 && motivationText.length > 0">
+              {{ motivationText.length }}
+            </span>/500
+          </div>
+          <button *ngIf="!countdownEnded" class="checkout-btn btn-exclusive-detail candidature-submit-btn" 
+            [disabled]="motivationText.length < 20" (click)="submitCandidature()">
             [ SUBMIT CANDIDATURE ]
           </button>
           <div *ngIf="countdownEnded" class="reg-badge reg-badge-red">
