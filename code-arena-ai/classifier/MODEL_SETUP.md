@@ -96,7 +96,30 @@ huggingface-cli upload <HF_USERNAME>/codearena-complexity-classifier \
 
 This uploads the contents of `model/best/` (the `config.json`, `model.safetensors`,
 `tokenizer.json`, `tokenizer_config.json`) to the root of the Hub repo. Resumable,
-shows a progress bar, typically ~5 minutes on a reasonable home connection.
+shows a progress bar.
+
+**Expected duration:** the checkpoint is ~499 MB. Total time ≈ `500 MB / your upstream
+bandwidth`. On a typical residential line at ~500 kB/s upstream, expect **~15 minutes**
+for a full upload. The progress bar updates slowly but steadily — if you see
+"Processing Files (0 / 1)" with a percentage that is moving, it is working, not
+stuck. If the upload is interrupted, **rerun the exact same command** and it
+resumes from the last completed shard.
+
+**To speed it up**, install the `hf-transfer` Rust accelerator and retry:
+
+```bash
+pip install hf-transfer
+# Windows cmd:
+set HF_HUB_ENABLE_HF_TRANSFER=1
+# Windows PowerShell:
+$env:HF_HUB_ENABLE_HF_TRANSFER = "1"
+# Linux / macOS:
+export HF_HUB_ENABLE_HF_TRANSFER=1
+```
+
+Then rerun the `hf upload` command. This often 2–3× throughput on lines where the
+single-threaded Python uploader is the bottleneck. If your ISP upstream is itself
+saturated, it will not help — just wait.
 
 ### 1.7 — Wire the repo ID into the code
 

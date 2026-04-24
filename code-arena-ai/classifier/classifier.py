@@ -28,7 +28,7 @@ LOCAL_MODEL_PATH = ROOT / "model" / "best"
 # Hugging Face Hub repo ID used when no local checkpoint is present.
 # Override with the COMPLEXITY_MODEL_ID env var for staging/private forks.
 # See MODEL_SETUP.md for how to populate the Hub repo.
-DEFAULT_HUB_MODEL_ID = "REPLACE_WITH_HF_USERNAME/codearena-complexity-classifier"
+DEFAULT_HUB_MODEL_ID = "Sushii1669/codearena-complexity-classifier"
 HUB_MODEL_ID = os.environ.get("COMPLEXITY_MODEL_ID", DEFAULT_HUB_MODEL_ID)
 
 COMPLEXITY_SCORES: dict[str, float] = {
