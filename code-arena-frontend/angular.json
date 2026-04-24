@@ -29,7 +29,17 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "externalDependencies": [
+              "fs",
+              "path",
+              "crypto",
+              "os",
+              "stream",
+              "child_process",
+              "sharp",
+              "onnxruntime-node"
+            ]
           },
           "configurations": {
             "production": {
@@ -41,8 +51,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "10kb"
+                  "maximumWarning": "20kb",
+                  "maximumError": "30kb"
                 }
               ],
               "outputHashing": "all"

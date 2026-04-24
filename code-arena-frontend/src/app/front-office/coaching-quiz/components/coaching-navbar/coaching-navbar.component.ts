@@ -3,14 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
-import { CyberAlertComponent } from '../cyber-alert/cyber-alert.component';
 
 @Component({
   selector: 'app-coaching-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, CyberAlertComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <app-cyber-alert></app-cyber-alert>
     <nav class="lc-header">
       <div class="lc-logo" routerLink="/coaching-quiz/coaches">
         CODE<span class="accent">ARENA</span>
@@ -180,6 +178,6 @@ export class CoachingNavbarComponent implements OnInit {
   }
 
   logout() {
-    this.auth.logout({ logoutParams: { returnTo: window.location.origin + '/login' } });
+    this.auth.logout({ logoutParams: { returnTo: window.location.origin } });
   }
 }

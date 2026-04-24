@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CoachingService } from '../../front-office/coaching-quiz/services/coaching.service';
+import { AlertService } from '../../front-office/coaching-quiz/services/alert.service';
 import { CoachApplication } from '../../front-office/coaching-quiz/models/coaching-session.model';
 
 @Component({
@@ -264,7 +265,7 @@ export class CoachingManagementComponent implements OnInit {
   processing: { [key: string]: boolean } = {};
   expandedCv: { [key: string]: boolean } = {};
 
-  constructor(private coachingService: CoachingService) {}
+  constructor(private coachingService: CoachingService, private alertService: AlertService) {}
 
   ngOnInit() {
     this.loadData();
@@ -284,7 +285,7 @@ export class CoachingManagementComponent implements OnInit {
         error: (err) => {
           this.loading = false;
           if (err.status === 403) {
-            alert('Access denied. Admin credentials required.');
+            this.alertService.error('Access denied. Admin credentials required.');
           }
         }
       });
@@ -298,47 +299,49 @@ export class CoachingManagementComponent implements OnInit {
         error: (err) => {
           this.loading = false;
           if (err.status === 403) {
-            alert('Access denied. Admin credentials required.');
+            this.alertService.error('Access denied. Admin credentials required.');
           }
         }
       });
     }
   }
 
-  approve(app: CoachApplication) {
+  async approve(app: CoachApplication) {
     if (!app.id) return;
-    if (!confirm(`Approve ${app.applicantName} as a coach?`)) return;
+    const confirmed = await this.alertService.showConfirm('CONFIRM_APPROVAL', `Approve ${app.applicantName} as a coach?`);
+    if (!confirmed) return;
 
     this.processing[app.id] = true;
     const note = this.adminNotes[app.id] || '';
     this.coachingService.approveApplication(app.id, note).subscribe({
       next: (res) => {
         this.processing[app.id!] = false;
-        alert(`✅ ${app.applicantName} has been approved as a coach.`);
+        this.alertService.success(`${app.applicantName} has been approved as a coach.`, 'COACH_ACTIVATED');
         this.loadData();
       },
       error: (err) => {
         this.processing[app.id!] = false;
-        alert(err.error?.message || 'Error approving application.');
+        this.alertService.error(err.error?.message || 'Error approving application.');
       }
     });
   }
 
-  reject(app: CoachApplication) {
+  async reject(app: CoachApplication) {
     if (!app.id) return;
-    if (!confirm(`Reject ${app.applicantName}'s application?`)) return;
+    const confirmed = await this.alertService.showConfirm('CONFIRM_REJECTION', `Reject ${app.applicantName}'s application?`);
+    if (!confirmed) return;
 
     this.processing[app.id] = true;
     const note = this.adminNotes[app.id] || '';
     this.coachingService.rejectApplication(app.id, note).subscribe({
       next: () => {
         this.processing[app.id!] = false;
-        alert(`❌ ${app.applicantName}'s application has been rejected.`);
+        this.alertService.warning(`${app.applicantName}'s application has been rejected.`, 'COACH_REJECTED');
         this.loadData();
       },
       error: (err) => {
         this.processing[app.id!] = false;
-        alert(err.error?.message || 'Error rejecting application.');
+        this.alertService.error(err.error?.message || 'Error rejecting application.');
       }
     });
   }

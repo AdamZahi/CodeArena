@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoachingNavbarComponent } from '../../components/coaching-navbar/coaching-navbar.component';
 import { CoachingService } from '../../services/coaching.service';
+import { AlertService } from '../../services/alert.service';
 import { CoachingSession, Coach } from '../../models/coaching-session.model';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -191,7 +192,8 @@ export class CoachSessionsViewComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private coachingService: CoachingService
+        private coachingService: CoachingService,
+        private alertService: AlertService
     ) { }
 
     ngOnInit() {
@@ -228,7 +230,7 @@ export class CoachSessionsViewComponent implements OnInit {
             },
             error: () => {
                 this.loading = false;
-                alert('Error fetching sessions.');
+                this.alertService.error('Error fetching sessions.');
             }
         });
     }
@@ -252,11 +254,11 @@ export class CoachSessionsViewComponent implements OnInit {
     bookSession(sessionId: string) {
         this.coachingService.bookSession(sessionId).subscribe({
             next: () => {
-                alert('Session booked successfully!');
+                this.alertService.success('Session booked successfully!');
                 this.router.navigate(['/coaching-quiz/sessions']);
             },
             error: (err) => {
-                alert(err.error?.message || 'Error occurred while booking the session.');
+                this.alertService.error(err.error?.message || 'Error occurred while booking the session.');
             }
         });
     }
