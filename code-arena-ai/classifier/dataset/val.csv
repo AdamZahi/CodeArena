@@ -1,0 +1,32 @@
+code,label,label_id
+"public class Solution {
+    public int fib(int n) {
+        if (n < 2) return n;
+        return fib(n - 1) + fib(n - 2);
+    }
+}
+",O2n,5
+"def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+",Ologn,1
+"public class Solution {
+    public int countSubsets(int[] arr, int idx) {
+        if (idx == arr.length) return 1;
+        return countSubsets(arr, idx + 1) + countSubsets(arr, idx + 1);
+    }
+}
+",O2n,5
+"function getHead(node) {
+    if (node === null) return null;
+    return node.value;
+}
+",O1,0
+"def matrix_sum(mat):
+    total = 0
+    for row in mat:
+        for value in row:
+            total += value
+    return total
+",On2,4

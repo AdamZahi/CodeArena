@@ -616,7 +616,7 @@ def stratified_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.D
         df, test_size=0.2, stratify=df["label_id"], random_state=42
     )
     val_df, test_df = train_test_split(
-        temp_df, test_size=0.5, stratify=temp_df["label_id"], random_state=42
+        temp_df, test_size=0.5, stratify=None, random_state=42
     )
     return train_df, val_df, test_df
 

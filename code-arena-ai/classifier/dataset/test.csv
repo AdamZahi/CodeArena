@@ -1,0 +1,38 @@
+code,label,label_id
+"def linear_search(arr, target):
+    for i, value in enumerate(arr):
+        if value == target:
+            return i
+    return -1
+",On,2
+"function countOccurrences(arr, target) {
+    let count = 0;
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === target) count++;
+    }
+    return count;
+}
+",On,2
+"def all_pairs(arr):
+    pairs = []
+    for i in range(len(arr)):
+        for j in range(len(arr)):
+            pairs.append((arr[i], arr[j]))
+    return pairs
+",On2,4
+"def has_duplicate_sorted(arr):
+    sorted_arr = sorted(arr)
+    for i in range(1, len(sorted_arr)):
+        if sorted_arr[i] == sorted_arr[i-1]:
+            return True
+    return False
+",Onlogn,3
+"function quickSort(arr) {
+    if (arr.length <= 1) return arr;
+    const pivot = arr[Math.floor(arr.length / 2)];
+    const left = arr.filter(x => x < pivot);
+    const mid = arr.filter(x => x === pivot);
+    const right = arr.filter(x => x > pivot);
+    return [...quickSort(left), ...mid, ...quickSort(right)];
+}
+",Onlogn,3
