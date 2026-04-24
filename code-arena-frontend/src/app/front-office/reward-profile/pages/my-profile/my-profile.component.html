@@ -104,20 +104,12 @@
 
       <!-- Key Performance Indicators -->
       <div class="performance-header" *ngIf="battleProfile$ | async as profile">
-        <div class="stat-card">
-          <span class="stat-label">WIN RATE</span>
-          <span class="stat-value winrate">
-            {{ (profile.totalWins / (profile.totalMatchesPlayed || 1) * 100) | number:'1.1-1' }}%
-          </span>
-        </div>
+
         <div class="stat-card">
           <span class="stat-label">SOLVED CHALLENGES</span>
           <span class="stat-value kda">{{ profile.totalSolvedChallenges }}</span>
         </div>
-        <div class="stat-card">
-          <span class="stat-label">AVG BATTLE POINTS</span>
-          <span class="stat-value dpm">{{ profile.averageScore }}</span>
-        </div>
+
       </div>
 
       <!-- Match History -->

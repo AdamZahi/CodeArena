@@ -112,9 +112,11 @@ class SubmissionControllerTest {
         @Test
         @DisplayName("should return submissions for a specific user (admin endpoint)")
         void shouldReturnUserSubmissions() {
+            when(jwt.getSubject()).thenReturn("admin-user");
+            when(jwt.getClaimAsStringList("https://codearena.com/roles")).thenReturn(List.of("ADMIN"));
             when(submissionService.getUserSubmissions("target-user")).thenReturn(List.of(sampleSubmission));
 
-            ResponseEntity<List<SubmissionDto>> response = submissionController.getUserSubmissions("target-user");
+            ResponseEntity<List<SubmissionDto>> response = submissionController.getUserSubmissions("target-user", jwt);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             verify(submissionService).getUserSubmissions("target-user");
