@@ -4,10 +4,12 @@ import com.codearena.module1_challenge.entity.Submission;
 import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module1_challenge.repository.SubmissionRepository;
+import com.codearena.module2_battle.dto.ComplexityClassificationResult;
 import com.codearena.module2_battle.dto.PistonExecutionRequest;
 import com.codearena.module2_battle.dto.PistonExecutionResult;
 import com.codearena.module2_battle.exception.CodeExecutionUnavailableException;
 import com.codearena.module2_battle.exception.UnsupportedLanguageException;
+import com.codearena.module2_battle.service.ClassifierBridgeService;
 import com.codearena.module2_battle.service.CodeWrapperService;
 import com.codearena.module2_battle.service.PistonClient;
 import com.codearena.module2_battle.util.PistonLanguageMapper;
@@ -36,6 +38,7 @@ public class ExecutionService {
     private final UserRepository userRepository;
     private final XpCalculatorService xpCalculatorService;
     private final CustomizationService customizationService;
+    private final ClassifierBridgeService classifierBridgeService;
 
     @Async
     @Transactional
@@ -157,6 +160,17 @@ public class ExecutionService {
 
             submission.setExecutionTime(totalExecTime);
             submission.setMemoryUsed(maxMemory);
+
+            // Tag the submission with its predicted Big-O complexity. Done for
+            // every verdict (not just ACCEPTED) so users get feedback on the
+            // shape of their algorithm even when it fails functional tests.
+            ComplexityClassificationResult complexity = classifierBridgeService
+                    .classify(submission.getCode(), submission.getLanguage());
+            submission.setComplexityLabel(complexity.getLabel());
+            submission.setComplexityDisplay(complexity.getDisplay());
+            submission.setComplexityScore(complexity.getScore());
+            submission.setComplexityConfidence(complexity.getConfidence());
+
             submissionRepository.save(submission);
 
         } catch (Exception e) {

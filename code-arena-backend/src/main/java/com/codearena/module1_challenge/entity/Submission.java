@@ -45,4 +45,20 @@ public class Submission {
 
     @Column(columnDefinition = "TEXT")
     private String errorOutput;
+
+    /** Big-O class predicted by the complexity classifier (e.g. "O1", "Onlogn"). */
+    @Column(name = "complexity_label", length = 20)
+    private String complexityLabel;
+
+    /** Pretty form of the predicted Big-O class (e.g. "O(n log n)"). */
+    @Column(name = "complexity_display", length = 20)
+    private String complexityDisplay;
+
+    /** Score in [0, 100] derived from the predicted Big-O class. */
+    @Column(name = "complexity_score")
+    private Double complexityScore;
+
+    /** Softmax confidence of the predicted class, in [0, 1]. */
+    @Column(name = "complexity_confidence")
+    private Double complexityConfidence;
 }

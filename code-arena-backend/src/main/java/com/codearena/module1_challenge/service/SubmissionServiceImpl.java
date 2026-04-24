@@ -91,6 +91,10 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .memoryUsed(sub.getMemoryUsed())
                 .errorOutput(sub.getErrorOutput())
                 .challengeTitle(sub.getChallenge().getTitle())
+                .complexityLabel(sub.getComplexityLabel())
+                .complexityDisplay(sub.getComplexityDisplay())
+                .complexityScore(sub.getComplexityScore())
+                .complexityConfidence(sub.getComplexityConfidence())
                 .build();
     }
 
