@@ -193,6 +193,13 @@ export interface SubmissionResultResponse {
   // unreachable and a time-based estimate was used instead.
   aiScore?: number | null;
   aiScoreFallback?: boolean | null;
+  // Big-O complexity prediction. Populated for every submission when the
+  // classifier is reachable; null when it is offline (so the UI should
+  // hide rather than break in that case).
+  complexityLabel?: string | null;
+  complexityDisplay?: string | null;
+  complexityScore?: number | null;
+  complexityConfidence?: number | null;
 }
 
 // ── Feature 1: Opponent Activity ───────────────────────────
@@ -297,6 +304,10 @@ export interface ScoreBreakdownResponse {
   solvedInSeconds: number;
   aiScore?: number | null;
   aiScoreFallback?: boolean | null;
+  complexityLabel?: string | null;
+  complexityDisplay?: string | null;
+  complexityScore?: number | null;
+  complexityConfidence?: number | null;
 }
 
 export interface PlayerScoreResponse {
@@ -349,6 +360,11 @@ export interface PlayerChallengeAttemptResponse {
 
   aiScore: number | null;
   aiScoreFallback: boolean | null;
+
+  complexityLabel?: string | null;
+  complexityDisplay?: string | null;
+  complexityScore?: number | null;
+  complexityConfidence?: number | null;
 
   correctnessScore: number;
   speedScore: number;

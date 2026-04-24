@@ -228,6 +228,12 @@
                 <span>RUNTIME: {{ submissionResult.executionTime || 0 }}s</span>
                 <span>MEMORY: {{ submissionResult.memoryUsed || 0 }} KB</span>
              </div>
+             <div class="history-row" *ngIf="submissionResult.complexityDisplay">
+                <span>COMPLEXITY: {{ submissionResult.complexityDisplay }}</span>
+                <span *ngIf="submissionResult.complexityConfidence != null">
+                  CONFIDENCE: {{ (submissionResult.complexityConfidence * 100) | number:'1.0-0' }}%
+                </span>
+             </div>
              <pre class="result-error" *ngIf="submissionResult.errorOutput">{{ submissionResult.errorOutput }}</pre>
           </div>
         </div>

@@ -16,6 +16,10 @@ export interface SubmissionDto {
   executionTime: number;
   memoryUsed: number;
   errorOutput: string;
+  complexityLabel?: string | null;
+  complexityDisplay?: string | null;
+  complexityScore?: number | null;
+  complexityConfidence?: number | null;
 }
 
 @Injectable({

@@ -230,6 +230,13 @@
           {{ lastSubmissionResult.aiScore | number:'1.0-1' }} / 100
           <span *ngIf="lastSubmissionResult.aiScoreFallback" class="ai-score-tag" title="Ranker offline — fallback estimate">~</span>
         </span>
+        <span *ngIf="lastSubmissionResult.complexityDisplay" class="complexity-badge">
+          <span class="detail-label">Complexity:</span>
+          {{ lastSubmissionResult.complexityDisplay }}
+          <span *ngIf="lastSubmissionResult.complexityConfidence != null" class="complexity-confidence">
+            ({{ (lastSubmissionResult.complexityConfidence * 100) | number:'1.0-0' }}% conf.)
+          </span>
+        </span>
       </div>
       <div class="result-feedback" *ngIf="lastSubmissionResult.feedback">
         {{ lastSubmissionResult.feedback }}
