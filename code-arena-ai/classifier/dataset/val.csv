@@ -1,32 +1,145 @@
 code,label,label_id
+"def find_max(arr):
+    best = arr[0]
+    for x in arr[1:]:
+        if x > best:
+            best = x
+    return best
+",On,2
 "public class Solution {
-    public int fib(int n) {
-        if (n < 2) return n;
-        return fib(n - 1) + fib(n - 2);
+    public int findMissing(int[] nums) {
+        int xor = nums.length;
+        for (int i = 0; i < nums.length; i++) {
+            xor ^= i ^ nums[i];
+        }
+        return xor;
     }
 }
+",On,2
+"function validAnagram(a, b) {
+    if (a.length !== b.length) return false;
+    const counts = new Array(26).fill(0);
+    for (let i = 0; i < a.length; i++) {
+        counts[a.charCodeAt(i) - 97]++;
+        counts[b.charCodeAt(i) - 97]--;
+    }
+    return counts.every(c => c === 0);
+}
+",On,2
+"def has_duplicate_sorted(arr):
+    sorted_arr = sorted(arr)
+    for i in range(1, len(sorted_arr)):
+        if sorted_arr[i] == sorted_arr[i-1]:
+            return True
+    return False
+",Onlogn,3
+"function kClosestPoints(points, k) {
+    points.sort((a, b) => (a[0]*a[0] + a[1]*a[1]) - (b[0]*b[0] + b[1]*b[1]));
+    return points.slice(0, k);
+}
+",Onlogn,3
+"def subsets(arr):
+    if not arr:
+        return [[]]
+    rest = subsets(arr[1:])
+    return rest + [[arr[0]] + s for s in rest]
 ",O2n,5
-"def gcd(a, b):
-    while b != 0:
-        a, b = b, a % b
-    return a
+"public class Solution {
+    public int firstTrue(boolean[] arr) {
+        int lo = 0, hi = arr.length;
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid]) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+}
 ",Ologn,1
-"public class Solution {
-    public int countSubsets(int[] arr, int idx) {
-        if (idx == arr.length) return 1;
-        return countSubsets(arr, idx + 1) + countSubsets(arr, idx + 1);
-    }
+"function fib(n) {
+    if (n < 2) return n;
+    return fib(n - 1) + fib(n - 2);
 }
 ",O2n,5
-"function getHead(node) {
-    if (node === null) return null;
-    return node.value;
+"def bsearch_first(arr, target):
+    lo, hi = 0, len(arr) - 1
+    result = -1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target:
+            result = mid
+            hi = mid - 1
+        elif arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return result
+",Ologn,1
+"function findPeak(arr) {
+    let lo = 0, hi = arr.length - 1;
+    while (lo < hi) {
+        const mid = Math.floor((lo + hi) / 2);
+        if (arr[mid] > arr[mid + 1]) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
+",Ologn,1
+"function cocktailSort(arr) {
+    let swapped = true;
+    let start = 0, end = arr.length - 1;
+    while (swapped) {
+        swapped = false;
+        for (let i = start; i < end; i++) {
+            if (arr[i] > arr[i+1]) {
+                [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
+                swapped = true;
+            }
+        }
+        if (!swapped) break;
+        swapped = false;
+        end--;
+        for (let i = end - 1; i >= start; i--) {
+            if (arr[i] > arr[i+1]) {
+                [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
+                swapped = true;
+            }
+        }
+        start++;
+    }
+    return arr;
+}
+",On2,4
+"def two_pointer_target(sorted_arr, target):
+    lo, hi = 0, len(sorted_arr) - 1
+    while lo < hi:
+        s = sorted_arr[lo] + sorted_arr[hi]
+        if s == target:
+            return (lo, hi)
+        if s < target:
+            lo += 1
+        else:
+            hi -= 1
+    return None
+",On,2
+"function isPositive(n) {
+    return n > 0;
 }
 ",O1,0
-"def matrix_sum(mat):
-    total = 0
-    for row in mat:
-        for value in row:
-            total += value
-    return total
-",On2,4
+"def is_empty(container):
+    return len(container) == 0
+",O1,0
+"import java.util.PriorityQueue;
+public class Solution {
+    public int[] topKLargest(int[] nums, int k) {
+        PriorityQueue<Integer> heap = new PriorityQueue<>();
+        for (int x : nums) {
+            heap.offer(x);
+            if (heap.size() > k) heap.poll();
+        }
+        int[] out = new int[k];
+        for (int i = k - 1; i >= 0; i--) out[i] = heap.poll();
+        return out;
+    }
+}
+",Onlogn,3

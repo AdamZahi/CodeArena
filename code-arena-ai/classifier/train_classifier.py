@@ -28,9 +28,9 @@ from complexity_map import COMPLEXITY_LABELS, ID_TO_LABEL, NUM_LABELS
 MODEL_NAME = "microsoft/codebert-base"
 MAX_LENGTH = 512
 BATCH_SIZE = 8
-EPOCHS = 3
+EPOCHS = 8
 LEARNING_RATE = 2e-5
-WARMUP_STEPS = 100
+WARMUP_STEPS = 50
 
 ROOT = Path(__file__).resolve().parent
 DATASET_DIR = ROOT / "dataset"

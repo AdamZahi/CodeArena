@@ -1,38 +1,116 @@
 code,label,label_id
-"def linear_search(arr, target):
-    for i, value in enumerate(arr):
-        if value == target:
-            return i
-    return -1
-",On,2
-"function countOccurrences(arr, target) {
+"def find_min_rotated(arr):
+    lo, hi = 0, len(arr) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if arr[mid] > arr[hi]:
+            lo = mid + 1
+        else:
+            hi = mid
+    return arr[lo]
+",Ologn,1
+"def subset_sum(arr, target, idx=0):
+    if target == 0:
+        return True
+    if idx == len(arr) or target < 0:
+        return False
+    return subset_sum(arr, target - arr[idx], idx + 1) or subset_sum(arr, target, idx + 1)
+",O2n,5
+"def climb_stairs_naive(n):
+    if n <= 1:
+        return 1
+    return climb_stairs_naive(n-1) + climb_stairs_naive(n-2)
+",O2n,5
+"def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    mid = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + mid + quicksort(right)
+",Onlogn,3
+"def gnome_sort(arr):
+    i = 0
+    while i < len(arr):
+        if i == 0 or arr[i] >= arr[i-1]:
+            i += 1
+        else:
+            arr[i], arr[i-1] = arr[i-1], arr[i]
+            i -= 1
+    return arr
+",On2,4
+"public class Solution {
+    public boolean inRange(int x, int lo, int hi) {
+        return x >= lo && x <= hi;
+    }
+}
+",O1,0
+"public class Solution {
+    public int cellAt(int[][] grid, int r, int c) {
+        return grid[r][c];
+    }
+}
+",O1,0
+"def recursive_knapsack(weights, values, capacity, idx=0):
+    if idx == len(weights) or capacity == 0:
+        return 0
+    if weights[idx] > capacity:
+        return recursive_knapsack(weights, values, capacity, idx + 1)
+    take = values[idx] + recursive_knapsack(weights, values, capacity - weights[idx], idx + 1)
+    skip = recursive_knapsack(weights, values, capacity, idx + 1)
+    return max(take, skip)
+",O2n,5
+"function longestCommonSubseq(a, b) {
+    const dp = Array.from({length: a.length + 1}, () => new Array(b.length + 1).fill(0));
+    for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+            if (a[i-1] === b[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+            else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+        }
+    }
+    return dp[a.length][b.length];
+}
+",On2,4
+"function sortAndSum(arr) {
+    arr.sort((a, b) => a - b);
+    let total = 0;
+    for (let i = 0; i < arr.length; i++) total += arr[i];
+    return total;
+}
+",Onlogn,3
+"function countDigits(n) {
     let count = 0;
-    for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === target) count++;
+    while (n > 0) {
+        n = Math.floor(n / 10);
+        count++;
     }
     return count;
 }
-",On,2
-"def all_pairs(arr):
-    pairs = []
+",Ologn,1
+"def has_duplicate_brute(arr):
     for i in range(len(arr)):
-        for j in range(len(arr)):
-            pairs.append((arr[i], arr[j]))
-    return pairs
-",On2,4
-"def has_duplicate_sorted(arr):
-    sorted_arr = sorted(arr)
-    for i in range(1, len(sorted_arr)):
-        if sorted_arr[i] == sorted_arr[i-1]:
-            return True
+        for j in range(i+1, len(arr)):
+            if arr[i] == arr[j]:
+                return True
     return False
-",Onlogn,3
-"function quickSort(arr) {
-    if (arr.length <= 1) return arr;
-    const pivot = arr[Math.floor(arr.length / 2)];
-    const left = arr.filter(x => x < pivot);
-    const mid = arr.filter(x => x === pivot);
-    const right = arr.filter(x => x > pivot);
-    return [...quickSort(left), ...mid, ...quickSort(right)];
+",On2,4
+"def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr
+",On2,4
+"public class Solution {
+    public int singleNumber(int[] nums) {
+        int result = 0;
+        for (int x : nums) result ^= x;
+        return result;
+    }
 }
-",Onlogn,3
+",On,2
+"def triangle_area(base, height):
+    return (base * height) / 2
+",O1,0
