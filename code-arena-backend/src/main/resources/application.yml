@@ -65,3 +65,12 @@ battle:
     connect-timeout-ms: 1500
     read-timeout-ms: 4000
     enabled: true
+  # Complexity Classifier microservice (Python FastAPI wrapping CodeBERT).
+  # Predicts a Big-O class (O(1) … O(2^n)) for each submission. Submissions
+  # keep resolving even when the classifier is offline — a fallback result
+  # with score=0.0 is persisted instead.
+  classifier:
+    base-url: http://localhost:8002
+    connect-timeout-ms: 1500
+    read-timeout-ms: 8000
+    enabled: true
