@@ -34,6 +34,11 @@ public class PlayerChallengeAttemptResponse {
     private Double aiScore;
     private Boolean aiScoreFallback;
 
+    private String complexityLabel;
+    private String complexityDisplay;
+    private Double complexityScore;
+    private Double complexityConfidence;
+
     private int correctnessScore;
     private int speedScore;
     private int efficiencyScore;
