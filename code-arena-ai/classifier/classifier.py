@@ -10,6 +10,7 @@ Battle scoring pipeline.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -22,7 +23,13 @@ from complexity_map import COMPLEXITY_LABELS, ID_TO_LABEL, LABEL_DISPLAY, NUM_LA
 MAX_LENGTH = 512
 
 ROOT = Path(__file__).resolve().parent
-MODEL_PATH = ROOT / "model" / "best"
+LOCAL_MODEL_PATH = ROOT / "model" / "best"
+
+# Hugging Face Hub repo ID used when no local checkpoint is present.
+# Override with the COMPLEXITY_MODEL_ID env var for staging/private forks.
+# See MODEL_SETUP.md for how to populate the Hub repo.
+DEFAULT_HUB_MODEL_ID = "REPLACE_WITH_HF_USERNAME/codearena-complexity-classifier"
+HUB_MODEL_ID = os.environ.get("COMPLEXITY_MODEL_ID", DEFAULT_HUB_MODEL_ID)
 
 COMPLEXITY_SCORES: dict[str, float] = {
     "O1": 100.0,
@@ -34,11 +41,16 @@ COMPLEXITY_SCORES: dict[str, float] = {
 }
 
 
+def _resolve_model_source() -> str:
+    if LOCAL_MODEL_PATH.is_dir():
+        return str(LOCAL_MODEL_PATH)
+    return HUB_MODEL_ID
+
+
 def _load_model():
-    if not MODEL_PATH.is_dir():
-        raise FileNotFoundError("Model not found. Run train_classifier.py first.")
-    tokenizer = AutoTokenizer.from_pretrained(str(MODEL_PATH))
-    model = AutoModelForSequenceClassification.from_pretrained(str(MODEL_PATH))
+    source = _resolve_model_source()
+    tokenizer = AutoTokenizer.from_pretrained(source)
+    model = AutoModelForSequenceClassification.from_pretrained(source)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     model.eval()

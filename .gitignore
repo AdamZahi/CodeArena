@@ -57,3 +57,9 @@ pnpm-debug.log*
 
 # Local AI assistant config
 .claude/
+
+# ML artifacts — fetched from Hugging Face Hub on first run
+# See code-arena-ai/classifier/MODEL_SETUP.md
+code-arena-ai/classifier/model/
+**/__pycache__/
+*.pyc
