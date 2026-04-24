@@ -25,4 +25,16 @@ public class SubmissionDto {
     private Float memoryUsed;
     private String errorOutput;
     private String challengeTitle;
+
+    /** Big-O class predicted by the complexity classifier (e.g. "O1", "Onlogn"). */
+    private String complexityLabel;
+
+    /** Pretty form of the predicted Big-O class (e.g. "O(n log n)"). */
+    private String complexityDisplay;
+
+    /** 0–100 score derived from the predicted Big-O class. */
+    private Double complexityScore;
+
+    /** Softmax confidence of the predicted class, in [0, 1]. */
+    private Double complexityConfidence;
 }
