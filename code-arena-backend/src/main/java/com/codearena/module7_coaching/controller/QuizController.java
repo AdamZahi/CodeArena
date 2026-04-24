@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class QuizController {
 
     /** Get all quizzes or a specific quiz by ID */
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getQuizzes(@RequestParam(name = "id", required = false) UUID id) {
         if (id != null) {
             try {
@@ -39,6 +41,7 @@ public class QuizController {
 
     /** Submit quiz answers and get results */
     @PostMapping("/submit")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> submitQuiz(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody SubmitQuizRequest request) {
@@ -49,6 +52,7 @@ public class QuizController {
 
     /** Get user's quiz history */
     @GetMapping("/history")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getUserHistory(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         List<QuizResultDto> history = quizService.getUserHistory(userId);
@@ -57,6 +61,7 @@ public class QuizController {
 
     /** Create a new quiz (admin/coach) */
     @PostMapping
+    @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
     public ResponseEntity<Map<String, Object>> createQuiz(@RequestBody QuizDto quizDto) {
         QuizDto created = quizService.createQuiz(quizDto);
         return ResponseEntity.ok(Map.of("success", true, "data", created));
@@ -64,6 +69,7 @@ public class QuizController {
 
     /** Delete a quiz (admin) */
     @DeleteMapping("/{id}")
+    @PreAuthorize("@coachingSecurity.isAdmin(principal)")
     public ResponseEntity<Map<String, Object>> deleteQuiz(@PathVariable(name = "id") UUID id) {
         quizService.deleteQuiz(id);
         return ResponseEntity.ok(Map.of("success", true, "message", "Quiz deleted"));

@@ -6,6 +6,7 @@ import com.codearena.module7_coaching.service.AiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -19,6 +20,7 @@ public class AiController {
     private final AiService aiService;
 
     @PostMapping("/generate")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> generate(@RequestBody AiRequest request) {
         log.info("AI request received - mode: {}, topic: {}, language: {}",
                 request.getMode(), request.getTopic(), request.getLanguage());

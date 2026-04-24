@@ -32,8 +32,15 @@ public class CoachingDataInitializer implements CommandLineRunner {
                 log.info("Initializing coaching module seed data...");
 
                 initBadges();
-                initQuizWithQuestions();
-                initQuizzes();
+
+                // Prevent infinite duplication on restart
+                if (quizRepository.findByTitle("Multi-Language Problem Solving Challenge").isEmpty()) {
+                        initQuizWithQuestions();
+                        initQuizzes();
+                } else {
+                        log.info("System quizzes already exist, skipping quiz initialization.");
+                }
+
                 initSessions();
 
                 log.info("Coaching module seed data initialized successfully!");
@@ -434,6 +441,39 @@ public class CoachingDataInitializer implements CommandLineRunner {
                                 .language(ProgrammingLanguage.MULTI).difficulty(QuizDifficulty.MEDIUM).points(10)
                                 .correctAnswer("Adding random data to pass")
                                 .options("Adding random data to pass,Compressing hash,Deleting hash,none").build());
+                // 8. Angular Mastery (10 x 10pts)
+                Quiz aQuiz = quizRepository.save(Quiz.builder().title("Angular RxJS & Components")
+                                .description("Master Angular core features and reactive programming.")
+                                .difficulty(QuizDifficulty.HARD)
+                                .language(ProgrammingLanguage.ANGULAR).category("FRAMEWORKS").createdBy("system")
+                                .totalPoints(100).build());
+                questionRepository.save(Question.builder().quizId(aQuiz.getId())
+                                .content("What is RxJS mostly used for in Angular?").type(QuestionType.MCQ)
+                                .language(ProgrammingLanguage.ANGULAR).difficulty(QuizDifficulty.MEDIUM).points(10)
+                                .correctAnswer("Handling asynchronous operations")
+                                .options("Styling,Handling asynchronous operations,Database connection,Routing").build());
+                questionRepository.save(Question.builder().quizId(aQuiz.getId())
+                                .content("Which decorator is used to define a component?").type(QuestionType.MCQ)
+                                .language(ProgrammingLanguage.ANGULAR).difficulty(QuizDifficulty.EASY).points(10)
+                                .correctAnswer("@Component")
+                                .options("@Injectable,@Module,@Component,@Directive").build());
+
+                // 9. .NET Core Fundamentals (10 x 10pts)
+                Quiz dnQuiz = quizRepository.save(Quiz.builder().title(".NET Core Microservices")
+                                .description("Build robust APIs with C# and .NET Core.")
+                                .difficulty(QuizDifficulty.MEDIUM)
+                                .language(ProgrammingLanguage.DOTNET).category("BACKEND").createdBy("system")
+                                .totalPoints(100).build());
+                questionRepository.save(Question.builder().quizId(dnQuiz.getId())
+                                .content("What is Entity Framework Core?").type(QuestionType.MCQ)
+                                .language(ProgrammingLanguage.DOTNET).difficulty(QuizDifficulty.MEDIUM).points(10)
+                                .correctAnswer("An ORM framework")
+                                .options("A UI library,An ORM framework,A testing tool,A cloud provider").build());
+                questionRepository.save(Question.builder().quizId(dnQuiz.getId())
+                                .content("Which file contains dependency injection configuration by default?").type(QuestionType.MCQ)
+                                .language(ProgrammingLanguage.DOTNET).difficulty(QuizDifficulty.MEDIUM).points(10)
+                                .correctAnswer("Program.cs")
+                                .options("appsettings.json,Startup.cs,Program.cs,web.config").build());
         }
 
         private void initSessions() {

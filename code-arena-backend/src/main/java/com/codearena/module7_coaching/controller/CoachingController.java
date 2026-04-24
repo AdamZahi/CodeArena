@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class CoachingController {
     // ═══════ COACHES ═══════
 
     @GetMapping("/coaches")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getAllCoaches(
             @RequestParam(name = "action", required = false) String action,
             @RequestParam(name = "coachId", required = false) String coachId,
@@ -58,6 +60,7 @@ public class CoachingController {
     }
 
     @GetMapping("/coaches/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getCoachById(@PathVariable(name = "id") UUID id) {
         CoachDto coach = coachingService.getCoachById(id);
         return ResponseEntity.ok(Map.of("success", true, "data", coach));
@@ -66,18 +69,21 @@ public class CoachingController {
     // ═══════ SESSIONS ═══════
 
     @GetMapping("/sessions")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getAllSessions() {
         List<CoachingSessionDto> sessions = coachingService.getAllSessions();
         return ResponseEntity.ok(Map.of("success", true, "data", sessions));
     }
 
     @GetMapping("/sessions/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getSessionById(@PathVariable(name = "id") UUID id) {
         CoachingSessionDto session = coachingService.getSessionById(id);
         return ResponseEntity.ok(Map.of("success", true, "data", session));
     }
 
     @PostMapping("/sessions")
+    @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
     public ResponseEntity<Map<String, Object>> createSession(@RequestBody CoachingSessionDto dto) {
         try {
             CoachingSessionDto created = coachingService.createSession(dto);
@@ -88,12 +94,14 @@ public class CoachingController {
     }
 
     @DeleteMapping("/sessions/{id}")
+    @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
     public ResponseEntity<Map<String, Object>> deleteSession(@PathVariable(name = "id") UUID id) {
         coachingService.deleteSession(id);
         return ResponseEntity.ok(Map.of("success", true, "message", "Session deleted"));
     }
 
     @PostMapping("/sessions/{id}/reject")
+    @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
     public ResponseEntity<Map<String, Object>> rejectSession(
             @PathVariable(name = "id") UUID id,
             @AuthenticationPrincipal Jwt jwt) {
@@ -109,6 +117,7 @@ public class CoachingController {
     // ═══════ RESERVATIONS ═══════
 
     @PostMapping("/book")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> bookSession(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody BookSessionRequest request) {
@@ -118,6 +127,7 @@ public class CoachingController {
     }
 
     @DeleteMapping("/reservations/{sessionId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> cancelReservation(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID sessionId) {
@@ -127,6 +137,7 @@ public class CoachingController {
     }
 
     @GetMapping("/reservations")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getMyReservations(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         List<CoachingSessionDto> reservations = coachingService.getUserReservations(userId);
@@ -134,6 +145,7 @@ public class CoachingController {
     }
 
     @PostMapping("/sessions/{sessionId}/send-link")
+    @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
     public ResponseEntity<Map<String, Object>> sendMeetingLinks(
             @PathVariable(name = "sessionId") UUID sessionId,
             @AuthenticationPrincipal Jwt jwt) {
@@ -150,6 +162,7 @@ public class CoachingController {
     // ═══════ RECOMMENDATIONS ═══════
 
     @GetMapping("/recommendations")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getRecommendations(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         List<CoachingSessionDto> recommended = coachingService.getRecommendedSessions(userId);
@@ -159,6 +172,7 @@ public class CoachingController {
     // ═══════ FEEDBACK ═══════
 
     @PostMapping("/feedback")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> submitFeedback(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody SessionFeedbackDto dto) {
@@ -176,6 +190,7 @@ public class CoachingController {
     }
 
     @GetMapping("/coaches/{coachId}/feedbacks")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> getCoachFeedbacks(@PathVariable(name = "coachId") String coachId) {
         List<SessionFeedbackDto> feedbacks = coachingService.getCoachFeedbacks(coachId);
         return ResponseEntity.ok(Map.of("success", true, "data", feedbacks));
@@ -184,6 +199,7 @@ public class CoachingController {
     // ═══════ DASHBOARD ═══════
 
     @GetMapping("/dashboard")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getDashboard(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         DashboardDto dashboard = coachingService.getUserDashboard(userId);
@@ -193,6 +209,7 @@ public class CoachingController {
     // ═══════ NOTIFICATIONS ═══════
 
     @GetMapping("/notifications")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getNotifications(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         List<NotificationDto> notifications = coachingService.getUserNotifications(userId);
@@ -200,6 +217,7 @@ public class CoachingController {
     }
 
     @PatchMapping("/notifications/{id}/read")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> markNotificationRead(@PathVariable(name = "id") UUID id) {
         coachingService.markNotificationRead(id);
         return ResponseEntity.ok(Map.of("success", true, "message", "Notification marked as read"));

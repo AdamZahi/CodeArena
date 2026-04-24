@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class CoachApplicationController {
 
     // ═══════ SUBMIT APPLICATION (any authenticated user) ═══════
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> submitApplication(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody CoachApplicationDto dto) {
@@ -89,6 +91,7 @@ public class CoachApplicationController {
 
     // ═══════ GET MY APPLICATION STATUS (authenticated user) ═══════
     @GetMapping("/my-status")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getMyApplicationStatus(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         Optional<CoachApplication> appOpt = applicationRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
@@ -100,12 +103,8 @@ public class CoachApplicationController {
 
     // ═══════ GET ALL APPLICATIONS (admin only) ═══════
     @GetMapping
+    @PreAuthorize("@coachingSecurity.isAdmin(principal)")
     public ResponseEntity<Map<String, Object>> getAllApplications(@AuthenticationPrincipal Jwt jwt) {
-        // Verify admin role
-        if (!isAdmin(jwt)) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied. Admin only."));
-        }
-
         List<CoachApplicationDto> applications = applicationRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(this::toDto)
@@ -116,11 +115,8 @@ public class CoachApplicationController {
 
     // ═══════ GET PENDING APPLICATIONS (admin only) ═══════
     @GetMapping("/pending")
+    @PreAuthorize("@coachingSecurity.isAdmin(principal)")
     public ResponseEntity<Map<String, Object>> getPendingApplications(@AuthenticationPrincipal Jwt jwt) {
-        if (!isAdmin(jwt)) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied. Admin only."));
-        }
-
         List<CoachApplicationDto> pending = applicationRepository
                 .findByStatus(CoachApplication.ApplicationStatus.PENDING)
                 .stream()
@@ -132,13 +128,11 @@ public class CoachApplicationController {
 
     // ═══════ APPROVE APPLICATION (admin only) ═══════
     @PostMapping("/{id}/approve")
+    @PreAuthorize("@coachingSecurity.isAdmin(principal)")
     public ResponseEntity<Map<String, Object>> approveApplication(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable(name = "id") UUID id,
             @RequestBody(required = false) Map<String, String> body) {
-        if (!isAdmin(jwt)) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied. Admin only."));
-        }
 
         try {
             CoachApplication application = applicationRepository.findById(id)
@@ -202,13 +196,11 @@ public class CoachApplicationController {
 
     // ═══════ REJECT APPLICATION (admin only) ═══════
     @PostMapping("/{id}/reject")
+    @PreAuthorize("@coachingSecurity.isAdmin(principal)")
     public ResponseEntity<Map<String, Object>> rejectApplication(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable(name = "id") UUID id,
             @RequestBody(required = false) Map<String, String> body) {
-        if (!isAdmin(jwt)) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Access denied. Admin only."));
-        }
 
         try {
             CoachApplication application = applicationRepository.findById(id)
@@ -252,16 +244,6 @@ public class CoachApplicationController {
     }
 
     // ═══════ HELPERS ═══════
-
-    private boolean isAdmin(Jwt jwt) {
-        // Check JWT claims for admin role
-        List<String> roles = jwt.getClaimAsStringList("https://codearena.com/roles");
-        if (roles != null && roles.contains("ADMIN")) return true;
-
-        // Fallback: check user in DB
-        Optional<User> userOpt = userRepository.findByKeycloakId(jwt.getSubject());
-        return userOpt.isPresent() && userOpt.get().getRole() == Role.ADMIN;
-    }
 
     private CoachApplicationDto toDto(CoachApplication app) {
         return CoachApplicationDto.builder()

@@ -75,7 +75,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/coaching/coaches", "/api/coaching/coaches/**").permitAll()
                         .requestMatchers("/api/coaching/sessions", "/api/coaching/sessions/**").permitAll()
                         .requestMatchers("/api/coaching/feedback", "/api/coaching/feedback/**").permitAll()
-                        .requestMatchers("/api/coaching/applications/**").authenticated()
+                        .requestMatchers("/api/coaching/applications", "/api/coaching/applications/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/api/users/me").authenticated()

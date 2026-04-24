@@ -6,6 +6,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.PostConstruct;
@@ -26,6 +27,7 @@ public class PaymentController {
     }
 
     @PostMapping("/create-payment-intent")
+    @PreAuthorize("isAuthenticated()")
     public Map<String, String> createPaymentIntent(@RequestBody PaymentRequest request) throws StripeException {
         // Stripe amounts are in cents
         long amountInCents = (long) (request.getAmount() * 100);
