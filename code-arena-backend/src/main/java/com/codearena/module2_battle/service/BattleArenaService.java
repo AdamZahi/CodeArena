@@ -60,6 +60,7 @@ public class BattleArenaService {
     private final BattleConnectionTracker connectionTracker;
     private final Executor submissionExecutor;
     private final RankerBridgeService rankerBridgeService;
+    private final ClassifierBridgeService classifierBridgeService;
 
     // Lock object for thread-safe match completion checks
     private final Object matchCompletionLock = new Object();
@@ -84,7 +85,8 @@ public class BattleArenaService {
             CodeWrapperService codeWrapperService,
             BattleConnectionTracker connectionTracker,
             @Qualifier("submissionExecutor") Executor submissionExecutor,
-            RankerBridgeService rankerBridgeService) {
+            RankerBridgeService rankerBridgeService,
+            ClassifierBridgeService classifierBridgeService) {
         this.battleRoomRepository = battleRoomRepository;
         this.participantRepository = participantRepository;
         this.roomChallengeRepository = roomChallengeRepository;
@@ -101,6 +103,7 @@ public class BattleArenaService {
         this.connectionTracker = connectionTracker;
         this.submissionExecutor = submissionExecutor;
         this.rankerBridgeService = rankerBridgeService;
+        this.classifierBridgeService = classifierBridgeService;
     }
 
     // ──────────────────────────────────────────────
@@ -397,6 +400,16 @@ public class BattleArenaService {
                         rankerResult.isFallback(), rankerResult.getError());
             }
 
+            // Tag every submission (accepted or not) with its predicted Big-O
+            // class so players see what shape the model thinks they wrote even
+            // when functional tests fail. Bridge always returns a result —
+            // either real or a fallback — so no null check needed downstream.
+            ComplexityClassificationResult complexityResult = classifierBridgeService
+                    .classify(sourceCode, language);
+            log.debug("Classifier tagged submission {} → {} (fallback={}, error={})",
+                    submissionId, complexityResult.getLabel(),
+                    complexityResult.isFallback(), complexityResult.getError());
+
             // Update the submission record
             BattleSubmission submission = submissionRepository.findById(UUID.fromString(submissionId)).orElse(null);
             if (submission != null) {
@@ -407,6 +420,10 @@ public class BattleArenaService {
                     submission.setAiScore(rankerResult.getScore());
                     submission.setAiScoreFallback(rankerResult.isFallback());
                 }
+                submission.setComplexityLabel(complexityResult.getLabel());
+                submission.setComplexityDisplay(complexityResult.getDisplay());
+                submission.setComplexityScore(complexityResult.getScore());
+                submission.setComplexityConfidence(complexityResult.getConfidence());
                 submissionRepository.save(submission);
             }
 
@@ -422,6 +439,10 @@ public class BattleArenaService {
                     .isAccepted(isAccepted)
                     .aiScore(rankerResult != null ? rankerResult.getScore() : null)
                     .aiScoreFallback(rankerResult != null ? rankerResult.isFallback() : null)
+                    .complexityLabel(complexityResult.getLabel())
+                    .complexityDisplay(complexityResult.getDisplay())
+                    .complexityScore(complexityResult.getScore())
+                    .complexityConfidence(complexityResult.getConfidence())
                     .build();
             arenaBroadcastService.sendSubmissionResult(userId, resultResponse);
 
@@ -669,6 +690,10 @@ public class BattleArenaService {
                         .isAccepted(s.getStatus() == BattleSubmissionStatus.ACCEPTED)
                         .aiScore(s.getAiScore())
                         .aiScoreFallback(s.getAiScoreFallback())
+                        .complexityLabel(s.getComplexityLabel())
+                        .complexityDisplay(s.getComplexityDisplay())
+                        .complexityScore(s.getComplexityScore())
+                        .complexityConfidence(s.getComplexityConfidence())
                         .build())
                 .toList();
     }

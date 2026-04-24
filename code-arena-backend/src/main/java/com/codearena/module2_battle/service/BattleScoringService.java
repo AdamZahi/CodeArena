@@ -256,6 +256,9 @@ public class BattleScoringService {
                 .solvedInSeconds(solvedInSeconds)
                 .aiScore(acceptedSub.getAiScore())
                 .aiScoreFallback(acceptedSub.getAiScoreFallback())
+                .complexityLabel(acceptedSub.getComplexityLabel())
+                .complexityDisplay(acceptedSub.getComplexityDisplay())
+                .complexityScore(acceptedSub.getComplexityScore())
                 .build();
     }
 
