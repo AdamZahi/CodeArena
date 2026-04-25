@@ -12,6 +12,18 @@ export interface VoiceParticipant {
   videoStream?: MediaStream;
   cameraOn?: boolean;
 }
+export interface GiftEvent {
+  giftId: number;
+  fromUserId: string;
+  fromUserName: string;
+  toUserId: string;
+  toUserName: string;
+  hubId: number;
+  voiceChannelId: number;
+  giftType: string;
+  coins: number;
+  message: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class VoiceSignalingService {
@@ -26,6 +38,8 @@ export class VoiceSignalingService {
   private currentUserName: string | null = null;
   private audioContexts: Map<string, AudioContext> = new Map();
   private speakingDetectionInterval: any = null;
+  private giftSubscription: StompSubscription | null = null;
+giftEvents$ = new BehaviorSubject<GiftEvent | null>(null);
   private hasJoined = false;
 
   participants$ = new BehaviorSubject<VoiceParticipant[]>([]);
@@ -69,6 +83,7 @@ export class VoiceSignalingService {
         }
         console.log('✅ STOMP connected, userId:', this.currentUserId);
         this.subscribeToSignaling();
+        this.subscribeToGiftEvents();
         setTimeout(() => {
           if (!this.hasJoined) {
             this.hasJoined = true;
@@ -340,7 +355,18 @@ async toggleCamera(): Promise<void> {
       this.sendSignal({ ...msg, toUserId: userId });
     });
   }
+private subscribeToGiftEvents(): void {
+  if (!this.stompClient || !this.currentChannelId) return;
 
+  this.giftSubscription = this.stompClient.subscribe(
+    `/topic/voice-gifts/${this.currentChannelId}`,
+    (message: IMessage) => {
+      const gift = JSON.parse(message.body);
+      console.log('🎁 Gift received:', gift);
+      this.giftEvents$.next(gift);
+    }
+  );
+}
   private updateParticipantCamera(userId: string, cameraOn: boolean): void {
     const current = this.participants$.value;
     const updated = current.map(p =>
@@ -428,6 +454,9 @@ async toggleCamera(): Promise<void> {
 
   async leaveRoom(): Promise<void> {
     this.hasJoined = false;
+    this.giftSubscription?.unsubscribe();
+this.giftSubscription = null;
+this.giftEvents$.next(null);
 
     this.stompClient?.publish({
       destination: '/app/voice/leave',

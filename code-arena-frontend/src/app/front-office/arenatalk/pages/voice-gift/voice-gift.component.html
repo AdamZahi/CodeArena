@@ -1,0 +1,17 @@
+<div class="gift-box">
+  <p class="gift-title">Support streamer</p>
+
+  <div class="gift-list">
+    <button
+      type="button"
+      class="gift-card"
+      *ngFor="let gift of gifts"
+      (click)="sendGift(gift)"
+      [disabled]="sending">
+
+      <span class="gift-icon">{{ gift.icon }}</span>
+      <span class="gift-label">{{ gift.label }}</span>
+      <small>{{ gift.coins }} coins</small>
+    </button>
+  </div>
+</div>

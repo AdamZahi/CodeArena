@@ -1152,3 +1152,16 @@ app-semantic-search {
   position: relative;
   z-index: 10;
 }
+.gift-notification {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  z-index: 9999;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: rgba(255, 215, 90, 0.16);
+  border: 1px solid rgba(255, 215, 90, 0.45);
+  color: #ffd96b;
+  font-weight: 800;
+  box-shadow: 0 0 24px rgba(255, 215, 90, 0.22);
+}

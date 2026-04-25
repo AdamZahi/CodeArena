@@ -20,7 +20,8 @@ import { AiModerationService } from '../../services/ai/ai-moderation.service';
 import { SemanticSearchComponent } from '../semantic-search/semantic-search.component';
 import { VoiceSignalingService } from '../../services/voice-signaling.service';
 import { VideoStreamDirective } from '../../../../shared/directives/video-stream.directive';
-
+import { VoiceGiftComponent } from '../voice-gift/voice-gift.component';
+import { ChangeDetectorRef, NgZone } from '@angular/core';
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
@@ -36,7 +37,8 @@ type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
     MessageModerationComponent,
     SmartReplyComponent,
     SemanticSearchComponent,
-    VideoStreamDirective
+    VideoStreamDirective,
+    VoiceGiftComponent
   ],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
@@ -90,19 +92,25 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   voiceLocalSpeaking = false;
   voiceCameraOn = false;
   voiceLocalVideoStream: MediaStream | null = null;
+  giftNotification = '';
+showGiftNotification = false;
+private hideGiftTimeout: any;
 
   private voiceSubs: Subscription[] = [];
 
-  constructor(
-    private router: Router,
-    private arenaService: ArenatalkService,
-    private hubMemberService: HubMemberService,
-    private authUserSync: AuthUserSyncService,
-    private auth: AuthService,
-    private reactionService: ReactionService,
-    private aiModerationService: AiModerationService,
-    private voiceSignalingService: VoiceSignalingService
-  ) {}
+ constructor(
+  private router: Router,
+  private arenaService: ArenatalkService,
+  private hubMemberService: HubMemberService,
+  private authUserSync: AuthUserSyncService,
+  private auth: AuthService,
+  private reactionService: ReactionService,
+  private aiModerationService: AiModerationService,
+  private cdr: ChangeDetectorRef,
+  private zone: NgZone,
+  
+  private voiceSignalingService: VoiceSignalingService
+) {}
 
   ngOnInit(): void {
     this.voiceSubs.push(
@@ -113,7 +121,32 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       this.voiceSignalingService.cameraOn$.subscribe(v => this.voiceCameraOn = v),
       this.voiceSignalingService.localVideoStream$.subscribe(v => this.voiceLocalVideoStream = v)
     );
+  this.voiceSubs.push(
+  this.voiceSignalingService.giftEvents$.subscribe(gift => {
+    if (!gift) return;
 
+    this.zone.run(() => {
+
+      const icon =
+        gift.giftType === 'FIRE' ? '🔥' :
+        gift.giftType === 'CROWN' ? '👑' :
+        gift.giftType === 'ROCKET' ? '🚀' : '🪙';
+
+      this.giftNotification =
+        `${icon} ${gift.fromUserName} gifted ${gift.coins} coins to ${gift.toUserName}`;
+this.cdr.detectChanges();
+     clearTimeout(this.hideGiftTimeout);
+
+this.showGiftNotification = true;
+
+this.hideGiftTimeout = setTimeout(() => {
+  this.showGiftNotification = false;
+  this.cdr.detectChanges();
+}, 10000);
+
+    });
+  })
+);
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.currentKeycloakId = payload.sub;
@@ -577,6 +610,32 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
+  get ownerMember(): HubMember | null {
+  return this.activeMembers.find(m => m.role === 'OWNER') ?? null;
+}
+
+get ownerUserId(): string {
+  const owner = this.ownerMember?.user as any;
+  return owner?.keycloakId || owner?.auth0Id || String(owner?.id || '');
+}
+
+get ownerUserName(): string {
+  const owner = this.ownerMember?.user;
+  if (!owner) return 'Owner';
+  return `${owner.firstName ?? ''} ${owner.lastName ?? ''}`.trim() || owner.email || 'Owner';
+}
+
+onGiftSent(message: string): void {
+  this.giftNotification = message;
+
+  clearTimeout(this.hideGiftTimeout);
+
+  this.showGiftNotification = true;
+
+  this.hideGiftTimeout = setTimeout(() => {
+    this.showGiftNotification = false;
+  }, 10000);
+}
 
   get hasMessages(): boolean { return this.messages.length > 0; }
   get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }

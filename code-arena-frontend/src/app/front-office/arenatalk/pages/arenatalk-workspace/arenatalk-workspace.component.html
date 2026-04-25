@@ -139,97 +139,122 @@
 
     <main class="main-panel">
 
-      <div class="voice-room-full" *ngIf="activeVoiceChannelId">
-        <div class="voice-room-top">
-          <div class="voice-room-info">
-            <span class="voice-room-icon">🔊</span>
-            <h2>{{ activeVoiceChannelName }}</h2>
-          </div>
-        </div>
+     <div class="voice-room-full" *ngIf="activeVoiceChannelId">
 
-        <div class="voice-grid">
+  <!-- 🔥 Gift notification -->
+  <div class="gift-notification" *ngIf="showGiftNotification">
+    {{ giftNotification }}
+  </div>
 
-          <div class="voice-tile me" [class.speaking]="voiceLocalSpeaking">
-            <div class="voice-tile-video" *ngIf="voiceCameraOn && voiceLocalVideoStream">
-              <video
-                [appVideoStream]="voiceLocalVideoStream"
-                autoplay
-                playsinline
-                muted
-                class="tile-video">
-              </video>
-            </div>
+  <div class="voice-room-top">
+    <div class="voice-room-info">
+      <span class="voice-room-icon">🔊</span>
+      <h2>{{ activeVoiceChannelName }}</h2>
+    </div>
+  </div>
 
-            <div class="voice-tile-avatar"
-              *ngIf="!voiceCameraOn"
-              [class.speaking-glow]="voiceLocalSpeaking">
-              {{ currentUserName.charAt(0).toUpperCase() }}
-            </div>
+  <div class="voice-grid">
 
-            <div class="voice-tile-name">
-              {{ currentUserName }}
-              <small>(you)</small>
-              <span *ngIf="voiceIsMuted">🔇</span>
-              <span *ngIf="voiceCameraOn">📷</span>
-            </div>
-          </div>
+    <!-- ME -->
+    <div class="voice-tile me" [class.speaking]="voiceLocalSpeaking">
 
-          <div class="voice-tile" *ngFor="let p of voiceParticipants"
-            [class.speaking]="p.speaking">
-
-            <div class="voice-tile-video" *ngIf="p.cameraOn && p.videoStream">
-              <video
-                [appVideoStream]="p.videoStream"
-                autoplay
-                playsinline
-                class="tile-video">
-              </video>
-            </div>
-
-            <div class="voice-tile-avatar"
-              *ngIf="!p.cameraOn"
-              [class.speaking-glow]="p.speaking">
-              {{ p.userName.charAt(0).toUpperCase() }}
-            </div>
-
-            <div class="voice-tile-name">
-              {{ p.userName }}
-              <span *ngIf="p.muted">🔇</span>
-              <span *ngIf="p.cameraOn">📷</span>
-            </div>
-
-            <button
-              type="button"
-              class="kick-tile-btn"
-              *ngIf="isOwner && p.userId !== currentKeycloakId"
-              (pointerdown)="kickVoiceParticipant($event, p.userId)">
-              ⚡ Kick
-            </button>
-          </div>
-
-        </div>
-
-        <div class="voice-room-controls">
-          <button class="voice-ctrl-btn mute-ctrl"
-            (click)="toggleVoiceMute()"
-            [class.muted]="voiceIsMuted">
-            {{ voiceIsMuted ? '🔇' : '🎙️' }}
-            <span>{{ voiceIsMuted ? 'Unmute' : 'Mute' }}</span>
-          </button>
-
-          <button class="voice-ctrl-btn camera-ctrl"
-            (click)="toggleVoiceCamera()"
-            [class.camera-off]="!voiceCameraOn">
-            📷
-            <span>{{ voiceCameraOn ? 'Camera Off' : 'Camera On' }}</span>
-          </button>
-
-          <button class="voice-ctrl-btn leave-ctrl" (click)="leaveVoiceRoom()">
-            📵
-            <span>Leave</span>
-          </button>
-        </div>
+      <div class="voice-tile-video" *ngIf="voiceCameraOn && voiceLocalVideoStream">
+        <video
+          [appVideoStream]="voiceLocalVideoStream"
+          autoplay
+          playsinline
+          muted
+          class="tile-video">
+        </video>
       </div>
+
+      <div class="voice-tile-avatar"
+        *ngIf="!voiceCameraOn"
+        [class.speaking-glow]="voiceLocalSpeaking">
+        {{ currentUserName.charAt(0).toUpperCase() }}
+      </div>
+
+      <div class="voice-tile-name">
+        {{ currentUserName }}
+        <small>(you)</small>
+        <span *ngIf="voiceIsMuted">🔇</span>
+        <span *ngIf="voiceCameraOn">📷</span>
+      </div>
+    </div>
+
+    <!-- OTHER USERS -->
+    <div class="voice-tile"
+         *ngFor="let p of voiceParticipants"
+         [class.speaking]="p.speaking">
+
+      <div class="voice-tile-video" *ngIf="p.cameraOn && p.videoStream">
+        <video
+          [appVideoStream]="p.videoStream"
+          autoplay
+          playsinline
+          class="tile-video">
+        </video>
+      </div>
+
+      <div class="voice-tile-avatar"
+        *ngIf="!p.cameraOn"
+        [class.speaking-glow]="p.speaking">
+        {{ p.userName.charAt(0).toUpperCase() }}
+      </div>
+
+      <div class="voice-tile-name">
+        {{ p.userName }}
+        <span *ngIf="p.muted">🔇</span>
+        <span *ngIf="p.cameraOn">📷</span>
+      </div>
+
+      <!-- ✅ KICK -->
+      <button
+        class="kick-tile-btn"
+        *ngIf="isOwner && p.userId !== currentKeycloakId"
+        (pointerdown)="kickVoiceParticipant($event, p.userId)">
+        ⚡ Kick
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="voice-room-controls">
+    <button class="voice-ctrl-btn mute-ctrl"
+      (click)="toggleVoiceMute()"
+      [class.muted]="voiceIsMuted">
+      {{ voiceIsMuted ? '🔇' : '🎙️' }}
+      <span>{{ voiceIsMuted ? 'Unmute' : 'Mute' }}</span>
+    </button>
+
+    <button class="voice-ctrl-btn camera-ctrl"
+      (click)="toggleVoiceCamera()"
+      [class.camera-off]="!voiceCameraOn">
+      📷
+      <span>{{ voiceCameraOn ? 'Camera Off' : 'Camera On' }}</span>
+    </button>
+
+    <button class="voice-ctrl-btn leave-ctrl" (click)="leaveVoiceRoom()">
+      📵
+      <span>Leave</span>
+    </button>
+  </div>
+
+  <!-- ✅ IMPORTANT: GIFT INSIDE ROOM -->
+  <app-voice-gift
+    *ngIf="selectedHub?.id && activeVoiceChannelId && ownerUserId && currentKeycloakId !== ownerUserId"
+    [currentUserId]="currentKeycloakId"
+    [currentUserName]="currentUserName"
+    [ownerUserId]="ownerUserId"
+    [ownerUserName]="ownerUserName"
+    [hubId]="selectedHub!.id!"
+    [voiceChannelId]="activeVoiceChannelId"
+    (giftSent)="onGiftSent($event)">
+  </app-voice-gift>
+
+</div>
 
       <ng-container *ngIf="!activeVoiceChannelId">
 
