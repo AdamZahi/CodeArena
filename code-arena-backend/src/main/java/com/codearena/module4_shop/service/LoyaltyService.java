@@ -41,8 +41,7 @@ public class LoyaltyService {
     // Standard earning: 1 point per $1 spent
     @Transactional
     public int earnPoints(String participantId, double orderTotal) {
-        int earned = (int) orderTotal * POINTS_PER_DOLLAR;
-
+        int earned = (int) (orderTotal * POINTS_PER_DOLLAR);
         LoyaltyPoints lp = loyaltyPointsRepository
                 .findByParticipantId(participantId)
                 .orElse(LoyaltyPoints.builder()
@@ -147,8 +146,7 @@ public class LoyaltyService {
                     "Points must be redeemed in multiples of " + POINTS_PER_REWARD);
         }
 
-        double discount = (pointsToRedeem / POINTS_PER_REWARD) * REWARD_VALUE;
-        lp.setPoints(lp.getPoints() - pointsToRedeem);
+        double discount = ((double) pointsToRedeem / POINTS_PER_REWARD) * REWARD_VALUE;        lp.setPoints(lp.getPoints() - pointsToRedeem);
         loyaltyPointsRepository.save(lp);
 
         log.info("Participant {} redeemed {} points for ${} off",
@@ -165,8 +163,7 @@ public class LoyaltyService {
     public double getRedeemableValue(String participantId) {
         int points = getPoints(participantId);
         int redeemable = (points / POINTS_PER_REWARD) * POINTS_PER_REWARD;
-        return (redeemable / POINTS_PER_REWARD) * REWARD_VALUE;
-    }
+        return ((double) redeemable / POINTS_PER_REWARD) * REWARD_VALUE;    }
 
     // ── MILESTONE REWARD ──────────────────────────
 // Triggered when user crosses 100, 200, or 500 points
@@ -184,17 +181,14 @@ public class LoyaltyService {
                         milestone, couponCode, (int) discount, participantId);
 
                 // ── NOTIFY USER VIA WEBSOCKET ─────────
-                messagingTemplate.convertAndSend(
-                        "/topic/loyalty/" + participantId,
-                        new java.util.HashMap<String, Object>() {{
-                            put("type",       "MILESTONE_REACHED");
-                            put("milestone",  milestone);
-                            put("couponCode", couponCode);
-                            put("discount",   (int) discount);
-                            put("message",    "🎉 You reached " + milestone + " points! Use code "
-                                    + couponCode + " for " + (int) discount + "% off!");
-                        }}
-                );
+                java.util.Map<String, Object> milestoneNotif = new java.util.HashMap<>();
+                milestoneNotif.put("type",       "MILESTONE_REACHED");
+                milestoneNotif.put("milestone",  milestone);
+                milestoneNotif.put("couponCode", couponCode);
+                milestoneNotif.put("discount",   (int) discount);
+                milestoneNotif.put("message",    "🎉 You reached " + milestone + " points! Use code "
+                        + couponCode + " for " + (int) discount + "% off!");
+                messagingTemplate.convertAndSend("/topic/loyalty/" + participantId, milestoneNotif);
             }
         }
     }

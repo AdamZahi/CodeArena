@@ -190,10 +190,15 @@ public class ShopServiceImpl implements ShopService {
                     Map.class
             );
 
-            int score = ((Number) response.getBody().get("score")).intValue();
-            item.setEcoScore(score);
-            shopItemRepository.save(item);
-            log.info("AI eco score {} saved for product {}", score, item.getName());
+            Map<?, ?> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("score")) {
+                int score = ((Number) responseBody.get("score")).intValue();
+                item.setEcoScore(score);
+                shopItemRepository.save(item);
+                log.info("AI eco score {} saved for product {}", score, item.getName());
+            } else {
+                log.warn("Flask returned empty response for product {}", item.getName());
+            }
 
         } catch (Exception e) {
             log.warn("Flask AI unavailable: {}", e.getMessage());

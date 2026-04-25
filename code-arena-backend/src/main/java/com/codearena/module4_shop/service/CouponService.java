@@ -9,12 +9,14 @@ import java.util.UUID;
 public class CouponService {
 
     // ── PREDEFINED COUPONS ────────────────────────
-    private static final Map<String, Double> COUPONS = new HashMap<>() {{
-        put("CODEARENA10", 0.10);
-        put("WELCOME20",   0.20);
-        put("DEVLIFE15",   0.15);
-        put("FREESHIP",    0.05);
-    }};
+    private static final Map<String, Double> COUPONS = new HashMap<>();
+    static {
+        COUPONS.put("CODEARENA10", 0.10);
+        COUPONS.put("WELCOME20",   0.20);
+        COUPONS.put("DEVLIFE15",   0.15);
+        COUPONS.put("FREESHIP",    0.05);
+    }
+
 
     // ── DYNAMIC COUPONS (generated at runtime) ────
     // Stored in memory — survives for the session

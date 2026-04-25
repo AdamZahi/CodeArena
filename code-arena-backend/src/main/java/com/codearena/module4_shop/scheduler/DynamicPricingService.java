@@ -79,13 +79,13 @@ public class DynamicPricingService {
                 String indicator = getPriceIndicator(product, totalSold);
 
                 if (dynamicPrice != product.getPrice() || !indicator.isEmpty()) {
-                    priceUpdates.add(new java.util.HashMap<String, Object>() {{
-                        put("productId", product.getId().toString());
-                        put("originalPrice", product.getPrice());
-                        put("dynamicPrice", dynamicPrice);
-                        put("indicator", indicator);
-                        put("changed", dynamicPrice != product.getPrice());
-                    }});
+                    java.util.Map<String, Object> priceUpdate = new java.util.HashMap<>();
+                    priceUpdate.put("productId",     product.getId().toString());
+                    priceUpdate.put("originalPrice", product.getPrice());
+                    priceUpdate.put("dynamicPrice",  dynamicPrice);
+                    priceUpdate.put("indicator",     indicator);
+                    priceUpdate.put("changed",       dynamicPrice != product.getPrice());
+                    priceUpdates.add(priceUpdate);
                 }
             }
 

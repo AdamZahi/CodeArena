@@ -114,8 +114,7 @@ class SubmissionControllerTest {
         void shouldReturnUserSubmissions() {
             when(submissionService.getUserSubmissions("target-user")).thenReturn(List.of(sampleSubmission));
 
-            ResponseEntity<List<SubmissionDto>> response = submissionController.getUserSubmissions("target-user");
-
+            ResponseEntity<List<SubmissionDto>> response = submissionController.getUserSubmissions("target-user", jwt);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             verify(submissionService).getUserSubmissions("target-user");
         }

@@ -163,15 +163,14 @@ public class ShopController {
         stats.put("byCategory", categoryStats);
 
         // Order stats
-        stats.put("totalOrders", purchaseService.countByStatus(null));
-        stats.put("pendingOrders", purchaseService.countByStatus(OrderStatus.PENDING));
-        stats.put("shippedOrders", purchaseService.countByStatus(OrderStatus.SHIPPED));
+        stats.put("pendingOrders",   purchaseService.countByStatus(OrderStatus.PENDING));
+        stats.put("shippedOrders",   purchaseService.countByStatus(OrderStatus.SHIPPED));
         stats.put("deliveredOrders", purchaseService.countByStatus(OrderStatus.DELIVERED));
-        stats.put("totalRevenue", purchaseService.getTotalRevenue());
-        stats.put("bestSellers", purchaseService.getBestSellers());
         stats.put("confirmedOrders", purchaseService.countByStatus(OrderStatus.CONFIRMED));
         stats.put("cancelledOrders", purchaseService.countByStatus(OrderStatus.CANCELLED));
         stats.put("totalOrders",     purchaseService.countAllOrders());
+        stats.put("totalRevenue",    purchaseService.getTotalRevenue());
+        stats.put("bestSellers",     purchaseService.getBestSellers());
         return ResponseEntity.ok(
                 ApiResponse.success(stats, "Stats fetched successfully")
         );
@@ -249,13 +248,13 @@ public class ShopController {
                 .filter(p -> p.getEcoScore() != null && p.getEcoScore() <= 4)
                 .collect(java.util.stream.Collectors.toList());
 
-        return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
-            put("flaggedCount", flagged.size());
-            put("products", flagged);
-            put("message", flagged.isEmpty()
-                    ? "✅ All products meet eco standards!"
-                    : "⚠️ " + flagged.size() + " products need sustainable sourcing review");
-        }});
+        java.util.Map<String, Object> ecoAlert = new java.util.HashMap<>();
+        ecoAlert.put("flaggedCount", flagged.size());
+        ecoAlert.put("products", flagged);
+        ecoAlert.put("message", flagged.isEmpty()
+                ? "✅ All products meet eco standards!"
+                : "⚠️ " + flagged.size() + " products need sustainable sourcing review");
+        return ResponseEntity.ok(ecoAlert);
     }
 
 

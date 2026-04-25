@@ -158,22 +158,17 @@ public class PurchaseServiceImpl implements PurchaseService {
             // If stock drops to 5 or below after purchase
             // broadcast warning to ALL connected users
             if (product.getStock() <= 5 && product.getStock() > 0) {
-                messagingTemplate.convertAndSend(
-                        "/topic/stock-alert",
-                        // /topic/stock-alert = public topic
-                        // ALL connected users receive this — no role check needed
-                        // because knowing a product is low stock is public info
-                        new java.util.HashMap<String, Object>() {{
-                            put("productId",   product.getId().toString());
-                            put("productName", product.getName());
-                            put("stock",       product.getStock());
-                            put("message",
-                                    "⚠ Only " + product.getStock() +
-                                            " left of " + product.getName() + "!");
-                        }}
-                );
+                java.util.Map<String, Object> stockAlert = new java.util.HashMap<>();
+                stockAlert.put("productId",   product.getId().toString());
+                stockAlert.put("productName", product.getName());
+                stockAlert.put("stock",       product.getStock());
+                stockAlert.put("message", "⚠ Only " + product.getStock() + " left of " + product.getName() + "!");
+                messagingTemplate.convertAndSend("/topic/stock-alert", stockAlert);
             }
-        }
+
+
+            }
+
 
         log.info("Order created successfully: {}", savedPurchase.getId());
 
@@ -182,20 +177,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         // Goes to /topic/admin/new-order
         // Frontend NotificationComponent checks role === 'ADMIN'
         // before showing the toast — so only admin sees it
-        messagingTemplate.convertAndSend(
-                "/topic/admin/new-order",
-                new java.util.HashMap<String, Object>() {{
-                    put("orderId",
-                            savedPurchase.getId().toString()
-                                    .substring(0, 8).toUpperCase());
-                    // First 8 chars of UUID for readability: "550E8400"
-                    put("participantId", savedPurchase.getParticipantId());
-                    put("total",         savedPurchase.getTotalPrice());
-                    put("message",
-                            "New order placed! $" +
-                                    String.format("%.2f", savedPurchase.getTotalPrice()));
-                }}
-        );
+        java.util.Map<String, Object> adminAlert = new java.util.HashMap<>();
+        adminAlert.put("orderId", savedPurchase.getId().toString().substring(0, 8).toUpperCase());
+        adminAlert.put("participantId", savedPurchase.getParticipantId());
+        adminAlert.put("total",         savedPurchase.getTotalPrice());
+        adminAlert.put("message", "New order placed! $" + String.format("%.2f", savedPurchase.getTotalPrice()));
+        messagingTemplate.convertAndSend("/topic/admin/new-order", adminAlert);
+
 
         PurchaseResponse response = toResponse(savedPurchase, orderItems);
 
@@ -328,18 +316,11 @@ public class PurchaseServiceImpl implements PurchaseService {
         // /topic/orders/{participantId} = private topic per user
         // Only the participant whose order changed receives this
         // They see a toast: "Your order is on its way! 🚚"
-        messagingTemplate.convertAndSend(
-                "/topic/orders/" + purchase.getParticipantId(),
-                new java.util.HashMap<String, String>() {{
-                    put("orderId",
-                            purchase.getId().toString()
-                                    .substring(0, 8).toUpperCase());
-                    put("status",  status.name());
-                    put("message", buildStatusMessage(status));
-                    // buildStatusMessage returns human-readable text
-                    // with emoji based on status
-                }}
-        );
+        java.util.Map<String, String> statusNotif = new java.util.HashMap<>();
+        statusNotif.put("orderId", purchase.getId().toString().substring(0, 8).toUpperCase());
+        statusNotif.put("status",  status.name());
+        statusNotif.put("message", buildStatusMessage(status));
+        messagingTemplate.convertAndSend("/topic/orders/" + purchase.getParticipantId(), statusNotif);
 
         return response;
     }
