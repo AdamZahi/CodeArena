@@ -319,3 +319,45 @@
   color: #7f8cab;
   font-size: 13px;
 }
+.camera-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(141,99,255,0.25);
+  background: rgba(141,99,255,0.08);
+  color: #c4a8ff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 8px;
+}
+
+.camera-btn.camera-off {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #97a5c0;
+}
+
+.participant-video {
+  width: 100%;
+  max-height: 120px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #000;
+}
+.kick-btn {
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
+}
+.voice-section {
+  position: relative;
+  z-index: 50;
+}
+
+.kick-btn {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto;
+}

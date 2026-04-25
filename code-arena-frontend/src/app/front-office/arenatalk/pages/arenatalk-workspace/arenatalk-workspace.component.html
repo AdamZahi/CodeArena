@@ -8,13 +8,9 @@
           <h2>My Hubs</h2>
         </div>
         <button class="danger-mini-btn" *ngIf="selectedHub && isOwner"
-          (click)="openDeleteModal('hub', selectedHub.id)">
-          Delete
-        </button>
+          (click)="openDeleteModal('hub', selectedHub.id)">Delete</button>
         <button class="ghost-mini-btn" *ngIf="selectedHub && !isOwner"
-          (click)="leaveHub()">
-          Leave
-        </button>
+          (click)="leaveHub()">Leave</button>
       </div>
 
       <div class="hub-list" *ngIf="hubs.length > 0; else noHubs">
@@ -24,12 +20,9 @@
           (click)="selectHub(hub)">
           <div class="hub-avatar">
             <ng-container *ngIf="hub.iconUrl; else letterAvatar">
-              <img [src]="hub.iconUrl" alt="Hub icon"
-                (error)="onHubImageError($event, 'icon')" />
+              <img [src]="hub.iconUrl" alt="Hub icon" (error)="onHubImageError($event, 'icon')" />
             </ng-container>
-            <ng-template #letterAvatar>
-              {{ hub.name.charAt(0).toUpperCase() }}
-            </ng-template>
+            <ng-template #letterAvatar>{{ hub.name.charAt(0).toUpperCase() }}</ng-template>
           </div>
           <div class="hub-info">
             <h3>{{ hub.name }}</h3>
@@ -49,11 +42,8 @@
           <p class="sidebar-kicker">CHANNELS</p>
           <h2>{{ selectedHub?.name || 'No Hub Selected' }}</h2>
         </div>
-        <button class="primary-mini-btn"
-          *ngIf="selectedHub && isOwner"
-          (click)="openCreateChannelForm()">
-          + Channel
-        </button>
+        <button class="primary-mini-btn" *ngIf="selectedHub && isOwner"
+          (click)="openCreateChannelForm()">+ Channel</button>
       </div>
 
       <div class="create-channel-box" *ngIf="showCreateChannelForm">
@@ -83,9 +73,7 @@
 
         <div class="mini-actions channel-form-actions">
           <button class="primary-mini-btn" (click)="createChannel()"
-            [disabled]="name.invalid || !newChannel.name?.trim()">
-            Create
-          </button>
+            [disabled]="name.invalid || !newChannel.name?.trim()">Create</button>
           <button class="ghost-mini-btn" (click)="closeCreateChannelForm()">Cancel</button>
         </div>
       </div>
@@ -100,12 +88,9 @@
               <h3># {{ channel.name }}</h3>
               <p>{{ channel.topic }}</p>
             </div>
-            <button class="icon-btn delete-btn"
-              *ngIf="isOwner"
+            <button class="icon-btn delete-btn" *ngIf="isOwner"
               (click)="openDeleteModal('channel', channel.id); $event.stopPropagation()"
-              title="Delete channel">
-              ×
-            </button>
+              title="Delete channel">×</button>
           </div>
         </div>
       </div>
@@ -117,9 +102,7 @@
       <div class="pending-section" *ngIf="isOwner && selectedHub">
         <button class="request-mini-btn" (click)="loadPendingRequests()">
           ⏳ Pending Requests
-          <span class="badge" *ngIf="pendingRequests.length > 0">
-            {{ pendingRequests.length }}
-          </span>
+          <span class="badge" *ngIf="pendingRequests.length > 0">{{ pendingRequests.length }}</span>
         </button>
 
         <div class="pending-list" *ngIf="showPendingRequests">
@@ -137,202 +120,252 @@
               </div>
             </div>
           </ng-container>
+
           <ng-template #noRequests>
             <div class="empty-box"><p>No pending requests.</p></div>
           </ng-template>
         </div>
       </div>
 
-    <app-voice-channel
-  *ngIf="hubReady && selectedHub"
-  [hubId]="selectedHub.id"
-  [isOwner]="isOwner"
-  [currentUserId]="currentKeycloakId"
-  [currentUserName]="currentUserName"
-  (voiceRoomChanged)="onVoiceRoomChanged($event)">
-</app-voice-channel>
-
+      <app-voice-channel
+        *ngIf="hubReady && selectedHub"
+        [hubId]="selectedHub.id"
+        [isOwner]="isOwner"
+        [currentUserId]="currentKeycloakId"
+        [currentUserName]="currentUserName"
+        (voiceRoomChanged)="onVoiceRoomChanged($event)">
+      </app-voice-channel>
     </aside>
 
-   <main class="main-panel">
+    <main class="main-panel">
 
-  <!-- 🎤 VOICE ROOM MODE (like Google Meet) -->
-  <div class="voice-room-full" *ngIf="activeVoiceChannelId">
-    <div class="voice-room-top">
-      <div class="voice-room-info">
-        <span class="voice-room-icon">🔊</span>
-        <h2>{{ activeVoiceChannelName }}</h2>
-        <span class="voice-room-count">{{ activeVoiceChannelId ? '...' : '' }}</span>
-      </div>
-    </div>
-
-<div class="voice-grid">
-      <!-- Current user tile -->
-      <div class="voice-tile me" [class.speaking]="voiceLocalSpeaking">
-        <div class="voice-tile-avatar" [class.speaking-glow]="voiceLocalSpeaking">
-          {{ currentUserName.charAt(0).toUpperCase() }}
-        </div>
-        <div class="voice-tile-name">
-          {{ currentUserName }}
-          <small>(you)</small>
-          <span *ngIf="voiceIsMuted">🔇</span>
-        </div>
-      </div>
-
-      <!-- Other participants tiles -->
-      <div class="voice-tile" *ngFor="let p of voiceParticipants"
-        [class.speaking]="p.speaking">
-        <div class="voice-tile-avatar" [class.speaking-glow]="p.speaking">
-          {{ p.userName.charAt(0).toUpperCase() }}
-        </div>
-        <div class="voice-tile-name">
-          {{ p.userName }}
-          <span *ngIf="p.muted">🔇</span>
-        </div>
-        
-      </div>
-
-    </div>  <!-- ← ferme voice-grid ici -->
-
-    <div class="voice-room-controls">
-      <button class="voice-ctrl-btn mute-ctrl" (click)="toggleVoiceMute()" [class.muted]="voiceIsMuted">
-        {{ voiceIsMuted ? '🔇' : '🎙️' }}
-        <span>{{ voiceIsMuted ? 'Unmute' : 'Mute' }}</span>
-      </button>
-      <button class="voice-ctrl-btn leave-ctrl" (click)="leaveVoiceRoom()">
-        📵
-        <span>Leave</span>
-      </button>
-    </div>
-
-  </div>  <!-- ← ferme voice-room-full ici -->
-
-  <!-- 💬 CHAT MODE (normal) -->
-  <ng-container *ngIf="!activeVoiceChannelId">
-
-    <div class="main-header" *ngIf="selectedChannel">
-      <div class="hub-banner" *ngIf="selectedHub?.bannerUrl">
-        <img [src]="selectedHub?.bannerUrl" alt="Hub banner"
-          (error)="onHubImageError($event, 'banner')" />
-      </div>
-
-      <div class="main-header-content">
-        <p class="channel-badge">{{ categoryLabel }}</p>
-        <h1># {{ selectedChannel.name }}</h1>
-        <p class="channel-topic">{{ selectedChannel.topic }}</p>
-
-        <div class="header-tools">
-          <app-message-search
-            [messages]="messages"
-            (resultClick)="scrollToMessage($event)">
-          </app-message-search>
-          <app-channel-summary
-            [messages]="messages"
-            [channelName]="selectedChannel.name">
-          </app-channel-summary>
-        </div>
-
-        <app-semantic-search
-          *ngIf="selectedChannel?.id"
-          [channelId]="selectedChannel!.id!">
-        </app-semantic-search>
-      </div>
-    </div>
-
-    <div class="pinned-box" *ngIf="pinnedMessages.length > 0">
-      <h3>📌 Pinned Messages</h3>
-      <div class="pinned-item"
-        *ngFor="let pinned of pinnedMessages"
-        (click)="scrollToMessage(pinned)">
-        <strong>{{ pinned.senderName || 'Unknown' }}</strong>: {{ pinned.content }}
-      </div>
-    </div>
-
-    <div class="welcome-state" *ngIf="selectedChannel && !hasMessages">
-      <div class="welcome-card">
-        <p class="eyebrow">// COMMUNITY READY</p>
-        <h2>Welcome to {{ selectedHub?.name }}</h2>
-        <p class="welcome-text">Your community is ready. Start the conversation below.</p>
-        <div class="welcome-grid">
-          <div class="mini-card">
-            <h3>Start the conversation</h3>
-            <p>Send your first message in <strong>#{{ selectedChannel.name }}</strong>.</p>
-          </div>
-          <div class="mini-card">
-            <h3>Organize your space</h3>
-            <p>Create more channels and structure discussions by topic.</p>
-          </div>
-          <div class="mini-card">
-            <h3>Build your network</h3>
-            <p>Grow a real community around gaming, programming, and challenges.</p>
+      <div class="voice-room-full" *ngIf="activeVoiceChannelId">
+        <div class="voice-room-top">
+          <div class="voice-room-info">
+            <span class="voice-room-icon">🔊</span>
+            <h2>{{ activeVoiceChannelName }}</h2>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="messages-panel" *ngIf="selectedChannel && hasMessages">
-      <div class="message-card" *ngFor="let msg of messages" [id]="'msg-' + msg.id">
-        <div class="message-main">
-          <div class="message-avatar">
-            {{ msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?' }}
-          </div>
-          <div class="message-content">
-            <div class="message-meta">
-              <strong>{{ msg.senderName || 'Unknown' }}</strong>
-              <span class="message-time">{{ msg.sentAt | date:'short' }}</span>
-              <span class="message-pin" *ngIf="msg.pinned">📌 Pinned</span>
+        <div class="voice-grid">
+
+          <div class="voice-tile me" [class.speaking]="voiceLocalSpeaking">
+            <div class="voice-tile-video" *ngIf="voiceCameraOn && voiceLocalVideoStream">
+              <video
+                [appVideoStream]="voiceLocalVideoStream"
+                autoplay
+                playsinline
+                muted
+                class="tile-video">
+              </video>
             </div>
-            <ng-container *ngIf="editingMessageId !== msg.id; else editBlock">
-              <p class="message-text">{{ msg.content }}</p>
-            </ng-container>
-            <ng-template #editBlock>
-              <div class="edit-message-box">
-                <textarea [(ngModel)]="editedMessageContent"></textarea>
-                <div class="mini-actions">
-                  <button class="primary-mini-btn" (click)="saveEditedMessage(msg)">Save</button>
-                  <button class="ghost-mini-btn" (click)="cancelEditMessage()">Cancel</button>
-                </div>
-              </div>
-            </ng-template>
-            <app-message-reactions
-              *ngIf="msg.id"
-              [messageId]="msg.id!"
-              [keycloakId]="currentKeycloakId"
-              [reaction]="reactions[msg.id!] || null">
-            </app-message-reactions>
+
+            <div class="voice-tile-avatar"
+              *ngIf="!voiceCameraOn"
+              [class.speaking-glow]="voiceLocalSpeaking">
+              {{ currentUserName.charAt(0).toUpperCase() }}
+            </div>
+
+            <div class="voice-tile-name">
+              {{ currentUserName }}
+              <small>(you)</small>
+              <span *ngIf="voiceIsMuted">🔇</span>
+              <span *ngIf="voiceCameraOn">📷</span>
+            </div>
+          </div>
+
+          <div class="voice-tile" *ngFor="let p of voiceParticipants"
+            [class.speaking]="p.speaking">
+
+            <div class="voice-tile-video" *ngIf="p.cameraOn && p.videoStream">
+              <video
+                [appVideoStream]="p.videoStream"
+                autoplay
+                playsinline
+                class="tile-video">
+              </video>
+            </div>
+
+            <div class="voice-tile-avatar"
+              *ngIf="!p.cameraOn"
+              [class.speaking-glow]="p.speaking">
+              {{ p.userName.charAt(0).toUpperCase() }}
+            </div>
+
+            <div class="voice-tile-name">
+              {{ p.userName }}
+              <span *ngIf="p.muted">🔇</span>
+              <span *ngIf="p.cameraOn">📷</span>
+            </div>
+
+            <button
+              type="button"
+              class="kick-tile-btn"
+              *ngIf="isOwner && p.userId !== currentKeycloakId"
+              (pointerdown)="kickVoiceParticipant($event, p.userId)">
+              ⚡ Kick
+            </button>
+          </div>
+
+        </div>
+
+        <div class="voice-room-controls">
+          <button class="voice-ctrl-btn mute-ctrl"
+            (click)="toggleVoiceMute()"
+            [class.muted]="voiceIsMuted">
+            {{ voiceIsMuted ? '🔇' : '🎙️' }}
+            <span>{{ voiceIsMuted ? 'Unmute' : 'Mute' }}</span>
+          </button>
+
+          <button class="voice-ctrl-btn camera-ctrl"
+            (click)="toggleVoiceCamera()"
+            [class.camera-off]="!voiceCameraOn">
+            📷
+            <span>{{ voiceCameraOn ? 'Camera Off' : 'Camera On' }}</span>
+          </button>
+
+          <button class="voice-ctrl-btn leave-ctrl" (click)="leaveVoiceRoom()">
+            📵
+            <span>Leave</span>
+          </button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!activeVoiceChannelId">
+
+        <div class="main-header" *ngIf="selectedChannel">
+          <div class="hub-banner" *ngIf="selectedHub?.bannerUrl">
+            <img [src]="selectedHub?.bannerUrl" alt="Hub banner"
+              (error)="onHubImageError($event, 'banner')" />
+          </div>
+
+          <div class="main-header-content">
+            <p class="channel-badge">{{ categoryLabel }}</p>
+            <h1># {{ selectedChannel.name }}</h1>
+            <p class="channel-topic">{{ selectedChannel.topic }}</p>
+
+            <div class="header-tools">
+              <app-message-search
+                [messages]="messages"
+                (resultClick)="scrollToMessage($event)">
+              </app-message-search>
+
+              <app-channel-summary
+                [messages]="messages"
+                [channelName]="selectedChannel.name">
+              </app-channel-summary>
+            </div>
+
+            <app-semantic-search
+              *ngIf="selectedChannel?.id"
+              [channelId]="selectedChannel!.id!">
+            </app-semantic-search>
           </div>
         </div>
-        <div class="message-actions"
-          *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
-          <button class="icon-btn edit-btn" (click)="startEditMessage(msg)" title="Edit">✎</button>
-          <button class="icon-btn pin-btn" *ngIf="!msg.pinned" (click)="pinMessage(msg.id!)" title="Pin">📌</button>
-          <button class="icon-btn pin-btn" *ngIf="msg.pinned" (click)="unpinMessage(msg.id!)" title="Unpin">📍</button>
-          <button class="icon-btn delete-btn" (click)="openDeleteModal('message', msg.id)" title="Delete">×</button>
+
+        <div class="pinned-box" *ngIf="pinnedMessages.length > 0">
+          <h3>📌 Pinned Messages</h3>
+          <div class="pinned-item" *ngFor="let pinned of pinnedMessages"
+            (click)="scrollToMessage(pinned)">
+            <strong>{{ pinned.senderName || 'Unknown' }}</strong>: {{ pinned.content }}
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="message-input-bar" *ngIf="selectedChannel">
-      <div class="input-tools">
-        <app-smart-reply
-          [messages]="messages"
-          (replySelected)="onSmartReplySelected($event)">
-        </app-smart-reply>
-      </div>
-      <div class="input-row">
-        <input type="text" [(ngModel)]="newMessage"
-          placeholder="Send a message to #{{ selectedChannel.name }}"
-          (keyup.enter)="sendMessage()"
-          [disabled]="isCheckingMessage" />
-        <button (click)="sendMessage()" [disabled]="isCheckingMessage">
-          {{ isCheckingMessage ? '...' : 'Send' }}
-        </button>
-      </div>
-    </div>
+        <div class="welcome-state" *ngIf="selectedChannel && !hasMessages">
+          <div class="welcome-card">
+            <p class="eyebrow">// COMMUNITY READY</p>
+            <h2>Welcome to {{ selectedHub?.name }}</h2>
+            <p class="welcome-text">Your community is ready. Start the conversation below.</p>
 
-  </ng-container>
+            <div class="welcome-grid">
+              <div class="mini-card">
+                <h3>Start the conversation</h3>
+                <p>Send your first message in <strong>#{{ selectedChannel.name }}</strong>.</p>
+              </div>
+              <div class="mini-card">
+                <h3>Organize your space</h3>
+                <p>Create more channels and structure discussions by topic.</p>
+              </div>
+              <div class="mini-card">
+                <h3>Build your network</h3>
+                <p>Grow a real community around gaming, programming, and challenges.</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-</main>
+        <div class="messages-panel" *ngIf="selectedChannel && hasMessages">
+          <div class="message-card" *ngFor="let msg of messages" [id]="'msg-' + msg.id">
+            <div class="message-main">
+              <div class="message-avatar">
+                {{ msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?' }}
+              </div>
+
+              <div class="message-content">
+                <div class="message-meta">
+                  <strong>{{ msg.senderName || 'Unknown' }}</strong>
+                  <span class="message-time">{{ msg.sentAt | date:'short' }}</span>
+                  <span class="message-pin" *ngIf="msg.pinned">📌 Pinned</span>
+                </div>
+
+                <ng-container *ngIf="editingMessageId !== msg.id; else editBlock">
+                  <p class="message-text">{{ msg.content }}</p>
+                </ng-container>
+
+                <ng-template #editBlock>
+                  <div class="edit-message-box">
+                    <textarea [(ngModel)]="editedMessageContent"></textarea>
+                    <div class="mini-actions">
+                      <button class="primary-mini-btn" (click)="saveEditedMessage(msg)">Save</button>
+                      <button class="ghost-mini-btn" (click)="cancelEditMessage()">Cancel</button>
+                    </div>
+                  </div>
+                </ng-template>
+
+                <app-message-reactions
+                  *ngIf="msg.id"
+                  [messageId]="msg.id!"
+                  [keycloakId]="currentKeycloakId"
+                  [reaction]="reactions[msg.id!] || null">
+                </app-message-reactions>
+              </div>
+            </div>
+
+            <div class="message-actions"
+              *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
+              <button class="icon-btn edit-btn" (click)="startEditMessage(msg)" title="Edit">✎</button>
+              <button class="icon-btn pin-btn" *ngIf="!msg.pinned"
+                (click)="pinMessage(msg.id!)" title="Pin">📌</button>
+              <button class="icon-btn pin-btn" *ngIf="msg.pinned"
+                (click)="unpinMessage(msg.id!)" title="Unpin">📍</button>
+              <button class="icon-btn delete-btn"
+                (click)="openDeleteModal('message', msg.id)" title="Delete">×</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="message-input-bar" *ngIf="selectedChannel">
+          <div class="input-tools">
+            <app-smart-reply
+              [messages]="messages"
+              (replySelected)="onSmartReplySelected($event)">
+            </app-smart-reply>
+          </div>
+
+          <div class="input-row">
+            <input type="text" [(ngModel)]="newMessage"
+              placeholder="Send a message to #{{ selectedChannel.name }}"
+              (keyup.enter)="sendMessage()"
+              [disabled]="isCheckingMessage" />
+
+            <button (click)="sendMessage()" [disabled]="isCheckingMessage">
+              {{ isCheckingMessage ? '...' : 'Send' }}
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+    </main>
 
     <aside class="sidebar members-sidebar">
       <div class="sidebar-header">
@@ -348,11 +381,10 @@
               {{ (member.user.firstName || member.user.email || '?').charAt(0).toUpperCase() }}
             </span>
           </div>
+
           <div class="member-info">
             <strong>{{ member.user.firstName }} {{ member.user.lastName }}</strong>
-            <span class="role-badge" [class.owner]="member.role === 'OWNER'">
-              {{ member.role }}
-            </span>
+            <span class="role-badge" [class.owner]="member.role === 'OWNER'">{{ member.role }}</span>
             <small>
               <span class="status-dot"
                 [class.online]="member.online"

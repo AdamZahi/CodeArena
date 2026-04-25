@@ -9,6 +9,8 @@ export interface VoiceParticipant {
   muted: boolean;
   speaking?: boolean;
   stream?: MediaStream;
+  videoStream?: MediaStream;
+  cameraOn?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +19,7 @@ export class VoiceSignalingService {
   private stompClient: Client | null = null;
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private localStream: MediaStream | null = null;
+  private localVideoStream: MediaStream | null = null;
   private subscription: StompSubscription | null = null;
   private currentChannelId: string | null = null;
   private currentUserId: string | null = null;
@@ -31,6 +34,8 @@ export class VoiceSignalingService {
   roomFull$ = new BehaviorSubject<boolean>(false);
   kicked$ = new BehaviorSubject<boolean>(false);
   localSpeaking$ = new BehaviorSubject<boolean>(false);
+  cameraOn$ = new BehaviorSubject<boolean>(false);
+  localVideoStream$ = new BehaviorSubject<MediaStream | null>(null);
 
   private iceServers = {
     iceServers: [
@@ -57,20 +62,20 @@ export class VoiceSignalingService {
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 0,
-    onConnect: () => {
-  if (this.hasJoined) {
-    console.log('⚠️ Already joined, skipping...');
-    return;
-  }
-  console.log('✅ STOMP connected, userId:', this.currentUserId);
-  this.subscribeToSignaling();
-  setTimeout(() => {
-    if (!this.hasJoined) {  // ← double check
-      this.hasJoined = true;
-      this.sendJoin();
-    }
-  }, 500);
-},
+      onConnect: () => {
+        if (this.hasJoined) {
+          console.log('⚠️ Already joined, skipping...');
+          return;
+        }
+        console.log('✅ STOMP connected, userId:', this.currentUserId);
+        this.subscribeToSignaling();
+        setTimeout(() => {
+          if (!this.hasJoined) {
+            this.hasJoined = true;
+            this.sendJoin();
+          }
+        }, 500);
+      },
       onDisconnect: () => console.log('STOMP disconnected'),
       onStompError: (frame) => console.error('STOMP error:', frame)
     });
@@ -79,13 +84,13 @@ export class VoiceSignalingService {
     this.inRoom$.next(true);
   }
 
-private subscribeToSignaling(): void {
+  private subscribeToSignaling(): void {
     if (!this.stompClient || !this.currentUserId) return;
 
     console.log('📡 Subscribing for userId:', this.currentUserId);
 
     this.subscription = this.stompClient.subscribe(
-      `/topic/voice/${this.currentUserId}`,  // ← /topic au lieu de /user
+      `/topic/voice/${this.currentUserId}`,
       (message: IMessage) => {
         const msg = JSON.parse(message.body);
         console.log('📨 Received signal:', msg.type, msg);
@@ -138,6 +143,14 @@ private subscribeToSignaling(): void {
 
       case 'ice-candidate':
         await this.handleIceCandidate(msg);
+        break;
+
+      case 'camera-on':
+        this.updateParticipantCamera(msg.fromUserId, true);
+        break;
+
+      case 'camera-off':
+        this.updateParticipantCamera(msg.fromUserId, false);
         break;
     }
   }
@@ -197,19 +210,31 @@ private subscribeToSignaling(): void {
       this.localStream.getTracks().forEach(track => pc.addTrack(track, this.localStream!));
     }
 
+    if (this.localVideoStream && this.cameraOn$.value) {
+      this.localVideoStream.getTracks().forEach(track => pc.addTrack(track, this.localVideoStream!));
+    }
+
     pc.ontrack = (event) => {
-      const remoteStream = event.streams[0];
-      const audio = new Audio();
-      audio.srcObject = remoteStream;
-      audio.play();
+      const stream = event.streams[0];
+      const isVideo = event.track.kind === 'video';
 
-      this.startRemoteSpeakingDetection(targetUserId, remoteStream);
-
-      const current = this.participants$.value;
-      const updated = current.map(p =>
-        p.userId === targetUserId ? { ...p, stream: remoteStream } : p
-      );
-      this.participants$.next(updated);
+      if (isVideo) {
+        const current = this.participants$.value;
+        const updated = current.map(p =>
+          p.userId === targetUserId ? { ...p, videoStream: stream, cameraOn: true } : p
+        );
+        this.participants$.next(updated);
+      } else {
+        const audio = new Audio();
+        audio.srcObject = stream;
+        audio.play();
+        this.startRemoteSpeakingDetection(targetUserId, stream);
+        const current = this.participants$.value;
+        const updated = current.map(p =>
+          p.userId === targetUserId ? { ...p, stream } : p
+        );
+        this.participants$.next(updated);
+      }
     };
 
     pc.onicecandidate = (event) => {
@@ -226,6 +251,102 @@ private subscribeToSignaling(): void {
     };
 
     return pc;
+  }
+async toggleCamera(): Promise<void> {
+  if (!this.currentUserId || !this.currentChannelId) return;
+
+  // CAMERA OFF
+  if (this.cameraOn$.value) {
+    this.localVideoStream?.getTracks().forEach(track => track.stop());
+    this.localVideoStream = null;
+    this.localVideoStream$.next(null);
+    this.cameraOn$.next(false);
+
+    for (const [userId, pc] of this.peerConnections.entries()) {
+      const videoSenders = pc.getSenders().filter(sender => sender.track?.kind === 'video');
+
+      videoSenders.forEach(sender => {
+        pc.removeTrack(sender);
+      });
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      this.sendSignal({
+        type: 'offer',
+        fromUserId: this.currentUserId,
+        toUserId: userId,
+        channelId: this.currentChannelId,
+        payload: JSON.stringify(offer),
+        userName: this.currentUserName!
+      });
+    }
+
+    this.broadcastSignal({
+      type: 'camera-off',
+      fromUserId: this.currentUserId,
+      channelId: this.currentChannelId,
+      payload: '',
+      userName: this.currentUserName!
+    });
+
+    return;
+  }
+
+  // CAMERA ON
+  try {
+    this.localVideoStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false
+    });
+
+    this.localVideoStream$.next(this.localVideoStream);
+    this.cameraOn$.next(true);
+
+    const videoTrack = this.localVideoStream.getVideoTracks()[0];
+
+    for (const [userId, pc] of this.peerConnections.entries()) {
+      pc.addTrack(videoTrack, this.localVideoStream);
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      this.sendSignal({
+        type: 'offer',
+        fromUserId: this.currentUserId,
+        toUserId: userId,
+        channelId: this.currentChannelId,
+        payload: JSON.stringify(offer),
+        userName: this.currentUserName!
+      });
+    }
+
+    this.broadcastSignal({
+      type: 'camera-on',
+      fromUserId: this.currentUserId,
+      channelId: this.currentChannelId,
+      payload: '',
+      userName: this.currentUserName!
+    });
+
+  } catch (err) {
+    console.error('Camera access denied', err);
+    alert('Camera access denied. Please allow camera permission.');
+  }
+}
+
+  private broadcastSignal(msg: any): void {
+    this.peerConnections.forEach((_, userId) => {
+      this.sendSignal({ ...msg, toUserId: userId });
+    });
+  }
+
+  private updateParticipantCamera(userId: string, cameraOn: boolean): void {
+    const current = this.participants$.value;
+    const updated = current.map(p =>
+      p.userId === userId ? { ...p, cameraOn } : p
+    );
+    this.participants$.next(updated);
   }
 
   private startLocalSpeakingDetection(): void {
@@ -322,6 +443,11 @@ private subscribeToSignaling(): void {
       this.speakingDetectionInterval = null;
     }
 
+    this.localVideoStream?.getTracks().forEach(t => t.stop());
+    this.localVideoStream = null;
+    this.localVideoStream$.next(null);
+    this.cameraOn$.next(false);
+
     this.audioContexts.forEach(ctx => ctx.close());
     this.audioContexts.clear();
 
@@ -355,7 +481,7 @@ private subscribeToSignaling(): void {
   private addParticipant(userId: string, userName: string): void {
     const current = this.participants$.value;
     if (!current.find(p => p.userId === userId)) {
-      this.participants$.next([...current, { userId, userName, muted: false, speaking: false }]);
+      this.participants$.next([...current, { userId, userName, muted: false, speaking: false, cameraOn: false }]);
     }
   }
 

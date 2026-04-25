@@ -19,6 +19,7 @@ import { SmartReplyComponent } from '../smart-reply/smart-reply.component';
 import { AiModerationService } from '../../services/ai/ai-moderation.service';
 import { SemanticSearchComponent } from '../semantic-search/semantic-search.component';
 import { VoiceSignalingService } from '../../services/voice-signaling.service';
+import { VideoStreamDirective } from '../../../../shared/directives/video-stream.directive';
 
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
@@ -34,7 +35,8 @@ type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
     ChannelSummaryComponent,
     MessageModerationComponent,
     SmartReplyComponent,
-    SemanticSearchComponent
+    SemanticSearchComponent,
+    VideoStreamDirective
   ],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
@@ -86,6 +88,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   voiceInRoom = false;
   voiceIsMuted = false;
   voiceLocalSpeaking = false;
+  voiceCameraOn = false;
+  voiceLocalVideoStream: MediaStream | null = null;
 
   private voiceSubs: Subscription[] = [];
 
@@ -101,12 +105,13 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to voice state
     this.voiceSubs.push(
       this.voiceSignalingService.participants$.subscribe(p => this.voiceParticipants = p),
       this.voiceSignalingService.isMuted$.subscribe(v => this.voiceIsMuted = v),
       this.voiceSignalingService.localSpeaking$.subscribe(v => this.voiceLocalSpeaking = v),
-      this.voiceSignalingService.inRoom$.subscribe(v => this.voiceInRoom = v)
+      this.voiceSignalingService.inRoom$.subscribe(v => this.voiceInRoom = v),
+      this.voiceSignalingService.cameraOn$.subscribe(v => this.voiceCameraOn = v),
+      this.voiceSignalingService.localVideoStream$.subscribe(v => this.voiceLocalVideoStream = v)
     );
 
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
@@ -172,7 +177,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.setCurrentUserOffline();
   }
 
-  // ── VOICE ROOM ──
   onVoiceRoomChanged(event: {channelId: number | null, channelName: string}): void {
     this.activeVoiceChannelId = event.channelId;
     this.activeVoiceChannelName = event.channelName;
@@ -182,6 +186,10 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.voiceSignalingService.toggleMute();
   }
 
+  toggleVoiceCamera(): void {
+    this.voiceSignalingService.toggleCamera();
+  }
+
   leaveVoiceRoom(): void {
     this.voiceSignalingService.leaveRoom().then(() => {
       this.activeVoiceChannelId = null;
@@ -189,7 +197,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── HUB ──
+
+
   private setCurrentUserOnline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.setOnline(this.selectedHub.id, this.currentKeycloakId).subscribe({
@@ -197,6 +206,11 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       error: () => {}
     });
   }
+  kickVoiceParticipant(event: PointerEvent, userId: string): void {
+  event.preventDefault();
+  event.stopPropagation();
+  this.voiceSignalingService.kickParticipant(userId);
+}
 
   private setCurrentUserOffline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
@@ -563,9 +577,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       }
     }, 100);
   }
-  kickVoiceParticipant(userId: string): void {
-  this.voiceSignalingService.kickParticipant(userId);
-}
 
   get hasMessages(): boolean { return this.messages.length > 0; }
   get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }

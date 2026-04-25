@@ -6,11 +6,12 @@ import { take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { VoiceChannelService, VoiceChannel } from '../../services/voice-channel.service';
 import { VoiceSignalingService, VoiceParticipant } from '../../services/voice-signaling.service';
+import { VideoStreamDirective } from '../../../../shared/directives/video-stream.directive';
 
 @Component({
   selector: 'app-voice-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VideoStreamDirective],
   templateUrl: './voice-channel.component.html',
   styleUrl: './voice-channel.component.css'
 })
@@ -34,6 +35,8 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
   newChannelName = '';
   localSpeaking = false;
   maxParticipants = 8;
+  cameraOn = false;
+  localVideoStream: MediaStream | null = null;
 
   private subs: Subscription[] = [];
 
@@ -58,7 +61,9 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
           this.voiceRoomChanged.emit({ channelId: null, channelName: '' });
         }
       }),
-      this.signalingService.localSpeaking$.subscribe(v => this.localSpeaking = v)
+      this.signalingService.localSpeaking$.subscribe(v => this.localSpeaking = v),
+      this.signalingService.cameraOn$.subscribe(v => this.cameraOn = v),
+      this.signalingService.localVideoStream$.subscribe(v => this.localVideoStream = v)
     );
   }
 
@@ -103,6 +108,11 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
       this.voiceRoomChanged.emit({ channelId: channel.id, channelName: channel.name });
     });
   }
+  onKickClick(event: MouseEvent, userId: string): void {
+  event.preventDefault();
+  event.stopPropagation();
+  this.kickParticipant(userId);
+}
 
   leaveChannel(): void {
     this.signalingService.leaveRoom().then(() => {
@@ -114,6 +124,10 @@ export class VoiceChannelComponent implements OnInit, OnChanges, OnDestroy {
 
   toggleMute(): void {
     this.signalingService.toggleMute();
+  }
+
+  toggleCamera(): void {
+    this.signalingService.toggleCamera();
   }
 
   kickParticipant(userId: string): void {
