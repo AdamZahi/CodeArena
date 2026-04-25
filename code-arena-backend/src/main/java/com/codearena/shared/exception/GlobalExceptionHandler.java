@@ -176,4 +176,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
     }
+    // ── Shop module exceptions ──
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.ProductNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleProductNotFound(
+            com.codearena.module4_shop.exception.ProductNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.InsufficientStockException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInsufficientStock(
+            com.codearena.module4_shop.exception.InsufficientStockException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.CartEmptyException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCartEmpty(
+            com.codearena.module4_shop.exception.CartEmptyException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.OrderNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOrderNotFound(
+            com.codearena.module4_shop.exception.OrderNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
 }

@@ -137,7 +137,7 @@ describe('RecommendationService', () => {
   let service: RecommendationService;
   let httpMock: HttpTestingController;
 
-  const AI_URL = 'http://localhost:5000';
+const AI_URL = 'http://localhost:8080/api/shop';
 
   const mockProducts: Product[] = [
     { id: 'p1', name: 'CodeArena Hoodie', description: '', price: 39.99, stock: 50, imageUrl: '', category: 'HOODIE' as any },
@@ -173,7 +173,7 @@ describe('RecommendationService', () => {
 
     service.getRecommendations(participantId, mockOrders, mockProducts).subscribe();
 
-    const req = httpMock.expectOne(`${AI_URL}/api/recommend`);
+    const req = httpMock.expectOne(`${AI_URL}/recommendations`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body.participantId).toBe(participantId);
     expect(req.request.body.userOrders.length).toBe(1);
@@ -196,7 +196,7 @@ describe('RecommendationService', () => {
       expect(recs[1].id).toBe('p3');
     });
 
-    const req = httpMock.expectOne(`${AI_URL}/api/recommend`);
+    const req = httpMock.expectOne(`${AI_URL}/recommendations`);
     req.flush(mockResponse);
   });
 
@@ -205,14 +205,14 @@ describe('RecommendationService', () => {
       expect(recs).toEqual([]);
     });
 
-    const req = httpMock.expectOne(`${AI_URL}/api/recommend`);
+    const req = httpMock.expectOne(`${AI_URL}/recommendations`);
     req.error(new ErrorEvent('Network error'));
   });
 
   it('getRecommendations — sends mapped product fields to Flask', () => {
     service.getRecommendations('user-123', mockOrders, mockProducts).subscribe();
 
-    const req = httpMock.expectOne(`${AI_URL}/api/recommend`);
+    const req = httpMock.expectOne(`${AI_URL}/recommendations`);
     const sentProduct = req.request.body.allProducts[0];
 
     // Verify only necessary fields are sent (not full Angular Product object)
@@ -228,7 +228,7 @@ describe('RecommendationService', () => {
   it('getRecommendations — respects custom limit parameter', () => {
     service.getRecommendations('user-123', mockOrders, mockProducts, 2).subscribe();
 
-    const req = httpMock.expectOne(`${AI_URL}/api/recommend`);
+    const req = httpMock.expectOne(`${AI_URL}/recommendations`);
     expect(req.request.body.limit).toBe(2);
     req.flush({ success: true, recommendations: [] });
   });

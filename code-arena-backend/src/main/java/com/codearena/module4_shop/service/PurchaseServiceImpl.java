@@ -7,6 +7,8 @@ import com.codearena.module4_shop.entity.Purchase;
 import com.codearena.module4_shop.entity.PurchaseItem;
 import com.codearena.module4_shop.entity.ShopItem;
 import com.codearena.module4_shop.enums.OrderStatus;
+import com.codearena.module4_shop.exception.CartEmptyException;
+import com.codearena.module4_shop.exception.InsufficientStockException;
 import com.codearena.module4_shop.repository.PurchaseItemRepository;
 import com.codearena.module4_shop.repository.PurchaseRepository;
 import com.codearena.module4_shop.repository.ShopItemRepository;
@@ -66,8 +68,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         // ── STEP 1: VALIDATE CART NOT EMPTY ──────
         if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new RuntimeException("Cart cannot be empty");
-            // @Transactional rolls back everything if any exception is thrown
+            throw new CartEmptyException();            // @Transactional rolls back everything if any exception is thrown
         }
 
         List<PurchaseItem> orderItems = new ArrayList<>();
@@ -87,10 +88,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
             // ── STOCK CHECK ───────────────────────
             if (product.getStock() < itemRequest.getQuantity()) {
-                throw new RuntimeException(
-                        "Insufficient stock for: " + product.getName() +
-                                ". Available: " + product.getStock() +
-                                ", Requested: " + itemRequest.getQuantity());
+                throw new InsufficientStockException(
+                        product.getName(),
+                        product.getStock(),
+                        itemRequest.getQuantity());
                 // Clear error message tells frontend exactly what's wrong
             }
 

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @Slf4j
@@ -268,5 +269,29 @@ public class ShopController {
     ) {
         shopService.saveEcoScore(id, body.get("score"));
         return ResponseEntity.ok(ApiResponse.success(null, "Eco score saved"));
+    }
+
+    //implemnting ai here
+    @PostMapping("/products/{id}/analyze")
+    public ResponseEntity<?> analyzeEcoScore(@PathVariable UUID id) {
+        ShopItemDto result = shopService.analyzeAndSaveEcoScore(id);
+        return ResponseEntity.ok(ApiResponse.success(result, "Eco score analyzed by AI"));
+    }
+
+    @PostMapping("/recommendations")
+    public ResponseEntity<?> getRecommendations(@RequestBody Map<String, Object> body) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    "http://localhost:5000/api/recommend",
+                    body,
+                    Map.class
+            );
+            return ResponseEntity.ok(ApiResponse.success(response.getBody(), "Recommendations fetched"));
+        } catch (Exception e) {
+            log.warn("Flask recommendations unavailable: {}", e.getMessage());
+            return ResponseEntity.ok(ApiResponse.success(
+                    Map.of("recommendations", List.of()), "No recommendations available"));
+        }
     }
 }

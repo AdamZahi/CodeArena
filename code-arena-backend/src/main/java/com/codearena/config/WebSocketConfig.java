@@ -18,8 +18,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Configures broker prefixes.
-     *
-     * @param registry message broker registry
+     * /topic → broadcast to all subscribers
+     * /queue → point-to-point messages
+     * /app  → messages routed to @MessageMapping methods
+     * /user → user-specific destinations
      */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -36,14 +38,27 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     /**
-     * Registers websocket endpoints.
-     *
-     * @param registry stomp endpoint registry
+     * Registers TWO websocket endpoints:
+     * 1. /ws          → SockJS endpoint (used by battle module)
+     * 2. /ws/websocket → Raw WebSocket endpoint (used by shop notification service)
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // TODO: Enable proper allowed origins for deployment.
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        // ── SOCKJS ENDPOINT ───────────────────────────────────────────────
+        // Used by battle module: battle-websocket.service.ts
+        // SockJS provides fallback transports for older browsers
+        // URL: http://localhost:8080/ws
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+
+        // ── RAW WEBSOCKET ENDPOINT ────────────────────────────────────────
+        // Used by shop notification service: notification.service.ts
+        // Direct WebSocket — no SockJS overhead, no CORS credential issues
+        // URL: ws://localhost:8080/ws/websocket
+        // JWT auth handled by WebSocketAuthInterceptor via STOMP connectHeaders
+        registry.addEndpoint("/ws/websocket")
+                .setAllowedOriginPatterns("*");
     }
 
     /**

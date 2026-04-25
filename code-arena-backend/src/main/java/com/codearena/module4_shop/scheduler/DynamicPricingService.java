@@ -1,5 +1,4 @@
-package com.codearena.module4_shop.service;
-
+package com.codearena.module4_shop.scheduler;
 import com.codearena.module4_shop.entity.ShopItem;
 import com.codearena.module4_shop.repository.PurchaseItemRepository;
 import com.codearena.module4_shop.repository.ShopItemRepository;

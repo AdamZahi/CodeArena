@@ -4,6 +4,7 @@ import com.codearena.module4_shop.dto.ShopItemCreateDto;
 import com.codearena.module4_shop.dto.ShopItemDto;
 import com.codearena.module4_shop.entity.ShopItem;
 import com.codearena.module4_shop.enums.ItemType;
+import com.codearena.module4_shop.exception.ProductNotFoundException;
 import com.codearena.module4_shop.repository.ShopItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
+import java.util.HashMap;
+import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,7 +41,7 @@ public class ShopServiceImpl implements ShopService {
     public ShopItemDto getProductById(UUID id) {
         log.info("Fetching product with id: {}", id);
         ShopItem item = shopItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ProductNotFoundException(id.toString()));
         return toDto(item);
     }
 
@@ -60,7 +64,7 @@ public class ShopServiceImpl implements ShopService {
     public ShopItemDto updateProduct(UUID id, ShopItemCreateDto dto) {
         log.info("Updating product with id: {}", id);
         ShopItem item = shopItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ProductNotFoundException(id.toString()));
 
         item.setName(dto.getName());
         item.setDescription(dto.getDescription());
@@ -77,7 +81,7 @@ public class ShopServiceImpl implements ShopService {
     public void deleteProduct(UUID id) {
         log.info("Deleting product with id: {}", id);
         if (!shopItemRepository.existsById(id)) {
-            throw new RuntimeException("Product not found with id: " + id);
+            throw new ProductNotFoundException(id.toString());
         }
         shopItemRepository.deleteById(id);
     }
@@ -139,7 +143,7 @@ public class ShopServiceImpl implements ShopService {
     @Override
     public void saveEcoScore(UUID productId, int ecoScore) {
         ShopItem item = shopItemRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
         item.setEcoScore(ecoScore);
         shopItemRepository.save(item);
         log.info("Saved eco score {}/10 for product: {}", ecoScore, item.getName());
@@ -165,4 +169,36 @@ public class ShopServiceImpl implements ShopService {
                 .map(this::toDto);
     }
 
+    @Override
+    //implementing code in the back also so that backend is the one calling Flask.
+    public ShopItemDto analyzeAndSaveEcoScore(UUID productId) {
+        ShopItem item = shopItemRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
+
+        // Backend calls Flask — not Angular
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            Map<String, Object> flaskRequest = new HashMap<>();
+            flaskRequest.put("productId", item.getId().toString());
+            flaskRequest.put("productName", item.getName());
+            flaskRequest.put("category", item.getCategory().name());
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    "http://localhost:5000/api/eco-score",
+                    flaskRequest,
+                    Map.class
+            );
+
+            int score = ((Number) response.getBody().get("score")).intValue();
+            item.setEcoScore(score);
+            shopItemRepository.save(item);
+            log.info("AI eco score {} saved for product {}", score, item.getName());
+
+        } catch (Exception e) {
+            log.warn("Flask AI unavailable: {}", e.getMessage());
+        }
+
+        return toDto(item);
+    }
 }

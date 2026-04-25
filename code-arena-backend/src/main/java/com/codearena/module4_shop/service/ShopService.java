@@ -55,6 +55,7 @@ public interface ShopService {
 
     // Save AI-generated eco score to product (called by Angular after Flask scoring)
     void saveEcoScore(UUID productId, int ecoScore);
-
+    // emplemnting ai correctly
+    ShopItemDto analyzeAndSaveEcoScore(UUID productId);
 
 }

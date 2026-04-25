@@ -69,23 +69,23 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
   // ── SHOW METHODS ──────────────────────────────
 
-  showNotification(notif: OrderNotification): void {
+showNotification(notif: OrderNotification): void {
     const id = ++this.counter;
     this.notifications.push({ ...notif, id, visible: true });
-    setTimeout(() => this.dismiss(id), 5000);
-  }
+    setTimeout(() => this.dismiss(id), 8000); // 8 seconds
+}
 
-  showStockAlert(alert: StockAlert): void {
+showStockAlert(alert: StockAlert): void {
     const id = ++this.counter;
     this.stockAlerts.push({ ...alert, id, visible: true });
-    setTimeout(() => this.dismissStock(id), 7000);
-  }
+    setTimeout(() => this.dismissStock(id), 10000); // 10 seconds
+}
 
-  showAdminAlert(alert: AdminOrderAlert): void {
+showAdminAlert(alert: AdminOrderAlert): void {
     const id = ++this.counter;
     this.adminAlerts.push({ ...alert, id, visible: true });
-    setTimeout(() => this.dismissAdmin(id), 6000);
-  }
+    setTimeout(() => this.dismissAdmin(id), 10000); // 10 seconds
+}
 
   showCandidatureAlert(alert: CandidatureAlert): void {
     const id = ++this.counter;

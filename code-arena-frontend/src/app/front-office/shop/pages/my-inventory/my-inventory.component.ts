@@ -32,11 +32,18 @@ export class MyInventoryComponent implements OnInit {
     private router: Router,
     private auth: AuthService
   ) {}
+// ── EARNED COUPONS ────────────────────────────
+// Loaded from localStorage — saved when milestone toast appears
+myCoupons: { code: string; discount: number; milestone: number; earnedAt: string }[] = [];
 
   ngOnInit(): void {
     this.loadOrders();
     this.loadLoyaltyPoints();
+      // Load saved coupons from localStorage
+  this.myCoupons = JSON.parse(localStorage.getItem('my_coupons') || '[]');
+
   }
+  
 
   loadOrders(): void {
     this.isLoading = true;
@@ -175,4 +182,13 @@ get ecoPercentage(): number {
   const validOrders = this.orders.filter(o => o.status !== 'CANCELLED').length;
   return Math.round((validOrders / this.orders.length) * 100);
 }
+
+copyCoupon(code: string): void {
+  navigator.clipboard.writeText(code).then(() => {
+    // Show brief success message instead of alert
+    this.copyMessage = `✅ ${code} copied!`;
+    setTimeout(() => this.copyMessage = '', 2000);
+  });
+}
+copyMessage: string = '';
 }

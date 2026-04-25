@@ -147,4 +147,238 @@
   50% {
     border-color: rgba(139, 92, 246, 1);
   }
+  
+}
+/* ── CONTAINER ────────────────────────────────────────────────── */
+.notification-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+/* ── BASE TOAST ───────────────────────────────────────────────── */
+.notification-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  min-width: 340px;
+  max-width: 420px;
+  background: linear-gradient(135deg, #0d0d18, #12121e);
+  border: 1px solid #1a1a2e;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: all;
+  position: relative;
+  overflow: hidden;
+
+  /* ── SLIDE IN ──────────────────────────────── */
+  opacity: 0;
+  transform: translateX(120px) scale(0.9);
+  transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notification-toast.visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.notification-toast.hidden {
+  opacity: 0;
+  transform: translateX(120px) scale(0.9);
+  transition: opacity 0.4s ease,
+              transform 0.4s ease;
+}
+
+/* ── PROGRESS BAR (auto-dismiss indicator) ────────────────────── */
+.notification-toast::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+  transform-origin: left;
+  animation: progress 8s linear forwards;
+  border-radius: 0 0 12px 12px;
+}
+
+@keyframes progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ── GLOW EFFECT ON HOVER ─────────────────────────────────────── */
+.notification-toast:hover {
+  transform: translateX(-4px) scale(1.02);
+  box-shadow: 0 12px 50px rgba(139, 92, 246, 0.3);
+}
+
+/* ── SCANLINE EFFECT (gamer aesthetic) ───────────────────────── */
+.notification-toast::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.01) 2px,
+    rgba(255,255,255,0.01) 4px
+  );
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+/* ── STATUS COLORS ────────────────────────────────────────────── */
+.notif-confirmed {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.25),
+              inset 0 0 30px rgba(139, 92, 246, 0.05);
+}
+.notif-confirmed::after {
+  background: linear-gradient(90deg, #8b5cf6, #6d28d9);
+}
+
+.notif-shipped {
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.25),
+              inset 0 0 30px rgba(6, 182, 212, 0.05);
+}
+.notif-shipped::after {
+  background: linear-gradient(90deg, #06b6d4, #0891b2);
+}
+
+.notif-delivered {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.25),
+              inset 0 0 30px rgba(16, 185, 129, 0.05);
+}
+.notif-delivered::after {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.notif-cancelled {
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.25),
+              inset 0 0 30px rgba(239, 68, 68, 0.05);
+}
+.notif-cancelled::after {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+/* ── STOCK ALERT ──────────────────────────────────────────────── */
+.notif-stock {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.25),
+              inset 0 0 30px rgba(245, 158, 11, 0.05);
+  animation: pulse-stock 1.5s ease infinite;
+}
+.notif-stock::after {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+@keyframes pulse-stock {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.25),
+                inset 0 0 30px rgba(245, 158, 11, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(245, 158, 11, 0.5),
+                inset 0 0 30px rgba(245, 158, 11, 0.1);
+  }
+}
+
+/* ── ADMIN NEW ORDER ──────────────────────────────────────────── */
+.notif-admin {
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.25),
+              inset 0 0 30px rgba(6, 182, 212, 0.05);
+  animation: pulse-admin 1.5s ease infinite;
+}
+.notif-admin::after {
+  background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+}
+
+@keyframes pulse-admin {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(6, 182, 212, 0.5);
+  }
+}
+
+/* ── CANDIDATURE ALERT ────────────────────────────────────────── */
+.notif-candidature {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.25),
+              inset 0 0 30px rgba(139, 92, 246, 0.05);
+}
+.notif-candidature::after {
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+}
+
+/* ── ICON ─────────────────────────────────────────────────────── */
+.notif-icon {
+  font-size: 28px;
+  min-width: 36px;
+  text-align: center;
+  animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
+}
+
+@keyframes iconBounce {
+  0%   { transform: scale(0) rotate(-20deg); }
+  60%  { transform: scale(1.3) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ── BODY ─────────────────────────────────────────────────────── */
+.notif-body {
+  flex: 1;
+}
+
+.notif-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b5cf6;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.notif-message {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+/* ── CLOSE BUTTON ─────────────────────────────────────────────── */
+.notif-close {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #64748b;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+
+.notif-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  transform: scale(1.1);
 }

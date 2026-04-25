@@ -5,12 +5,16 @@ import { AuthService } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
 import { filter, take, switchMap, map } from 'rxjs/operators';
 import { NotificationService } from './front-office/shop/services/notification.service';
+import { NotificationComponent } from './front-office/shop/notification/notification.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: '<router-outlet />'
+  imports: [RouterOutlet,NotificationComponent],
+template: `
+  <router-outlet />
+  <app-notification />
+`
 })
 export class AppComponent {
   private readonly authUserSync = inject(AuthUserSyncService);

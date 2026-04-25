@@ -805,3 +805,231 @@
   font-family: 'Rajdhani', sans-serif;
   margin: 0;
 }
+/* ── COUPONS SECTION ──────────────────────────────────────────── */
+.coupons-section {
+  margin: 2rem 0;
+  animation: fadeInUp 0.5s ease;
+}
+
+.coupons-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.coupons-icon {
+  font-size: 1.8rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.coupons-header h3 {
+  color: #e2e8f0;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.coupons-count {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  padding: 0.2rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ── GRID ─────────────────────────────────────────────────────── */
+.coupons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* ── COUPON CARD ──────────────────────────────────────────────── */
+.coupon-card {
+  position: relative;
+  background: linear-gradient(135deg, #0d0d18 0%, #12121e 100%);
+  border: 1px solid #8b5cf630;
+  border-radius: 12px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  animation: slideInCard 0.4s ease both;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.coupon-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 8px 30px #8b5cf640;
+  border-color: #8b5cf6;
+}
+
+@keyframes slideInCard {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LEFT ACCENT BAR ──────────────────────────────────────────── */
+.coupon-accent {
+  width: 5px;
+  background: linear-gradient(180deg, #8b5cf6, #06b6d4, #10b981);
+  flex-shrink: 0;
+  animation: gradientShift 3s ease infinite;
+  background-size: 100% 200%;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 0% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* ── COUPON BODY ──────────────────────────────────────────────── */
+.coupon-body {
+  padding: 1rem 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── TOP ROW ──────────────────────────────────────────────────── */
+.coupon-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.coupon-badge {
+  background: #8b5cf620;
+  color: #8b5cf6;
+  border: 1px solid #8b5cf640;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.coupon-discount {
+  font-size: 1.4rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
+/* ── CODE ROW ─────────────────────────────────────────────────── */
+.coupon-code-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #0a0a14;
+  border: 1px dashed #8b5cf650;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+}
+
+.coupon-code {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 2px;
+  flex: 1;
+}
+
+.coupon-copy-btn {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.coupon-copy-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #8b5cf660;
+}
+
+.coupon-copy-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── BOTTOM ROW ───────────────────────────────────────────────── */
+.coupon-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.coupon-date {
+  font-size: 0.7rem;
+  color: #475569;
+}
+
+.coupon-validity {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* ── TICKET DOTS ──────────────────────────────────────────────── */
+.coupon-dots {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 0.5rem 0.4rem;
+  gap: 3px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8b5cf630;
+  border: 1px solid #8b5cf650;
+}
+
+/* ── FADE IN UP ───────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.copy-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #10b981;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 700;
+  z-index: 9999;
+  animation: fadeInUp 0.3s ease;
+  box-shadow: 0 4px 20px #10b98150;
+}

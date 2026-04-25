@@ -111,6 +111,19 @@ this.notificationService.milestone$.subscribe(milestone => {
   if (!milestone) return;
   this.milestoneToast = milestone.message;
   this.milestoneCode = milestone.couponCode;
+   // ── SAVE COUPON TO LOCALSTORAGE — no duplicates ───
+  const saved = JSON.parse(localStorage.getItem('my_coupons') || '[]');
+  // Only save if this code doesn't already exist
+  const alreadyExists = saved.some((c: any) => c.code === milestone.couponCode);
+  if (!alreadyExists) {
+    saved.push({
+      code: milestone.couponCode,
+      discount: milestone.discount,
+      milestone: milestone.milestone,
+      earnedAt: new Date().toISOString()
+    });
+    localStorage.setItem('my_coupons', JSON.stringify(saved));
+  }
   setTimeout(() => {
     this.milestoneToast = '';
     this.milestoneCode = '';

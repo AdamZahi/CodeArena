@@ -233,5 +233,48 @@
       </div>
     </div>
   </div>
+<!-- ── MY COUPONS ──────────────────────────────── -->
+ <div class="copy-toast" *ngIf="copyMessage">{{ copyMessage }}</div>
+<!-- ── MY COUPONS ──────────────────────────────── -->
+<div class="coupons-section" *ngIf="myCoupons.length > 0">
+  <div class="coupons-header">
+    <span class="coupons-icon">🎟️</span>
+    <h3>My Reward Coupons</h3>
+    <span class="coupons-count">{{ myCoupons.length }} available</span>
+  </div>
 
+  <div class="coupons-grid">
+    <div class="coupon-card" *ngFor="let coupon of myCoupons; let i = index"
+         [style.animation-delay]="i * 0.1 + 's'">
+
+      <!-- Left accent bar -->
+      <div class="coupon-accent"></div>
+
+      <!-- Coupon content -->
+      <div class="coupon-body">
+        <div class="coupon-top">
+          <span class="coupon-badge">MILESTONE {{ coupon.milestone }} PTS</span>
+          <span class="coupon-discount">{{ coupon.discount }}% OFF</span>
+        </div>
+
+        <div class="coupon-code-row">
+          <span class="coupon-code">{{ coupon.code }}</span>
+          <button class="coupon-copy-btn" (click)="copyCoupon(coupon.code)">
+            📋 Copy
+          </button>
+        </div>
+
+        <div class="coupon-bottom">
+          <span class="coupon-date">🗓️ Earned {{ coupon.earnedAt | date:'MMM d, y' }}</span>
+          <span class="coupon-validity">✨ Valid in cart</span>
+        </div>
+      </div>
+
+      <!-- Decorative dots (ticket style) -->
+      <div class="coupon-dots">
+        <div class="dot" *ngFor="let d of [1,2,3,4,5,6,7,8]"></div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>

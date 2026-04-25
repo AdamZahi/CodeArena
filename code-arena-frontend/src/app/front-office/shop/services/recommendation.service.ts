@@ -13,7 +13,7 @@ export interface Recommendation {
 @Injectable({ providedIn: 'root' })
 export class RecommendationService {
 
-  private readonly AI_URL = 'http://localhost:5000';
+private readonly BACKEND_URL = 'http://localhost:8080/api/shop';
 
   constructor(private http: HttpClient) {}
 
@@ -37,8 +37,8 @@ export class RecommendationService {
       limit
     };
 
-    return this.http.post<any>(`${this.AI_URL}/api/recommend`, body).pipe(
-      map(res => res.recommendations || []),
+   return this.http.post<any>(`${this.BACKEND_URL}/recommendations`, body).pipe(
+      map(res => res.data?.recommendations || res.recommendations || []),
       catchError(() => of([]))
     );
   }
