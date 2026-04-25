@@ -7,6 +7,8 @@ import com.codearena.module6_event.enums.EventStatus;
 import com.codearena.module6_event.enums.EventType;
 import com.codearena.module6_event.exception.EventNotFoundException;
 import com.codearena.module6_event.mapper.EventMapper;
+import com.codearena.module6_event.repository.EventCandidatureRepository;
+import com.codearena.module6_event.repository.EventInvitationRepository;
 import com.codearena.module6_event.repository.EventRegistrationRepository;
 import com.codearena.module6_event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventRegistrationRepository registrationRepository;
+    private final EventCandidatureRepository candidatureRepository;
+    private final EventInvitationRepository invitationRepository;
     private final EventMapper eventMapper;
 
     @Override
@@ -113,7 +117,16 @@ public class EventServiceImpl implements EventService {
         if (!eventRepository.existsById(id)) {
             throw new EventNotFoundException("Event not found: " + id);
         }
-        registrationRepository.deleteAll(registrationRepository.findByEvent_Id(id));
+        // Delete registrations
+        registrationRepository.deleteAll(
+            registrationRepository.findByEvent_Id(id));
+        // Delete candidatures
+        candidatureRepository.deleteAll(
+            candidatureRepository.findByEventId(id));
+        // Delete invitations
+        invitationRepository.deleteAll(
+            invitationRepository.findByEventId(id));
+        // Delete event
         eventRepository.deleteById(id);
     }
 

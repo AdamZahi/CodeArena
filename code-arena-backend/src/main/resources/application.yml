@@ -35,13 +35,6 @@ spring:
         jwt:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
-auth0:
-  domain: ${AUTH0_DOMAIN:dev-70do2fpg2iw11ckn.us.auth0.com}
-  audience: ${AUTH0_AUDIENCE:https://codearena.com/api}
-  client-id: ${AUTH0_CLIENT_ID:odFTCaUgs8GeJqTQvIpkskwbwrJi7UIv}
-  client-secret: ${AUTH0_CLIENT_SECRET:r3doiTPsUzZ3-ZMiy-kOBQMbMh3Rduwg-Jl9diEVoiSx5ajGiHeb5ZyNe_HzWKMp}
-  management-api-audience: ${AUTH0_MANAGEMENT_API_AUDIENCE:https://dev-70do2fpg2iw11ckn.us.auth0.com/api/v2/}
-
 
 
 
