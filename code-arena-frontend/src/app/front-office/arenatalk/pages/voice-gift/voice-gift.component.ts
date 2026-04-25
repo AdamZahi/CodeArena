@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GiftService, GiftType } from '../../services/gift.service';
+import { ArenaTalkWalletService, ArenaTalkWallet } from '../../services/arenatalk-wallet.service';
 
 @Component({
   selector: 'app-voice-gift',
@@ -9,7 +10,7 @@ import { GiftService, GiftType } from '../../services/gift.service';
   templateUrl: './voice-gift.component.html',
   styleUrl: './voice-gift.component.css'
 })
-export class VoiceGiftComponent {
+export class VoiceGiftComponent implements OnChanges {
   @Input() currentUserId = '';
   @Input() currentUserName = '';
   @Input() ownerUserId = '';
@@ -20,6 +21,7 @@ export class VoiceGiftComponent {
   @Output() giftSent = new EventEmitter<string>();
 
   sending = false;
+  wallet: ArenaTalkWallet | null = null;
 
   gifts: { type: GiftType; label: string; coins: number; amount: number; icon: string }[] = [
     { type: 'COINS', label: 'Coins', coins: 5, amount: 0.5, icon: '🪙' },
@@ -28,10 +30,31 @@ export class VoiceGiftComponent {
     { type: 'ROCKET', label: 'Rocket', coins: 50, amount: 5, icon: '🚀' }
   ];
 
-  constructor(private giftService: GiftService) {}
+  constructor(
+    private giftService: GiftService,
+    private walletService: ArenaTalkWalletService
+  ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.currentUserId && this.currentUserName) {
+      this.loadWallet();
+    }
+  }
+
+  loadWallet(): void {
+    this.walletService.getWallet(this.currentUserId, this.currentUserName).subscribe({
+      next: wallet => this.wallet = wallet,
+      error: err => console.error('Wallet error', err)
+    });
+  }
+
+  canSend(giftCoins: number): boolean {
+    return !!this.wallet && this.wallet.balance >= giftCoins && !this.sending;
+  }
 
   sendGift(gift: { type: GiftType; coins: number; amount: number; icon: string }): void {
     if (!this.currentUserId || !this.ownerUserId || !this.hubId || !this.voiceChannelId) return;
+    if (!this.canSend(gift.coins)) return;
 
     this.sending = true;
 
@@ -49,11 +72,14 @@ export class VoiceGiftComponent {
     }).subscribe({
       next: () => {
         this.sending = false;
+        this.loadWallet();
         this.giftSent.emit(`${gift.icon} ${this.currentUserName} gifted ${gift.coins} coins to ${this.ownerUserName}`);
       },
-      error: (err) => {
+      error: err => {
         this.sending = false;
         console.error('Gift error', err);
+        alert('Not enough ArenaTalk coins.');
+        this.loadWallet();
       }
     });
   }

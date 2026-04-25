@@ -1,5 +1,10 @@
 <div class="gift-box">
-  <p class="gift-title">Support streamer</p>
+  <div class="gift-header">
+    <p class="gift-title">Support streamer</p>
+    <span class="wallet-balance">
+      🪙 {{ wallet?.balance ?? 0 }} coins
+    </span>
+  </div>
 
   <div class="gift-list">
     <button
@@ -7,7 +12,7 @@
       class="gift-card"
       *ngFor="let gift of gifts"
       (click)="sendGift(gift)"
-      [disabled]="sending">
+      [disabled]="!canSend(gift.coins)">
 
       <span class="gift-icon">{{ gift.icon }}</span>
       <span class="gift-label">{{ gift.label }}</span>
