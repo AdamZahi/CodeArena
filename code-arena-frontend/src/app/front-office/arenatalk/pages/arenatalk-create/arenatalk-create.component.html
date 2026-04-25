@@ -8,6 +8,7 @@
   </div>
 
   <div class="step-indicator">
+    <div class="step-pill" [class.active]="step === 0">0. AI Setup</div>
     <div class="step-pill" [class.active]="step === 1">1. Choose Type</div>
     <div class="step-pill" [class.active]="step === 2">2. Define Identity</div>
     <div class="step-pill" [class.active]="step === 3">3. Set Visibility</div>
@@ -16,10 +17,50 @@
   </div>
 
   <div class="wizard-card">
+
+    <!-- ── Step 0: AI Generator ── -->
+    <div *ngIf="step === 0">
+      <div class="section-title">
+        <h2>✦ AI Community Builder</h2>
+        <p>Describe your community in one sentence — AI fills everything instantly.</p>
+      </div>
+
+      <div class="ai-prompt-box">
+        <div class="ai-prompt-label">
+          <span class="ai-dot"></span>
+          free &amp; instant
+        </div>
+
+        <textarea
+          [(ngModel)]="aiPrompt"
+          placeholder='e.g. "A competitive Valorant squad focused on ranked climbing and VOD reviews"'
+          rows="4"
+          [disabled]="aiLoading"
+          class="ai-textarea"
+        ></textarea>
+
+        <div class="ai-actions">
+          <button
+            class="next-btn"
+            (click)="generateWithAI()"
+            [disabled]="aiLoading || !aiPrompt.trim()"
+          >
+            {{ aiLoading ? '⏳ Generating...' : '✦ Generate with AI' }}
+          </button>
+          <button class="back-btn" (click)="step = 1">
+            Skip → Fill manually
+          </button>
+        </div>
+
+        <p class="error-text" *ngIf="aiError">{{ aiError }}</p>
+      </div>
+    </div>
+
+    <!-- ── Step 1: Category ── -->
     <div *ngIf="step === 1">
       <div class="section-title">
         <h2>Choose Community Type</h2>
-        <p>Select the type that best matches your community’s purpose.</p>
+        <p>Select the type that best matches your community's purpose.</p>
       </div>
 
       <div class="cards-grid">
@@ -35,6 +76,7 @@
       </div>
     </div>
 
+    <!-- ── Step 2: Identity ── -->
     <div *ngIf="step === 2">
       <div class="section-title">
         <h2>Define Identity</h2>
@@ -55,9 +97,7 @@
               <small *ngIf="name?.errors?.['minlength']">Community name must be at least 3 characters.</small>
               <small *ngIf="name?.errors?.['maxlength']">Community name cannot exceed 30 characters.</small>
               <small *ngIf="name?.errors?.['whitespace']">Community name cannot contain only spaces.</small>
-              <small *ngIf="name?.errors?.['pattern']">
-                Only letters, numbers, spaces, underscores and hyphens are allowed.
-              </small>
+              <small *ngIf="name?.errors?.['pattern']">Only letters, numbers, spaces, underscores and hyphens are allowed.</small>
             </div>
           </div>
 
@@ -102,6 +142,7 @@
       </form>
     </div>
 
+    <!-- ── Step 3: Visibility ── -->
     <div *ngIf="step === 3">
       <div class="section-title">
         <h2>Set Visibility</h2>
@@ -121,6 +162,7 @@
       </div>
     </div>
 
+    <!-- ── Step 4: Channels ── -->
     <div *ngIf="step === 4">
       <div class="section-title">
         <h2>Select Default Channels</h2>
@@ -143,6 +185,7 @@
       </div>
     </div>
 
+    <!-- ── Step 5: Review ── -->
     <div *ngIf="step === 5">
       <div class="section-title">
         <h2>Review & Create</h2>
@@ -183,12 +226,17 @@
 
     <p class="error-text" *ngIf="errorMessage">{{ errorMessage }}</p>
 
+    <!-- ── Navigation buttons ── -->
     <div class="actions" [class.dual]="step > 1">
+
+      <!-- Back button: show from step 1 onward, skip back to step 0 shows "Start Over" -->
+      <button class="back-btn" *ngIf="step === 1" (click)="step = 0">← Start Over</button>
       <button class="back-btn" *ngIf="step > 1" (click)="prevStep()">← Back</button>
 
+      <!-- Next button for steps 1-4 -->
       <button
         class="next-btn"
-        *ngIf="step < 5"
+        *ngIf="step >= 1 && step < 5"
         [disabled]="
           (step === 1 && !selectedCategory) ||
           (step === 2 && hubForm.invalid) ||
@@ -199,6 +247,7 @@
         Next →
       </button>
 
+      <!-- Create button on step 5 -->
       <button
         class="create-btn"
         *ngIf="step === 5"
@@ -208,5 +257,6 @@
         {{ loading ? 'Creating...' : 'Create Community' }}
       </button>
     </div>
+
   </div>
 </section>

@@ -23,7 +23,6 @@
         <span class="voice-icon">🔊</span>
         <span class="voice-name">{{ channel.name }}</span>
 
-        <!-- Participant counter -->
         <span class="participant-counter" *ngIf="activeChannelId === channel.id">
           {{ participantCount }}/{{ maxParticipants }}
         </span>
@@ -41,20 +40,18 @@
           </button>
           <button class="delete-voice-btn"
             *ngIf="isOwner"
-            (click)="deleteChannel(channel.id)">
+            (click)="deleteChannel(channel.id!)">
             ×
           </button>
         </div>
       </div>
 
-      <!-- Room controls -->
       <div class="room-controls" *ngIf="activeChannelId === channel.id && inRoom">
         <button class="mute-btn" (click)="toggleMute()" [class.muted]="isMuted">
           {{ isMuted ? '🔇 Unmute' : '🎙️ Mute' }}
         </button>
       </div>
 
-      <!-- Current user in room -->
       <div class="participants-list" *ngIf="activeChannelId === channel.id && inRoom">
 
         <!-- Me -->
@@ -67,19 +64,23 @@
         </div>
 
         <!-- Other participants -->
-        <div class="participant" *ngFor="let p of participants"
-          [class.speaking]="p.speaking">
+        <div class="participant" *ngFor="let p of participants" [class.speaking]="p.speaking">
           <div class="participant-avatar" [class.speaking-avatar]="p.speaking">
             {{ p.userName.charAt(0).toUpperCase() }}
           </div>
           <span class="participant-name">{{ p.userName }}</span>
           <span class="muted-icon" *ngIf="p.muted">🔇</span>
-          <button class="kick-btn"
+
+          <!-- ── Kick button ── -->
+          <button
+            class="kick-btn"
             *ngIf="isOwner && p.userId !== currentUserId"
             (click)="kickParticipant(p.userId)"
-            title="Kick from voice">
-            ✕
+            title="Kick {{ p.userName }} from voice">
+            <span class="kick-icon">⚡</span>
+            <span class="kick-label">Kick</span>
           </button>
+
         </div>
 
       </div>

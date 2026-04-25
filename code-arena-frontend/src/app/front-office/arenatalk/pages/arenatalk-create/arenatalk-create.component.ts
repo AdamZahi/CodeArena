@@ -10,9 +10,12 @@ import {
   ValidationErrors,
   Validators
 } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '@auth0/auth0-angular';
 import { ArenatalkService } from '../../services/arenatalk.service';
 import { Hub, TextChannel } from '../../models/arenatalk.model';
+import { environment } from '../../../../../environments/environment';
 
 type CommunityCategory = 'GAMING' | 'PROGRAMMING' | 'ESPORT' | 'STUDY' | 'CUSTOM';
 type CommunityVisibility = 'PUBLIC' | 'PRIVATE';
@@ -38,14 +41,18 @@ interface ChannelOption {
 @Component({
   selector: 'app-arenatalk-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './arenatalk-create.component.html',
   styleUrl: './arenatalk-create.component.css'
 })
 export class ArenatalkCreateComponent implements OnInit {
-  step = 1;
+  step = 0;
   loading = false;
   errorMessage = '';
+
+  aiPrompt = '';
+  aiLoading = false;
+  aiError = '';
 
   hubForm: FormGroup;
 
@@ -70,7 +77,8 @@ export class ArenatalkCreateComponent implements OnInit {
     private fb: FormBuilder,
     private arenatalkService: ArenatalkService,
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private http: HttpClient
   ) {
     this.hubForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30), this.noWhitespaceValidator, Validators.pattern(/^[a-zA-Z0-9 _-]+$/)]],
@@ -81,6 +89,75 @@ export class ArenatalkCreateComponent implements OnInit {
   }
 
   ngOnInit(): void {}
+
+  generateWithAI(): void {
+    if (!this.aiPrompt.trim()) return;
+    this.aiLoading = true;
+    this.aiError = '';
+
+    const systemPrompt = `You generate community setup data for a platform called ArenaTalk.
+Respond ONLY with valid JSON. No markdown, no backticks, no explanation, nothing else.
+Return exactly this structure:
+{
+  "name": "3-30 chars, letters/numbers/spaces/hyphens/underscores only",
+  "description": "10-200 chars describing the community",
+  "category": "GAMING" or "PROGRAMMING" or "ESPORT" or "STUDY" or "CUSTOM",
+  "visibility": "PUBLIC" or "PRIVATE",
+  "channels": ["2 to 4 values from: general, announcements, strategy, team-up, dev-talk, resources, training, matches, help, notes, ideas"]
+}`;
+
+    const userPrompt = `Generate community data for: "${this.aiPrompt.trim()}"`;
+
+    this.http.post<any>(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7
+      },
+      {
+        headers: { Authorization: `Bearer ${environment.groqApiKey}` }
+      }
+    ).subscribe({
+      next: (res) => {
+        try {
+          const raw = res.choices[0].message.content;
+          const clean = raw.replace(/```json|```/g, '').trim();
+          const parsed = JSON.parse(clean);
+
+          // ── Pre-fill form ──
+          this.hubForm.patchValue({
+            name: parsed.name,
+            description: parsed.description
+          });
+
+          // ── Fix: mark as touched so validation passes ──
+          this.hubForm.markAllAsTouched();
+          this.hubForm.updateValueAndValidity();
+
+          // ── Pre-select category, visibility, channels ──
+          this.selectCategory(parsed.category);
+          this.selectVisibility(parsed.visibility);
+          this.channelOptions.forEach(ch => {
+            ch.selected = parsed.channels.includes(ch.name);
+          });
+
+          this.aiLoading = false;
+          this.step = 5;
+        } catch (e) {
+          this.aiError = 'Could not parse AI response. Try again.';
+          this.aiLoading = false;
+        }
+      },
+      error: () => {
+        this.aiError = 'AI generation failed. Try again.';
+        this.aiLoading = false;
+      }
+    });
+  }
 
   noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value?.trim();
@@ -153,7 +230,6 @@ export class ArenatalkCreateComponent implements OnInit {
     this.loading = true;
     this.errorMessage = '';
 
-    // ─── Récupérer le keycloakId depuis le token ──────────────────
     this.auth.getAccessTokenSilently().pipe(
       switchMap(token => {
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -166,7 +242,7 @@ export class ArenatalkCreateComponent implements OnInit {
           iconUrl: this.hubForm.value.iconUrl?.trim() || '',
           category: this.selectedCategory,
           visibility: this.selectedVisibility,
-          keycloakId: keycloakId  // ← envoyé dans le body
+          keycloakId: keycloakId
         };
 
         return this.arenatalkService.createHub(hubPayload).pipe(

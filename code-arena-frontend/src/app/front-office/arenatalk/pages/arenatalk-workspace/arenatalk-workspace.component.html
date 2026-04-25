@@ -189,10 +189,7 @@
           {{ p.userName }}
           <span *ngIf="p.muted">🔇</span>
         </div>
-        <button class="kick-tile-btn" *ngIf="isOwner"
-          (click)="kickVoiceParticipant(p.userId)">
-          ✕ Kick
-        </button>
+        
       </div>
 
     </div>  <!-- ← ferme voice-grid ici -->
