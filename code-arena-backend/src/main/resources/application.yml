@@ -37,8 +37,6 @@ spring:
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
 
 
-
-
 codearena:
   base-url: https://codearena.app
 
