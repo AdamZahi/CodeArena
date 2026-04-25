@@ -31,7 +31,7 @@ export class NotificationComponent implements OnInit, OnDestroy {
   constructor(
     private notificationService: NotificationService,
     private authUserSync: AuthUserSyncService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // ── LISTEN FOR ORDER STATUS NOTIFICATIONS ────
@@ -132,20 +132,20 @@ export class NotificationComponent implements OnInit, OnDestroy {
   getStatusIcon(status: string): string {
     switch (status) {
       case 'CONFIRMED': return '🎉';
-      case 'SHIPPED':   return '🚚';
+      case 'SHIPPED': return '🚚';
       case 'DELIVERED': return '✅';
       case 'CANCELLED': return '❌';
-      default:          return '📦';
+      default: return '📦';
     }
   }
 
   getStatusColor(status: string): string {
     switch (status) {
       case 'CONFIRMED': return 'notif-confirmed';
-      case 'SHIPPED':   return 'notif-shipped';
+      case 'SHIPPED': return 'notif-shipped';
       case 'DELIVERED': return 'notif-delivered';
       case 'CANCELLED': return 'notif-cancelled';
-      default:          return 'notif-default';
+      default: return 'notif-default';
     }
   }
 

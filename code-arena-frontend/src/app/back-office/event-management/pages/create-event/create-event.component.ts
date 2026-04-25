@@ -55,6 +55,11 @@ export class CreateEventComponent {
   submit(): void {
     this.errorMessage = null;
     this.successMessage = null;
+
+    if (!this.validateForm()) {
+      return;
+    }
+
     this.isSubmitting = true;
 
     const payload = {
@@ -82,8 +87,53 @@ export class CreateEventComponent {
       error: (err: any) => {
         console.error('Failed to create event', err);
         this.isSubmitting = false;
-        this.errorMessage = 'EVENT CREATION FAILED.';
+        
+        if (err.status === 400 && err.error) {
+          const errors = err.error;
+          if (typeof errors === 'object') {
+            this.errorMessage = Object.values(errors).join(' | ').toUpperCase();
+          } else {
+            this.errorMessage = String(errors).toUpperCase();
+          }
+        } else {
+          this.errorMessage = 'EVENT CREATION FAILED.';
+        }
       }
     });
   }
+
+  private validateForm(): boolean {
+    if (!this.title || this.title.trim().length < 3) {
+      this.errorMessage = 'TITLE MUST BE AT LEAST 3 CHARACTERS.';
+      return false;
+    }
+    if (!this.description || this.description.trim().length < 10) {
+      this.errorMessage = 'DESCRIPTION MUST BE AT LEAST 10 CHARACTERS.';
+      return false;
+    }
+    if (!this.startDate || !this.endDate) {
+      this.errorMessage = 'START AND END DATES ARE REQUIRED.';
+      return false;
+    }
+
+    const start = new Date(this.startDate).getTime();
+    const end = new Date(this.endDate).getTime();
+    const now = new Date().getTime();
+
+    if (start <= now) {
+      this.errorMessage = 'START DATE MUST BE IN THE FUTURE.';
+      return false;
+    }
+    if (end <= start) {
+      this.errorMessage = 'END DATE MUST BE AFTER START DATE.';
+      return false;
+    }
+    if (this.maxParticipants < 1 || this.maxParticipants > 1000) {
+      this.errorMessage = 'PARTICIPANTS MUST BE BETWEEN 1 AND 1000.';
+      return false;
+    }
+
+    return true;
+  }
 }
+
