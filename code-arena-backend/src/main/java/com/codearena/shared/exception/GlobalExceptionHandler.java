@@ -4,6 +4,7 @@ import com.codearena.module2_battle.exception.*;
 import com.codearena.shared.response.ApiResponse;
 import com.codearena.shared.response.ApiException;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -174,6 +175,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DailyChallengeNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleDailyChallengeNotFound(DailyChallengeNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+            .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    // ── Backoffice admin exceptions ──
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+            .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
     }
 }

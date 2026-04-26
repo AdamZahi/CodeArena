@@ -28,4 +28,13 @@ public interface BattleSubmissionRepository extends JpaRepository<BattleSubmissi
 
     @Query("SELECT COUNT(b) FROM BattleSubmission b WHERE b.participantId IN :participantIds AND b.status = 'ACCEPTED'")
     long countAcceptedByParticipantIds(@Param("participantIds") List<String> participantIds);
+
+    /** Backoffice: language usage in battle submissions over time. */
+    @Query("SELECT b.language, COUNT(b) FROM BattleSubmission b " +
+            "WHERE b.submittedAt BETWEEN :from AND :to " +
+            "GROUP BY b.language ORDER BY COUNT(b) DESC")
+    List<Object[]> countGroupedByLanguageBetween(@Param("from") java.time.LocalDateTime from,
+                                                 @Param("to") java.time.LocalDateTime to);
+
+    List<BattleSubmission> findByParticipantIdIn(List<String> participantIds);
 }

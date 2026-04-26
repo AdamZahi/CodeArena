@@ -48,4 +48,36 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     @Query("SELECT COALESCE(SUM(bp.score), 0) FROM BattleParticipant bp JOIN BattleRoom br ON bp.roomId = CAST(br.id AS string) " +
            "WHERE bp.userId = :userId AND br.status = 'FINISHED' AND bp.role = 'PLAYER'")
     long sumScoreByUserId(@Param("userId") String userId);
+
+    // ---------- Backoffice analytics queries ----------
+
+    /** Top players: returns rows of (userId, battlesPlayed, battlesWon). */
+    @Query("SELECT bp.userId, COUNT(bp), SUM(CASE WHEN bp.rank = 1 THEN 1 ELSE 0 END) " +
+            "FROM BattleParticipant bp JOIN BattleRoom br ON bp.roomId = CAST(br.id AS string) " +
+            "WHERE br.status = com.codearena.module2_battle.enums.BattleRoomStatus.FINISHED " +
+            "  AND bp.role = com.codearena.module2_battle.enums.ParticipantRole.PLAYER " +
+            "  AND bp.userId IS NOT NULL " +
+            "GROUP BY bp.userId " +
+            "ORDER BY SUM(CASE WHEN bp.rank = 1 THEN 1 ELSE 0 END) DESC, COUNT(bp) DESC")
+    List<Object[]> findTopPlayersByWins(Pageable pageable);
+
+    long countByRoomId(String roomId);
+
+    List<BattleParticipant> findByRoomId(String roomId);
+
+    @Query("SELECT COUNT(DISTINCT bp.userId) FROM BattleParticipant bp WHERE bp.userId IS NOT NULL")
+    long countDistinctParticipants();
+
+    /** Total wins across the platform: any PLAYER with rank=1 in a FINISHED room. */
+    @Query("SELECT COUNT(bp) FROM BattleParticipant bp JOIN BattleRoom br ON bp.roomId = CAST(br.id AS string) " +
+            "WHERE br.status = com.codearena.module2_battle.enums.BattleRoomStatus.FINISHED " +
+            "  AND bp.role = com.codearena.module2_battle.enums.ParticipantRole.PLAYER " +
+            "  AND bp.rank = 1")
+    long countGlobalWins();
+
+    /** Total finished player slots across the platform. */
+    @Query("SELECT COUNT(bp) FROM BattleParticipant bp JOIN BattleRoom br ON bp.roomId = CAST(br.id AS string) " +
+            "WHERE br.status = com.codearena.module2_battle.enums.BattleRoomStatus.FINISHED " +
+            "  AND bp.role = com.codearena.module2_battle.enums.ParticipantRole.PLAYER")
+    long countGlobalFinishedSlots();
 }
