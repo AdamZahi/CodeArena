@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "battle.ranker")
 public class RankerProperties {
 
-    /** Base URL of the ranker FastAPI service (e.g. http://localhost:8001). */
-    private String baseUrl = "http://localhost:8001";
+    /** Base URL of the ranker FastAPI service (e.g. http://localhost:8010). */
+    private String baseUrl = "http://localhost:8010";
 
     /** HTTP connect timeout for ranker calls. */
     private int connectTimeoutMs = 1500;

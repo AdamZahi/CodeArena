@@ -61,7 +61,7 @@ battle:
   # Score Ranker microservice (Python FastAPI wrapping ranker_model.pkl).
   # Falls back to a time-based estimate if unreachable, so battles never break.
   ranker:
-    base-url: http://localhost:8001
+    base-url: http://localhost:8010
     connect-timeout-ms: 1500
     read-timeout-ms: 4000
     enabled: true
@@ -70,7 +70,7 @@ battle:
   # keep resolving even when the classifier is offline — a fallback result
   # with score=0.0 is persisted instead.
   classifier:
-    base-url: http://localhost:8002
+    base-url: http://localhost:8011
     connect-timeout-ms: 1500
     read-timeout-ms: 8000
     enabled: true

@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "battle.classifier")
 public class ClassifierProperties {
 
-    /** Base URL of the classifier FastAPI service (e.g. http://localhost:8002). */
-    private String baseUrl = "http://localhost:8002";
+    /** Base URL of the classifier FastAPI service (e.g. http://localhost:8011). */
+    private String baseUrl = "http://localhost:8011";
 
     /** HTTP connect timeout for classifier calls. */
     private int connectTimeoutMs = 1500;
