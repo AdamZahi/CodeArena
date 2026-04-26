@@ -22,8 +22,18 @@ import { VoiceSignalingService } from '../../services/voice-signaling.service';
 import { VideoStreamDirective } from '../../../../shared/directives/video-stream.directive';
 import { VoiceGiftComponent } from '../voice-gift/voice-gift.component';
 import { PaymentService } from '../../services/payment.service';
+import { ArenaTalkWalletService } from '../../services/arenatalk-wallet.service';
 
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
+
+export interface CoinPackage {
+  coins: number;
+  price: string;
+  euros: number;
+  bonus?: string;
+  popular?: boolean;
+  icon: string;
+}
 
 @Component({
   selector: 'app-arenatalk-workspace',
@@ -97,9 +107,25 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   showGiftNotification = false;
   private hideGiftTimeout: any;
 
+  // ── Wallet ──
+  walletBalance = 0;
+  walletLoaded = false;
+
   // ── Payment success popup ──
   showPaymentSuccess = false;
   lastPurchasedCoins = 0;
+
+  // ── Buy coins modal ──
+  showBuyModal = false;
+
+  coinPackages: CoinPackage[] = [
+    { coins: 100,  price: '€1.00',  euros: 100,  icon: '🪙' },
+    { coins: 250,  price: '€2.50',  euros: 250,  icon: '🪙' },
+    { coins: 500,  price: '€5.00',  euros: 500,  popular: true, bonus: 'Most Popular', icon: '💎' },
+    { coins: 1000, price: '€10.00', euros: 1000, bonus: '+100 free', icon: '💎' },
+    { coins: 2000, price: '€20.00', euros: 2000, bonus: '+300 free', icon: '👑' },
+    { coins: 5000, price: '€50.00', euros: 5000, bonus: '+1000 free', icon: '🚀' },
+  ];
 
   private voiceSubs: Subscription[] = [];
 
@@ -114,6 +140,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
     private paymentService: PaymentService,
+    private walletService: ArenaTalkWalletService,
     private voiceSignalingService: VoiceSignalingService
   ) {}
 
@@ -130,7 +157,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.voiceSubs.push(
       this.voiceSignalingService.giftEvents$.subscribe(gift => {
         if (!gift) return;
-
         this.zone.run(() => {
           const icon =
             gift.giftType === 'FIRE'   ? '🔥' :
@@ -152,7 +178,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       })
     );
 
-    // ── Check payment success IMMEDIATELY on init ──
+    // ── Check payment redirect FIRST ──
     this.checkPaymentSuccess();
 
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
@@ -161,7 +187,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
       const nav = this.router.getCurrentNavigation();
       const state = nav?.extras?.state || history.state;
-
       const createdHub = state?.selectedHub as Hub | undefined;
       const createdChannels = (state?.createdChannels as TextChannel[] | undefined) || [];
 
@@ -221,53 +246,98 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.setCurrentUserOffline();
   }
 
-  // ── Payment success ────────────────────────────────────────────────────────
+  // ── Wallet ─────────────────────────────────────────────────────────────────
+
+  loadWallet(): void {
+    if (!this.currentKeycloakId || !this.currentUserName) return;
+    this.walletService.getWallet(this.currentKeycloakId, this.currentUserName).subscribe({
+      next: wallet => {
+        this.walletBalance = wallet.balance;
+        this.walletLoaded  = true;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  get coinTierLabel(): string {
+    if (this.walletBalance >= 2000) return '💎 Diamond';
+    if (this.walletBalance >= 500)  return '🥇 Gold';
+    if (this.walletBalance >= 100)  return '🥈 Silver';
+    return '🥉 Bronze';
+  }
+
+  get coinTierClass(): string {
+    if (this.walletBalance >= 2000) return 'diamond';
+    if (this.walletBalance >= 500)  return 'gold';
+    if (this.walletBalance >= 100)  return 'silver';
+    return 'bronze';
+  }
+
+  // ── Buy coins modal ────────────────────────────────────────────────────────
+
+  openBuyModal(): void  { this.showBuyModal = true; }
+  closeBuyModal(): void { this.showBuyModal = false; }
+
+  // ── Payment ────────────────────────────────────────────────────────────────
+
+  buyCoins(pkg: CoinPackage): void {
+    if (!this.currentKeycloakId || !this.currentUserName) {
+      console.error('User not ready');
+      return;
+    }
+    this.closeBuyModal();
+    this.paymentService.createCheckout(
+      pkg.euros,
+      this.currentKeycloakId,
+      this.currentUserName
+    ).subscribe({
+      next: res => { window.location.href = res.checkoutUrl || res.url || ''; },
+      error: err => { console.error('Payment error:', err); }
+    });
+  }
 
   private checkPaymentSuccess(): void {
-    const params = new URLSearchParams(window.location.search);
+    const params  = new URLSearchParams(window.location.search);
     const payment = params.get('payment');
     const coins   = params.get('coins');
 
-    console.log('>>> checkPaymentSuccess called — payment:', payment, 'coins:', coins);
+    console.log('>>> checkPaymentSuccess — payment:', payment, 'coins:', coins);
 
     if (payment === 'success') {
       this.lastPurchasedCoins = parseInt(coins || '500', 10);
-
-      // Show popup first, THEN clean URL
       this.showPaymentSuccess = true;
       this.cdr.detectChanges();
 
+      // Reload wallet after webhook processes (2s delay)
       setTimeout(() => {
+        this.loadWallet();
         const url = new URL(window.location.href);
         url.searchParams.delete('payment');
         url.searchParams.delete('coins');
         window.history.replaceState({}, '', url.toString());
-      }, 1500);
+      }, 2000);
     }
   }
 
   closePaymentSuccess(): void {
     this.showPaymentSuccess = false;
+    this.loadWallet();
   }
 
   // ── Voice ──────────────────────────────────────────────────────────────────
 
   onVoiceRoomChanged(event: { channelId: number | null; channelName: string }): void {
-    this.activeVoiceChannelId = event.channelId;
+    this.activeVoiceChannelId   = event.channelId;
     this.activeVoiceChannelName = event.channelName;
   }
 
-  toggleVoiceMute(): void {
-    this.voiceSignalingService.toggleMute();
-  }
-
-  toggleVoiceCamera(): void {
-    this.voiceSignalingService.toggleCamera();
-  }
+  toggleVoiceMute():   void { this.voiceSignalingService.toggleMute(); }
+  toggleVoiceCamera(): void { this.voiceSignalingService.toggleCamera(); }
 
   leaveVoiceRoom(): void {
     this.voiceSignalingService.leaveRoom().then(() => {
-      this.activeVoiceChannelId = null;
+      this.activeVoiceChannelId   = null;
       this.activeVoiceChannelName = '';
     });
   }
@@ -278,55 +348,32 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.voiceSignalingService.kickParticipant(userId);
   }
 
-  // ── Payment ────────────────────────────────────────────────────────────────
-
-  buyCoins(coins: number): void {
-    if (!this.currentKeycloakId || !this.currentUserName) {
-      console.error('User not ready');
-      return;
-    }
-
-    this.paymentService.createCheckout(
-      coins,
-      this.currentKeycloakId,
-      this.currentUserName
-    ).subscribe({
-      next: res => {
-        window.location.href = res.checkoutUrl || res.url || '';
-      },
-      error: err => {
-        console.error('Payment error:', err);
-      }
-    });
-  }
-
   // ── Online/Offline ─────────────────────────────────────────────────────────
 
   private setCurrentUserOnline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.setOnline(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      next: () => this.loadMembers(this.selectedHub!.id!),
+      next: () => {
+        this.loadMembers(this.selectedHub!.id!);
+        // Load wallet once we know the user identity
+        setTimeout(() => this.loadWallet(), 500);
+      },
       error: () => {}
     });
   }
 
   private setCurrentUserOffline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
-    this.hubMemberService.setOffline(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      error: () => {}
-    });
+    this.hubMemberService.setOffline(this.selectedHub.id, this.currentKeycloakId).subscribe({ error: () => {} });
   }
 
   // ── Hubs ───────────────────────────────────────────────────────────────────
 
   selectHub(hub: Hub): void {
-    if (this.selectedHub?.id && this.selectedHub.id !== hub.id) {
-      this.setCurrentUserOffline();
-    }
+    if (this.selectedHub?.id && this.selectedHub.id !== hub.id) this.setCurrentUserOffline();
 
     localStorage.setItem('selectedHubId', String(hub.id));
     this.hubReady = false;
-
     this.selectedHub = null;
     this.channels = [];
     this.messages = [];
@@ -347,7 +394,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
           next: data => { this.channels = data; this.selectFirstChannel(); },
           error: err => console.error('Error loading channels', err)
         });
-
         this.loadMembers(hub.id);
         this.setCurrentUserOnline();
       }
@@ -372,51 +418,38 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
         || currentUser.email
         || this.currentKeycloakId;
 
+      // Load wallet once name is known
+      this.loadWallet();
+
       if (this.isOwner && this.selectedHub?.id && this.currentKeycloakId) {
         this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId)
-          .subscribe({
-            next: reqs => this.pendingRequests = reqs,
-            error: () => {}
-          });
+          .subscribe({ next: reqs => this.pendingRequests = reqs, error: () => {} });
       }
     });
   }
 
-  get isOwner(): boolean {
-    return this.currentUserMember?.role === 'OWNER';
-  }
+  get isOwner(): boolean { return this.currentUserMember?.role === 'OWNER'; }
 
   loadPendingRequests(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
-
     this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      next: requests => {
-        this.pendingRequests = requests;
-        this.showPendingRequests = !this.showPendingRequests;
-      },
+      next: requests => { this.pendingRequests = requests; this.showPendingRequests = !this.showPendingRequests; },
       error: err => console.error('Error loading requests', err)
     });
   }
 
   acceptMember(memberId: number): void {
     if (!this.selectedHub?.id) return;
-
     this.hubMemberService.acceptRequest(this.selectedHub.id, memberId, this.currentKeycloakId).subscribe({
-      next: () => {
-        this.pendingRequests = this.pendingRequests.filter(r => r.id !== memberId);
-        this.loadMembers(this.selectedHub!.id!);
-      },
+      next: () => { this.pendingRequests = this.pendingRequests.filter(r => r.id !== memberId); this.loadMembers(this.selectedHub!.id!); },
       error: err => console.error('Error accepting request', err)
     });
   }
 
   rejectMember(memberId: number): void {
     if (!this.selectedHub?.id) return;
-
     this.hubMemberService.rejectRequest(this.selectedHub.id, memberId, this.currentKeycloakId).subscribe({
-      next: () => {
-        this.pendingRequests = this.pendingRequests.filter(r => r.id !== memberId);
-      },
+      next: () => { this.pendingRequests = this.pendingRequests.filter(r => r.id !== memberId); },
       error: err => console.error('Error rejecting request', err)
     });
   }
@@ -426,16 +459,12 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   private selectFirstChannel(): void {
     const general = this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
     this.selectedChannel = general || null;
-
-    if (this.selectedChannel?.id) {
-      this.loadMessagesByChannel(this.selectedChannel.id);
-    }
+    if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
   }
 
   selectChannel(channel: TextChannel): void {
     this.selectedChannel = channel;
     this.cancelEditMessage();
-
     if (channel.id) {
       this.loadMessagesByChannel(channel.id);
     } else {
@@ -447,17 +476,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   loadMessagesByChannel(channelId: number): void {
     this.arenaService.getMessagesByChannel(channelId).subscribe({
-      next: data => {
-        this.messages = data;
-        this.loadPinnedMessages(channelId);
-        this.loadReactions();
-      },
-      error: err => {
-        console.error('Error loading messages', err);
-        this.messages = [];
-        this.pinnedMessages = [];
-        this.readReceipts = {};
-      }
+      next: data => { this.messages = data; this.loadPinnedMessages(channelId); this.loadReactions(); },
+      error: err => { console.error('Error loading messages', err); this.messages = []; this.pinnedMessages = []; this.readReceipts = {}; }
     });
   }
 
@@ -470,13 +490,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   loadReactions(): void {
     if (!this.messages.length || !this.currentKeycloakId) return;
-
     const ids = this.messages.map(m => m.id!).filter(Boolean);
-
-    this.reactionService.getForChannel(ids, this.currentKeycloakId).subscribe({
-      next: data => this.reactions = data,
-      error: () => {}
-    });
+    this.reactionService.getForChannel(ids, this.currentKeycloakId).subscribe({ next: data => this.reactions = data, error: () => {} });
   }
 
   // ── Messages ───────────────────────────────────────────────────────────────
@@ -491,249 +506,132 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.aiModerationService.moderate(content).subscribe({
       next: result => {
         this.isCheckingMessage = false;
-
-        if (!result.safe) {
-          this.pendingMessage = content;
-          this.moderationWarningText = result.reason;
-          this.showModerationWarning = true;
-        } else {
-          this.doSendMessage(content);
-        }
+        if (!result.safe) { this.pendingMessage = content; this.moderationWarningText = result.reason; this.showModerationWarning = true; }
+        else this.doSendMessage(content);
       },
-      error: () => {
-        this.isCheckingMessage = false;
-        this.doSendMessage(content);
-      }
+      error: () => { this.isCheckingMessage = false; this.doSendMessage(content); }
     });
   }
 
   doSendMessage(content: string): void {
     if (!this.selectedChannel?.id) return;
-
     this.arenaService.sendMessage(this.selectedChannel.id, { content }).subscribe({
-      next: savedMessage => {
-        this.messages.push(savedMessage);
-        this.newMessage = '';
-        this.loadReactions();
-      },
+      next: savedMessage => { this.messages.push(savedMessage); this.newMessage = ''; this.loadReactions(); },
       error: err => console.error('Error sending message', err)
     });
   }
 
-  onSendAnyway(): void {
-    this.showModerationWarning = false;
-    this.doSendMessage(this.pendingMessage);
-    this.newMessage = '';
-    this.pendingMessage = '';
-  }
-
-  onModerationCancel(): void {
-    this.showModerationWarning = false;
-    this.pendingMessage = '';
-  }
-
-  onSmartReplySelected(reply: string): void {
-    this.newMessage = reply;
-  }
+  onSendAnyway(): void { this.showModerationWarning = false; this.doSendMessage(this.pendingMessage); this.newMessage = ''; this.pendingMessage = ''; }
+  onModerationCancel(): void { this.showModerationWarning = false; this.pendingMessage = ''; }
+  onSmartReplySelected(reply: string): void { this.newMessage = reply; }
 
   pinMessage(messageId: number): void {
-    this.arenaService.pinMessage(messageId).subscribe({
-      next: () => {
-        if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
-      },
-      error: err => console.error('Error pinning message', err)
-    });
+    this.arenaService.pinMessage(messageId).subscribe({ next: () => { if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id); }, error: err => console.error(err) });
   }
 
   unpinMessage(messageId: number): void {
-    this.arenaService.unpinMessage(messageId).subscribe({
-      next: () => {
-        if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
-      },
-      error: err => console.error('Error unpinning message', err)
-    });
+    this.arenaService.unpinMessage(messageId).subscribe({ next: () => { if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id); }, error: err => console.error(err) });
   }
 
   openCreateChannelForm(): void { this.showCreateChannelForm = true; }
 
-  closeCreateChannelForm(): void {
-    this.showCreateChannelForm = false;
-    this.newChannel = { name: '', topic: '' };
-  }
+  closeCreateChannelForm(): void { this.showCreateChannelForm = false; this.newChannel = { name: '', topic: '' }; }
 
   createChannel(): void {
     if (!this.selectedHub?.id) return;
-
     const rawName = this.newChannel.name?.trim();
     const topic   = this.newChannel.topic?.trim() || '';
-
     if (!rawName) return;
-
     const normalizedName = rawName.toLowerCase().replace(/\s+/g, '-');
-
     if (normalizedName.length < 3 || normalizedName.length > 20) return;
     if (!/^[a-z0-9-_]+$/.test(normalizedName)) return;
     if (topic.length > 100) return;
 
     this.arenaService.createChannel(this.selectedHub.id, { name: normalizedName, topic }).subscribe({
-      next: createdChannel => {
-        this.channels.push(createdChannel);
-        this.selectedChannel = createdChannel;
-        this.messages = [];
-        this.pinnedMessages = [];
-        this.readReceipts = {};
-        this.closeCreateChannelForm();
-      },
+      next: createdChannel => { this.channels.push(createdChannel); this.selectedChannel = createdChannel; this.messages = []; this.pinnedMessages = []; this.readReceipts = {}; this.closeCreateChannelForm(); },
       error: err => console.error('Error creating channel', err)
     });
   }
 
   openDeleteModal(type: DeleteTargetType, id?: number): void {
     if (!id) return;
-
     this.deleteTargetType = type;
     this.deleteTargetId   = id;
     this.showDeleteModal  = true;
-
     const messages: Record<string, string> = {
       hub:     'Are you sure you want to delete this community? This action is irreversible.',
       channel: 'Are you sure you want to delete this channel and all its messages?',
       message: 'Are you sure you want to delete this message?'
     };
-
     this.deleteMessageText = messages[type!] || '';
   }
 
-  closeDeleteModal(): void {
-    this.showDeleteModal  = false;
-    this.deleteTargetType = null;
-    this.deleteTargetId   = null;
-    this.deleteMessageText = '';
-  }
+  closeDeleteModal(): void { this.showDeleteModal = false; this.deleteTargetType = null; this.deleteTargetId = null; this.deleteMessageText = ''; }
 
   confirmDelete(): void {
     if (!this.deleteTargetType || !this.deleteTargetId) return;
-
     if (this.deleteTargetType === 'hub')     this.deleteHubConfirmed(this.deleteTargetId);
     else if (this.deleteTargetType === 'channel') this.deleteChannelConfirmed(this.deleteTargetId);
     else if (this.deleteTargetType === 'message') this.deleteMessageConfirmed(this.deleteTargetId);
   }
 
   deleteHubConfirmed(hubId: number): void {
-    this.arenaService.deleteHub(hubId).subscribe({
-      next: () => {
-        localStorage.removeItem('selectedHubId');
-        this.closeDeleteModal();
-        this.router.navigate(['/arenatalk']);
-      },
-      error: err => console.error('Error deleting hub', err)
-    });
+    this.arenaService.deleteHub(hubId).subscribe({ next: () => { localStorage.removeItem('selectedHubId'); this.closeDeleteModal(); this.router.navigate(['/arenatalk']); }, error: err => console.error(err) });
   }
 
   deleteChannelConfirmed(channelId: number): void {
     this.arenaService.deleteChannel(channelId).subscribe({
       next: () => {
         this.channels = this.channels.filter(c => c.id !== channelId);
-
         if (this.selectedChannel?.id === channelId) {
           this.selectedChannel = this.channels[0] || null;
-
-          if (this.selectedChannel?.id) {
-            this.loadMessagesByChannel(this.selectedChannel.id);
-          } else {
-            this.messages = [];
-            this.pinnedMessages = [];
-            this.readReceipts = {};
-          }
+          if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
+          else { this.messages = []; this.pinnedMessages = []; this.readReceipts = {}; }
         }
-
         this.closeDeleteModal();
       },
-      error: err => console.error('Error deleting channel', err)
+      error: err => console.error(err)
     });
   }
 
   deleteMessageConfirmed(messageId: number): void {
     this.arenaService.deleteMessage(messageId).subscribe({
-      next: () => {
-        this.messages      = this.messages.filter(msg => msg.id !== messageId);
-        this.pinnedMessages = this.pinnedMessages.filter(msg => msg.id !== messageId);
-        delete this.readReceipts[messageId];
-        this.closeDeleteModal();
-      },
-      error: err => console.error('Error deleting message', err)
+      next: () => { this.messages = this.messages.filter(msg => msg.id !== messageId); this.pinnedMessages = this.pinnedMessages.filter(msg => msg.id !== messageId); delete this.readReceipts[messageId]; this.closeDeleteModal(); },
+      error: err => console.error(err)
     });
   }
 
-  startEditMessage(message: Message): void {
-    if (!message.id) return;
-    this.editingMessageId      = message.id;
-    this.editedMessageContent  = message.content;
-  }
-
-  cancelEditMessage(): void {
-    this.editingMessageId     = null;
-    this.editedMessageContent = '';
-  }
+  startEditMessage(message: Message): void { if (!message.id) return; this.editingMessageId = message.id; this.editedMessageContent = message.content; }
+  cancelEditMessage(): void { this.editingMessageId = null; this.editedMessageContent = ''; }
 
   saveEditedMessage(message: Message): void {
     if (!message.id || !this.editedMessageContent.trim()) return;
-
-    this.arenaService.updateMessage(message.id, {
-      ...message,
-      content: this.editedMessageContent.trim()
-    }).subscribe({
-      next: saved => {
-        this.messages       = this.messages.map(m => m.id === saved.id ? saved : m);
-        this.pinnedMessages = this.pinnedMessages.map(m => m.id === saved.id ? saved : m);
-        this.cancelEditMessage();
-      },
-      error: err => console.error('Error updating message', err)
+    this.arenaService.updateMessage(message.id, { ...message, content: this.editedMessageContent.trim() }).subscribe({
+      next: saved => { this.messages = this.messages.map(m => m.id === saved.id ? saved : m); this.pinnedMessages = this.pinnedMessages.map(m => m.id === saved.id ? saved : m); this.cancelEditMessage(); },
+      error: err => console.error(err)
     });
   }
 
   leaveHub(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
-
-    this.hubMemberService.leaveHub(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      next: () => {
-        localStorage.removeItem('selectedHubId');
-        this.router.navigate(['/arenatalk']);
-      },
-      error: err => console.error('Error leaving hub', err)
-    });
+    this.hubMemberService.leaveHub(this.selectedHub.id, this.currentKeycloakId).subscribe({ next: () => { localStorage.removeItem('selectedHubId'); this.router.navigate(['/arenatalk']); }, error: err => console.error(err) });
   }
 
   onHubImageError(event: Event, type: 'icon' | 'banner'): void {
     const img = event.target as HTMLImageElement;
-
     if (type === 'icon') img.style.display = 'none';
-
-    if (type === 'banner') {
-      const c = img.parentElement;
-      if (c) c.style.display = 'none';
-    }
+    if (type === 'banner') { const c = img.parentElement; if (c) c.style.display = 'none'; }
   }
 
   scrollToMessage(msg: Message): void {
     if (!msg.id) return;
-
     setTimeout(() => {
       const el = document.getElementById(`msg-${msg.id}`);
-
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('highlighted');
-        setTimeout(() => el.classList.remove('highlighted'), 2000);
-      }
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('highlighted'); setTimeout(() => el.classList.remove('highlighted'), 2000); }
     }, 100);
   }
 
-  // ── Getters ────────────────────────────────────────────────────────────────
-
-  get ownerMember(): HubMember | null {
-    return this.activeMembers.find(m => m.role === 'OWNER') ?? null;
-  }
+  get ownerMember(): HubMember | null { return this.activeMembers.find(m => m.role === 'OWNER') ?? null; }
 
   get ownerUserId(): string {
     const owner = this.ownerMember?.user as any;
@@ -750,26 +648,13 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.giftNotification = message;
     clearTimeout(this.hideGiftTimeout);
     this.showGiftNotification = true;
-
-    this.hideGiftTimeout = setTimeout(() => {
-      this.showGiftNotification = false;
-      this.cdr.detectChanges();
-    }, 10000);
+    this.hideGiftTimeout = setTimeout(() => { this.showGiftNotification = false; this.cdr.detectChanges(); }, 10000);
+    // Reload wallet after gift sent
+    setTimeout(() => this.loadWallet(), 1000);
   }
 
-  get hasMessages(): boolean {
-    return this.messages.length > 0;
-  }
-
-  get categoryLabel(): string {
-    return this.selectedHub?.category || 'COMMUNITY';
-  }
-
-  get activeMembers(): HubMember[] {
-    return this.members.filter(m => m.status === 'ACTIVE');
-  }
-
-  get onlineMembers(): HubMember[] {
-    return this.activeMembers.filter(m => m.online);
-  }
+  get hasMessages(): boolean { return this.messages.length > 0; }
+  get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }
+  get activeMembers(): HubMember[] { return this.members.filter(m => m.status === 'ACTIVE'); }
+  get onlineMembers(): HubMember[] { return this.activeMembers.filter(m => m.online); }
 }

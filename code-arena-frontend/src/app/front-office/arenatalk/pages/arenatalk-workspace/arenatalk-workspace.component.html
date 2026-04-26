@@ -1,4 +1,28 @@
 <section class="workspace-page">
+
+  <!-- ══ GLOBAL TOP BAR ══ -->
+  <div class="workspace-topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">⚡ ArenaTalk</span>
+    </div>
+    <div class="topbar-right">
+      <!-- Coin tier badge -->
+      <span class="topbar-tier" [ngClass]="coinTierClass">{{ coinTierLabel }}</span>
+
+      <!-- Balance -->
+      <div class="topbar-wallet">
+        <span class="topbar-wallet-icon">🪙</span>
+        <span class="topbar-wallet-amount">{{ walletBalance | number }}</span>
+        <span class="topbar-wallet-label">coins</span>
+      </div>
+
+      <!-- Buy button -->
+      <button class="topbar-buy-btn" (click)="openBuyModal()">
+        + Buy Coins
+      </button>
+    </div>
+  </div>
+
   <div class="workspace-shell">
 
     <aside class="sidebar hubs-sidebar">
@@ -51,7 +75,6 @@
           <h3>Create Channel</h3>
           <p>Add a new discussion space inside this community.</p>
         </div>
-
         <div class="form-group">
           <label>Channel Name</label>
           <input type="text" [(ngModel)]="newChannel.name" #name="ngModel"
@@ -64,13 +87,11 @@
             <small *ngIf="name.errors?.['pattern']">Only letters, numbers, - and _.</small>
           </div>
         </div>
-
         <div class="form-group">
           <label>Channel Topic</label>
           <input type="text" [(ngModel)]="newChannel.topic" #topic="ngModel"
             maxlength="100" placeholder="Ex: Main announcements" />
         </div>
-
         <div class="mini-actions channel-form-actions">
           <button class="primary-mini-btn" (click)="createChannel()"
             [disabled]="name.invalid || !newChannel.name?.trim()">Create</button>
@@ -104,7 +125,6 @@
           ⏳ Pending Requests
           <span class="badge" *ngIf="pendingRequests.length > 0">{{ pendingRequests.length }}</span>
         </button>
-
         <div class="pending-list" *ngIf="showPendingRequests">
           <ng-container *ngIf="pendingRequests.length > 0; else noRequests">
             <div class="pending-card" *ngFor="let req of pendingRequests">
@@ -120,7 +140,6 @@
               </div>
             </div>
           </ng-container>
-
           <ng-template #noRequests>
             <div class="empty-box"><p>No pending requests.</p></div>
           </ng-template>
@@ -141,7 +160,7 @@
 
       <div class="voice-room-full" *ngIf="activeVoiceChannelId">
 
-        <!-- Gift notification banner -->
+        <!-- Gift notification -->
         <div class="gift-notification" *ngIf="showGiftNotification">
           <span>{{ giftNotification }}</span>
           <div class="tts-bars">
@@ -152,13 +171,6 @@
           </div>
         </div>
 
-        <!-- Buy coins button -->
-        <div class="buy-coins-box">
-          <button type="button" class="buy-coins-btn" (click)="buyCoins(500)">
-            🪙 Buy 500 Coins
-          </button>
-        </div>
-
         <!-- Voice room header -->
         <div class="voice-room-top">
           <div class="voice-room-info">
@@ -167,10 +179,8 @@
           </div>
         </div>
 
-        <!-- Participants grid -->
+        <!-- Participants -->
         <div class="voice-grid">
-
-          <!-- ME -->
           <div class="voice-tile me" [class.speaking]="voiceLocalSpeaking">
             <div class="voice-tile-video" *ngIf="voiceCameraOn && voiceLocalVideoStream">
               <video [appVideoStream]="voiceLocalVideoStream" autoplay playsinline muted class="tile-video"></video>
@@ -179,14 +189,12 @@
               {{ currentUserName.charAt(0).toUpperCase() }}
             </div>
             <div class="voice-tile-name">
-              {{ currentUserName }}
-              <small>(you)</small>
+              {{ currentUserName }}<small>(you)</small>
               <span *ngIf="voiceIsMuted">🔇</span>
               <span *ngIf="voiceCameraOn">📷</span>
             </div>
           </div>
 
-          <!-- OTHER USERS -->
           <div class="voice-tile" *ngFor="let p of voiceParticipants" [class.speaking]="p.speaking">
             <div class="voice-tile-video" *ngIf="p.cameraOn && p.videoStream">
               <video [appVideoStream]="p.videoStream" autoplay playsinline class="tile-video"></video>
@@ -201,30 +209,24 @@
             </div>
             <button class="kick-tile-btn"
               *ngIf="isOwner && p.userId !== currentKeycloakId"
-              (pointerdown)="kickVoiceParticipant($event, p.userId)">
-              ⚡ Kick
-            </button>
+              (pointerdown)="kickVoiceParticipant($event, p.userId)">⚡ Kick</button>
           </div>
-
         </div>
 
         <!-- Controls -->
         <div class="voice-room-controls">
           <button class="voice-ctrl-btn mute-ctrl" (click)="toggleVoiceMute()" [class.muted]="voiceIsMuted">
-            {{ voiceIsMuted ? '🔇' : '🎙️' }}
-            <span>{{ voiceIsMuted ? 'Unmute' : 'Mute' }}</span>
+            {{ voiceIsMuted ? '🔇' : '🎙️' }}<span>{{ voiceIsMuted ? 'Unmute' : 'Mute' }}</span>
           </button>
           <button class="voice-ctrl-btn camera-ctrl" (click)="toggleVoiceCamera()" [class.camera-off]="!voiceCameraOn">
-            📷
-            <span>{{ voiceCameraOn ? 'Camera Off' : 'Camera On' }}</span>
+            📷<span>{{ voiceCameraOn ? 'Camera Off' : 'Camera On' }}</span>
           </button>
           <button class="voice-ctrl-btn leave-ctrl" (click)="leaveVoiceRoom()">
-            📵
-            <span>Leave</span>
+            📵<span>Leave</span>
           </button>
         </div>
 
-        <!-- Gift component -->
+        <!-- Gift -->
         <app-voice-gift
           *ngIf="selectedHub?.id && activeVoiceChannelId && ownerUserId"
           [currentUserId]="currentKeycloakId"
@@ -244,21 +246,15 @@
           <div class="hub-banner" *ngIf="selectedHub?.bannerUrl">
             <img [src]="selectedHub?.bannerUrl" alt="Hub banner" (error)="onHubImageError($event, 'banner')" />
           </div>
-
           <div class="main-header-content">
             <p class="channel-badge">{{ categoryLabel }}</p>
             <h1># {{ selectedChannel.name }}</h1>
             <p class="channel-topic">{{ selectedChannel.topic }}</p>
-
             <div class="header-tools">
-              <app-message-search [messages]="messages" (resultClick)="scrollToMessage($event)">
-              </app-message-search>
-              <app-channel-summary [messages]="messages" [channelName]="selectedChannel.name">
-              </app-channel-summary>
+              <app-message-search [messages]="messages" (resultClick)="scrollToMessage($event)"></app-message-search>
+              <app-channel-summary [messages]="messages" [channelName]="selectedChannel.name"></app-channel-summary>
             </div>
-
-            <app-semantic-search *ngIf="selectedChannel?.id" [channelId]="selectedChannel!.id!">
-            </app-semantic-search>
+            <app-semantic-search *ngIf="selectedChannel?.id" [channelId]="selectedChannel!.id!"></app-semantic-search>
           </div>
         </div>
 
@@ -275,18 +271,9 @@
             <h2>Welcome to {{ selectedHub?.name }}</h2>
             <p class="welcome-text">Your community is ready. Start the conversation below.</p>
             <div class="welcome-grid">
-              <div class="mini-card">
-                <h3>Start the conversation</h3>
-                <p>Send your first message in <strong>#{{ selectedChannel.name }}</strong>.</p>
-              </div>
-              <div class="mini-card">
-                <h3>Organize your space</h3>
-                <p>Create more channels and structure discussions by topic.</p>
-              </div>
-              <div class="mini-card">
-                <h3>Build your network</h3>
-                <p>Grow a real community around gaming, programming, and challenges.</p>
-              </div>
+              <div class="mini-card"><h3>Start the conversation</h3><p>Send your first message in <strong>#{{ selectedChannel.name }}</strong>.</p></div>
+              <div class="mini-card"><h3>Organize your space</h3><p>Create more channels and structure discussions by topic.</p></div>
+              <div class="mini-card"><h3>Build your network</h3><p>Grow a real community around gaming, programming, and challenges.</p></div>
             </div>
           </div>
         </div>
@@ -294,20 +281,16 @@
         <div class="messages-panel" *ngIf="selectedChannel && hasMessages">
           <div class="message-card" *ngFor="let msg of messages" [id]="'msg-' + msg.id">
             <div class="message-main">
-              <div class="message-avatar">
-                {{ msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?' }}
-              </div>
+              <div class="message-avatar">{{ msg.senderName ? msg.senderName.charAt(0).toUpperCase() : '?' }}</div>
               <div class="message-content">
                 <div class="message-meta">
                   <strong>{{ msg.senderName || 'Unknown' }}</strong>
                   <span class="message-time">{{ msg.sentAt | date:'short' }}</span>
                   <span class="message-pin" *ngIf="msg.pinned">📌 Pinned</span>
                 </div>
-
                 <ng-container *ngIf="editingMessageId !== msg.id; else editBlock">
                   <p class="message-text">{{ msg.content }}</p>
                 </ng-container>
-
                 <ng-template #editBlock>
                   <div class="edit-message-box">
                     <textarea [(ngModel)]="editedMessageContent"></textarea>
@@ -317,18 +300,10 @@
                     </div>
                   </div>
                 </ng-template>
-
-                <app-message-reactions
-                  *ngIf="msg.id"
-                  [messageId]="msg.id!"
-                  [keycloakId]="currentKeycloakId"
-                  [reaction]="reactions[msg.id!] || null">
-                </app-message-reactions>
+                <app-message-reactions *ngIf="msg.id" [messageId]="msg.id!" [keycloakId]="currentKeycloakId" [reaction]="reactions[msg.id!] || null"></app-message-reactions>
               </div>
             </div>
-
-            <div class="message-actions"
-              *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
+            <div class="message-actions" *ngIf="editingMessageId !== msg.id && msg.senderName === currentUserName">
               <button class="icon-btn edit-btn" (click)="startEditMessage(msg)" title="Edit">✎</button>
               <button class="icon-btn pin-btn" *ngIf="!msg.pinned" (click)="pinMessage(msg.id!)" title="Pin">📌</button>
               <button class="icon-btn pin-btn" *ngIf="msg.pinned" (click)="unpinMessage(msg.id!)" title="Unpin">📍</button>
@@ -339,14 +314,12 @@
 
         <div class="message-input-bar" *ngIf="selectedChannel">
           <div class="input-tools">
-            <app-smart-reply [messages]="messages" (replySelected)="onSmartReplySelected($event)">
-            </app-smart-reply>
+            <app-smart-reply [messages]="messages" (replySelected)="onSmartReplySelected($event)"></app-smart-reply>
           </div>
           <div class="input-row">
             <input type="text" [(ngModel)]="newMessage"
               placeholder="Send a message to #{{ selectedChannel.name }}"
-              (keyup.enter)="sendMessage()"
-              [disabled]="isCheckingMessage" />
+              (keyup.enter)="sendMessage()" [disabled]="isCheckingMessage" />
             <button (click)="sendMessage()" [disabled]="isCheckingMessage">
               {{ isCheckingMessage ? '...' : 'Send' }}
             </button>
@@ -361,14 +334,11 @@
         <p class="sidebar-kicker">MEMBERS</p>
         <h2>{{ onlineMembers.length }} Online</h2>
       </div>
-
       <div class="members-list" *ngIf="activeMembers.length > 0; else noMembers">
         <div class="member-card" *ngFor="let member of activeMembers">
           <div class="member-avatar">
             <img *ngIf="member.user.avatarUrl" [src]="member.user.avatarUrl" alt="avatar" />
-            <span *ngIf="!member.user.avatarUrl">
-              {{ (member.user.firstName || member.user.email || '?').charAt(0).toUpperCase() }}
-            </span>
+            <span *ngIf="!member.user.avatarUrl">{{ (member.user.firstName || member.user.email || '?').charAt(0).toUpperCase() }}</span>
           </div>
           <div class="member-info">
             <strong>{{ member.user.firstName }} {{ member.user.lastName }}</strong>
@@ -380,7 +350,6 @@
           </div>
         </div>
       </div>
-
       <ng-template #noMembers>
         <div class="empty-box"><p>No members yet.</p></div>
       </ng-template>
@@ -388,7 +357,7 @@
 
   </div>
 
-  <!-- Delete modal -->
+  <!-- ══ DELETE MODAL ══ -->
   <div class="modal-backdrop" *ngIf="showDeleteModal">
     <div class="modal-card">
       <h3>Confirm deletion</h3>
@@ -400,7 +369,7 @@
     </div>
   </div>
 
-  <!-- Moderation warning -->
+  <!-- ══ MODERATION ══ -->
   <app-message-moderation
     [show]="showModerationWarning"
     [warning]="moderationWarningText"
@@ -408,25 +377,57 @@
     (cancel)="onModerationCancel()">
   </app-message-moderation>
 
+  <!-- ══ BUY COINS MODAL ══ -->
+  <div class="modal-backdrop buy-modal-backdrop" *ngIf="showBuyModal" (click)="closeBuyModal()">
+    <div class="buy-modal-card" (click)="$event.stopPropagation()">
+
+      <button class="buy-modal-close" (click)="closeBuyModal()">×</button>
+
+      <p class="buy-modal-kicker">// ARENATALK STORE</p>
+      <h2 class="buy-modal-title">Buy Coins</h2>
+      <p class="buy-modal-sub">Support streamers and unlock reactions</p>
+
+      <!-- Current balance -->
+      <div class="buy-modal-balance">
+        <span class="topbar-tier" [ngClass]="coinTierClass">{{ coinTierLabel }}</span>
+        <span class="buy-balance-amount">🪙 {{ walletBalance | number }} coins</span>
+      </div>
+
+      <!-- Packages grid -->
+      <div class="buy-packages-grid">
+        <button class="buy-package-card"
+          *ngFor="let pkg of coinPackages"
+          [class.popular]="pkg.popular"
+          (click)="buyCoins(pkg)">
+
+          <span class="pkg-popular-tag" *ngIf="pkg.popular">⭐ {{ pkg.bonus }}</span>
+          <span *ngIf="!pkg.popular && pkg.bonus" class="pkg-bonus-tag">{{ pkg.bonus }}</span>
+
+          <span class="pkg-icon">{{ pkg.icon }}</span>
+          <span class="pkg-coins">{{ pkg.coins | number }}</span>
+          <span class="pkg-label">coins</span>
+          <span class="pkg-price">{{ pkg.price }}</span>
+        </button>
+      </div>
+
+      <p class="buy-modal-note">🔒 Secured by Stripe — no card data stored</p>
+    </div>
+  </div>
+
   <!-- ══ PAYMENT SUCCESS POPUP ══ -->
   <div class="payment-success-overlay" *ngIf="showPaymentSuccess" (click)="closePaymentSuccess()">
     <div class="payment-success-card" (click)="$event.stopPropagation()">
-
       <div class="success-emoji">🎉</div>
-
       <div class="coins-burst">
         <span *ngFor="let c of [1,2,3,4,5,6,7,8]" class="coin-particle">🪙</span>
       </div>
-
       <p class="success-eyebrow">// TRANSACTION COMPLETE</p>
       <h2 class="success-title">Coins Added!</h2>
       <p class="success-sub">
         <strong class="success-coins">+{{ lastPurchasedCoins }}</strong> ArenaTalk coins have been
         added to your wallet. Time to support your favorite streamers!
       </p>
-
       <div class="success-divider"></div>
-
       <div class="success-stats">
         <div class="success-stat">
           <span class="stat-icon">🪙</span>
@@ -439,11 +440,7 @@
           <span class="stat-value success-green">Confirmed</span>
         </div>
       </div>
-
-      <button class="success-close-btn" (click)="closePaymentSuccess()">
-        🚀 Let's Go!
-      </button>
-
+      <button class="success-close-btn" (click)="closePaymentSuccess()">🚀 Let's Go!</button>
     </div>
   </div>
 
