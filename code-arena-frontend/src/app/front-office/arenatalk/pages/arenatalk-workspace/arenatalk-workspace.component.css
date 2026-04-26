@@ -1165,3 +1165,23 @@ app-semantic-search {
   font-weight: 800;
   box-shadow: 0 0 24px rgba(255, 215, 90, 0.22);
 }
+.buy-coins-box {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+  z-index: 9999;
+}
+
+.buy-coins-btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 90, 0.35);
+  background: rgba(255, 215, 90, 0.12);
+  color: #ffd96b;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.buy-coins-btn:hover {
+  background: rgba(255, 215, 90, 0.22);
+}

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,7 +21,8 @@ import { SemanticSearchComponent } from '../semantic-search/semantic-search.comp
 import { VoiceSignalingService } from '../../services/voice-signaling.service';
 import { VideoStreamDirective } from '../../../../shared/directives/video-stream.directive';
 import { VoiceGiftComponent } from '../voice-gift/voice-gift.component';
-import { ChangeDetectorRef, NgZone } from '@angular/core';
+import { PaymentService } from '../../services/payment.service';
+
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
 @Component({
@@ -83,7 +84,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   pendingMessage = '';
   isCheckingMessage = false;
 
-  // Voice room
   activeVoiceChannelId: number | null = null;
   activeVoiceChannelName = '';
   voiceParticipants: any[] = [];
@@ -92,25 +92,26 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   voiceLocalSpeaking = false;
   voiceCameraOn = false;
   voiceLocalVideoStream: MediaStream | null = null;
+
   giftNotification = '';
-showGiftNotification = false;
-private hideGiftTimeout: any;
+  showGiftNotification = false;
+  private hideGiftTimeout: any;
 
   private voiceSubs: Subscription[] = [];
 
- constructor(
-  private router: Router,
-  private arenaService: ArenatalkService,
-  private hubMemberService: HubMemberService,
-  private authUserSync: AuthUserSyncService,
-  private auth: AuthService,
-  private reactionService: ReactionService,
-  private aiModerationService: AiModerationService,
-  private cdr: ChangeDetectorRef,
-  private zone: NgZone,
-  
-  private voiceSignalingService: VoiceSignalingService
-) {}
+  constructor(
+    private router: Router,
+    private arenaService: ArenatalkService,
+    private hubMemberService: HubMemberService,
+    private authUserSync: AuthUserSyncService,
+    private auth: AuthService,
+    private reactionService: ReactionService,
+    private aiModerationService: AiModerationService,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone,
+    private paymentService: PaymentService,
+    private voiceSignalingService: VoiceSignalingService
+  ) {}
 
   ngOnInit(): void {
     this.voiceSubs.push(
@@ -121,32 +122,33 @@ private hideGiftTimeout: any;
       this.voiceSignalingService.cameraOn$.subscribe(v => this.voiceCameraOn = v),
       this.voiceSignalingService.localVideoStream$.subscribe(v => this.voiceLocalVideoStream = v)
     );
-  this.voiceSubs.push(
-  this.voiceSignalingService.giftEvents$.subscribe(gift => {
-    if (!gift) return;
 
-    this.zone.run(() => {
+    this.voiceSubs.push(
+      this.voiceSignalingService.giftEvents$.subscribe(gift => {
+        if (!gift) return;
 
-      const icon =
-        gift.giftType === 'FIRE' ? '🔥' :
-        gift.giftType === 'CROWN' ? '👑' :
-        gift.giftType === 'ROCKET' ? '🚀' : '🪙';
+        this.zone.run(() => {
+          const icon =
+            gift.giftType === 'FIRE' ? '🔥' :
+            gift.giftType === 'CROWN' ? '👑' :
+            gift.giftType === 'ROCKET' ? '🚀' : '🪙';
 
-      this.giftNotification =
-        `${icon} ${gift.fromUserName} gifted ${gift.coins} coins to ${gift.toUserName}`;
-this.cdr.detectChanges();
-     clearTimeout(this.hideGiftTimeout);
+          this.giftNotification =
+            `${icon} ${gift.fromUserName} gifted ${gift.coins} coins to ${gift.toUserName}`;
 
-this.showGiftNotification = true;
+          clearTimeout(this.hideGiftTimeout);
 
-this.hideGiftTimeout = setTimeout(() => {
-  this.showGiftNotification = false;
-  this.cdr.detectChanges();
-}, 10000);
+          this.showGiftNotification = true;
+          this.cdr.detectChanges();
 
-    });
-  })
-);
+          this.hideGiftTimeout = setTimeout(() => {
+            this.showGiftNotification = false;
+            this.cdr.detectChanges();
+          }, 10000);
+        });
+      })
+    );
+
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.currentKeycloakId = payload.sub;
@@ -165,13 +167,17 @@ this.hideGiftTimeout = setTimeout(() => {
         this.hubReady = true;
         this.loadMembers(createdHub.id!);
         this.setCurrentUserOnline();
+
         if (createdChannels.length > 0) {
           this.channels = createdChannels;
           this.selectFirstChannel();
         } else if (createdHub.id) {
           this.arenaService.getChannelsByHub(createdHub.id).subscribe({
-            next: (data) => { this.channels = data; this.selectFirstChannel(); },
-            error: (err) => console.error(err)
+            next: data => {
+              this.channels = data;
+              this.selectFirstChannel();
+            },
+            error: err => console.error(err)
           });
         }
         return;
@@ -180,17 +186,21 @@ this.hideGiftTimeout = setTimeout(() => {
       const savedHubId = localStorage.getItem('selectedHubId');
       if (savedHubId) {
         this.arenaService.getHubById(Number(savedHubId)).subscribe({
-          next: (hub) => {
+          next: hub => {
             this.hubs = [hub];
             this.hubReady = false;
             this.selectedHub = hub;
             this.hubReady = true;
             this.loadMembers(hub.id!);
             this.setCurrentUserOnline();
+
             if (hub.id) {
               this.arenaService.getChannelsByHub(hub.id).subscribe({
-                next: (data) => { this.channels = data; this.selectFirstChannel(); },
-                error: (err) => console.error(err)
+                next: data => {
+                  this.channels = data;
+                  this.selectFirstChannel();
+                },
+                error: err => console.error(err)
               });
             }
           },
@@ -202,6 +212,7 @@ this.hideGiftTimeout = setTimeout(() => {
 
   ngOnDestroy(): void {
     this.voiceSubs.forEach(s => s.unsubscribe());
+    clearTimeout(this.hideGiftTimeout);
     this.setCurrentUserOffline();
   }
 
@@ -210,7 +221,7 @@ this.hideGiftTimeout = setTimeout(() => {
     this.setCurrentUserOffline();
   }
 
-  onVoiceRoomChanged(event: {channelId: number | null, channelName: string}): void {
+  onVoiceRoomChanged(event: { channelId: number | null; channelName: string }): void {
     this.activeVoiceChannelId = event.channelId;
     this.activeVoiceChannelName = event.channelName;
   }
@@ -230,7 +241,31 @@ this.hideGiftTimeout = setTimeout(() => {
     });
   }
 
+  kickVoiceParticipant(event: PointerEvent, userId: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.voiceSignalingService.kickParticipant(userId);
+  }
 
+  buyCoins(coins: number): void {
+    if (!this.currentKeycloakId || !this.currentUserName) {
+      console.error('User not ready');
+      return;
+    }
+
+    this.paymentService.createCheckout(
+      coins,
+      this.currentKeycloakId,
+      this.currentUserName
+    ).subscribe({
+      next: res => {
+        window.location.href = res.checkoutUrl || res.url || '';
+      },
+      error: err => {
+        console.error('Payment error:', err);
+      }
+    });
+  }
 
   private setCurrentUserOnline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
@@ -239,11 +274,6 @@ this.hideGiftTimeout = setTimeout(() => {
       error: () => {}
     });
   }
-  kickVoiceParticipant(event: PointerEvent, userId: string): void {
-  event.preventDefault();
-  event.stopPropagation();
-  this.voiceSignalingService.kickParticipant(userId);
-}
 
   private setCurrentUserOffline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
@@ -277,9 +307,13 @@ this.hideGiftTimeout = setTimeout(() => {
 
       if (hub.id) {
         this.arenaService.getChannelsByHub(hub.id).subscribe({
-          next: (data) => { this.channels = data; this.selectFirstChannel(); },
-          error: (err) => console.error('Error loading channels', err)
+          next: data => {
+            this.channels = data;
+            this.selectFirstChannel();
+          },
+          error: err => console.error('Error loading channels', err)
         });
+
         this.loadMembers(hub.id);
         this.setCurrentUserOnline();
       }
@@ -288,15 +322,20 @@ this.hideGiftTimeout = setTimeout(() => {
 
   loadMembers(hubId: number): void {
     this.hubMemberService.getMembers(hubId).subscribe({
-      next: (members) => { this.members = members; this.detectCurrentUser(members); },
-      error: (err) => console.error('Error loading members', err)
+      next: members => {
+        this.members = members;
+        this.detectCurrentUser(members);
+      },
+      error: err => console.error('Error loading members', err)
     });
   }
 
   private detectCurrentUser(members: HubMember[]): void {
     this.authUserSync.currentUser$.pipe(take(1)).subscribe((currentUser: CurrentUser | null) => {
       if (!currentUser?.id) return;
+
       this.currentUserMember = members.find(m => m.user.id === currentUser.id) ?? null;
+
       this.currentUserName =
         `${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}`.trim()
         || currentUser.email
@@ -304,7 +343,10 @@ this.hideGiftTimeout = setTimeout(() => {
 
       if (this.isOwner && this.selectedHub?.id && this.currentKeycloakId) {
         this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId)
-          .subscribe({ next: (reqs) => this.pendingRequests = reqs, error: () => {} });
+          .subscribe({
+            next: reqs => this.pendingRequests = reqs,
+            error: () => {}
+          });
       }
     });
   }
@@ -315,39 +357,43 @@ this.hideGiftTimeout = setTimeout(() => {
 
   loadPendingRequests(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
+
     this.hubMemberService.getPendingRequests(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      next: (requests) => {
+      next: requests => {
         this.pendingRequests = requests;
         this.showPendingRequests = !this.showPendingRequests;
       },
-      error: (err) => console.error('Error loading requests', err)
+      error: err => console.error('Error loading requests', err)
     });
   }
 
   acceptMember(memberId: number): void {
     if (!this.selectedHub?.id) return;
+
     this.hubMemberService.acceptRequest(this.selectedHub.id, memberId, this.currentKeycloakId).subscribe({
       next: () => {
         this.pendingRequests = this.pendingRequests.filter(r => r.id !== memberId);
         this.loadMembers(this.selectedHub!.id!);
       },
-      error: (err) => console.error('Error accepting request', err)
+      error: err => console.error('Error accepting request', err)
     });
   }
 
   rejectMember(memberId: number): void {
     if (!this.selectedHub?.id) return;
+
     this.hubMemberService.rejectRequest(this.selectedHub.id, memberId, this.currentKeycloakId).subscribe({
       next: () => {
         this.pendingRequests = this.pendingRequests.filter(r => r.id !== memberId);
       },
-      error: (err) => console.error('Error rejecting request', err)
+      error: err => console.error('Error rejecting request', err)
     });
   }
 
   private selectFirstChannel(): void {
     const general = this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
     this.selectedChannel = general || null;
+
     if (this.selectedChannel?.id) {
       this.loadMessagesByChannel(this.selectedChannel.id);
     }
@@ -356,6 +402,7 @@ this.hideGiftTimeout = setTimeout(() => {
   selectChannel(channel: TextChannel): void {
     this.selectedChannel = channel;
     this.cancelEditMessage();
+
     if (channel.id) {
       this.loadMessagesByChannel(channel.id);
     } else {
@@ -367,12 +414,12 @@ this.hideGiftTimeout = setTimeout(() => {
 
   loadMessagesByChannel(channelId: number): void {
     this.arenaService.getMessagesByChannel(channelId).subscribe({
-      next: (data) => {
+      next: data => {
         this.messages = data;
         this.loadPinnedMessages(channelId);
         this.loadReactions();
       },
-      error: (err) => {
+      error: err => {
         console.error('Error loading messages', err);
         this.messages = [];
         this.pinnedMessages = [];
@@ -383,16 +430,18 @@ this.hideGiftTimeout = setTimeout(() => {
 
   loadPinnedMessages(channelId: number): void {
     this.arenaService.getPinnedMessages(channelId).subscribe({
-      next: (data) => this.pinnedMessages = data,
+      next: data => this.pinnedMessages = data,
       error: () => this.pinnedMessages = []
     });
   }
 
   loadReactions(): void {
     if (!this.messages.length || !this.currentKeycloakId) return;
+
     const ids = this.messages.map(m => m.id!).filter(Boolean);
+
     this.reactionService.getForChannel(ids, this.currentKeycloakId).subscribe({
-      next: (data) => this.reactions = data,
+      next: data => this.reactions = data,
       error: () => {}
     });
   }
@@ -405,8 +454,9 @@ this.hideGiftTimeout = setTimeout(() => {
     const content = this.newMessage.trim();
 
     this.aiModerationService.moderate(content).subscribe({
-      next: (result) => {
+      next: result => {
         this.isCheckingMessage = false;
+
         if (!result.safe) {
           this.pendingMessage = content;
           this.moderationWarningText = result.reason;
@@ -424,13 +474,14 @@ this.hideGiftTimeout = setTimeout(() => {
 
   doSendMessage(content: string): void {
     if (!this.selectedChannel?.id) return;
+
     this.arenaService.sendMessage(this.selectedChannel.id, { content }).subscribe({
-      next: (savedMessage) => {
+      next: savedMessage => {
         this.messages.push(savedMessage);
         this.newMessage = '';
         this.loadReactions();
       },
-      error: (err) => console.error('Error sending message', err)
+      error: err => console.error('Error sending message', err)
     });
   }
 
@@ -452,19 +503,25 @@ this.hideGiftTimeout = setTimeout(() => {
 
   pinMessage(messageId: number): void {
     this.arenaService.pinMessage(messageId).subscribe({
-      next: () => { if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id); },
-      error: (err) => console.error('Error pinning message', err)
+      next: () => {
+        if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
+      },
+      error: err => console.error('Error pinning message', err)
     });
   }
 
   unpinMessage(messageId: number): void {
     this.arenaService.unpinMessage(messageId).subscribe({
-      next: () => { if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id); },
-      error: (err) => console.error('Error unpinning message', err)
+      next: () => {
+        if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
+      },
+      error: err => console.error('Error unpinning message', err)
     });
   }
 
-  openCreateChannelForm(): void { this.showCreateChannelForm = true; }
+  openCreateChannelForm(): void {
+    this.showCreateChannelForm = true;
+  }
 
   closeCreateChannelForm(): void {
     this.showCreateChannelForm = false;
@@ -473,16 +530,20 @@ this.hideGiftTimeout = setTimeout(() => {
 
   createChannel(): void {
     if (!this.selectedHub?.id) return;
+
     const rawName = this.newChannel.name?.trim();
     const topic = this.newChannel.topic?.trim() || '';
+
     if (!rawName) return;
+
     const normalizedName = rawName.toLowerCase().replace(/\s+/g, '-');
+
     if (normalizedName.length < 3 || normalizedName.length > 20) return;
     if (!/^[a-z0-9-_]+$/.test(normalizedName)) return;
     if (topic.length > 100) return;
 
     this.arenaService.createChannel(this.selectedHub.id, { name: normalizedName, topic }).subscribe({
-      next: (createdChannel) => {
+      next: createdChannel => {
         this.channels.push(createdChannel);
         this.selectedChannel = createdChannel;
         this.messages = [];
@@ -490,20 +551,23 @@ this.hideGiftTimeout = setTimeout(() => {
         this.readReceipts = {};
         this.closeCreateChannelForm();
       },
-      error: (err) => console.error('Error creating channel', err)
+      error: err => console.error('Error creating channel', err)
     });
   }
 
   openDeleteModal(type: DeleteTargetType, id?: number): void {
     if (!id) return;
+
     this.deleteTargetType = type;
     this.deleteTargetId = id;
     this.showDeleteModal = true;
+
     const messages: Record<string, string> = {
       hub: 'Are you sure you want to delete this community? This action is irreversible.',
       channel: 'Are you sure you want to delete this channel and all its messages?',
       message: 'Are you sure you want to delete this message?'
     };
+
     this.deleteMessageText = messages[type!] || '';
   }
 
@@ -516,6 +580,7 @@ this.hideGiftTimeout = setTimeout(() => {
 
   confirmDelete(): void {
     if (!this.deleteTargetType || !this.deleteTargetId) return;
+
     if (this.deleteTargetType === 'hub') this.deleteHubConfirmed(this.deleteTargetId);
     else if (this.deleteTargetType === 'channel') this.deleteChannelConfirmed(this.deleteTargetId);
     else if (this.deleteTargetType === 'message') this.deleteMessageConfirmed(this.deleteTargetId);
@@ -528,7 +593,7 @@ this.hideGiftTimeout = setTimeout(() => {
         this.closeDeleteModal();
         this.router.navigate(['/arenatalk']);
       },
-      error: (err) => console.error('Error deleting hub', err)
+      error: err => console.error('Error deleting hub', err)
     });
   }
 
@@ -536,14 +601,22 @@ this.hideGiftTimeout = setTimeout(() => {
     this.arenaService.deleteChannel(channelId).subscribe({
       next: () => {
         this.channels = this.channels.filter(c => c.id !== channelId);
+
         if (this.selectedChannel?.id === channelId) {
           this.selectedChannel = this.channels[0] || null;
-          if (this.selectedChannel?.id) this.loadMessagesByChannel(this.selectedChannel.id);
-          else { this.messages = []; this.pinnedMessages = []; this.readReceipts = {}; }
+
+          if (this.selectedChannel?.id) {
+            this.loadMessagesByChannel(this.selectedChannel.id);
+          } else {
+            this.messages = [];
+            this.pinnedMessages = [];
+            this.readReceipts = {};
+          }
         }
+
         this.closeDeleteModal();
       },
-      error: (err) => console.error('Error deleting channel', err)
+      error: err => console.error('Error deleting channel', err)
     });
   }
 
@@ -555,12 +628,13 @@ this.hideGiftTimeout = setTimeout(() => {
         delete this.readReceipts[messageId];
         this.closeDeleteModal();
       },
-      error: (err) => console.error('Error deleting message', err)
+      error: err => console.error('Error deleting message', err)
     });
   }
 
   startEditMessage(message: Message): void {
     if (!message.id) return;
+
     this.editingMessageId = message.id;
     this.editedMessageContent = message.content;
   }
@@ -572,73 +646,103 @@ this.hideGiftTimeout = setTimeout(() => {
 
   saveEditedMessage(message: Message): void {
     if (!message.id || !this.editedMessageContent.trim()) return;
-    this.arenaService.updateMessage(message.id, { ...message, content: this.editedMessageContent.trim() }).subscribe({
-      next: (saved) => {
+
+    this.arenaService.updateMessage(message.id, {
+      ...message,
+      content: this.editedMessageContent.trim()
+    }).subscribe({
+      next: saved => {
         this.messages = this.messages.map(m => m.id === saved.id ? saved : m);
         this.pinnedMessages = this.pinnedMessages.map(m => m.id === saved.id ? saved : m);
         this.cancelEditMessage();
       },
-      error: (err) => console.error('Error updating message', err)
+      error: err => console.error('Error updating message', err)
     });
   }
 
   leaveHub(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
+
     this.hubMemberService.leaveHub(this.selectedHub.id, this.currentKeycloakId).subscribe({
       next: () => {
         localStorage.removeItem('selectedHubId');
         this.router.navigate(['/arenatalk']);
       },
-      error: (err) => console.error('Error leaving hub', err)
+      error: err => console.error('Error leaving hub', err)
     });
   }
 
   onHubImageError(event: Event, type: 'icon' | 'banner'): void {
     const img = event.target as HTMLImageElement;
+
     if (type === 'icon') img.style.display = 'none';
-    if (type === 'banner') { const c = img.parentElement; if (c) c.style.display = 'none'; }
+
+    if (type === 'banner') {
+      const c = img.parentElement;
+      if (c) c.style.display = 'none';
+    }
   }
 
   scrollToMessage(msg: Message): void {
     if (!msg.id) return;
+
     setTimeout(() => {
       const el = document.getElementById(`msg-${msg.id}`);
+
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         el.classList.add('highlighted');
+
         setTimeout(() => el.classList.remove('highlighted'), 2000);
       }
     }, 100);
   }
+
   get ownerMember(): HubMember | null {
-  return this.activeMembers.find(m => m.role === 'OWNER') ?? null;
-}
+    return this.activeMembers.find(m => m.role === 'OWNER') ?? null;
+  }
 
-get ownerUserId(): string {
-  const owner = this.ownerMember?.user as any;
-  return owner?.keycloakId || owner?.auth0Id || String(owner?.id || '');
-}
+  get ownerUserId(): string {
+    const owner = this.ownerMember?.user as any;
+    return owner?.keycloakId || owner?.auth0Id || String(owner?.id || '');
+  }
 
-get ownerUserName(): string {
-  const owner = this.ownerMember?.user;
-  if (!owner) return 'Owner';
-  return `${owner.firstName ?? ''} ${owner.lastName ?? ''}`.trim() || owner.email || 'Owner';
-}
+  get ownerUserName(): string {
+    const owner = this.ownerMember?.user;
 
-onGiftSent(message: string): void {
-  this.giftNotification = message;
+    if (!owner) return 'Owner';
 
-  clearTimeout(this.hideGiftTimeout);
+    return `${owner.firstName ?? ''} ${owner.lastName ?? ''}`.trim()
+      || owner.email
+      || 'Owner';
+  }
 
-  this.showGiftNotification = true;
+  onGiftSent(message: string): void {
+    this.giftNotification = message;
 
-  this.hideGiftTimeout = setTimeout(() => {
-    this.showGiftNotification = false;
-  }, 10000);
-}
+    clearTimeout(this.hideGiftTimeout);
 
-  get hasMessages(): boolean { return this.messages.length > 0; }
-  get categoryLabel(): string { return this.selectedHub?.category || 'COMMUNITY'; }
-  get activeMembers(): HubMember[] { return this.members.filter(m => m.status === 'ACTIVE'); }
-  get onlineMembers(): HubMember[] { return this.activeMembers.filter(m => m.online); }
+    this.showGiftNotification = true;
+
+    this.hideGiftTimeout = setTimeout(() => {
+      this.showGiftNotification = false;
+      this.cdr.detectChanges();
+    }, 10000);
+  }
+
+  get hasMessages(): boolean {
+    return this.messages.length > 0;
+  }
+
+  get categoryLabel(): string {
+    return this.selectedHub?.category || 'COMMUNITY';
+  }
+
+  get activeMembers(): HubMember[] {
+    return this.members.filter(m => m.status === 'ACTIVE');
+  }
+
+  get onlineMembers(): HubMember[] {
+    return this.activeMembers.filter(m => m.online);
+  }
 }
