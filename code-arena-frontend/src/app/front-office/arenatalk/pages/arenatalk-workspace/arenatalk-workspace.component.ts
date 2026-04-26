@@ -97,6 +97,10 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   showGiftNotification = false;
   private hideGiftTimeout: any;
 
+  // ── Payment success popup ──
+  showPaymentSuccess = false;
+  lastPurchasedCoins = 0;
+
   private voiceSubs: Subscription[] = [];
 
   constructor(
@@ -129,15 +133,14 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
         this.zone.run(() => {
           const icon =
-            gift.giftType === 'FIRE' ? '🔥' :
-            gift.giftType === 'CROWN' ? '👑' :
+            gift.giftType === 'FIRE'   ? '🔥' :
+            gift.giftType === 'CROWN'  ? '👑' :
             gift.giftType === 'ROCKET' ? '🚀' : '🪙';
 
           this.giftNotification =
             `${icon} ${gift.fromUserName} gifted ${gift.coins} coins to ${gift.toUserName}`;
 
           clearTimeout(this.hideGiftTimeout);
-
           this.showGiftNotification = true;
           this.cdr.detectChanges();
 
@@ -148,6 +151,9 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
         });
       })
     );
+
+    // ── Check payment success IMMEDIATELY on init ──
+    this.checkPaymentSuccess();
 
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -173,10 +179,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
           this.selectFirstChannel();
         } else if (createdHub.id) {
           this.arenaService.getChannelsByHub(createdHub.id).subscribe({
-            next: data => {
-              this.channels = data;
-              this.selectFirstChannel();
-            },
+            next: data => { this.channels = data; this.selectFirstChannel(); },
             error: err => console.error(err)
           });
         }
@@ -196,10 +199,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
             if (hub.id) {
               this.arenaService.getChannelsByHub(hub.id).subscribe({
-                next: data => {
-                  this.channels = data;
-                  this.selectFirstChannel();
-                },
+                next: data => { this.channels = data; this.selectFirstChannel(); },
                 error: err => console.error(err)
               });
             }
@@ -220,6 +220,37 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   handleBeforeUnload(): void {
     this.setCurrentUserOffline();
   }
+
+  // ── Payment success ────────────────────────────────────────────────────────
+
+  private checkPaymentSuccess(): void {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    const coins   = params.get('coins');
+
+    console.log('>>> checkPaymentSuccess called — payment:', payment, 'coins:', coins);
+
+    if (payment === 'success') {
+      this.lastPurchasedCoins = parseInt(coins || '500', 10);
+
+      // Show popup first, THEN clean URL
+      this.showPaymentSuccess = true;
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('payment');
+        url.searchParams.delete('coins');
+        window.history.replaceState({}, '', url.toString());
+      }, 1500);
+    }
+  }
+
+  closePaymentSuccess(): void {
+    this.showPaymentSuccess = false;
+  }
+
+  // ── Voice ──────────────────────────────────────────────────────────────────
 
   onVoiceRoomChanged(event: { channelId: number | null; channelName: string }): void {
     this.activeVoiceChannelId = event.channelId;
@@ -247,6 +278,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     this.voiceSignalingService.kickParticipant(userId);
   }
 
+  // ── Payment ────────────────────────────────────────────────────────────────
+
   buyCoins(coins: number): void {
     if (!this.currentKeycloakId || !this.currentUserName) {
       console.error('User not ready');
@@ -267,6 +300,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Online/Offline ─────────────────────────────────────────────────────────
+
   private setCurrentUserOnline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.setOnline(this.selectedHub.id, this.currentKeycloakId).subscribe({
@@ -281,6 +316,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       error: () => {}
     });
   }
+
+  // ── Hubs ───────────────────────────────────────────────────────────────────
 
   selectHub(hub: Hub): void {
     if (this.selectedHub?.id && this.selectedHub.id !== hub.id) {
@@ -307,10 +344,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
       if (hub.id) {
         this.arenaService.getChannelsByHub(hub.id).subscribe({
-          next: data => {
-            this.channels = data;
-            this.selectFirstChannel();
-          },
+          next: data => { this.channels = data; this.selectFirstChannel(); },
           error: err => console.error('Error loading channels', err)
         });
 
@@ -322,10 +356,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   loadMembers(hubId: number): void {
     this.hubMemberService.getMembers(hubId).subscribe({
-      next: members => {
-        this.members = members;
-        this.detectCurrentUser(members);
-      },
+      next: members => { this.members = members; this.detectCurrentUser(members); },
       error: err => console.error('Error loading members', err)
     });
   }
@@ -390,6 +421,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Channels ───────────────────────────────────────────────────────────────
+
   private selectFirstChannel(): void {
     const general = this.channels.find(c => c.name.toLowerCase() === 'general') || this.channels[0];
     this.selectedChannel = general || null;
@@ -445,6 +478,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       error: () => {}
     });
   }
+
+  // ── Messages ───────────────────────────────────────────────────────────────
 
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
@@ -519,9 +554,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  openCreateChannelForm(): void {
-    this.showCreateChannelForm = true;
-  }
+  openCreateChannelForm(): void { this.showCreateChannelForm = true; }
 
   closeCreateChannelForm(): void {
     this.showCreateChannelForm = false;
@@ -532,7 +565,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.selectedHub?.id) return;
 
     const rawName = this.newChannel.name?.trim();
-    const topic = this.newChannel.topic?.trim() || '';
+    const topic   = this.newChannel.topic?.trim() || '';
 
     if (!rawName) return;
 
@@ -559,11 +592,11 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     if (!id) return;
 
     this.deleteTargetType = type;
-    this.deleteTargetId = id;
-    this.showDeleteModal = true;
+    this.deleteTargetId   = id;
+    this.showDeleteModal  = true;
 
     const messages: Record<string, string> = {
-      hub: 'Are you sure you want to delete this community? This action is irreversible.',
+      hub:     'Are you sure you want to delete this community? This action is irreversible.',
       channel: 'Are you sure you want to delete this channel and all its messages?',
       message: 'Are you sure you want to delete this message?'
     };
@@ -572,16 +605,16 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   closeDeleteModal(): void {
-    this.showDeleteModal = false;
+    this.showDeleteModal  = false;
     this.deleteTargetType = null;
-    this.deleteTargetId = null;
+    this.deleteTargetId   = null;
     this.deleteMessageText = '';
   }
 
   confirmDelete(): void {
     if (!this.deleteTargetType || !this.deleteTargetId) return;
 
-    if (this.deleteTargetType === 'hub') this.deleteHubConfirmed(this.deleteTargetId);
+    if (this.deleteTargetType === 'hub')     this.deleteHubConfirmed(this.deleteTargetId);
     else if (this.deleteTargetType === 'channel') this.deleteChannelConfirmed(this.deleteTargetId);
     else if (this.deleteTargetType === 'message') this.deleteMessageConfirmed(this.deleteTargetId);
   }
@@ -623,7 +656,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   deleteMessageConfirmed(messageId: number): void {
     this.arenaService.deleteMessage(messageId).subscribe({
       next: () => {
-        this.messages = this.messages.filter(msg => msg.id !== messageId);
+        this.messages      = this.messages.filter(msg => msg.id !== messageId);
         this.pinnedMessages = this.pinnedMessages.filter(msg => msg.id !== messageId);
         delete this.readReceipts[messageId];
         this.closeDeleteModal();
@@ -634,13 +667,12 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   startEditMessage(message: Message): void {
     if (!message.id) return;
-
-    this.editingMessageId = message.id;
-    this.editedMessageContent = message.content;
+    this.editingMessageId      = message.id;
+    this.editedMessageContent  = message.content;
   }
 
   cancelEditMessage(): void {
-    this.editingMessageId = null;
+    this.editingMessageId     = null;
     this.editedMessageContent = '';
   }
 
@@ -652,7 +684,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       content: this.editedMessageContent.trim()
     }).subscribe({
       next: saved => {
-        this.messages = this.messages.map(m => m.id === saved.id ? saved : m);
+        this.messages       = this.messages.map(m => m.id === saved.id ? saved : m);
         this.pinnedMessages = this.pinnedMessages.map(m => m.id === saved.id ? saved : m);
         this.cancelEditMessage();
       },
@@ -692,11 +724,12 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         el.classList.add('highlighted');
-
         setTimeout(() => el.classList.remove('highlighted'), 2000);
       }
     }, 100);
   }
+
+  // ── Getters ────────────────────────────────────────────────────────────────
 
   get ownerMember(): HubMember | null {
     return this.activeMembers.find(m => m.role === 'OWNER') ?? null;
@@ -709,19 +742,13 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
 
   get ownerUserName(): string {
     const owner = this.ownerMember?.user;
-
     if (!owner) return 'Owner';
-
-    return `${owner.firstName ?? ''} ${owner.lastName ?? ''}`.trim()
-      || owner.email
-      || 'Owner';
+    return `${owner.firstName ?? ''} ${owner.lastName ?? ''}`.trim() || owner.email || 'Owner';
   }
 
   onGiftSent(message: string): void {
     this.giftNotification = message;
-
     clearTimeout(this.hideGiftTimeout);
-
     this.showGiftNotification = true;
 
     this.hideGiftTimeout = setTimeout(() => {

@@ -1,22 +1,35 @@
 <div class="gift-box">
   <div class="gift-header">
-    <p class="gift-title">Support streamer</p>
-    <span class="wallet-balance">
-      🪙 {{ wallet?.balance ?? 0 }} coins
-    </span>
+    <p class="gift-title">🎁 Gift to {{ ownerUserName }}</p>
+
+    <div style="display:flex; align-items:center; gap:8px;">
+      <!-- Coin tier badge -->
+      <span class="coin-tier" [ngClass]="coinTierClass">
+        {{ coinTierIcon }} {{ coinTierLabel }}
+      </span>
+
+      <!-- Animated balance -->
+      <span class="wallet-balance">
+        <span class="coin-icon">🪙</span>
+        <span class="coin-amount" [class.rolling]="isRolling">
+          {{ displayBalance }}
+        </span>
+      </span>
+    </div>
   </div>
 
   <div class="gift-list">
     <button
       type="button"
       class="gift-card"
+      [ngClass]="gift.cssClass"
       *ngFor="let gift of gifts"
       (click)="sendGift(gift)"
       [disabled]="!canSend(gift.coins)">
 
       <span class="gift-icon">{{ gift.icon }}</span>
       <span class="gift-label">{{ gift.label }}</span>
-      <small>{{ gift.coins }} coins</small>
+      <small>{{ gift.coins }} 🪙</small>
     </button>
   </div>
 </div>
