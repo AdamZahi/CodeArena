@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class CoachingController {
 
     @PostMapping("/sessions")
     @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
-    public ResponseEntity<Map<String, Object>> createSession(@RequestBody CoachingSessionDto dto) {
+    public ResponseEntity<Map<String, Object>> createSession(@Valid @RequestBody CoachingSessionDto dto) {
         try {
             CoachingSessionDto created = coachingService.createSession(dto);
             return ResponseEntity.ok(Map.of("success", true, "data", created));
@@ -120,7 +121,7 @@ public class CoachingController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> bookSession(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody BookSessionRequest request) {
+            @Valid @RequestBody BookSessionRequest request) {
         String userId = jwt.getSubject();
         CoachingSessionDto result = coachingService.bookSession(userId, request);
         return ResponseEntity.ok(Map.of("success", true, "data", result));
@@ -175,7 +176,7 @@ public class CoachingController {
     @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, Object>> submitFeedback(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody SessionFeedbackDto dto) {
+            @Valid @RequestBody SessionFeedbackDto dto) {
         try {
             String userId = (jwt != null) ? jwt.getSubject()
                     : (dto.getUserId() != null ? dto.getUserId() : "anonymous");

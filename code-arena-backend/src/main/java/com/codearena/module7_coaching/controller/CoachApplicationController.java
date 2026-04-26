@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -37,7 +38,7 @@ public class CoachApplicationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> submitApplication(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody CoachApplicationDto dto) {
+            @Valid @RequestBody CoachApplicationDto dto) {
         try {
             String userId = jwt.getSubject();
 

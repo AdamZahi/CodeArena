@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class QuizController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> submitQuiz(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody SubmitQuizRequest request) {
+            @Valid @RequestBody SubmitQuizRequest request) {
         String userId = jwt.getSubject();
         QuizResultDto result = quizService.submitQuiz(userId, request);
         return ResponseEntity.ok(Map.of("success", true, "data", result));
@@ -62,7 +63,7 @@ public class QuizController {
     /** Create a new quiz (admin/coach) */
     @PostMapping
     @PreAuthorize("@coachingSecurity.isCoachOrAdmin(principal)")
-    public ResponseEntity<Map<String, Object>> createQuiz(@RequestBody QuizDto quizDto) {
+    public ResponseEntity<Map<String, Object>> createQuiz(@Valid @RequestBody QuizDto quizDto) {
         QuizDto created = quizService.createQuiz(quizDto);
         return ResponseEntity.ok(Map.of("success", true, "data", created));
     }

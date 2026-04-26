@@ -18,6 +18,7 @@ export const COACHING_ROUTES: Routes = [
   { path: 'quizzes/:id', canActivate: [authGuard, roleGuard], data: { role: '!COACH', fallbackUrl: '/coaching-quiz/coach-dashboard' }, loadComponent: () => import('./pages/take-quiz/take-quiz.component').then((m) => m.TakeQuizComponent) },
   { path: 'apply-coach', canActivate: [authGuard], loadComponent: () => import('./pages/coach-apply/coach-apply.component').then((m) => m.CoachApplyComponent) },
   { path: 'ai-code-mentor', canActivate: [authGuard, roleGuard], data: { role: '!COACH', fallbackUrl: '/coaching-quiz/coach-dashboard' }, loadComponent: () => import('./pages/ai-code-mentor/ai-code-mentor.component').then((m) => m.AiCodeMentorComponent) },
+  { path: 'weakness-tracker', canActivate: [authGuard, roleGuard], data: { role: '!COACH', fallbackUrl: '/coaching-quiz/coach-dashboard' }, loadComponent: () => import('./pages/weakness-tracker/weakness-tracker.component').then((m) => m.WeaknessTrackerComponent) },
   { path: 'admin/applications', canActivate: [authGuard], loadComponent: () => import('./pages/admin-applications/admin-applications.component').then((m) => m.AdminApplicationsComponent) },
   { path: 'admin/quizzes', canActivate: [authGuard], loadComponent: () => import('./pages/admin-quizzes/admin-quizzes.component').then((m) => m.AdminQuizzesComponent) },
   { path: '', redirectTo: 'coaches', pathMatch: 'full' }

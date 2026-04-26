@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class AiController {
 
     @PostMapping("/generate")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> generate(@RequestBody AiRequest request) {
+    public ResponseEntity<Map<String, Object>> generate(@Valid @RequestBody AiRequest request) {
         log.info("AI request received - mode: {}, topic: {}, language: {}",
                 request.getMode(), request.getTopic(), request.getLanguage());
 

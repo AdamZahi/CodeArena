@@ -227,6 +227,15 @@ public class Auth0ManagementService {
             }
             Object token = response.getBody().get("access_token");
             return token == null ? null : token.toString();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().value() == 403) {
+                if (missingConfigLogged.compareAndSet(false, true)) {
+                    log.warn("Auth0 Management API not accessible (403 Forbidden). Ensure the Auth0 application is a Machine-to-Machine app with client_credentials grant enabled. Role synchronization will be disabled.");
+                }
+            } else {
+                log.warn("Failed to obtain Auth0 management token: {}", e.getMessage());
+            }
+            return null;
         } catch (Exception e) {
             log.warn("Failed to obtain Auth0 management token: {}", e.getMessage());
             log.debug("Auth0 management token exception", e);

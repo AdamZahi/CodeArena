@@ -1,0 +1,256 @@
+<app-coaching-navbar></app-coaching-navbar>
+<div class="tracker-universe">
+  <!-- Background effects -->
+  <div class="particles">
+    <div class="particle" *ngFor="let p of particles" [style.left.%]="p.x" [style.top.%]="p.y"
+         [style.animationDelay.s]="p.delay" [style.width.px]="p.size" [style.height.px]="p.size"></div>
+  </div>
+  <div class="neural-grid"></div>
+
+  <div class="tracker-container">
+    <!-- HERO -->
+    <div class="tracker-hero">
+      <div class="ai-brain-container">
+        <div class="brain-ring ring-outer"></div>
+        <div class="brain-ring ring-mid"></div>
+        <div class="brain-ring ring-inner"></div>
+        <div class="brain-core">🧠</div>
+        <div class="brain-pulse"></div>
+      </div>
+      <h1 class="tracker-title">
+        <span class="prefix">AI</span> WEAKNESS_<span class="accent">TRACKER</span>
+      </h1>
+      <p class="tracker-subtitle">
+        Intelligent memory that tracks your coding mistakes and adapts your learning path
+      </p>
+      <div class="hero-stats">
+        <div class="stat-chip"><span class="stat-icon">🧬</span><span class="stat-text">Pattern Detection</span></div>
+        <div class="stat-chip"><span class="stat-icon">📊</span><span class="stat-text">Progress Tracking</span></div>
+        <div class="stat-chip"><span class="stat-icon">🎯</span><span class="stat-text">Adaptive Learning</span></div>
+      </div>
+    </div>
+
+    <!-- TAB SELECTOR -->
+    <div class="tab-selector">
+      <button class="tab-btn" [class.active]="activeTab === 'analyze'" (click)="setTab('analyze')">
+        <span class="tab-icon">🔬</span> ANALYZE CODE
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+        <span class="tab-icon">📊</span> WEAKNESS DASHBOARD
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="setTab('history')">
+        <span class="tab-icon">📜</span> MISTAKE HISTORY
+      </button>
+    </div>
+
+    <!-- ═══════ TAB 1: ANALYZE CODE ═══════ -->
+    <div class="tab-panel" *ngIf="activeTab === 'analyze'">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-icon analyze-icon">🔬</div>
+          <div>
+            <h2>SUBMIT CODE FOR ANALYSIS</h2>
+            <p>Paste your code below — the AI will detect mistakes, classify them, and remember them for your profile</p>
+          </div>
+        </div>
+
+        <div class="config-grid">
+          <div class="config-field">
+            <label>STUDENT ID</label>
+            <input type="text" [(ngModel)]="studentId" class="neon-input" placeholder="your-student-id" />
+          </div>
+          <div class="config-field">
+            <label>PROGRAMMING LANGUAGE</label>
+            <select [(ngModel)]="selectedLanguage" class="neon-select">
+              <option value="JAVA">Java</option>
+              <option value="PYTHON">Python</option>
+              <option value="JAVASCRIPT">JavaScript</option>
+              <option value="SQL">SQL</option>
+              <option value="ANGULAR">Angular / TypeScript</option>
+            </select>
+          </div>
+          <div class="config-field full-width">
+            <label>YOUR CODE</label>
+            <textarea [(ngModel)]="codeInput" class="code-textarea" rows="12"
+                      placeholder="// Paste your code here for AI analysis...&#10;// The AI will detect patterns like:&#10;//   - Missing semicolons&#10;//   - Off-by-one errors&#10;//   - OOP mistakes&#10;//   - SQL issues&#10;//   - And more..."></textarea>
+          </div>
+        </div>
+
+        <button class="generate-btn analyze-gen" (click)="analyzeCode()"
+                [disabled]="isAnalyzing || !codeInput.trim()">
+          <span class="btn-glow"></span>
+          <span *ngIf="!isAnalyzing">🧠 ANALYZE & REMEMBER</span>
+          <span *ngIf="isAnalyzing" class="generating">
+            <span class="gen-dot"></span><span class="gen-dot"></span><span class="gen-dot"></span>
+            ANALYZING...
+          </span>
+        </button>
+      </div>
+
+      <!-- Analysis Result -->
+      <div class="result-card" *ngIf="analysisResult">
+        <div class="result-header-bar" [class.clean]="!analysisResult.errors_detected"
+             [class.issues]="analysisResult.errors_detected">
+          <span class="result-icon">{{ analysisResult.errors_detected ? '⚠️' : '✅' }}</span>
+          <span class="result-title">{{ analysisResult.message }}</span>
+        </div>
+
+        <!-- Detected Errors -->
+        <div class="errors-grid" *ngIf="analysisResult.errors.length">
+          <div class="error-card" *ngFor="let err of analysisResult.errors"
+               [style.border-left-color]="getSeverityColor(err.severity)">
+            <div class="error-top">
+              <span class="error-category-badge">{{ getCategoryIcon(err.category) }} {{ err.category }}</span>
+              <span class="error-severity" [style.color]="getSeverityColor(err.severity)">
+                {{ err.severity | uppercase }}
+              </span>
+            </div>
+            <div class="error-type">{{ err.error_type }}</div>
+            <div class="error-message">{{ err.message }}</div>
+            <div class="error-line" *ngIf="err.line">Line {{ err.line }}: <code>{{ err.code_line }}</code></div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations-section" *ngIf="analysisResult.recommendations.length">
+          <h3>🎯 Recommendations</h3>
+          <div class="rec-item" *ngFor="let rec of analysisResult.recommendations">
+            <span class="rec-bullet">▸</span> {{ rec }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ TAB 2: WEAKNESS DASHBOARD ═══════ -->
+    <div class="tab-panel" *ngIf="activeTab === 'dashboard'">
+      <div class="loading-state" *ngIf="isLoadingProfile">
+        <div class="spinner"></div>
+        <p>Loading weakness profile...</p>
+      </div>
+
+      <div *ngIf="profile && !isLoadingProfile">
+        <!-- Score Overview -->
+        <div class="score-overview">
+          <div class="score-ring-card">
+            <div class="score-ring" [style.--score-color]="getScoreColor()">
+              <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+                <circle cx="60" cy="60" r="52" fill="none" [attr.stroke]="getScoreColor()" stroke-width="8"
+                        stroke-linecap="round" [attr.stroke-dasharray]="(profile.overall_score / 100 * 327) + ' 327'"
+                        transform="rotate(-90 60 60)" class="score-progress"/>
+              </svg>
+              <div class="score-value">
+                <span class="score-num" [style.color]="getScoreColor()">{{ profile.overall_score | number:'1.0-0' }}</span>
+                <span class="score-label">{{ getScoreLabel() }}</span>
+              </div>
+            </div>
+            <div class="score-meta">
+              <div class="meta-item"><span class="meta-label">TOTAL MISTAKES</span><span class="meta-val">{{ profile.total_mistakes }}</span></div>
+              <div class="meta-item"><span class="meta-label">WEAKNESSES</span><span class="meta-val">{{ profile.top_weaknesses.length }}</span></div>
+            </div>
+          </div>
+
+          <!-- Language Weaknesses -->
+          <div class="weakness-card">
+            <h3>🌐 Language Weaknesses</h3>
+            <div class="lang-bars">
+              <div class="lang-bar-row" *ngFor="let lang of getLanguageKeys()">
+                <span class="lang-name">{{ lang }}</span>
+                <div class="lang-bar-bg">
+                  <div class="lang-bar-fill" [style.width.%]="profile.language_weaknesses[lang]"></div>
+                </div>
+                <span class="lang-pct">{{ profile.language_weaknesses[lang] }}%</span>
+              </div>
+              <div class="empty-state" *ngIf="!getLanguageKeys().length">
+                <p>No data yet. Submit code to start tracking!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Weaknesses -->
+        <div class="panel-card" *ngIf="profile.top_weaknesses.length">
+          <h3 class="section-title">🎯 Top Weaknesses</h3>
+          <div class="weakness-grid">
+            <div class="weakness-item" *ngFor="let w of profile.top_weaknesses; let i = index">
+              <div class="weakness-rank">#{{ i + 1 }}</div>
+              <div class="weakness-info">
+                <span class="weakness-type">{{ getCategoryIcon(w.category) }} {{ w.error_type }}</span>
+                <span class="weakness-cat">{{ w.category }}</span>
+              </div>
+              <div class="weakness-count">{{ w.count }}x</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Frequency Chart -->
+        <div class="panel-card" *ngIf="getErrorTypeKeys().length">
+          <h3 class="section-title">📊 Error Frequency</h3>
+          <div class="freq-chart">
+            <div class="freq-row" *ngFor="let et of getErrorTypeKeys()">
+              <span class="freq-label">{{ et }}</span>
+              <div class="freq-bar-bg">
+                <div class="freq-bar-fill" [style.width.%]="(profile.error_type_frequency[et] / getMaxErrorFreq()) * 100"></div>
+              </div>
+              <span class="freq-val">{{ profile.error_type_frequency[et] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Improvement Trend -->
+        <div class="panel-card" *ngIf="profile.improvement_trend.length">
+          <h3 class="section-title">📈 Error Trend (Last 7 Days)</h3>
+          <div class="trend-chart">
+            <div class="trend-bar-wrap" *ngFor="let t of profile.improvement_trend">
+              <div class="trend-bar" [style.height.%]="getTrendBarHeight(t.errors)"
+                   [class.zero]="t.errors === 0"></div>
+              <span class="trend-date">{{ t.date | slice:-5 }}</span>
+              <span class="trend-val">{{ t.errors }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="panel-card recs-card" *ngIf="profile.recommendations.length">
+          <h3 class="section-title">🤖 AI Recommendations</h3>
+          <div class="rec-item" *ngFor="let rec of profile.recommendations">
+            <span class="rec-bullet">▸</span> {{ rec }}
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!profile && !isLoadingProfile">
+        <div class="empty-icon">🧠</div>
+        <h3>No Profile Yet</h3>
+        <p>Submit code in the Analyze tab to start building your weakness profile!</p>
+      </div>
+    </div>
+
+    <!-- ═══════ TAB 3: MISTAKE HISTORY ═══════ -->
+    <div class="tab-panel" *ngIf="activeTab === 'history'">
+      <div class="panel-card" *ngIf="mistakes.length">
+        <h3 class="section-title">📜 Recent Mistakes</h3>
+        <div class="history-list">
+          <div class="history-item" *ngFor="let m of mistakes"
+               [style.border-left-color]="getSeverityColor(m.severity)">
+            <div class="history-top">
+              <span class="history-lang">{{ m.language }}</span>
+              <span class="history-cat">{{ getCategoryIcon(m.error_category) }} {{ m.error_category }}</span>
+              <span class="history-severity" [style.color]="getSeverityColor(m.severity)">{{ m.severity | uppercase }}</span>
+              <span class="history-time">{{ m.timestamp | slice:0:10 }}</span>
+            </div>
+            <div class="history-type">{{ m.error_type }}</div>
+            <div class="history-feedback" *ngIf="m.ai_feedback">💡 {{ m.ai_feedback }}</div>
+            <div class="history-code" *ngIf="m.code_snippet"><code>{{ m.code_snippet }}</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!mistakes.length">
+        <div class="empty-icon">📜</div>
+        <h3>No Mistakes Recorded</h3>
+        <p>Submit code in the Analyze tab to start tracking your mistakes!</p>
+      </div>
+    </div>
+  </div>
+</div>

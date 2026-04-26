@@ -21,6 +21,7 @@ import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
           <a class="lc-nav-item" routerLink="/coaching-quiz/my-training" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Training</a>
           <a class="lc-nav-item" routerLink="/coaching-quiz/quizzes" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Quizzes</a>
           <a class="lc-nav-item mentor-link" routerLink="/coaching-quiz/ai-code-mentor" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🎓 AI Mentor</a>
+          <a class="lc-nav-item tracker-link" routerLink="/coaching-quiz/weakness-tracker" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">📊 AI Memory</a>
           <a class="lc-nav-item apply-link" routerLink="/coaching-quiz/apply-coach" routerLinkActive="active">Become Coach</a>
         </ng-container>
 
@@ -156,6 +157,9 @@ import { AuthProfileService } from '../../../../core/auth/auth-profile.service';
     .mentor-link { color: #3b82f6 !important; background: rgba(59,130,246,0.08); padding: 4px 12px; border: 1px solid rgba(59,130,246,0.2); border-radius: 2px; }
     .mentor-link:hover { text-shadow: 0 0 12px rgba(59, 130, 246, 0.6); background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
     .mentor-link.active { background: rgba(59,130,246,0.2) !important; border-color: #3b82f6 !important; box-shadow: 0 0 15px rgba(59,130,246,0.2); }
+    .tracker-link { color: #f59e0b !important; background: rgba(245,158,11,0.08); padding: 4px 12px; border: 1px solid rgba(245,158,11,0.2); border-radius: 2px; }
+    .tracker-link:hover { text-shadow: 0 0 12px rgba(245, 158, 11, 0.6); background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); }
+    .tracker-link.active { background: rgba(245,158,11,0.2) !important; border-color: #f59e0b !important; box-shadow: 0 0 15px rgba(245,158,11,0.2); }
   `]
 })
 export class CoachingNavbarComponent implements OnInit {

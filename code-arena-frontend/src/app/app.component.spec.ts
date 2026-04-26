@@ -1,10 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { AuthUserSyncService } from './core/auth/auth-user-sync.service';
+import { provideRouter } from '@angular/router';
 
 describe('AppComponent', () => {
+  let authUserSyncServiceMock: jasmine.SpyObj<AuthUserSyncService>;
+
   beforeEach(async () => {
+    authUserSyncServiceMock = jasmine.createSpyObj('AuthUserSyncService', ['keepAlive']);
+
     await TestBed.configureTestingModule({
       imports: [AppComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AuthUserSyncService, useValue: authUserSyncServiceMock }
+      ]
     }).compileComponents();
   });
 
@@ -14,16 +24,8 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'code-arena-frontend' title`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('code-arena-frontend');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, code-arena-frontend');
+  it('should call authUserSync.keepAlive on init', () => {
+    TestBed.createComponent(AppComponent);
+    expect(authUserSyncServiceMock.keepAlive).toHaveBeenCalled();
   });
 });

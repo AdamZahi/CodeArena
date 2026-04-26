@@ -68,6 +68,11 @@ stripe:
 huggingface:
   api-key: ${HUGGINGFACE_API_KEY:}
 
+ai:
+  memory:
+    service:
+      url: ${AI_MEMORY_SERVICE_URL:http://localhost:8000}
+
 application:
   admin:
     email: ${ADMIN_EMAIL:hazem@gmail.com}
