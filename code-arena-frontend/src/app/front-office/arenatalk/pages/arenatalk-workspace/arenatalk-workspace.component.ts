@@ -319,13 +319,19 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-  closePaymentSuccess(): void {
-    this.showPaymentSuccess = false;
-    // By this time currentUserName and currentKeycloakId are ready
-    this.loadWallet();
-    setTimeout(() => this.loadWallet(), 2000);
-    setTimeout(() => this.loadWallet(), 5000);
-  }
+closePaymentSuccess(): void {
+  this.showPaymentSuccess = false;
+  // Force reload wallet with retries
+  const reload = () => {
+    if (this.currentKeycloakId && this.currentUserName) {
+      this.loadWallet();
+    }
+  };
+  reload();
+  setTimeout(reload, 1000);
+  setTimeout(reload, 3000);
+  setTimeout(reload, 6000);
+}
 
   // ── Voice ──────────────────────────────────────────────────────────────────
 

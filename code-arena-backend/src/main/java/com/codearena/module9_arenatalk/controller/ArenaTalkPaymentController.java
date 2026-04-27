@@ -88,15 +88,16 @@ public class ArenaTalkPaymentController {
 
             if ("checkout.session.completed".equals(event.getType())) {
                 Session session = (Session) event.getDataObjectDeserializer()
-                        .getObject()
-                        .orElse(null);
+                        .deserializeUnsafe();
 
                 if (session != null) {
-                    String userId = session.getMetadata().get("userId");
+                    String userId   = session.getMetadata().get("userId");
                     String userName = session.getMetadata().get("userName");
-                    Integer coins = Integer.parseInt(session.getMetadata().get("coins"));
+                    Integer coins   = Integer.parseInt(session.getMetadata().get("coins"));
 
+                    System.out.println(">>> Adding " + coins + " coins for user: " + userId);
                     walletService.addCoins(userId, userName, coins);
+                    System.out.println(">>> Coins added successfully!");
                 }
             }
 
@@ -104,7 +105,7 @@ public class ArenaTalkPaymentController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("webhook error");
+            return ResponseEntity.badRequest().body("webhook error: " + e.getMessage());
         }
     }
 }
