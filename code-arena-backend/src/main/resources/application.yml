@@ -39,7 +39,6 @@ spring:
 
 
 
-
 codearena:
   base-url: https://codearena.app
 
@@ -77,3 +76,7 @@ gemini:
 
 ai-model:
   url: http://localhost:5000
+
+stripe:
+  secret-key: sk_test_dummy_key_for_now
+  webhook-secret: dummy_webhook_secret

@@ -44,6 +44,10 @@ export const FO_ROUTES: Routes = [
         loadChildren: () => import('./terminal-quest/terminal-quest.routes').then((m) => m.TERMINAL_QUEST_ROUTES)
       },
       {
+         path: 'arenatalk',
+         loadChildren: () => import('./arenatalk/arenatalk.routes').then((m) => m.ARENATALK_ROUTES)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./reward-profile/pages/my-profile/my-profile.component').then((m) => m.MyProfileComponent)
       }

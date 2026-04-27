@@ -1,0 +1,36 @@
+<div class="summary-wrapper">
+  <button class="summary-btn" (click)="summarize()"
+    [disabled]="loading || !messages.length">
+    <span *ngIf="!loading">✨ AI Summary</span>
+    <span *ngIf="loading">Generating...</span>
+  </button>
+
+  <div class="summary-panel" *ngIf="showSummary">
+    <div class="summary-header">
+      <div class="summary-title">
+        <span>✨</span>
+        <h3>AI Summary — #{{ channelName }}</h3>
+      </div>
+      <button class="close-btn" (click)="close()">×</button>
+    </div>
+
+    <div class="summary-loading" *ngIf="loading">
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+      <span>Claude is reading the messages...</span>
+    </div>
+
+    <div class="summary-error" *ngIf="error && !loading">
+      <p>⚠️ Could not generate summary. Try again.</p>
+    </div>
+
+    <div class="summary-content" *ngIf="summary && !loading">
+      <p *ngFor="let line of summary.split('\n')" class="summary-line">{{ line }}</p>
+    </div>
+
+    <div class="summary-footer">
+      <span>Based on last {{ messages.length > 50 ? 50 : messages.length }} messages</span>
+    </div>
+  </div>
+</div>
