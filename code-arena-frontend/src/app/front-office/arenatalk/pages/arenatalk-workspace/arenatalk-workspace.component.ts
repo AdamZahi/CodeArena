@@ -23,6 +23,7 @@ import { VideoStreamDirective } from '../../../../shared/directives/video-stream
 import { VoiceGiftComponent } from '../voice-gift/voice-gift.component';
 import { PaymentService } from '../../services/payment.service';
 import { ArenaTalkWalletService } from '../../services/arenatalk-wallet.service';
+import { MessageAutocorrectService } from '../../services/ai/message-autocorrect.service';
 
 type DeleteTargetType = 'hub' | 'channel' | 'message' | null;
 
@@ -38,19 +39,19 @@ export interface CoinPackage {
 @Component({
   selector: 'app-arenatalk-workspace',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    VoiceChannelComponent,
-    MessageReactionsComponent,
-    MessageSearchComponent,
-    ChannelSummaryComponent,
-    MessageModerationComponent,
-    SmartReplyComponent,
-    SemanticSearchComponent,
-    VideoStreamDirective,
-    VoiceGiftComponent
-  ],
+imports: [
+  CommonModule,
+  FormsModule,
+  VoiceChannelComponent,
+  MessageReactionsComponent,
+  MessageSearchComponent,
+  ChannelSummaryComponent,
+  MessageModerationComponent,
+  SmartReplyComponent,
+  SemanticSearchComponent,
+  VideoStreamDirective,
+  VoiceGiftComponent  
+],
   templateUrl: './arenatalk-workspace.component.html',
   styleUrl: './arenatalk-workspace.component.css'
 })
@@ -114,7 +115,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   // ── Payment success popup ──
   showPaymentSuccess = false;
   lastPurchasedCoins = 0;
-  private paymentWasSuccess = false; // flag to reload wallet after identity loads
+  private paymentWasSuccess = false;
 
   // ── Buy coins modal ──
   showBuyModal = false;
@@ -127,6 +128,12 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     { coins: 2000, price: '€20.00', euros: 2000, bonus: '+300 free', icon: '👑' },
     { coins: 5000, price: '€50.00', euros: 5000, bonus: '+1000 free', icon: '🚀' },
   ];
+
+  // ── Autocorrect ──
+  autocorrectSuggestion = '';
+  isLoadingCorrection   = false;
+  private autocorrectTimeout: any;
+  private lastCorrectedText = '';
 
   private voiceSubs: Subscription[] = [];
 
@@ -142,7 +149,8 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private paymentService: PaymentService,
     private walletService: ArenaTalkWalletService,
-    private voiceSignalingService: VoiceSignalingService
+    private voiceSignalingService: VoiceSignalingService,
+    private autocorrectService: MessageAutocorrectService
   ) {}
 
   ngOnInit(): void {
@@ -179,7 +187,6 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
       })
     );
 
-    // ── Check payment redirect FIRST (just show popup, don't load wallet yet) ──
     this.checkPaymentSuccess();
 
     this.auth.getAccessTokenSilently().pipe(take(1)).subscribe(token => {
@@ -239,6 +246,7 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.voiceSubs.forEach(s => s.unsubscribe());
     clearTimeout(this.hideGiftTimeout);
+    clearTimeout(this.autocorrectTimeout);
     this.setCurrentUserOffline();
   }
 
@@ -308,10 +316,9 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     if (payment === 'success') {
       this.lastPurchasedCoins = parseInt(coins || '500', 10);
       this.showPaymentSuccess = true;
-      this.paymentWasSuccess  = true; // remember to reload wallet once identity is ready
+      this.paymentWasSuccess  = true;
       this.cdr.detectChanges();
 
-      // Clean URL immediately
       const url = new URL(window.location.href);
       url.searchParams.delete('payment');
       url.searchParams.delete('coins');
@@ -319,19 +326,66 @@ export class ArenatalkWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-closePaymentSuccess(): void {
-  this.showPaymentSuccess = false;
-  // Force reload wallet with retries
-  const reload = () => {
-    if (this.currentKeycloakId && this.currentUserName) {
-      this.loadWallet();
+  closePaymentSuccess(): void {
+    this.showPaymentSuccess = false;
+    const reload = () => {
+      if (this.currentKeycloakId && this.currentUserName) {
+        this.loadWallet();
+      }
+    };
+    reload();
+    setTimeout(reload, 1000);
+    setTimeout(reload, 3000);
+    setTimeout(reload, 6000);
+  }
+
+  // ── Autocorrect ────────────────────────────────────────────────────────────
+
+  onMessageInput(): void {
+    clearTimeout(this.autocorrectTimeout);
+
+    if (!this.newMessage || this.newMessage.trim().length < 4) {
+      this.autocorrectSuggestion = '';
+      return;
     }
-  };
-  reload();
-  setTimeout(reload, 1000);
-  setTimeout(reload, 3000);
-  setTimeout(reload, 6000);
-}
+
+    if (this.newMessage === this.lastCorrectedText) return;
+
+    this.autocorrectTimeout = setTimeout(async () => {
+      if (!this.newMessage || this.newMessage.trim().length < 4) return;
+
+      this.isLoadingCorrection = true;
+      this.cdr.detectChanges();
+
+      const result = await this.autocorrectService.correctMessage(this.newMessage);
+
+      this.isLoadingCorrection = false;
+
+      if (result.hasChanges && result.corrected !== this.newMessage) {
+        this.autocorrectSuggestion = result.corrected;
+        this.lastCorrectedText     = this.newMessage;
+      } else {
+        this.autocorrectSuggestion = '';
+      }
+
+      this.cdr.detectChanges();
+    }, 800);
+  }
+
+  applyCorrection(): void {
+    if (this.autocorrectSuggestion) {
+      this.newMessage            = this.autocorrectSuggestion;
+      this.autocorrectSuggestion = '';
+      this.lastCorrectedText     = this.newMessage;
+      this.cdr.detectChanges();
+    }
+  }
+
+  dismissCorrection(): void {
+    this.autocorrectSuggestion = '';
+    this.lastCorrectedText     = this.newMessage;
+    this.cdr.detectChanges();
+  }
 
   // ── Voice ──────────────────────────────────────────────────────────────────
 
@@ -361,9 +415,7 @@ closePaymentSuccess(): void {
   private setCurrentUserOnline(): void {
     if (!this.selectedHub?.id || !this.currentKeycloakId) return;
     this.hubMemberService.setOnline(this.selectedHub.id, this.currentKeycloakId).subscribe({
-      next: () => {
-        this.loadMembers(this.selectedHub!.id!);
-      },
+      next: () => { this.loadMembers(this.selectedHub!.id!); },
       error: () => {}
     });
   }
@@ -424,10 +476,8 @@ closePaymentSuccess(): void {
         || currentUser.email
         || this.currentKeycloakId;
 
-      // ── Load wallet now that identity is ready ──
       this.loadWallet();
 
-      // ── If we came back from a payment, reload wallet after webhook delay ──
       if (this.paymentWasSuccess) {
         setTimeout(() => this.loadWallet(), 3000);
         setTimeout(() => this.loadWallet(), 6000);
@@ -513,6 +563,10 @@ closePaymentSuccess(): void {
     if (!this.newMessage.trim() || !this.selectedChannel?.id) return;
     if (this.isCheckingMessage) return;
 
+    // Clear autocorrect when sending
+    this.autocorrectSuggestion = '';
+    clearTimeout(this.autocorrectTimeout);
+
     this.isCheckingMessage = true;
     const content = this.newMessage.trim();
 
@@ -553,7 +607,6 @@ closePaymentSuccess(): void {
   }
 
   openCreateChannelForm(): void { this.showCreateChannelForm = true; }
-
   closeCreateChannelForm(): void { this.showCreateChannelForm = false; this.newChannel = { name: '', topic: '' }; }
 
   createChannel(): void {
@@ -714,7 +767,6 @@ closePaymentSuccess(): void {
       this.showGiftNotification = false;
       this.cdr.detectChanges();
     }, 10000);
-    // Reload wallet after gift is sent
     setTimeout(() => this.loadWallet(), 1000);
   }
 

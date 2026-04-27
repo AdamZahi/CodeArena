@@ -953,3 +953,97 @@ app-semantic-search { display: block; margin-top: 12px; }
   font-size: 12px;
   margin: 0;
 }
+/* ── AUTOCORRECT SUGGESTION BAR ─────────────────────────────────────────── */
+/* Append this to arenatalk-workspace.component.css */
+
+.autocorrect-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(141, 99, 255, 0.08);
+  border: 1px solid rgba(141, 99, 255, 0.25);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  animation: slideDown 0.2s ease;
+  flex-wrap: wrap;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.autocorrect-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.autocorrect-label {
+  font-size: 11px;
+  color: #8d63ff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.autocorrect-text {
+  flex: 1;
+  font-size: 13px;
+  color: #c8d3f0;
+  font-style: italic;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autocorrect-apply-btn {
+  background: linear-gradient(90deg, #8d63ff, #22c7ff);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.autocorrect-apply-btn:hover {
+  opacity: 0.85;
+}
+
+.autocorrect-dismiss-btn {
+  background: transparent;
+  color: #4a5568;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.autocorrect-dismiss-btn:hover {
+  color: #ff6b81;
+}
+
+.autocorrect-loading {
+  font-size: 14px;
+  animation: pulse 1s infinite;
+  position: absolute;
+  right: 70px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* Make input-row relative for loading indicator */
+.input-row {
+  position: relative;
+}

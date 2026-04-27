@@ -312,19 +312,38 @@
           </div>
         </div>
 
-        <div class="message-input-bar" *ngIf="selectedChannel">
-          <div class="input-tools">
-            <app-smart-reply [messages]="messages" (replySelected)="onSmartReplySelected($event)"></app-smart-reply>
-          </div>
-          <div class="input-row">
-            <input type="text" [(ngModel)]="newMessage"
-              placeholder="Send a message to #{{ selectedChannel.name }}"
-              (keyup.enter)="sendMessage()" [disabled]="isCheckingMessage" />
-            <button (click)="sendMessage()" [disabled]="isCheckingMessage">
-              {{ isCheckingMessage ? '...' : 'Send' }}
-            </button>
-          </div>
-        </div>
+      <!-- REPLACE your existing message-input-bar div with this -->
+<!-- Find: <div class="message-input-bar" *ngIf="selectedChannel"> -->
+<!-- Replace the entire div with this: -->
+
+<div class="message-input-bar" *ngIf="selectedChannel">
+
+  <!-- AI Autocorrect suggestion bar -->
+  <div class="autocorrect-bar" *ngIf="autocorrectSuggestion && autocorrectSuggestion !== newMessage">
+    <span class="autocorrect-icon">✨</span>
+    <span class="autocorrect-label">Suggestion:</span>
+    <span class="autocorrect-text">{{ autocorrectSuggestion }}</span>
+    <button class="autocorrect-apply-btn" (click)="applyCorrection()">Apply</button>
+    <button class="autocorrect-dismiss-btn" (click)="dismissCorrection()">✕</button>
+  </div>
+
+  <div class="input-tools">
+    <app-smart-reply [messages]="messages" (replySelected)="onSmartReplySelected($event)"></app-smart-reply>
+  </div>
+
+  <div class="input-row">
+    <input type="text" [(ngModel)]="newMessage"
+      placeholder="Send a message to #{{ selectedChannel.name }}"
+      (keyup.enter)="sendMessage()"
+      (input)="onMessageInput()"
+      [disabled]="isCheckingMessage" />
+    <span class="autocorrect-loading" *ngIf="isLoadingCorrection">✨</span>
+    <button (click)="sendMessage()" [disabled]="isCheckingMessage">
+      {{ isCheckingMessage ? '...' : 'Send' }}
+    </button>
+  </div>
+
+</div>
 
       </ng-container>
     </main>
