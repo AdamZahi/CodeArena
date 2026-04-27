@@ -70,3 +70,10 @@ battle:
     blitz-minutes: 15
     practice-minutes: -1
     daily-minutes: -1
+
+
+gemini:
+  api-key: AIzaSyDJw4MEX6UT0kPc2f23PTyLFGvQtJNSU-k
+
+ai-model:
+  url: http://localhost:5000

@@ -1,0 +1,4 @@
+<div class="voice-dot-container">
+  <button class="voice-dot" [class.active]="isListening" (click)="toggleMic()"></button>
+  <span class="voice-status" *ngIf="feedback">{{ feedback }}</span>
+</div>

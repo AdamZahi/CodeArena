@@ -1,0 +1,91 @@
+<div class="lb-container">
+
+  <!-- ── NAV ───────────────────────────────────────── -->
+  <div class="page-nav">
+    <a routerLink="/terminal-quest" class="back-btn">&#8592; TERMINAL QUEST</a>
+  </div>
+
+  <!-- ── HEADER ────────────────────────────────────── -->
+  <div class="page-header">
+    <span class="kicker">SURVIVAL MODE</span>
+    <h1 class="page-title">SURVIVAL <span class="accent">LEADERBOARD</span></h1>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING RANKINGS...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- ── LEADERBOARD TABLE ──────────────────────────── -->
+    <div class="table-wrapper" *ngIf="leaderboard.length > 0; else emptyBoard">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th class="col-rank">RANK</th>
+            <th class="col-player">PLAYER</th>
+            <th class="col-wave">BEST WAVE</th>
+            <th class="col-score">BEST SCORE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let entry of leaderboard; let i = index"
+            class="lb-row"
+            [ngClass]="getRankStyle(i)"
+            [class.is-me]="entry.userId === userId">
+            <td class="col-rank">
+              <span class="rank-medal" *ngIf="i < 3">{{ medals[i] }}</span>
+              <span class="rank-num" *ngIf="i >= 3">#{{ i + 1 }}</span>
+            </td>
+            <td class="col-player">
+              <span class="player-id">{{ entry.userId }}</span>
+              <span class="you-badge" *ngIf="entry.userId === userId">YOU</span>
+            </td>
+            <td class="col-wave">{{ entry.bestWave }}</td>
+            <td class="col-score">{{ entry.bestScore }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyBoard>
+      <div class="empty-state">
+        <span class="empty-icon">&#127942;</span>
+        <p>No records yet. Be the first survivor!</p>
+        <a routerLink="/terminal-quest/survival" class="play-btn">START SURVIVAL &#9654;</a>
+      </div>
+    </ng-template>
+
+    <!-- ── YOUR RANKING ──────────────────────────────── -->
+    <div class="your-ranking">
+      <div class="yr-title">YOUR RANKING</div>
+      <div class="yr-card" *ngIf="hasUserRecord && userRanking; else noRecord">
+        <div class="yr-stat">
+          <span class="yr-label">RANK</span>
+          <span class="yr-value">{{ getUserRank() > 0 ? '#' + getUserRank() : '&#8212;' }}</span>
+        </div>
+        <div class="yr-divider"></div>
+        <div class="yr-stat">
+          <span class="yr-label">BEST WAVE</span>
+          <span class="yr-value cyan">{{ userRanking.bestWave }}</span>
+        </div>
+        <div class="yr-divider"></div>
+        <div class="yr-stat">
+          <span class="yr-label">BEST SCORE</span>
+          <span class="yr-value purple">{{ userRanking.bestScore }}</span>
+        </div>
+      </div>
+      <ng-template #noRecord>
+        <div class="yr-empty">
+          No record yet &#8212; play survival mode to get on the board!
+          <a routerLink="/terminal-quest/survival" class="play-btn small">PLAY NOW &#9654;</a>
+        </div>
+      </ng-template>
+    </div>
+
+  </ng-container>
+
+</div>

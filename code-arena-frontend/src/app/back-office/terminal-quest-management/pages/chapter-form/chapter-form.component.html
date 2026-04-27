@@ -1,0 +1,65 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <a routerLink="/admin/terminal-quest/chapters" class="back-btn">&#8592; CHAPTERS</a>
+      <h1 class="page-title">{{ isEditMode ? 'EDIT' : 'NEW' }} <span class="accent">CHAPTER</span></h1>
+    </div>
+  </div>
+
+  <!-- ── LOADING ────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING CHAPTER...</span>
+  </div>
+
+  <!-- ── FORM ───────────────────────────────────────── -->
+  <div class="form-card" *ngIf="!isLoading">
+
+    <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+
+      <div class="form-row">
+        <div class="form-group" [class.invalid]="isInvalid('title')">
+          <label class="form-label">TITLE <span class="required">*</span></label>
+          <input type="text" class="form-input" formControlName="title" placeholder="e.g. Chapter 1: Linux Basics" />
+          <span class="field-error" *ngIf="isInvalid('title')">Title is required.</span>
+        </div>
+        <div class="form-group narrow" [class.invalid]="isInvalid('orderIndex')">
+          <label class="form-label">ORDER INDEX <span class="required">*</span></label>
+          <input type="number" class="form-input" formControlName="orderIndex" min="1" />
+          <span class="field-error" *ngIf="isInvalid('orderIndex')">Required, min 1.</span>
+        </div>
+      </div>
+
+      <div class="form-group" [class.invalid]="isInvalid('description')">
+        <label class="form-label">DESCRIPTION <span class="required">*</span></label>
+        <textarea class="form-textarea" formControlName="description" rows="3"
+          placeholder="Brief description of what the player will learn in this chapter."></textarea>
+        <span class="field-error" *ngIf="isInvalid('description')">Description is required.</span>
+      </div>
+
+      <div class="form-group">
+        <label class="toggle-label">
+          <input type="checkbox" class="toggle-input" formControlName="isLocked" />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-text">CHAPTER LOCKED</span>
+          <span class="toggle-hint">Locked chapters are hidden from players until unlocked.</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/admin/terminal-quest/chapters" class="btn-cancel">CANCEL</a>
+        <button type="submit" class="btn-save" [disabled]="isSaving">
+          {{ isSaving ? 'SAVING...' : (isEditMode ? 'UPDATE CHAPTER' : 'CREATE CHAPTER') }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

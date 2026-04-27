@@ -31,6 +31,9 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a *ngIf="(currentUser$ | async)?.role === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active" class="admin-link">
           <span class="link-label">BACKOFFICE</span>
         </a>
+        <a routerLink="/terminal-quest" routerLinkActive="active">
+        <span class="link-label">TERMINAL QUEST</span>
+        </a>
       </nav>
 
       <div class="actions">

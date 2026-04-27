@@ -1,0 +1,206 @@
+<div class="play-container">
+
+  <!-- ── NAV ───────────────────────────────────────── -->
+  <div class="page-nav">
+    <button class="back-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick(); backToMap()">&#8592; BACK TO MAP</button>
+    <button class="mute-btn" (click)="ttsService.toggleMute()" [title]="ttsService.isMuted ? 'Unmute voice' : 'Mute voice'">
+      {{ ttsService.isMuted ? '🔇' : '🔊' }}
+    </button>
+  </div>
+
+  <!-- ── LOADING ───────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING MISSION...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading && mission">
+
+    <!-- ── MISSION HEADER ───────────────────────────── -->
+    <div class="level-header">
+      <h1 class="level-title">{{ mission.title }}</h1>
+      <div class="level-badges">
+        <span class="diff-badge" [ngClass]="'diff-' + mission.difficulty.toLowerCase()">{{ mission.difficulty }}</span>
+        <span class="boss-badge" *ngIf="mission.isBoss">&#9876; BOSS FIGHT</span>
+        <span class="xp-badge">+{{ mission.xpReward }} XP</span>
+      </div>
+    </div>
+
+    <!-- ── BOMB TIMER ─────────────────────────────── -->
+    <div class="bomb-timer" *ngIf="!isCorrect && !isTimeOut"
+         [class.critical]="isTimeCritical"
+         [class.danger]="isDanger">
+      <div class="timer-led-left">
+        <div class="led-dot" *ngFor="let i of ledRange"
+             [class.off]="timeRemaining < (totalTime / 5) * (5 - i + 1)"></div>
+      </div>
+      <div class="timer-digits">
+        <span class="digit">{{ getMinutes() }}</span>
+        <span class="colon" [class.blink]="colonBlink">:</span>
+        <span class="digit">{{ getSeconds() }}</span>
+      </div>
+      <div class="timer-led-right">
+        <div class="led-dot" *ngFor="let i of ledRange"
+             [class.off]="timeRemaining < (totalTime / 5) * (5 - i + 1)"></div>
+      </div>
+    </div>
+
+    <!-- ── NARRATIVE CONTEXT (dialogue block) ───────── -->
+    <div class="dialogue-block">
+      <div class="dialogue-header">
+        <div class="npc-avatar">👤</div>
+        <div class="npc-info">
+          <span class="npc-name">{{ mission.speakerName || 'DevOps Lead' }}</span>
+          <span class="npc-role">{{ getSpeakerRole() }}</span>
+        </div>
+      </div>
+      <p class="dialogue-text">{{ mission.context }}</p>
+    </div>
+
+    <!-- ── TASK OBJECTIVE ───────────────────────────── -->
+    <div class="task-block">
+      <span class="task-label">OBJECTIVE</span>
+      <p class="task-text">{{ mission.task }}</p>
+    </div>
+
+    <!-- ── AI ADAPTIVE LEARNING (ODD 9) ────────────────────────────────── -->
+    <div class="adaptive-block" *ngIf="adaptivePrediction || isAdaptiveLoading">
+      <div class="adaptive-header">
+        <span class="adaptive-icon">🧠</span>
+        <span class="adaptive-label">AI ADAPTIVE LEARNING</span>
+        <span class="adaptive-badge" *ngIf="adaptivePrediction"
+              [ngClass]="{
+                'badge-assist': adaptivePrediction.playerLevel === 'STRUGGLING',
+                'badge-maintain': adaptivePrediction.playerLevel === 'LEARNING',
+                'badge-challenge': adaptivePrediction.playerLevel === 'PROFICIENT'
+              }">
+          {{ adaptivePrediction.playerLevel }}
+        </span>
+      </div>
+      <div class="adaptive-loader" *ngIf="isAdaptiveLoading">
+        <span class="dot-blink">.</span><span class="dot-blink delay-1">.</span><span class="dot-blink delay-2">.</span>
+        Analyzing your skill profile...
+      </div>
+      <div class="adaptive-content" *ngIf="!isAdaptiveLoading && adaptivePrediction">
+        <div class="adaptive-bar-container">
+          <div class="adaptive-bar-label">Success prediction</div>
+          <div class="adaptive-bar">
+            <div class="adaptive-bar-fill"
+                 [style.width.%]="adaptivePrediction.successProbability * 100"
+                 [ngClass]="{
+                   'bar-low': adaptivePrediction.successProbability < 0.4,
+                   'bar-mid': adaptivePrediction.successProbability >= 0.4 && adaptivePrediction.successProbability <= 0.7,
+                   'bar-high': adaptivePrediction.successProbability > 0.7
+                 }">
+            </div>
+          </div>
+          <div class="adaptive-bar-value">{{ (adaptivePrediction.successProbability * 100).toFixed(0) }}%</div>
+        </div>
+        <p class="adaptive-message" *ngIf="adaptiveMessage">{{ adaptiveMessage }}</p>
+        <div class="adaptive-adjustments" *ngIf="adaptivePrediction.timerAdjustment !== 0">
+          <span *ngIf="adaptivePrediction.timerAdjustment > 0">⏱ +{{ adaptivePrediction.timerAdjustment }}s added to timer</span>
+          <span *ngIf="adaptivePrediction.timerAdjustment < 0">⏱ {{ adaptivePrediction.timerAdjustment }}s timer challenge</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HINT ──────────────────────────────────────── -->
+    <div class="hint-section">
+      <button class="hint-btn" (mouseenter)="audio.playHover()" (click)="audio.playClick(); toggleHint()">
+        {{ showHint ? '&#9660; HIDE HINT' : '&#9654; SHOW HINT' }}
+      </button>
+      <div class="hint-block" *ngIf="showHint">
+        &#128161; {{ mission.hint || 'No hint available for this mission.' }}
+      </div>
+    </div>
+
+    <!-- ── TERMINAL ───────────────────────────────────── -->
+    <div class="terminal-wrapper">
+      <div class="terminal-titlebar">
+        <div class="terminal-dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <span class="terminal-title">terminal&#64;codearena:~$</span>
+      </div>
+
+      <div class="terminal-output" #terminalOutput>
+        <div
+          *ngFor="let line of commandHistory"
+          class="terminal-line"
+          [ngClass]="'line-' + line.type">{{ line.text }}</div>
+        <div class="terminal-processing" *ngIf="isSubmitting">
+          <span class="blink">&#9608;</span> processing...
+        </div>
+      </div>
+
+      <div class="terminal-input-row" *ngIf="isCorrect !== true && !isTimeOut">
+        <span class="input-prompt">$&nbsp;</span>
+        <input
+          type="text"
+          class="terminal-input"
+          [(ngModel)]="currentCommand"
+          (keyup.enter)="executeCommand()"
+          [disabled]="isSubmitting"
+          placeholder="type your command here..."
+          autocomplete="off"
+          spellcheck="false" />
+        <button
+          class="execute-btn"
+          (mouseenter)="audio.playHover()"
+          (click)="audio.playClick(); executeCommand()"
+          [disabled]="isSubmitting || !currentCommand.trim()">
+          EXECUTE
+        </button>
+      </div>
+    </div>
+
+    <!-- ── AI COMMAND ANALYSIS ───────────────────────── -->
+    <div class="ai-explain-block" *ngIf="isExplaining || explanation">
+      <div class="ai-explain-header">
+        <span class="ai-icon">🤖</span>
+        <span class="ai-label">AI COMMAND ANALYSIS</span>
+      </div>
+      <div class="ai-explain-loader" *ngIf="isExplaining">
+        <span class="dot-blink">.</span><span class="dot-blink delay-1">.</span><span class="dot-blink delay-2">.</span>
+        Analyzing command...
+      </div>
+      <p class="ai-explain-text" *ngIf="!isExplaining && explanation">{{ explanation }}</p>
+    </div>
+
+    <!-- ── SUCCESS BLOCK ──────────────────────────────── -->
+    <div class="success-block" *ngIf="isCorrect === true && result">
+      <div class="success-title">&#10003; COMMAND ACCEPTED</div>
+      <div class="success-stars">
+        <span
+          *ngFor="let s of getStarDisplay(result.starsEarned)"
+          class="success-star"
+          [class.filled]="s === '★'">{{ s }}</span>
+      </div>
+      <div class="success-xp">+{{ result.xpEarned }} XP EARNED</div>
+      <div class="speed-bonus" *ngIf="speedBonus">&#9889; SPEED BONUS! +50% XP</div>
+      <div class="success-actions">
+        <button class="btn-primary" (mouseenter)="audio.playHover()" (click)="audio.playClick(); backToMap()">&#8592; BACK TO MAP</button>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ── TIMEOUT OVERLAY ────────────────────────────── -->
+  <div class="timeout-overlay" *ngIf="isTimeOut">
+    <div class="timeout-box">
+      <div class="timeout-digits">00:00</div>
+      <div class="timeout-title">SYSTEM FAILURE</div>
+      <div class="timeout-sub">Time expired — mission aborted.</div>
+      <div class="timeout-actions">
+        <button class="btn-retry" (mouseenter)="audio.playHover()" (click)="audio.playMissionEntry(); retryMission()">&#8635; RETRY</button>
+        <button class="btn-back" (mouseenter)="audio.playHover()" (click)="audio.playClick(); backToMap()">&#8592; MAP</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<app-voice-nav-widget></app-voice-nav-widget>
+

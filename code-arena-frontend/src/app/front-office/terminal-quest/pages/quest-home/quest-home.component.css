@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:host {
+  --neon:   #8b5cf6;
+  --cyan:   #06b6d4;
+  --dark:   #0a0a0f;
+  --card:   #0d0d15;
+  --border: #1a1a2e;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+}
+
+/* ── ANIMATIONS ──────────────────────────────────── */
+@keyframes scan-line {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.35; }
+}
+
+/* ── CONTAINER ───────────────────────────────────── */
+.quest-container {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--dark);
+  padding: 60px 40px;
+  font-family: 'Rajdhani', sans-serif;
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+}
+
+.quest-container::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon), transparent);
+  animation: scan-line 4s linear infinite;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.quest-container::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HERO ────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  margin-bottom: 64px;
+  position: relative;
+  z-index: 1;
+  animation: slide-up 0.6s ease both;
+}
+
+.kicker {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 6px;
+  margin: 0 0 20px;
+  line-height: 1;
+}
+
+.accent {
+  background: linear-gradient(135deg, var(--neon), var(--cyan));
+  -webkit-background-clip: text;
+    background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.hero-sub {
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ── MODE GRID ───────────────────────────────────── */
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 900px;
+  margin: 0 auto 48px;
+  position: relative;
+  z-index: 1;
+  animation: slide-up 0.6s 0.15s ease both;
+}
+
+@media (max-width: 680px) {
+  .mode-grid { grid-template-columns: 1fr; }
+}
+
+/* ── MODE CARD ───────────────────────────────────── */
+.mode-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 36px 32px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+  overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+.story-card:hover {
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 0 40px rgba(139,92,246,0.15);
+  transform: translateY(-4px);
+}
+.survival-card:hover {
+  border-color: rgba(6,182,212,0.5);
+  box-shadow: 0 0 40px rgba(6,182,212,0.15);
+  transform: translateY(-4px);
+}
+
+/* glow blob behind card */
+.card-glow {
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%);
+  animation: glow-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.card-glow.cyan {
+  background: radial-gradient(circle, rgba(6,182,212,0.2) 0%, transparent 70%);
+}
+
+.card-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.card-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--text);
+  margin: 4px 0 0;
+}
+
+.card-sub {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.card-features {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-features li {
+  font-size: 14px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.feat-dot {
+  color: var(--neon);
+  font-size: 10px;
+}
+.survival-card .feat-dot { color: var(--cyan); }
+
+.card-cta {
+  margin-top: auto;
+  padding-top: 20px;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--neon);
+}
+.card-cta.survival { color: var(--cyan); }
+
+/* ── LEADERBOARD LINK ────────────────────────────── */
+.lb-row {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  animation: slide-up 0.6s 0.3s ease both;
+}
+
+.lb-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.lb-btn:hover {
+  color: #f59e0b;
+  border-color: rgba(245,158,11,0.4);
+  box-shadow: 0 0 20px rgba(245,158,11,0.1);
+}
+
+/* ── SKILL REPORT CARD ───────────────────────────── */
+.skill-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  text-align: left;
+  cursor: pointer;
+}
+
+.skill-card:hover {
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 0 40px rgba(139,92,246,0.15);
+  transform: translateY(-4px);
+}
+
+.card-glow.skill {
+  background: radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%);
+}
+
+.skill-dot { color: #8b5cf6; }
+
+.card-cta.skill-cta { color: #8b5cf6; }

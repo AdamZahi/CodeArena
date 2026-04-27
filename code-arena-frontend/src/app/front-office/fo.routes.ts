@@ -38,6 +38,11 @@ export const FO_ROUTES: Routes = [
         path: 'coaching-quiz',
         loadChildren: () => import('./coaching-quiz/coaching.routes').then((m) => m.COACHING_ROUTES)
       },
+
+            {
+        path: 'terminal-quest',
+        loadChildren: () => import('./terminal-quest/terminal-quest.routes').then((m) => m.TERMINAL_QUEST_ROUTES)
+      },
       {
         path: 'profile',
         loadComponent: () => import('./reward-profile/pages/my-profile/my-profile.component').then((m) => m.MyProfileComponent)

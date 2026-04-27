@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+.admin-container {
+  min-height: 100vh;
+  background: #0a0a0f;
+  padding: 32px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #e2e8f0;
+}
+
+/* ── HEADER ──────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1a1a2e;
+}
+.kicker {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: #06b6d4;
+  display: block;
+  margin-bottom: 6px;
+}
+.page-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 900;
+  color: #e2e8f0;
+  margin: 0 0 4px;
+  letter-spacing: 2px;
+}
+.accent {
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-sub { font-size: 13px; color: #64748b; margin: 0; }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ── BUTTONS ─────────────────────────────────────────── */
+.btn-primary {
+  height: 40px; padding: 0 20px; border-radius: 6px; cursor: pointer;
+  font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; transition: all 0.2s; border: none;
+  background: #8b5cf6; color: #fff;
+}
+.btn-primary:hover { background: #7c3aed; box-shadow: 0 0 20px rgba(139,92,246,0.4); }
+.btn-secondary {
+  height: 40px; padding: 0 20px; border-radius: 6px; cursor: pointer;
+  font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; transition: all 0.2s; background: transparent;
+  color: #06b6d4; border: 1.5px solid rgba(6,182,212,0.4);
+}
+.btn-secondary:hover { background: rgba(6,182,212,0.08); border-color: #06b6d4; }
+
+/* ── LOADING ─────────────────────────────────────────── */
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 300px; gap: 16px;
+}
+.loader-ring {
+  width: 40px; height: 40px; border: 3px solid #1a1a2e;
+  border-top-color: #8b5cf6; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 3px; color: #64748b; }
+
+/* ── BREAKDOWN CARDS ─────────────────────────────────── */
+.breakdown-row {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+}
+.breakdown-card {
+  background: #0d0d15; border: 1px solid #1a1a2e; border-radius: 10px;
+  padding: 16px 20px; display: flex; flex-direction: column;
+  align-items: center; gap: 4px; min-width: 120px;
+  transition: border-color 0.2s;
+}
+.breakdown-card:hover { border-color: rgba(139,92,246,0.3); }
+.bd-icon  { font-size: 24px; line-height: 1; }
+.bd-count { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 900; color: #8b5cf6; }
+.bd-label { font-size: 11px; color: #64748b; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── TIMELINE ────────────────────────────────────────── */
+.timeline-wrapper {
+  background: #0d0d15; border: 1px solid #1a1a2e; border-radius: 8px; overflow: hidden;
+}
+.section-header {
+  padding: 16px 20px; border-bottom: 1px solid #1a1a2e;
+  background: rgba(139,92,246,0.04);
+}
+.section-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 2px; color: #94a3b8; }
+
+.timeline-list { padding: 8px 0; }
+.timeline-item {
+  display: flex; gap: 16px; padding: 14px 20px;
+  border-bottom: 1px solid rgba(26,26,46,0.5); align-items: flex-start;
+}
+.timeline-item:last-child { border-bottom: none; }
+.tl-icon { font-size: 18px; line-height: 1; margin-top: 2px; flex-shrink: 0; }
+.tl-body { flex: 1; }
+.tl-type {
+  font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 1px;
+  color: #e2e8f0; font-weight: 700; margin-bottom: 2px;
+}
+.tl-meta { font-size: 12px; color: #64748b; font-family: monospace; margin-bottom: 2px; }
+.tl-date { font-size: 11px; color: #475569; }
+
+/* ── EMPTY ───────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 200px; gap: 12px; color: #64748b; font-size: 15px;
+}
+.empty-icon { font-size: 40px; }

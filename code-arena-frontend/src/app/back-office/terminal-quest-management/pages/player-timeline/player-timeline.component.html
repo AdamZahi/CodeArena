@@ -1,0 +1,54 @@
+<div class="admin-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <span class="kicker">ADMIN — PLAYER</span>
+      <h1 class="page-title">ACTIVITY <span class="accent">TIMELINE</span></h1>
+      <p class="page-sub">{{ userId }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="goBack()">← BACK</button>
+      <button class="btn-primary" (click)="exportPdf()">EXPORT PDF</button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING TIMELINE...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- BREAKDOWN CARDS -->
+    <div class="breakdown-row" *ngIf="breakdownEntries.length > 0">
+      <div class="breakdown-card" *ngFor="let entry of breakdownEntries">
+        <span class="bd-icon">{{ getActivityIcon(entry[0]) }}</span>
+        <span class="bd-count">{{ entry[1] }}</span>
+        <span class="bd-label">{{ formatLabel(entry[0]) }}</span>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline-wrapper">
+      <div class="section-header"><span class="section-title">ACTIVITY LOG</span></div>
+
+      <div class="empty-state" *ngIf="timeline.length === 0">
+        <span class="empty-icon">📋</span>
+        <p>No activity logged for this player yet.</p>
+      </div>
+
+      <div class="timeline-list" *ngIf="timeline.length > 0">
+        <div class="timeline-item" *ngFor="let item of timeline">
+          <div class="tl-icon">{{ getActivityIcon(item.activityType) }}</div>
+          <div class="tl-body">
+            <div class="tl-type">{{ item.activityType }}</div>
+            <div class="tl-meta" *ngIf="item.metadata">{{ item.metadata }}</div>
+            <div class="tl-date">{{ item.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
