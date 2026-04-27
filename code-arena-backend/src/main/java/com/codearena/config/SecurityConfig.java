@@ -37,6 +37,7 @@ public class SecurityConfig {
                 ))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/arenatalk/payments/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/search/semantic").permitAll()  // ← ajoute cette ligne

@@ -228,7 +228,7 @@
 
         <!-- Gift -->
         <app-voice-gift
-          *ngIf="selectedHub?.id && activeVoiceChannelId && ownerUserId"
+          *ngIf="selectedHub?.id && activeVoiceChannelId && ownerUserId && currentKeycloakId !== ownerUserId"
           [currentUserId]="currentKeycloakId"
           [currentUserName]="currentUserName"
           [ownerUserId]="ownerUserId"

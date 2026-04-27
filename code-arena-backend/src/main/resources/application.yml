@@ -9,26 +9,27 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: islemazzouz04@gmail.com
-    password: ycsm qcyo tqfk hlbd
+    username: ${GMAIL_EMAIL}
+    password: ${GMAIL_APP_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+            required: true
   jpa:
     hibernate:
       ddl-auto: update
     open-in-view: true
-  spring:
-    security:
-      oauth2:
-        resourceserver:
-          jwt:
-            issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
-            jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
-            audiences: https://codearena.com/api  # ← ajouter cette ligne
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
+          jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
+          audiences: https://codearena.com/api
+
 keycloak:
   realm: code-arena
   client-id: code-arena-backend
@@ -40,3 +41,7 @@ app:
       - http://localhost:4200
   shop:
     admin-email: islemazzouz04@gmail.com
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}

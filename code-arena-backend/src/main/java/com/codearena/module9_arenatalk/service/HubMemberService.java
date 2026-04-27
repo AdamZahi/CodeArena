@@ -21,6 +21,7 @@ public class HubMemberService {
     private final HubRepository hubRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final ArenatalkEmailService arenatalkEmailService; // ← renamed
 
     public HubMember joinHub(Long hubId, String keycloakId) {
         Hub hub = hubRepository.findById(hubId)
@@ -92,12 +93,19 @@ public class HubMemberService {
 
         HubMember saved = hubMemberRepository.save(member);
 
+        // ── In-app notification ──
         notificationService.createNotification(
                 member.getUser(),
                 member.getHub().getName(),
                 member.getHub().getId(),
                 NotificationType.ACCEPTED
         );
+
+        // ── Email notification ──
+        String userEmail = member.getUser().getEmail();
+        String userName = member.getUser().getFirstName() + " " + member.getUser().getLastName();
+        String hubName = member.getHub().getName();
+        arenatalkEmailService.sendHubAcceptedEmail(userEmail, userName, hubName);
 
         return saved;
     }
@@ -112,12 +120,19 @@ public class HubMemberService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request is not pending");
         }
 
+        // ── In-app notification ──
         notificationService.createNotification(
                 member.getUser(),
                 member.getHub().getName(),
                 member.getHub().getId(),
                 NotificationType.REJECTED
         );
+
+        // ── Email notification ──
+        String userEmail = member.getUser().getEmail();
+        String userName = member.getUser().getFirstName() + " " + member.getUser().getLastName();
+        String hubName = member.getHub().getName();
+        arenatalkEmailService.sendHubRejectedEmail(userEmail, userName, hubName);
 
         hubMemberRepository.delete(member);
     }
@@ -136,7 +151,6 @@ public class HubMemberService {
     public HubMember setOnline(Long hubId, String keycloakId) {
         HubMember member = hubMemberRepository.findByHubIdAndUserKeycloakId(hubId, keycloakId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
-
         member.setOnline(true);
         member.setLastSeen(LocalDateTime.now());
         return hubMemberRepository.save(member);
@@ -145,7 +159,6 @@ public class HubMemberService {
     public HubMember setOffline(Long hubId, String keycloakId) {
         HubMember member = hubMemberRepository.findByHubIdAndUserKeycloakId(hubId, keycloakId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
-
         member.setOnline(false);
         member.setLastSeen(LocalDateTime.now());
         return hubMemberRepository.save(member);
@@ -154,13 +167,10 @@ public class HubMemberService {
     private void verifyOwner(Long hubId, String keycloakId) {
         Hub hub = hubRepository.findById(hubId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Hub not found"));
-
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
         HubMember caller = hubMemberRepository.findByHubAndUser(hub, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a member"));
-
         if (caller.getRole() != MemberRole.OWNER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the owner can do this");
         }

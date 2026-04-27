@@ -1,4 +1,8 @@
 package com.codearena.module9_arenatalk.entity;
 
-public class PaymentStatus {
+public enum PaymentStatus {
+    PENDING,
+    PAID,
+    FAILED,
+    CANCELLED
 }
