@@ -6,6 +6,7 @@ import com.codearena.module8_terminalquest.service.StoryMissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,17 +31,20 @@ public class StoryMissionController {
         return ResponseEntity.ok(storyMissionService.getMissionById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StoryMissionDto> createMission(@RequestBody CreateStoryMissionRequest request) {
         return ResponseEntity.ok(storyMissionService.createMission(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<StoryMissionDto> updateMission(@PathVariable UUID id,
                                                           @RequestBody CreateStoryMissionRequest request) {
         return ResponseEntity.ok(storyMissionService.updateMission(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMission(@PathVariable UUID id) {
         storyMissionService.deleteMission(id);

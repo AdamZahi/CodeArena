@@ -6,6 +6,7 @@ import com.codearena.module8_terminalquest.service.StoryLevelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,16 +31,19 @@ public class StoryLevelController {
         return ResponseEntity.ok(storyLevelService.getLevelById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StoryLevelDto> createLevel(@RequestBody CreateStoryLevelRequest request) {
         return ResponseEntity.ok(storyLevelService.createLevel(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<StoryLevelDto> updateLevel(@PathVariable UUID id, @RequestBody CreateStoryLevelRequest request) {
         return ResponseEntity.ok(storyLevelService.updateLevel(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLevel(@PathVariable UUID id) {
         storyLevelService.deleteLevel(id);

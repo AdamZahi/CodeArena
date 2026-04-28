@@ -39,8 +39,9 @@ export class TerminalQuestService {
   }
 
   // ── Story answer submission ───────────────────────────────────────────────
-  submitAnswer(levelId: string, userId: string, answer: string): Observable<SubmitAnswerResponse> {
-    return this.http.post<SubmitAnswerResponse>(`${this.base}/levels/${levelId}/submit`, { userId, answer });
+  // userId is extracted from the JWT on the backend — only answer is needed
+  submitAnswer(levelId: string, answer: string): Observable<SubmitAnswerResponse> {
+    return this.http.post<SubmitAnswerResponse>(`${this.base}/levels/${levelId}/submit`, { answer });
   }
 
   // ── Missions ──────────────────────────────────────────────────────────────
@@ -52,34 +53,37 @@ export class TerminalQuestService {
     return this.http.get<StoryMission>(`${this.base}/missions/${id}`);
   }
 
-  submitMissionAnswer(missionId: string, userId: string, answer: string): Observable<SubmitAnswerResponse> {
-    return this.http.post<SubmitAnswerResponse>(`${this.base}/missions/${missionId}/submit`, { userId, answer });
+  // userId is extracted from the JWT on the backend — only answer is needed
+  submitMissionAnswer(missionId: string, answer: string): Observable<SubmitAnswerResponse> {
+    return this.http.post<SubmitAnswerResponse>(`${this.base}/missions/${missionId}/submit`, { answer });
   }
 
   // ── Progress ──────────────────────────────────────────────────────────────
-  getProgress(userId: string): Observable<LevelProgress[]> {
-    return this.http.get<LevelProgress[]>(`${this.base}/progress/${userId}`);
+  // /progress/me resolves userId from the JWT on the backend
+  getProgress(): Observable<LevelProgress[]> {
+    return this.http.get<LevelProgress[]>(`${this.base}/progress/me`);
   }
 
-  getLevelProgress(userId: string, levelId: string): Observable<LevelProgress> {
-    return this.http.get<LevelProgress>(`${this.base}/progress/${userId}/level/${levelId}`);
+  getLevelProgress(levelId: string): Observable<LevelProgress> {
+    return this.http.get<LevelProgress>(`${this.base}/progress/level/${levelId}`);
   }
 
   // ── Survival ──────────────────────────────────────────────────────────────
-  startSurvivalSession(userId: string): Observable<SurvivalSession> {
-    return this.http.post<SurvivalSession>(`${this.base}/survival/sessions`, { userId });
+  // userId is extracted from the JWT on the backend
+  startSurvivalSession(): Observable<SurvivalSession> {
+    return this.http.post<SurvivalSession>(`${this.base}/survival/sessions`, {});
   }
 
-  submitSurvivalAnswer(sessionId: string, userId: string, levelId: string, answer: string): Observable<SurvivalAnswerResponse> {
-    return this.http.post<SurvivalAnswerResponse>(`${this.base}/survival/sessions/${sessionId}/submit`, { userId, levelId, answer });
+  submitSurvivalAnswer(sessionId: string, levelId: string, answer: string): Observable<SurvivalAnswerResponse> {
+    return this.http.post<SurvivalAnswerResponse>(`${this.base}/survival/sessions/${sessionId}/submit`, { levelId, answer });
   }
 
   endSurvivalSession(sessionId: string): Observable<SurvivalSession> {
     return this.http.post<SurvivalSession>(`${this.base}/survival/sessions/${sessionId}/end`, {});
   }
 
-  getSurvivalSessionsByUser(userId: string): Observable<SurvivalSession[]> {
-    return this.http.get<SurvivalSession[]>(`${this.base}/survival/sessions/user/${userId}`);
+  getMySessions(): Observable<SurvivalSession[]> {
+    return this.http.get<SurvivalSession[]>(`${this.base}/survival/sessions/me`);
   }
 
   getSurvivalSessionById(sessionId: string): Observable<SurvivalSession> {
@@ -89,6 +93,10 @@ export class TerminalQuestService {
   // ── Leaderboard ───────────────────────────────────────────────────────────
   getLeaderboard(): Observable<SurvivalLeaderboardEntry[]> {
     return this.http.get<SurvivalLeaderboardEntry[]>(`${this.base}/survival/leaderboard`);
+  }
+
+  getMyRanking(): Observable<SurvivalLeaderboardEntry> {
+    return this.http.get<SurvivalLeaderboardEntry>(`${this.base}/survival/leaderboard/me`);
   }
 
   getUserRanking(userId: string): Observable<SurvivalLeaderboardEntry> {

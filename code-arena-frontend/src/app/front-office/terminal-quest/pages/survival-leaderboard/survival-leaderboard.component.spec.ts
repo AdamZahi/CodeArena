@@ -2,8 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { of, throwError } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
 import { SurvivalLeaderboardComponent } from './survival-leaderboard.component';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
+
+const MOCK_USER_SUB = 'auth0|test-user';
 
 describe('SurvivalLeaderboardComponent', () => {
   let component: SurvivalLeaderboardComponent;
@@ -12,22 +15,25 @@ describe('SurvivalLeaderboardComponent', () => {
   const mockLeaderboard = [
     { id: 'lb1', userId: 'u1', bestWave: 10, bestScore: 500 },
     { id: 'lb2', userId: 'u2', bestWave: 8, bestScore: 400 },
-    { id: 'lb3', userId: 'test-user-001', bestWave: 5, bestScore: 200 }
+    { id: 'lb3', userId: MOCK_USER_SUB, bestWave: 5, bestScore: 200 }
   ];
 
   const mockUserRanking = {
-    id: 'lb3', userId: 'test-user-001', bestWave: 5, bestScore: 200
+    id: 'lb3', userId: MOCK_USER_SUB, bestWave: 5, bestScore: 200
   };
 
   beforeEach(async () => {
     tqServiceMock = {
       getLeaderboard: jasmine.createSpy('getLeaderboard').and.returnValue(of(mockLeaderboard)),
-      getUserRanking: jasmine.createSpy('getUserRanking').and.returnValue(of(mockUserRanking))
+      getMyRanking: jasmine.createSpy('getMyRanking').and.returnValue(of(mockUserRanking))
     };
+
+    const authMock = { user$: of({ sub: MOCK_USER_SUB }) };
 
     await TestBed.configureTestingModule({
       imports: [SurvivalLeaderboardComponent],
       providers: [
+        { provide: AuthService, useValue: authMock },
         { provide: TerminalQuestService, useValue: tqServiceMock }
       ],
       schemas: [NO_ERRORS_SCHEMA]
@@ -44,13 +50,17 @@ describe('SurvivalLeaderboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should set userId from auth user', () => {
+    expect(component.userId).toBe(MOCK_USER_SUB);
+  });
+
   it('should load leaderboard on init', () => {
     expect(tqServiceMock.getLeaderboard).toHaveBeenCalled();
     expect(component.leaderboard.length).toBe(3);
   });
 
-  it('should load user ranking on init', () => {
-    expect(tqServiceMock.getUserRanking).toHaveBeenCalledWith('test-user-001');
+  it('should load user ranking on init via getMyRanking', () => {
+    expect(tqServiceMock.getMyRanking).toHaveBeenCalled();
     expect(component.userRanking).toEqual(mockUserRanking);
   });
 

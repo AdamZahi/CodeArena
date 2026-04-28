@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
 import { LevelPlayComponent } from './level-play.component';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { TimerAudioService } from '../../services/timer-audio.service';
@@ -10,6 +11,8 @@ import { MissionVoiceService } from '../../services/mission-voice.service';
 import { CommandExplainerService } from '../../services/command-explainer.service';
 import { AdaptiveLearningService } from '../../services/adaptive-learning.service';
 import { VoiceNavigationService } from '../../services/voice-navigation.service';
+
+const MOCK_USER_SUB = 'auth0|test-user';
 
 const mockAudioContext = {
   decodeAudioData: jasmine.createSpy('decodeAudioData').and.returnValue(Promise.resolve({})),
@@ -51,9 +54,12 @@ describe('LevelPlayComponent', () => {
       getMissionById: jasmine.createSpy('getMissionById').and.returnValue(of(null))
     };
 
+    const authMock = { user$: of({ sub: MOCK_USER_SUB }) };
+
     await TestBed.configureTestingModule({
       imports: [LevelPlayComponent],
       providers: [
+        { provide: AuthService, useValue: authMock },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'mock-id' } } } },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: TerminalQuestService, useValue: tqMock },
@@ -92,8 +98,8 @@ describe('LevelPlayComponent', () => {
     expect(component.showHint).toBeFalse();
   });
 
-  it('should have userId = "test-user-001"', () => {
-    expect(component.userId).toBe('test-user-001');
+  it('should set userId from auth user', () => {
+    expect(component.userId).toBe(MOCK_USER_SUB);
   });
 
   it('getMinutes should return padded minutes string', () => {

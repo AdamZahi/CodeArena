@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { filter, take } from 'rxjs/operators';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { SurvivalLeaderboardEntry } from '../../models/terminal-quest.model';
 
@@ -16,26 +18,35 @@ export class SurvivalLeaderboardComponent implements OnInit {
   userRanking: SurvivalLeaderboardEntry | null = null;
   isLoading = true;
   hasUserRecord = true;
+  userId = '';
 
-  readonly userId = 'test-user-001';
   readonly medals = ['&#129351;', '&#129352;', '&#129353;']; // 🥇🥈🥉
 
-  constructor(private tqService: TerminalQuestService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private tqService: TerminalQuestService
+  ) {}
 
   ngOnInit(): void {
-    this.tqService.getLeaderboard().subscribe({
-      next: (lb) => {
-        this.leaderboard = lb;
-        this.loadUserRanking();
-      },
-      error: () => {
-        this.isLoading = false;
-      }
+    this.auth.user$.pipe(
+      filter(u => !!u),
+      take(1)
+    ).subscribe(user => {
+      this.userId = user?.sub ?? '';
+      this.tqService.getLeaderboard().subscribe({
+        next: (lb) => {
+          this.leaderboard = lb;
+          this.loadUserRanking();
+        },
+        error: () => {
+          this.isLoading = false;
+        }
+      });
     });
   }
 
   private loadUserRanking(): void {
-    this.tqService.getUserRanking(this.userId).subscribe({
+    this.tqService.getMyRanking().subscribe({
       next: (ranking) => {
         this.userRanking = ranking;
         if (ranking.bestWave === 0 && ranking.bestScore === 0) {

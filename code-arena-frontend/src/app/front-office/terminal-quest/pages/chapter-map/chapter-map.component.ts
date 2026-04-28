@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { filter, take } from 'rxjs/operators';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { TimerAudioService } from '../../services/timer-audio.service';
 import { VoiceNavigationService } from '../../services/voice-navigation.service';
@@ -23,13 +25,14 @@ export class ChapterMapComponent implements OnInit, OnDestroy {
   selectedMissionProgress: LevelProgress | null = null;
   showMissionPanel = false;
 
-  readonly userId   = 'test-user-001';
+  userId = '';
   readonly starRange = [1, 2, 3];
 
   private voiceChapterIndex = 0;
   private bgMusic = new Audio('assets/dex.mp3');
 
   constructor(
+    private readonly auth: AuthService,
     private tqService: TerminalQuestService,
     private router: Router,
     public audio: TimerAudioService,
@@ -40,6 +43,13 @@ export class ChapterMapComponent implements OnInit, OnDestroy {
     this.bgMusic.loop = true;
     this.bgMusic.volume = 0.4;
     this.bgMusic.play().catch(() => {});
+
+    this.auth.user$.pipe(
+      filter(u => !!u),
+      take(1)
+    ).subscribe(user => {
+      this.userId = user?.sub ?? '';
+    });
 
     this.tqService.getChapters().subscribe({
       next: (chapters) => { this.chapters = chapters; this.loadProgress(); },
@@ -81,7 +91,7 @@ export class ChapterMapComponent implements OnInit, OnDestroy {
   }
 
   private loadProgress(): void {
-    this.tqService.getProgress(this.userId).subscribe({
+    this.tqService.getProgress().subscribe({
       next: (progress) => {
         progress.forEach(p => {
           if (p.missionId) this.progressMap.set(p.missionId, p);

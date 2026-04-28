@@ -1,6 +1,8 @@
 package com.codearena.module8_terminalquest.skill;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -13,13 +15,13 @@ public class SkillEngineController {
 
     private final SkillEngineService skillEngineService;
 
-    @GetMapping("/analyze/{userId}")
-    public SkillAnalysisResponse analyze(@PathVariable String userId) {
-        return skillEngineService.analyzePlayer(userId);
+    @GetMapping("/analyze/me")
+    public SkillAnalysisResponse analyze(@AuthenticationPrincipal Jwt jwt) {
+        return skillEngineService.analyzePlayer(jwt.getSubject());
     }
 
-    @GetMapping("/profile/{userId}")
-    public Map<String, Double> profile(@PathVariable String userId) {
-        return skillEngineService.analyzePlayer(userId).getSkillProfile();
+    @GetMapping("/profile/me")
+    public Map<String, Double> profile(@AuthenticationPrincipal Jwt jwt) {
+        return skillEngineService.analyzePlayer(jwt.getSubject()).getSkillProfile();
     }
 }

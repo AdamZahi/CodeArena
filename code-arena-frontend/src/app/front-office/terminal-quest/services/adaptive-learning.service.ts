@@ -10,7 +10,8 @@ export class AdaptiveLearningService {
 
   constructor(private http: HttpClient) {}
 
-  predictAdaptation(userId: string, missionId: string): Observable<AdaptivePrediction> {
-    return this.http.post<AdaptivePrediction>(`${this.base}/predict`, { userId, missionId });
+  // userId is extracted from the JWT on the backend
+  predictAdaptation(missionId: string): Observable<AdaptivePrediction> {
+    return this.http.post<AdaptivePrediction>(`${this.base}/predict`, { missionId });
   }
 }

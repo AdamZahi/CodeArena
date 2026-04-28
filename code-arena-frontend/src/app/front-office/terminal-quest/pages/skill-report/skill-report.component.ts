@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { filter, take } from 'rxjs/operators';
 import { SkillEngineService } from '../../services/skill-engine.service';
 import { VoiceNavigationService } from '../../services/voice-navigation.service';
 import { VoiceNavWidgetComponent } from '../../components/voice-nav-widget/voice-nav-widget.component';
@@ -16,22 +18,30 @@ import { SkillAnalysis } from '../../models/terminal-quest.model';
 export class SkillReportComponent implements OnInit, OnDestroy {
   analysis: SkillAnalysis | null = null;
   isLoading = true;
+  userId = '';
 
   constructor(
+    private readonly auth: AuthService,
     private readonly skillEngineService: SkillEngineService,
     private readonly router: Router,
     private readonly voiceNav: VoiceNavigationService
   ) {}
 
   ngOnInit(): void {
-    this.skillEngineService.analyzePlayer('test-user-001').subscribe({
-      next: (data) => {
-        this.analysis  = data;
-        this.isLoading = false;
-        console.log('[skill-report] full analysis:', this.analysis);
-        console.log('[skill-report] certificationReadiness:', this.analysis?.certificationReadiness);
-      },
-      error: () => { this.isLoading = false; }
+    this.auth.user$.pipe(
+      filter(u => !!u),
+      take(1)
+    ).subscribe(user => {
+      this.userId = user?.sub ?? '';
+      this.skillEngineService.analyzePlayer().subscribe({
+        next: (data) => {
+          this.analysis  = data;
+          this.isLoading = false;
+          console.log('[skill-report] full analysis:', this.analysis);
+          console.log('[skill-report] certificationReadiness:', this.analysis?.certificationReadiness);
+        },
+        error: () => { this.isLoading = false; }
+      });
     });
 
     this.voiceNav.registerPageCommands('skill-report', (_cmd: string) => false);

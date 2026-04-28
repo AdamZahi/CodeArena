@@ -6,6 +6,7 @@ import com.codearena.module8_terminalquest.service.StoryChapterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,16 +31,19 @@ public class StoryChapterController {
         return ResponseEntity.ok(storyChapterService.getChapterById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StoryChapterDto> createChapter(@RequestBody CreateStoryChapterRequest request) {
         return ResponseEntity.ok(storyChapterService.createChapter(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<StoryChapterDto> updateChapter(@PathVariable UUID id, @RequestBody CreateStoryChapterRequest request) {
         return ResponseEntity.ok(storyChapterService.updateChapter(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteChapter(@PathVariable UUID id) {
         storyChapterService.deleteChapter(id);

@@ -73,7 +73,7 @@ battle:
 
 
 gemini:
-  api-key: AIzaSyDJw4MEX6UT0kPc2f23PTyLFGvQtJNSU-k
+  api-key: AIzaSyDKSn7vTUZ0grJFQjqzqmzynXVF1shQEq4
 
 ai-model:
   url: http://localhost:5000

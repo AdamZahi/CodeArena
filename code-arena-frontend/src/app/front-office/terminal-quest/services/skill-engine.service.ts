@@ -10,7 +10,8 @@ export class SkillEngineService {
 
   constructor(private http: HttpClient) {}
 
-  analyzePlayer(userId: string): Observable<SkillAnalysis> {
-    return this.http.get<SkillAnalysis>(`${this.base}/analyze/${userId}`);
+  // /analyze/me resolves userId from the JWT on the backend
+  analyzePlayer(): Observable<SkillAnalysis> {
+    return this.http.get<SkillAnalysis>(`${this.base}/analyze/me`);
   }
 }
