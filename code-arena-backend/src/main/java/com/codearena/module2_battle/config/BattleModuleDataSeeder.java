@@ -34,9 +34,13 @@ public class BattleModuleDataSeeder {
 
     @EventListener(ApplicationReadyEvent.class)
     public void seed() {
-        seedSeason();
-        seedBattleBadges();
-        seedDailyChallenge();
+        try {
+            seedSeason();
+            seedBattleBadges();
+            seedDailyChallenge();
+        } catch (DataAccessException ex) {
+            log.warn("Skipping battle module seeding because the database is unavailable: {}", ex.getMostSpecificCause().getMessage());
+        }
     }
 
     /**
