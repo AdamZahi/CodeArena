@@ -11,7 +11,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
-     * Configures broker prefixes.
+     * Configures broker prefixes.cd CodeArena
+     * git checkout final-merge
+     * npm install
+     * npm run dev
      *
      * @param registry message broker registry
      */
