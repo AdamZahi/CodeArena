@@ -168,7 +168,7 @@
     </button>
 
     <button class="start-btn" *ngIf="isHost"
-      [disabled]="!lobbyState.canStart"
+      [disabled]="!lobbyState.canStart || startingBattle"
       (click)="startBattle()"
     >
       <span class="start-icon">&#9654;</span>
