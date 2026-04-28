@@ -666,6 +666,27 @@
   box-shadow: 0 0 22px rgba(139, 92, 246, 0.28), inset 0 0 18px rgba(139, 92, 246, 0.08);
 }
 
+.char-counter {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.motivation-hint {
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.error-text {
+  color: #ef4444 !important;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+
 /* ── NEON BUTTONS (checkout-btn) ──────────────── */
 .checkout-btn {
   width: 100%;

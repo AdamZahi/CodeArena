@@ -104,4 +104,10 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
                         LIMIT 1
                         """, nativeQuery = true)
                 List<Object[]> findByIdSanitized(@Param("id") Long id);
+
+
+    @Query("SELECT c.id, c.title, c.description, c.difficulty FROM Challenge c WHERE c.id IN :ids")
+    List<Object[]> findByIdsSanitized(@Param("ids") List<Long> ids);
+
+
 }

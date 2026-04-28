@@ -40,8 +40,9 @@ public class ProgrammingEvent {
     @Column(name = "location", length = 255)
     private String location;
 
-    @Column(name = "organizer_id", nullable = false)
+    @Column(name = "organizer_id", nullable = true)
     private String organizerId;
+
 
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;

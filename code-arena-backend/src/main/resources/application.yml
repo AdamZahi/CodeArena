@@ -47,12 +47,17 @@ app:
     allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
-    stripe:
-      secret-key: sk_test_dummy_key_for_now
-      publishable-key: pk_test_dummy_key_for_now
+    #stripe:
+     # secret-key: sk_test_dummy_key_for_now
+      #publishable-key: pk_test_dummy_key_for_now
 
 
 
+
+
+stripe:
+  secret-key: sk_test_YOUR_STRIPE_KEY_HERE
+  webhook-secret: dummy_webhook_secret
 
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
@@ -69,6 +74,16 @@ battle:
     blitz-minutes: 15
     practice-minutes: -1
     daily-minutes: -1
+  ranker:
+    base-url: http://localhost:8010
+    connect-timeout-ms: 1500
+    read-timeout-ms: 4000
+    enabled: true
+  classifier:
+    base-url: http://localhost:8011
+    connect-timeout-ms: 1500
+    read-timeout-ms: 8000
+    enabled: true
 
 
 gemini:
@@ -77,6 +92,7 @@ gemini:
 ai-model:
   url: http://localhost:5000
 
-stripe:
-  secret-key: sk_test_dummy_key_for_now
-  webhook-secret: dummy_webhook_secret
+piston:
+  base-url: http://192.168.0.195:2000
+  run-timeout-ms: 15000
+  memory-limit-bytes: 256000000

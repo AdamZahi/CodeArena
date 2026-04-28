@@ -17,4 +17,6 @@ public interface DailyChallengeRepository extends JpaRepository<DailyChallenge, 
     // Step 5: recency filter — get challenge IDs used in the last N days
     @Query("SELECT dc FROM DailyChallenge dc WHERE dc.challengeDate >= :since ORDER BY dc.challengeDate DESC")
     List<DailyChallenge> findRecentSince(@Param("since") LocalDate since);
+
+
 }

@@ -310,11 +310,11 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     }
 
     const motivation = this.motivationText.trim();
-    if (!motivation) {
-      this.setErrorTemporarily('MOTIVATION REQUIRED.');
+    if (!motivation || motivation.length < 20) {
+      this.setErrorTemporarily('MOTIVATION TOO SHORT (MIN 20 CHARS).');
       return;
     }
-
+ 
     this.error = null;
     this.eventService.submitCandidature(this.eventId, motivation).subscribe({
       next: (response) => {
@@ -325,17 +325,18 @@ export class EventDetailComponent implements OnInit, OnDestroy {
         this.successMsg = '⏳ YOUR CANDIDATURE IS UNDER REVIEW';
       },
       error: (err) => {
-        if (err.status === 400) {
-          sessionStorage.setItem(`candidature_${this.eventId}`, 'PENDING');
-          this.exclusiveCandidature = { status: 'PENDING' } as any;
-          this.motivationText = '';
-          this.error = null;
-          this.successMsg = '⏳ YOUR CANDIDATURE IS UNDER REVIEW';
+        console.error('Candidature error:', err);
+        if (err.status === 400 && err.error) {
+          // Display specific validation errors from backend if available
+          const errorMsg = typeof err.error === 'string' ? err.error : 
+                          err.error.motivation || 'INVALID SUBMISSION';
+          this.setErrorTemporarily(errorMsg.toUpperCase());
         } else {
           this.setErrorTemporarily('Candidature submission failed.');
         }
       }
     });
+
   }
 
 
