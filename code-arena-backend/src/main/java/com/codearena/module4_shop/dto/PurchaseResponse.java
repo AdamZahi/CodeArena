@@ -18,6 +18,7 @@ public class PurchaseResponse {
 
     private UUID id;
     private String participantId;
+    private String participantName;
     private Double totalPrice;
     private OrderStatus status;
     private LocalDateTime createdAt;
