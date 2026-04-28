@@ -1,5 +1,8 @@
 package com.codearena.module1_challenge.service;
 
+import com.codearena.execution.CodeExecutionService;
+import com.codearena.execution.ExecutionRequest;
+import com.codearena.execution.ExecutionResult;
 import com.codearena.module1_challenge.entity.Submission;
 import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
@@ -14,14 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExecutionService {
 
-    private final Judge0Service judge0Service;
+    private final CodeExecutionService codeExecutionService;
     private final SubmissionRepository submissionRepository;
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
@@ -61,83 +63,62 @@ public class ExecutionService {
                 // Wrap code like module3
                 String wrappedCode = buildRunner(submission.getCode(), tc.getInput(), submission.getLanguage());
 
-                String token = judge0Service.submit(
-                        wrappedCode,
-                        submission.getLanguage(),
-                        tc.getExpectedOutput(),
-                        tc.getInput()
-                );
+                // Build execution request — CodeExecutionService handles engine selection
+                ExecutionRequest execRequest = ExecutionRequest.builder()
+                        .sourceCode(wrappedCode)
+                        .language(submission.getLanguage())
+                        .stdin(tc.getInput())
+                        .expectedOutput(tc.getExpectedOutput())
+                        .build();
 
-                if (token == null) {
+                ExecutionResult result;
+                try {
+                    result = codeExecutionService.execute(execRequest);
+                } catch (Exception e) {
+                    log.error("Code execution failed for submission {}: {}", submission.getId(), e.getMessage());
                     submission.setStatus("INTERNAL_ERROR");
-                    submission.setErrorOutput(outputLog.toString() + "\nJudge0 API refused the submission or returned null token. Wait 1 min or check your code.");
+                    submission.setErrorOutput(outputLog.toString() + "\nCode execution service error: " + e.getMessage());
                     submissionRepository.save(submission);
                     return;
                 }
 
-                // Polling
-                Map<String, Object> result = null;
-                for (int attempt = 0; attempt < 30; attempt++) {
-                    Thread.sleep(2000);
-                    result = judge0Service.getSubmissionStatus(token);
-                    if (result != null && result.get("status") instanceof Map) {
-                        Map<String, Object> statusObj = (Map<String, Object>) result.get("status");
-                        int statusId = ((Number) statusObj.get("id")).intValue();
-                        if (statusId != 1 && statusId != 2) {
-                            break;
-                        }
-                    }
-                }
+                log.info("Test {}: exitCode={}, engine={}, time={}ms",
+                        i + 1, result.getExitCode(), result.getEngineUsed(), result.getExecutionTimeMs());
 
-                if (result == null || !(result.get("status") instanceof Map)) {
-                    submission.setStatus("TIMEOUT");
-                    submissionRepository.save(submission);
-                    return;
-                }
-
-                Map<String, Object> statusObj = (Map<String, Object>) result.get("status");
-                int statusId = ((Number) statusObj.get("id")).intValue();
-                String verdict = mapJudge0Status(statusId);
-
-                Object timeObj = result.get("time");
-                Object memoryObj = result.get("memory");
-                log.info("Test {}: statusId={}, time={}, memory={}", i + 1, statusId, timeObj, memoryObj);
-
-                if (timeObj != null) {
-                    totalExecTime += Float.parseFloat(timeObj.toString());
-                }
-
-                if (memoryObj != null) {
-                    maxMemory = Math.max(maxMemory, Float.parseFloat(memoryObj.toString()));
-                }
-
-                String compileOutput = judge0Service.decodeBase64((String) result.get("compile_output")).trim();
-                String stderr = judge0Service.decodeBase64((String) result.get("stderr")).trim();
-                String stdout = judge0Service.decodeBase64((String) result.get("stdout")).trim();
+                totalExecTime += result.getExecutionTimeMs() / 1000f;
 
                 outputLog.append("Test ").append(i + 1).append(": ");
 
-                if (statusId == 3) {
-                    // Judge0 confirmed: output matches expected — trust it
-                    outputLog.append("Passed ✓\n");
-                    passedTests++;
-                } else if (statusId == 4) {
-                    // Wrong Answer — show expected vs actual
+                // Check for compile errors
+                if (result.getCompileError() != null && !result.getCompileError().isBlank()) {
                     allPassed = false;
-                    finalVerdict = "WRONG_ANSWER";
-                    String expectedOut = tc.getExpectedOutput() != null ? tc.getExpectedOutput().trim() : "";
-                    outputLog.append("WRONG_ANSWER | Expected: [").append(expectedOut)
-                             .append("] Got: [").append(stdout).append("]\n");
+                    finalVerdict = "COMPILATION_ERROR";
+                    outputLog.append("COMPILATION_ERROR | ").append(result.getCompileError()).append("\n");
                     submission.setErrorOutput(outputLog.toString());
                     break;
-                } else {
-                    // Compilation error, runtime error, TLE, etc.
+                }
+
+                // Check for runtime errors (non-zero exit code with no stdout match)
+                if (result.getExitCode() != 0 && (result.getStderr() != null && !result.getStderr().isBlank())) {
                     allPassed = false;
-                    finalVerdict = verdict;
-                    outputLog.append(verdict);
-                    if (!compileOutput.isEmpty()) outputLog.append(" | ").append(compileOutput);
-                    if (!stderr.isEmpty()) outputLog.append(" | ").append(stderr);
-                    outputLog.append("\n");
+                    finalVerdict = "RUNTIME_ERROR";
+                    outputLog.append("RUNTIME_ERROR | ").append(result.getStderr()).append("\n");
+                    submission.setErrorOutput(outputLog.toString());
+                    break;
+                }
+
+                // Compare output — normalize and check
+                String expectedOut = tc.getExpectedOutput() != null ? tc.getExpectedOutput().trim() : "";
+                String actualOut = result.getStdout() != null ? result.getStdout().trim() : "";
+
+                if (expectedOut.equals(actualOut)) {
+                    outputLog.append("Passed ✓\n");
+                    passedTests++;
+                } else {
+                    allPassed = false;
+                    finalVerdict = "WRONG_ANSWER";
+                    outputLog.append("WRONG_ANSWER | Expected: [").append(expectedOut)
+                             .append("] Got: [").append(actualOut).append("]\n");
                     submission.setErrorOutput(outputLog.toString());
                     break;
                 }
@@ -214,17 +195,6 @@ public class ExecutionService {
             }
         } catch (Exception e) {
             log.error("Failed to award XP for submission {}: {}", submission.getId(), e.getMessage());
-        }
-    }
-
-    private String mapJudge0Status(int statusId) {
-        switch (statusId) {
-            case 3: return "ACCEPTED";
-            case 4: return "WRONG_ANSWER";
-            case 5: return "TIME_LIMIT_EXCEEDED";
-            case 6: return "COMPILATION_ERROR";
-            case 13: return "INTERNAL_ERROR";
-            default: return "RUNTIME_ERROR";
         }
     }
 }

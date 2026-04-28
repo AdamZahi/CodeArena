@@ -29,11 +29,17 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public code = '';
   public language = '62'; // Java Default
   public languages = [
-    { id: '62', name: 'Java (OpenJDK 13)' },
-    { id: '71', name: 'Python (3.8)' },
-    { id: '50', name: 'C (GCC 9.2)' },
-    { id: '54', name: 'C++ (GCC 9.2)' },
-    { id: '63', name: 'JavaScript (Node 12)' }
+    { id: '62', name: 'Java (15.0.2)' },
+    { id: '71', name: 'Python (3.12.0)' },
+    { id: '63', name: 'JavaScript (20.11.1)' },
+    { id: '74', name: 'TypeScript (5.0.3)' },
+    { id: '50', name: 'C (10.2.0)' },
+    { id: '54', name: 'C++ (10.2.0)' },
+    { id: '60', name: 'Go (1.16.2)' },
+    { id: '73', name: 'Rust (1.50.0)' },
+    { id: '78', name: 'Kotlin (1.8.20)' },
+    { id: '68', name: 'PHP (8.2.3)' },
+    { id: '72', name: 'Ruby (3.0.1)' }
   ];
 
   public isSubmitting = false;
@@ -477,11 +483,17 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   private getBoilerplate(langId: string): string {
     switch (langId) {
-      case '62': return 'import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String line = sc.nextLine().trim();\n        \n        // TODO: Solve the problem here\n        \n        System.out.println(line);\n    }\n}';
-      case '71': return 'import sys\n\n# Read input from stdin\nline = input().strip()\n\n# TODO: Solve the problem\n\n# Print result to stdout\nprint(line)';
-      case '50': return '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main() {\n    char line[1024];\n    // Read input from stdin\n    fgets(line, sizeof(line), stdin);\n    \n    // TODO: Solve the problem\n    \n    // Print result to stdout\n    printf("%s", line);\n    return 0;\n}';
-      case '54': return '#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\nint main() {\n    string line;\n    // Read input from stdin\n    getline(cin, line);\n    \n    // TODO: Solve the problem\n    \n    // Print result to stdout\n    cout << line << endl;\n    return 0;\n}';
-      case '63': return '// Read input from stdin\nconst input = require("fs").readFileSync("/dev/stdin", "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nconsole.log(lines[0]);';
+      case '62': return 'import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (sc.hasNextLine()) {\n            String line = sc.nextLine().trim();\n            \n            // TODO: Solve the problem here\n            \n            System.out.println(line);\n        }\n    }\n}';
+      case '71': return 'import sys\n\n# Read input from stdin\nline = sys.stdin.readline().strip()\n\n# TODO: Solve the problem\n\n# Print result to stdout\nprint(line)';
+      case '50': return '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main() {\n    char line[1024];\n    // Read input from stdin\n    if (fgets(line, sizeof(line), stdin)) {\n        // Remove newline if present\n        line[strcspn(line, "\\n")] = 0;\n        \n        // TODO: Solve the problem\n        \n        // Print result to stdout\n        printf("%s\\n", line);\n    }\n    return 0;\n}';
+      case '54': return '#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\nint main() {\n    string line;\n    // Read input from stdin\n    if (getline(cin, line)) {\n        \n        // TODO: Solve the problem\n        \n        // Print result to stdout\n        cout << line << endl;\n    }\n    return 0;\n}';
+      case '63': return '// Read input from stdin\nconst fs = require("fs");\nconst input = fs.readFileSync(0, "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nif (lines.length > 0) {\n    console.log(lines[0]);\n}';
+      case '60': return 'package main\n\nimport (\n\t"bufio"\n\t"fmt"\n\t"os"\n)\n\nfunc main() {\n\tscanner := bufio.NewScanner(os.Stdin)\n\tif scanner.Scan() {\n\t\tline := scanner.Text()\n\t\t// TODO: Solve the problem here\n\t\tfmt.Println(line)\n\t}\n}';
+      case '73': return 'use std::io;\n\nfn main() {\n    let mut line = String::new();\n    if io::stdin().read_line(&mut line).is_ok() {\n        let line = line.trim();\n        \n        // TODO: Solve the problem here\n        \n        println!("{}", line);\n    }\n}';
+      case '78': return 'import java.util.Scanner\n\nfun main(args: Array<String>) {\n    val sc = Scanner(System.`in`)\n    if (sc.hasNextLine()) {\n        val line = sc.nextLine().trim()\n        \n        // TODO: Solve the problem here\n        \n        println(line)\n    }\n}';
+      case '68': return '<?php\n$line = trim(fgets(STDIN));\n\n// TODO: Solve the problem here\n\necho $line . "\\n";\n?>';
+      case '72': return 'line = gets\nif line\n  line = line.chomp\n  # TODO: Solve the problem here\n  puts line\nend';
+      case '74': return 'const fs = require("fs");\nconst input = fs.readFileSync(0, "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\nif (lines.length > 0) {\n    console.log(lines[0]);\n}';
       default: return '// Write your solution here\n// Read from stdin, print to stdout\n';
     }
   }

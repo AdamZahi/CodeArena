@@ -69,3 +69,36 @@ battle:
     blitz-minutes: 15
     practice-minutes: -1
     daily-minutes: -1
+
+# Code Execution Engines
+execution:
+  piston:
+    enabled: true
+    base-url: http://192.168.0.163:2000/api/v2
+    timeout-seconds: 10
+    compile-timeout-ms: 3000
+    run-timeout-ms: 3000
+  judge0:
+    base-url: https://ce.judge0.com
+    api-key: ""
+    timeout-seconds: 10
+
+# Resilience4j Circuit Breaker for Piston
+resilience4j:
+  circuitbreaker:
+    instances:
+      pistonEngine:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
