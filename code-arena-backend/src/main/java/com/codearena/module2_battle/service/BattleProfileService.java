@@ -1,6 +1,8 @@
 package com.codearena.module2_battle.service;
 
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.BattleProfileResponse;
+import com.codearena.module2_battle.dto.EarnedBadgeResponse;
+import com.codearena.module2_battle.dto.MatchHistorySummaryResponse;
 import com.codearena.module2_battle.entity.*;
 import com.codearena.module2_battle.enums.BattleRoomStatus;
 import com.codearena.module2_battle.enums.ParticipantRole;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.codearena.module2_battle.util.UserDisplayUtils;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +36,7 @@ public class BattleProfileService {
     private final DailyStreakCalculator dailyStreakCalculator;
 
     public BattleProfileResponse getProfile(String targetUserId, String requestingUserId) {
-        User user = userRepository.findByKeycloakId(targetUserId)
+        User user = userRepository.findByAuth0Id(targetUserId)
                 .orElseThrow(() -> new UserNotFoundException(targetUserId));
 
         String username = user.getNickname() != null ? user.getNickname() : user.getFirstName();
@@ -138,8 +141,26 @@ public class BattleProfileService {
         int totalPlayers = participantRepository.countByRoomIdAndRole(
                 participant.getRoomId(), ParticipantRole.PLAYER);
 
-        // Build opponent summary
-        String opponentSummary = buildOpponentSummary(room, participant, totalPlayers);
+        List<MatchHistorySummaryResponse.OpponentInfo> opponents = new ArrayList<>();
+        if (room.getMode() == com.codearena.module2_battle.enums.BattleMode.DUEL || 
+            room.getMode() == com.codearena.module2_battle.enums.BattleMode.TEAM) {
+            
+            opponents = participantRepository
+                    .findByRoomIdAndRole(participant.getRoomId(), ParticipantRole.PLAYER)
+                    .stream()
+                    .filter(p -> !p.getUserId().equals(participant.getUserId()))
+                    .map(p -> MatchHistorySummaryResponse.OpponentInfo.builder()
+                            .userId(p.getUserId())
+                            .username(resolveUsername(p.getUserId()))
+                            .avatarUrl(resolveAvatarUrl(p.getUserId()))
+                            .build())
+                    .toList();
+        }
+
+        // Keep a simple string summary for non-duel/team modes or backwards compatibility
+        String opponentSummary = opponents.isEmpty() ? totalPlayers + "-player tournament" : 
+                String.join(", ", opponents.stream().map(MatchHistorySummaryResponse.OpponentInfo::getUsername).toList());
+
 
         // Badges earned in this match
         List<PlayerBadge> matchBadges = playerBadgeRepository.findByParticipantId(
@@ -160,7 +181,7 @@ public class BattleProfileService {
                 .totalPlayers(totalPlayers)
                 .eloChange(participant.getEloChange() != null ? participant.getEloChange() : 0)
                 .isWinner(participant.getRank() != null && participant.getRank() == 1)
-                .opponentSummary(opponentSummary)
+                .opponents(opponents)
                 .badgesEarned(badgesEarned)
                 .build();
     }
@@ -184,7 +205,7 @@ public class BattleProfileService {
                         .map(p -> resolveUsername(p.getUserId()))
                         .toList();
 
-                String summary = "vs. " + String.join(", ", names);
+                String summary = String.join(", ", names);
                 if (others.size() > 3) {
                     summary += " + " + (others.size() - 3) + " more";
                 }
@@ -197,8 +218,10 @@ public class BattleProfileService {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
+    }
+
+    private String resolveAvatarUrl(String userId) {
+        return UserDisplayUtils.resolveAvatarUrl(userId, userRepository);
     }
 }

@@ -913,3 +913,89 @@
   font-weight: 600;
   margin-bottom: 24px;
 }
+
+/* %% AI ANALYSIS CARD %% */
+.ai-analysis-card {
+  background: var(--card2);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 10px;
+}
+.ai-stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+}
+.ai-score {
+  font-weight: bold;
+}
+.ai-gauge-bg {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+.ai-gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease-in-out;
+}
+.ai-insight {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+  color: #fca5a5;
+  font-size: 12px;
+  font-style: italic;
+}
+
+
+.ai-hint-btn {
+  background: transparent;
+  border: 1px solid var(--neon);
+  color: var(--neon);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.ai-hint-btn:hover {
+  background: rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+.ai-hint-loading {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  color: var(--neon2);
+  text-align: center;
+  animation: neon-flicker 1.5s infinite;
+  padding: 10px;
+}
+
+.ai-hint-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  background: rgba(10, 10, 15, 0.5);
+  padding: 15px;
+  border-left: 3px solid var(--neon2);
+  border-radius: 0 4px 4px 0;
+}
+.ai-bot-icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+

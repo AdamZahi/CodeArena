@@ -26,6 +26,16 @@ public class MatchHistorySummaryResponse {
     private int eloChange;
     @JsonProperty("isWinner")
     private boolean isWinner;
-    private String opponentSummary;
+    private List<OpponentInfo> opponents;
     private List<String> badgesEarned;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OpponentInfo {
+        private String userId;
+        private String username;
+        private String avatarUrl;
+    }
 }

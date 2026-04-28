@@ -11,10 +11,11 @@
     </div>
     
     <div class="tag-list">
-      <button class="tag-chip" [class.active]="selectedDifficulty === ''" (click)="filterByDifficulty('')">ALL TOPICS</button>
-      <button class="tag-chip" [class.active]="selectedDifficulty === 'EASY'" (click)="filterByDifficulty('EASY')">EASY</button>
-      <button class="tag-chip" [class.active]="selectedDifficulty === 'MEDIUM'" (click)="filterByDifficulty('MEDIUM')">MEDIUM</button>
-      <button class="tag-chip" [class.active]="selectedDifficulty === 'HARD'" (click)="filterByDifficulty('HARD')">HARD</button>
+      <button class="tag-chip ai-chip" [class.active]="showAiPicks" (click)="toggleAiPicks()" *ngIf="(auth.isAuthenticated$ | async)">🧠 AI PICKS</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === '' && !showAiPicks" (click)="filterByDifficulty('')">ALL TOPICS</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'EASY' && !showAiPicks" (click)="filterByDifficulty('EASY')">EASY</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'MEDIUM' && !showAiPicks" (click)="filterByDifficulty('MEDIUM')">MEDIUM</button>
+      <button class="tag-chip" [class.active]="selectedDifficulty === 'HARD' && !showAiPicks" (click)="filterByDifficulty('HARD')">HARD</button>
     </div>
   </div>
 
@@ -24,8 +25,37 @@
     INITIALIZING DATABASE...
   </div>
 
+  <!-- AI RECOMMENDATIONS GRID -->
+  <div class="ai-picks-wrap" *ngIf="showAiPicks && !isLoading">
+    <h2 class="ai-title">NEURAL NETWORK RECOMMENDATIONS</h2>
+    <div class="ai-grid">
+      <div class="ai-card" *ngFor="let rec of aiRecommendations" (click)="goToChallenge(rec.challengeId.toString())">
+        <div class="ai-card-header">
+          <span class="ai-match">{{ rec.matchScore | number:'1.0-0' }}% SCORE</span>
+          <span class="diff-pill"
+                [class.easy]="rec.difficulty === 'EASY'"
+                [class.medium]="rec.difficulty === 'MEDIUM'"
+                [class.hard]="rec.difficulty === 'HARD'">
+            {{ rec.difficulty }}
+          </span>
+        </div>
+        <h3 class="ai-challenge-title">{{ rec.title }}</h3>
+        <p class="ai-reason">💡 {{ rec.reason }}</p>
+        <div class="ai-stats">
+          <span>AI Diff: {{ rec.aiDifficultyScore | number:'1.0-1' }}</span>
+        </div>
+        <div class="ai-tags">
+          <span class="tag-mini" *ngFor="let tag of getTags(rec.tags)">{{ tag }}</span>
+        </div>
+      </div>
+      <div class="lc-empty" *ngIf="aiRecommendations.length === 0">
+         AWAITING SUFFICIENT NEURAL DATA TO GENERATE PICKS...
+      </div>
+    </div>
+  </div>
+
   <!-- PROBLEM TABLE -->
-  <div class="lc-table-wrap" *ngIf="!isLoading">
+  <div class="lc-table-wrap" *ngIf="!isLoading && !showAiPicks">
     <table class="lc-table">
       <thead>
         <tr>

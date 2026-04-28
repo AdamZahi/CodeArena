@@ -7,6 +7,135 @@
     <span class="order-count">{{ orders.length }} orders</span>
   </div>
 
+  <!-- ── LOYALTY POINTS PANEL ─────────────────── -->
+  <div class="loyalty-panel" *ngIf="!loyaltyLoading">
+    <div class="loyalty-header">
+      <div class="loyalty-left">
+        <span class="loyalty-emoji">{{ getLoyaltyLevel().emoji }}</span>
+        <div>
+          <span class="loyalty-level" [style.color]="getLoyaltyLevel().color">
+            {{ getLoyaltyLevel().label }} MEMBER
+          </span>
+          <p class="loyalty-sub">🌱 Earn bonus points for eco-friendly purchases</p>
+        </div>
+      </div>
+      <div class="loyalty-points-display">
+        <span class="loyalty-points-number">{{ loyaltyPoints }}</span>
+        <span class="loyalty-points-label">POINTS</span>
+      </div>
+    </div>
+<!-- ── ECO IMPACT SECTION ────────────────────── -->
+<div class="eco-impact-section" *ngIf="!isLoading && orders.length > 0">
+  
+  <!-- Animated header -->
+  <div class="eco-impact-header">
+    <div class="eco-impact-title-wrap">
+      <span class="eco-planet">🌍</span>
+      <div>
+        <h2 class="eco-impact-title">YOUR ECO IMPACT</h2>
+        <p class="eco-impact-sub">Based on your {{ orders.length }} orders — SDG 12 Tracker</p>
+      </div>
+    </div>
+    <div class="eco-rating-badge" [style.borderColor]="ecoRating.color" [style.color]="ecoRating.color">
+      {{ ecoRating.emoji }} {{ ecoRating.label }}
+    </div>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="eco-stats-grid">
+
+    <!-- Total orders -->
+    <div class="eco-stat-card" style="animation-delay: 0ms">
+      <div class="eco-stat-icon">📦</div>
+      <div class="eco-stat-value">{{ orders.length }}</div>
+      <div class="eco-stat-label">TOTAL ORDERS</div>
+    </div>
+
+    <!-- Eco friendly -->
+    <div class="eco-stat-card green" style="animation-delay: 100ms">
+      <div class="eco-stat-icon">🌿</div>
+      <div class="eco-stat-value">{{ ecoFriendlyOrders }}</div>
+      <div class="eco-stat-label">ECO-FRIENDLY</div>
+    </div>
+
+    <!-- Carbon saved -->
+    <div class="eco-stat-card emerald" style="animation-delay: 200ms">
+      <div class="eco-stat-icon">💨</div>
+      <div class="eco-stat-value">{{ carbonSaved }}kg</div>
+      <div class="eco-stat-label">CO₂ SAVED</div>
+    </div>
+
+    <!-- Total spent -->
+    <div class="eco-stat-card purple" style="animation-delay: 300ms">
+      <div class="eco-stat-icon">💰</div>
+      <div class="eco-stat-value">${{ totalSpent.toFixed(0) }}</div>
+      <div class="eco-stat-label">TOTAL SPENT</div>
+    </div>
+
+  </div>
+
+  <!-- Eco progress bar -->
+  <div class="eco-progress-section">
+    <div class="eco-progress-header">
+      <span class="eco-progress-label">ECO-FRIENDLY ORDERS</span>
+      <span class="eco-progress-pct" [style.color]="ecoRating.color">{{ ecoPercentage }}%</span>
+    </div>
+    <div class="eco-progress-track">
+      <div class="eco-progress-fill"
+           [style.width.%]="ecoPercentage"
+           [style.background]="'linear-gradient(90deg, ' + ecoRating.color + ', #06b6d4)'">
+        <div class="eco-progress-glow"></div>
+      </div>
+    </div>
+    <p class="eco-progress-msg">
+      <ng-container *ngIf="ecoPercentage >= 70">
+        🏆 Outstanding! You're in the top eco-conscious shoppers!
+      </ng-container>
+      <ng-container *ngIf="ecoPercentage >= 50 && ecoPercentage < 70">
+        🌿 Great effort! More than half your orders are eco-friendly.
+      </ng-container>
+      <ng-container *ngIf="ecoPercentage >= 30 && ecoPercentage < 50">
+        ♻️ Good start! Try choosing more eco-friendly products.
+      </ng-container>
+      <ng-container *ngIf="ecoPercentage < 30">
+        ⚠️ Room to improve — check eco scores before buying!
+      </ng-container>
+    </p>
+  </div>
+
+</div>
+    <!-- Progress bar -->
+    <div class="loyalty-progress-wrap">
+      <div class="loyalty-progress-bar">
+        <div class="loyalty-progress-fill"
+             [style.width.%]="getLoyaltyProgress()"
+             [style.background]="getLoyaltyLevel().color">
+        </div>
+      </div>
+<span class="loyalty-progress-label">
+  <ng-container *ngIf="loyaltyPoints < 500">
+    {{ loyaltyPoints }} / {{ getNextLevelPoints() }} pts to next level
+  </ng-container>
+  <ng-container *ngIf="loyaltyPoints >= 500">
+    🏆 MAX LEVEL REACHED — {{ loyaltyPoints }} pts
+  </ng-container>
+</span>
+ 
+    </div>
+
+    <!-- Eco bonus info -->
+    <div class="eco-bonus-info">
+      <span class="eco-bonus-tag">🌱 ECO 8-10 → +50 pts</span>
+      <span class="eco-bonus-tag">🌿 ECO 5-7 → +20 pts</span>
+      <span class="eco-bonus-tag">⚠️ ECO 1-4 → no bonus</span>
+    </div>
+
+    <!-- Redeemable value -->
+    <div class="loyalty-redeem" *ngIf="canRedeem">
+      <span class="redeem-value">💰 You can redeem: ${{ redeemableValue.toFixed(2) }} off your next order</span>
+    </div>
+  </div>
+
   <!-- ── LOADING ───────────────────────────────── -->
   <div class="loading" *ngIf="isLoading">LOADING ORDERS...</div>
 
@@ -18,12 +147,8 @@
 
   <!-- ── ORDERS LIST ───────────────────────────── -->
   <div class="orders-list" *ngIf="!isLoading && orders.length > 0">
-    <div
-      class="order-card"
-      *ngFor="let order of orders"
-      (click)="viewOrder(order)">
+    <div class="order-card" *ngFor="let order of orders" (click)="viewOrder(order)">
 
-      <!-- Order Header -->
       <div class="order-header">
         <div class="order-id">
           <span class="order-label">ORDER</span>
@@ -34,7 +159,6 @@
         </span>
       </div>
 
-      <!-- Order Info -->
       <div class="order-info">
         <div class="order-meta">
           <span class="meta-label">DATE</span>
@@ -50,26 +174,19 @@
         </div>
       </div>
 
-      <!-- Items Preview -->
       <div class="items-preview" *ngIf="order.items && order.items.length > 0">
-        <img
-          *ngFor="let item of order.items | slice:0:3"
-          [src]="item.product.imageUrl"
-          [alt]="item.product.name"
-          class="item-thumb"
-        />
+        <img *ngFor="let item of order.items | slice:0:3"
+          [src]="item.product.imageUrl" [alt]="item.product.name" class="item-thumb"/>
         <span class="more-items" *ngIf="order.items.length > 3">
           +{{ order.items.length - 3 }} more
         </span>
       </div>
 
       <div class="view-hint">Click to view details →</div>
-      <button 
-  class="cancel-btn"
-  *ngIf="order.status === 'PENDING'"
-  (click)="cancelOrder(order.id, $event)">
-  CANCEL ORDER
-</button>
+      <button class="cancel-btn" *ngIf="order.status === 'PENDING'"
+        (click)="cancelOrder(order.id, $event)">
+        CANCEL ORDER
+      </button>
     </div>
   </div>
 
@@ -90,14 +207,9 @@
         <span>📅 {{ selectedOrder.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
       </div>
 
-      <!-- Items List -->
       <div class="modal-items">
         <div class="modal-item" *ngFor="let item of selectedOrder.items">
-          <img
-            [src]="item.product.imageUrl"
-            [alt]="item.product.name"
-            class="modal-item-img"
-          />
+          <img [src]="item.product.imageUrl" [alt]="item.product.name" class="modal-item-img"/>
           <div class="modal-item-info">
             <span class="modal-item-name">{{ item.product.name }}</span>
             <span class="modal-item-cat">{{ item.product.category }}</span>
@@ -109,22 +221,16 @@
         </div>
       </div>
 
-      <!-- Total -->
       <div class="modal-total">
         <span>TOTAL</span>
         <span class="total-amount">{{ selectedOrder.totalPrice | currency }}</span>
       </div>
-      <!-- QR Code -->
-<div class="qr-section" *ngIf="orderQrCodes[selectedOrder.id]">
-  <p class="qr-label">// ORDER QR CODE</p>
-  <img
-    [src]="orderQrCodes[selectedOrder.id]"
-    alt="Order QR"
-    class="qr-image"
-  />
-  <p class="qr-hint">Scan to verify order details</p>
-</div>
 
+      <div class="qr-section" *ngIf="orderQrCodes[selectedOrder.id]">
+        <p class="qr-label">// ORDER QR CODE</p>
+        <img [src]="orderQrCodes[selectedOrder.id]" alt="Order QR" class="qr-image"/>
+        <p class="qr-hint">Scan to verify order details</p>
+      </div>
     </div>
   </div>
 

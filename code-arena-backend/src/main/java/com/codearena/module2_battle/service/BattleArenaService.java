@@ -4,7 +4,21 @@ import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.entity.TestCase;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
 import com.codearena.module1_challenge.repository.TestCaseRepository;
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.ArenaChallengeResponse;
+import com.codearena.module2_battle.dto.ArenaParticipantProgressResponse;
+import com.codearena.module2_battle.dto.ArenaStateResponse;
+import com.codearena.module2_battle.dto.SubmissionResultResponse;
+import com.codearena.module2_battle.dto.SubmitSolutionRequest;
+import com.codearena.module2_battle.dto.ActivityRequest;
+import com.codearena.module2_battle.dto.OpponentProgressEvent;
+import com.codearena.module2_battle.dto.SpectatorFeedEvent;
+import com.codearena.module2_battle.dto.MatchFinishedEvent;
+import com.codearena.module2_battle.dto.OpponentActivityEvent;
+import com.codearena.module2_battle.dto.TestCaseProgressEvent;
+import com.codearena.module2_battle.dto.Judge0SubmissionRequest;
+import com.codearena.module2_battle.dto.Judge0SubmissionResult;
+import com.codearena.module2_battle.dto.PostMatchSummaryResponse;
+import com.codearena.module2_battle.dto.VisibleTestCaseResponse;
 import com.codearena.module2_battle.entity.BattleParticipant;
 import com.codearena.module2_battle.entity.BattleRoom;
 import com.codearena.module2_battle.entity.BattleRoomChallenge;
@@ -32,6 +46,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+import com.codearena.module2_battle.util.UserDisplayUtils;
 
 /**
  * Core service for the live arena phase. Handles everything from the moment a room
@@ -830,9 +845,8 @@ public class BattleArenaService {
         boolean isFinished = challengesCompleted >= challengeCount;
 
         String username = resolveUsername(participant.getUserId());
-        String avatarUrl = userRepository.findByKeycloakId(participant.getUserId())
-                .map(User::getAvatarUrl)
-                .orElse(null);
+        User user = userRepository.findByAuth0Id(participant.getUserId()).orElse(null);
+        String avatarUrl = UserDisplayUtils.resolveAvatarUrl(user);
 
         return ArenaParticipantProgressResponse.builder()
                 .participantId(participantId)
@@ -899,9 +913,7 @@ public class BattleArenaService {
     }
 
     private String resolveUsername(String userId) {
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
 
     /**

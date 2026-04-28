@@ -21,6 +21,8 @@ import {
   SharedResultDTO,
   MatchComparisonResponse,
 } from '../models/battle-room.model';
+import { MatchHistoryResponse } from '../../reward-profile/models/match-history.model';
+import { SeasonLeaderboardResponse, XpLeaderboardResponse } from '../../reward-profile/models/leaderboard.model';
 
 @Injectable({ providedIn: 'root' })
 export class BattleService extends ApiService {
@@ -116,5 +118,27 @@ export class BattleService extends ApiService {
 
   getSharedResult(token: string): Observable<SharedResultDTO> {
     return this.http.get<SharedResultDTO>(`${this.baseUrl}/results/share/${token}`);
+  }
+
+  // ── History & Leaderboard endpoints ─────────────────────────
+
+  getMyMatchHistory(page: number = 0, size: number = 10): Observable<MatchHistoryResponse> {
+    return this.http.get<MatchHistoryResponse>(`${this.baseUrl}/history/me?page=${page}&size=${size}`);
+  }
+
+  getUserMatchHistory(userId: string, page: number = 0, size: number = 10): Observable<MatchHistoryResponse> {
+    return this.http.get<MatchHistoryResponse>(`${this.baseUrl}/history/${userId}?page=${page}&size=${size}`);
+  }
+
+  getSeasonLeaderboard(page: number = 0, size: number = 50): Observable<SeasonLeaderboardResponse> {
+    return this.http.get<SeasonLeaderboardResponse>(`${this.baseUrl}/leaderboard/season?page=${page}&size=${size}`);
+  }
+
+  getXpLeaderboard(page: number = 0, size: number = 50): Observable<XpLeaderboardResponse> {
+    return this.http.get<XpLeaderboardResponse>(`${this.baseUrl}/leaderboard/xp?page=${page}&size=${size}`);
+  }
+
+  getBattleProfile(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/profile/${userId}`);
   }
 }

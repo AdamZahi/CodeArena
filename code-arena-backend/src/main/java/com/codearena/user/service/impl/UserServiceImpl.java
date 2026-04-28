@@ -10,9 +10,10 @@ import com.codearena.user.repository.UserRepository;
 import com.codearena.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -107,24 +108,28 @@ public class UserServiceImpl implements UserService {
             String firstName = resolveFirstName(jwt);
             String lastName = resolveLastName(jwt, firstName);
             String nickname = resolveNickname(jwt);
+            String fullName = normalize(jwt.getClaimAsString("name"));
+            String picture = normalize(jwt.getClaimAsString("picture"));
 
-            if (email == null || firstName == null || lastName == null || nickname == null) {
-                Auth0ManagementService.Auth0UserProfile profile = auth0ManagementService.getUserProfile(jwt.getSubject());
+            if (email == null || firstName == null || lastName == null || nickname == null || picture == null) {
+                Auth0ManagementService.Auth0UserProfile profile = auth0ManagementService.fetchUserProfile(jwt.getSubject());
                 if (profile != null) {
-                    email = firstNonBlank(email, normalize(profile.email()));
-                    nickname = firstNonBlank(nickname, normalize(profile.nickname()));
+                    email = firstNonBlank(email, normalize(profile.getEmail()));
+                    nickname = firstNonBlank(nickname, normalize(profile.getNickname()));
+                    fullName = firstNonBlank(fullName, normalize(profile.getName()));
+                    picture = firstNonBlank(picture, normalize(profile.getPicture()));
 
-                    String profileName = firstNonBlank(normalize(profile.name()), nickname);
-                    String profileFirstName = firstNonBlank(normalize(profile.givenName()), extractFirstName(profileName));
-
+                    String profileFirstName = firstNonBlank(normalize(profile.getGivenName()), extractFirstName(fullName));
                     firstName = firstNonBlank(firstName, profileFirstName);
                     lastName = firstNonBlank(
                         lastName,
-                        normalize(profile.familyName()),
-                        extractLastName(profileName, firstName)
+                        normalize(profile.getFamilyName()),
+                        extractLastName(fullName, firstName)
                     );
                 }
             }
+
+            String displayName = chooseBestDisplayName(nickname, fullName, firstName, email);
 
             if (user == null) {
                 user = User.builder()
@@ -132,12 +137,17 @@ public class UserServiceImpl implements UserService {
                     .email(email)
                     .firstName(firstName)
                     .lastName(lastName)
-                    .nickname(nickname)
+                    .nickname(displayName)
+                    .avatarUrl(picture)
                     .role(resolveRole(jwt))
                     .authProvider(resolveAuthProvider(jwt))
                     .isActive(true)
                     .build();
-                userRepository.save(user);
+                try {
+                    userRepository.save(user);
+                } catch (DataIntegrityViolationException e) {
+                    log.warn("Concurrent user creation detected for auth0Id: {}. Ignoring since another thread succeeded.", jwt.getSubject());
+                }
                 return;
             }
 
@@ -155,8 +165,12 @@ public class UserServiceImpl implements UserService {
                 user.setLastName(lastName);
                 updated = true;
             }
-            if (nickname != null && !nickname.equals(user.getNickname())) {
-                user.setNickname(nickname);
+            if (displayName != null && !displayName.equals(user.getNickname())) {
+                user.setNickname(displayName);
+                updated = true;
+            }
+            if (picture != null && !picture.equals(user.getAvatarUrl())) {
+                user.setAvatarUrl(picture);
                 updated = true;
             }
 
@@ -262,6 +276,41 @@ public class UserServiceImpl implements UserService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String chooseBestDisplayName(String nickname, String fullName, String givenName, String email) {
+        if (hasText(nickname) && !looksLikeMachineIdentifier(nickname)) {
+            return nickname;
+        }
+        if (hasText(givenName)) {
+            return givenName;
+        }
+        if (hasText(fullName) && !looksLikeMachineIdentifier(fullName)) {
+            return fullName;
+        }
+        if (hasText(email) && email.contains("@")) {
+            return email.split("@")[0];
+        }
+        return nickname;
+    }
+
+    private boolean looksLikeMachineIdentifier(String value) {
+        if (!hasText(value)) {
+            return false;
+        }
+        String lower = value.trim().toLowerCase();
+        if (lower.startsWith("auth0|")
+                || lower.startsWith("google-oauth2|")
+                || lower.startsWith("github|")
+                || lower.startsWith("facebook|")
+                || lower.startsWith("user_")) {
+            return true;
+        }
+        return lower.matches("^[0-9]{8,}$");
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private Role resolveRole(Jwt jwt) {

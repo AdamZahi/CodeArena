@@ -49,6 +49,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   showQROverlay = false;
   qrCodeImageUrl = '';
+  qrLoading = false;
 
   private subs = new Subscription();
 
@@ -180,7 +181,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   }
 
   async generateQR(): Promise<void> {
-    const data = this.event?.qrCode || this.event?.id || 'CODEARENA';
+    const data = this.myRegistration?.qrCode || this.event?.id || 'CODEARENA';
+    this.qrLoading = true;
     try {
       const QRCode = await import('qrcode');
       this.qrCodeImageUrl = await QRCode.toDataURL(String(data), {
@@ -191,6 +193,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.error('QR failed', e);
       this.qrCodeImageUrl = '';
+    } finally {
+      this.qrLoading = false;
     }
   }
 
@@ -346,7 +350,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
             String(r.eventId) === String(this.event?.id)
           );
           this.myRegistration = myReg || null;
-          if (this.myRegistration?.status === 'CONFIRMED') {
+          if (myReg && myReg.status === 'CONFIRMED') {
             await this.generateQR();
           }
           this.loadWaitlistPosition();

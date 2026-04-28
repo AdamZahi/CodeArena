@@ -2,6 +2,11 @@ server:
   port: 8080
 
 spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: mistral
   datasource:
     url: jdbc:mysql://localhost:3306/codearena?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -13,8 +18,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: islemazzouz04@gmail.com
-    password: ycsm qcyo tqfk hlbd
+    username: codearenapi@gmail.com
+    password: ecgq lgjy gvmh kxbs
     properties:
       mail:
         smtp:
@@ -24,7 +29,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     open-in-view: true
   security:
     oauth2:
@@ -32,6 +37,7 @@ spring:
         jwt:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
+
 
 
 
@@ -44,6 +50,11 @@ app:
     allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
+    stripe:
+      secret-key: sk_test_dummy_key_for_now
+      publishable-key: pk_test_dummy_key_for_now
+
+
 
 # Piston (self-hosted code execution engine)
 piston:
@@ -76,3 +87,36 @@ battle:
     connect-timeout-ms: 1500
     read-timeout-ms: 8000
     enabled: true
+
+# Code Execution Engines (module1_challenge)
+execution:
+  piston:
+    enabled: true
+    base-url: http://192.168.0.163:2000/api/v2
+    timeout-seconds: 10
+    compile-timeout-ms: 3000
+    run-timeout-ms: 3000
+  judge0:
+    base-url: https://ce.judge0.com
+    api-key: ""
+    timeout-seconds: 10
+
+# Resilience4j Circuit Breaker for Piston
+resilience4j:
+  circuitbreaker:
+    instances:
+      pistonEngine:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

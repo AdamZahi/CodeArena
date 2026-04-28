@@ -19,6 +19,10 @@ export class EventService {
     return this.http.get<any[]>(this.baseUrl);
   }
 
+  getRecommendedEvents(): Observable<ProgrammingEvent[]> {
+    return this.http.get<ProgrammingEvent[]>(`${this.baseUrl}/recommended`);
+  }
+
   getEventById(id: string): Observable<ProgrammingEvent> {
     return this.http.get<ProgrammingEvent>(`${this.baseUrl}/${id}`);
   }

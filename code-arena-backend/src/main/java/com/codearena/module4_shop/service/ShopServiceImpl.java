@@ -136,6 +136,14 @@ public class ShopServiceImpl implements ShopService {
         return shopItemRepository.findByStockLessThanEqual(0)
                 .stream().count();
     }
+    @Override
+    public void saveEcoScore(UUID productId, int ecoScore) {
+        ShopItem item = shopItemRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        item.setEcoScore(ecoScore);
+        shopItemRepository.save(item);
+        log.info("Saved eco score {}/10 for product: {}", ecoScore, item.getName());
+    }
 
     // ── HELPER — Entity to DTO ────────────────────
     private ShopItemDto toDto(ShopItem item) {
@@ -147,6 +155,7 @@ public class ShopServiceImpl implements ShopService {
                 .stock(item.getStock())
                 .imageUrl(item.getImageUrl())
                 .category(item.getCategory())
+                .ecoScore(item.getEcoScore())
                 .createdAt(item.getCreatedAt())
                 .build();
     }
@@ -155,4 +164,5 @@ public class ShopServiceImpl implements ShopService {
         return shopItemRepository.findAll(pageable)
                 .map(this::toDto);
     }
+
 }

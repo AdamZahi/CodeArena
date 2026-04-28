@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ChallengeService } from '../../services/challenge.service';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
+import { AiService, RecommendationDto } from '../../services/ai.service';
 
 @Component({
   selector: 'app-challenge-list',
@@ -18,15 +19,30 @@ export class ChallengeListComponent implements OnInit {
   public isLoading = true;
   public searchTerm = '';
   public selectedDifficulty = '';
+  public aiRecommendations: RecommendationDto[] = [];
+  public showAiPicks = false;
 
   constructor(
     private challengeService: ChallengeService,
+    private aiService: AiService,
     private router: Router,
     public auth: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadChallenges();
+    if (this.auth.isAuthenticated$) {
+      this.loadAiRecommendations();
+    }
+  }
+
+  public loadAiRecommendations(): void {
+    this.aiService.getRecommendations(3).subscribe({
+      next: (data: any) => {
+        this.aiRecommendations = data || [];
+      },
+      error: (err: any) => console.error('Failed to load AI recommendations', err)
+    });
   }
 
   public loadChallenges(): void {
@@ -50,10 +66,18 @@ export class ChallengeListComponent implements OnInit {
 
   public filterByDifficulty(diff: string): void {
     this.selectedDifficulty = diff;
+    this.showAiPicks = false;
+    this.applyFilters();
+  }
+
+  public toggleAiPicks(): void {
+    this.showAiPicks = true;
+    this.selectedDifficulty = '';
     this.applyFilters();
   }
 
   public onSearch(): void {
+    this.showAiPicks = false;
     this.applyFilters();
   }
 

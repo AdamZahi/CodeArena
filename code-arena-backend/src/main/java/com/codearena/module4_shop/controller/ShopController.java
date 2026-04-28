@@ -18,9 +18,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @Slf4j
 @RestController
@@ -72,6 +74,7 @@ public class ShopController {
 
     // ── GET LOW STOCK PRODUCTS ───────────────────
     // GET /api/shop/products/low-stock
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/products/low-stock")
     public ResponseEntity<ApiResponse<List<ShopItemDto>>> getLowStockProducts() {
         return ResponseEntity.ok(
@@ -99,6 +102,7 @@ public class ShopController {
     // ── CREATE PRODUCT (Admin) ───────────────────
     // POST /api/shop/products
     // @Valid triggers our DTO validation annotations
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/products")
     public ResponseEntity<ApiResponse<ShopItemDto>> createProduct(
             @Valid @RequestBody ShopItemCreateDto dto
@@ -111,6 +115,7 @@ public class ShopController {
 
     // ── UPDATE PRODUCT (Admin) ───────────────────
     // PUT /api/shop/products/{id}
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/products/{id}")
     public ResponseEntity<ApiResponse<ShopItemDto>> updateProduct(
             @PathVariable UUID id,
@@ -126,6 +131,7 @@ public class ShopController {
 
     // ── DELETE PRODUCT (Admin) ───────────────────
     // DELETE /api/shop/products/{id}
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/products/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @PathVariable UUID id
@@ -138,6 +144,7 @@ public class ShopController {
 
     // ── ADMIN STATS ──────────────────────────────
     // GET /api/shop/stats
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<Object>> getStats() {
         var stats = new java.util.HashMap<String, Object>();
@@ -219,6 +226,7 @@ public class ShopController {
         );
     }
     // GET /api/shop/export/products
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/export/products")
     public ResponseEntity<byte[]> exportProducts() throws Exception {
         List<ShopItemDto> products = shopService.getAllProducts();
@@ -228,5 +236,37 @@ public class ShopController {
                 .header("Content-Disposition", "attachment; filename=products.xlsx")
                 .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .body(excel);
+    }
+
+    // ── ECO ALERT: Products scoring below threshold ──
+// Admin sees which products need sustainable sourcing improvement
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/products/eco-alerts")
+    public ResponseEntity<?> getLowEcoProducts() {
+        List<ShopItemDto> allProducts = shopService.getAllProducts();
+        List<ShopItemDto> flagged = allProducts.stream()
+                .filter(p -> p.getEcoScore() != null && p.getEcoScore() <= 4)
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
+            put("flaggedCount", flagged.size());
+            put("products", flagged);
+            put("message", flagged.isEmpty()
+                    ? "✅ All products meet eco standards!"
+                    : "⚠️ " + flagged.size() + " products need sustainable sourcing review");
+        }});
+    }
+
+
+
+    // Called by Angular after Flask scores a product
+// Saves the AI score to DB so loyalty bonus can use it
+    @PostMapping("/products/{id}/eco-score")
+    public ResponseEntity<?> saveEcoScore(
+            @PathVariable UUID id,
+            @RequestBody Map<String, Integer> body
+    ) {
+        shopService.saveEcoScore(id, body.get("score"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Eco score saved"));
     }
 }

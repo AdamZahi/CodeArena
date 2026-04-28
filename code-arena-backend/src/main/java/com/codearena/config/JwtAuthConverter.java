@@ -2,6 +2,7 @@ package com.codearena.config;
 
 import com.codearena.user.entity.User;
 import com.codearena.user.repository.UserRepository;
+import com.codearena.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
@@ -22,9 +23,13 @@ import java.util.Collections;
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
+        // Sync user info from token claims (nickname, email, etc.)
+        userService.syncFromJwt(source);
+        
         Collection<GrantedAuthority> authorities = extractAuthorities(source);
         return new JwtAuthenticationToken(source, authorities);
     }

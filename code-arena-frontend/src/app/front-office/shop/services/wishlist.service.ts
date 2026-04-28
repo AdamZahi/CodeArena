@@ -56,4 +56,8 @@ export class WishlistService {
       return [];
     }
   }
+  // ── GET ALL ITEMS ─────────────────────────────
+getItems(): Product[] {
+  return this.wishlist$.getValue();
+}
 }

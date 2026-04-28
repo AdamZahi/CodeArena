@@ -6,7 +6,8 @@ import com.codearena.module2_battle.service.SharedResultService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.NoSuchElementException;
@@ -22,7 +23,7 @@ public class BattleResultsController {
     @GetMapping("/{roomId}/scoreboard")
     public ResponseEntity<PostMatchSummaryResponse> getScoreboard(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
+            @AuthenticationPrincipal Jwt jwt) {
         PostMatchSummaryResponse summary = battleResultsService.getPostMatchSummary(roomId);
         return ResponseEntity.ok(summary);
     }
@@ -30,8 +31,8 @@ public class BattleResultsController {
     @GetMapping("/{roomId}/replay")
     public ResponseEntity<ReplayResponse> getReplay(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         ReplayResponse replay = battleResultsService.getReplay(roomId, userId);
         return ResponseEntity.ok(replay);
     }
@@ -51,8 +52,8 @@ public class BattleResultsController {
 
     @GetMapping("/leaderboard/season")
     public ResponseEntity<SeasonLeaderboardResponse> getSeasonLeaderboard(
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         SeasonLeaderboardResponse leaderboard = battleResultsService.getSeasonLeaderboard(userId);
         return ResponseEntity.ok(leaderboard);
     }
@@ -60,7 +61,7 @@ public class BattleResultsController {
     @GetMapping("/leaderboard/season/{userId}")
     public ResponseEntity<SeasonLeaderboardEntryResponse> getPlayerSeasonRank(
             @PathVariable String userId,
-            JwtAuthenticationToken principal) {
+            @AuthenticationPrincipal Jwt jwt) {
         SeasonLeaderboardEntryResponse entry = battleResultsService.getPlayerSeasonRank(userId);
         return ResponseEntity.ok(entry);
     }
@@ -70,8 +71,8 @@ public class BattleResultsController {
     @PostMapping("/{roomId}/share")
     public ResponseEntity<ShareUrlResponse> createShareToken(
             @PathVariable String roomId,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(sharedResultService.createOrGetShareToken(roomId, userId));
     }
 

@@ -1,0 +1,152 @@
+.leaderboard-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #e2e8f0;
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 1rem;
+}
+
+.leaderboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+}
+
+.tabs button {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.tabs button:hover {
+  color: #bd93f9;
+}
+
+.tabs button.active {
+  color: #a855f7;
+  border-bottom-color: #a855f7;
+}
+
+.table-wrapper {
+  background: #0f172a;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 1rem;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: #1e293b;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr.highlight {
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.rank-col {
+  width: 80px;
+}
+
+.rank-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 0.875rem;
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+.rank-badge[data-rank="1"] { background: #fbbf24; color: #78350f; }
+.rank-badge[data-rank="2"] { background: #94a3b8; color: #1e293b; }
+.rank-badge[data-rank="3"] { background: #b45309; color: #fef3c7; }
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #334155;
+}
+
+.username {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.elo-col, .xp-col {
+  font-weight: 700;
+  color: #a855f7;
+}
+
+.tier-label {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #334155;
+}
+
+.tier-label[data-tier="DIAMOND"] { color: #38bdf8; }
+.tier-label[data-tier="PLATINUM"] { color: #2dd4bf; }
+.tier-label[data-tier="GOLD"] { color: #fbbf24; }
+.tier-label[data-tier="SILVER"] { color: #94a3b8; }
+.tier-label[data-tier="BRONZE"] { color: #92400e; }
+
+.title-tag {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.loading-state {
+  padding: 4rem;
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 2px;
+}

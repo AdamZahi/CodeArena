@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,16 +22,16 @@ public class SeasonAdminController {
 
     @PostMapping("/close")
     public ResponseEntity<SeasonSummaryResponse> closeActiveSeason(
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(seasonService.closeActiveSeason(userId));
     }
 
     @PostMapping("/")
     public ResponseEntity<SeasonResponse> createNextSeason(
             @RequestBody @Valid CreateSeasonRequest request,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(seasonService.createNextSeason(userId, request));
     }
 

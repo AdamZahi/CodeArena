@@ -18,6 +18,7 @@ import com.codearena.module6_event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +33,8 @@ public class CandidatureServiceImpl implements CandidatureService {
     private final EventCandidatureRepository candidatureRepository;
     private final EventRegistrationRepository registrationRepository;
     private final EventMapper eventMapper;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ParticipantIdentityService participantIdentityService;
 
     @Override
     @Transactional
@@ -59,6 +62,19 @@ public class CandidatureServiceImpl implements CandidatureService {
                 .build();
 
         EventCandidature saved = candidatureRepository.save(candidature);
+
+        // ── WEBSOCKET NOTIFICATION ─────────────────
+        messagingTemplate.convertAndSend(
+                "/topic/admin/candidatures",
+                new java.util.HashMap<String, Object>() {{
+                    put("type", "NEW_CANDIDATURE");
+                    put("eventId", event.getId().toString());
+                    put("eventTitle", event.getTitle());
+                    put("participantId", participantId);
+                    put("message", "New candidature submitted for event: " + event.getTitle());
+                }}
+        );
+
         return toResponseDTO(saved);
     }
 
@@ -153,6 +169,7 @@ public class CandidatureServiceImpl implements CandidatureService {
                 .id(candidature.getId())
                 .eventId(candidature.getEventId())
                 .participantId(candidature.getParticipantId())
+                .participantName(participantIdentityService.resolveDisplayName(candidature.getParticipantId()))
                 .motivation(candidature.getMotivation())
                 .status(candidature.getStatus())
                 .appliedAt(candidature.getAppliedAt())
@@ -166,4 +183,3 @@ public class CandidatureServiceImpl implements CandidatureService {
                 + "|TOKEN:" + UUID.randomUUID();
     }
 }
-

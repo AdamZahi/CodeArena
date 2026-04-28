@@ -6,6 +6,7 @@ import { ChallengeService } from '../../services/challenge.service';
 import { SubmissionService } from '../../services/submission.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap, takeWhile, take } from 'rxjs/operators';
+import { AiService, ChallengeDifficultyDto } from '../../services/ai.service';
 import { AuthService } from '@auth0/auth0-angular';
 import { AuthUserSyncService } from '../../../../core/auth/auth-user-sync.service';
 
@@ -19,6 +20,9 @@ import { AuthUserSyncService } from '../../../../core/auth/auth-user-sync.servic
 export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public challengeId!: string;
   public challenge: any;
+  public aiDifficulty: ChallengeDifficultyDto | null = null;
+  public aiHint: string | null = null;
+  public isHintLoading = false;
   public isLoading = true;
   public activeTab: 'description' | 'submissions' = 'description';
 
@@ -75,6 +79,7 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private challengeService: ChallengeService,
     private submissionService: SubmissionService,
+    private aiService: AiService,
     public auth: AuthService,
     private authUserSync: AuthUserSyncService
   ) {}
@@ -91,6 +96,7 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.loadMySubmissions();
       this.loadVotes();
       this.loadComments();
+      this.loadAiDifficulty();
 
       // Get Auth0 user info (for sub claim)
       this.auth.user$.subscribe(user => {
@@ -275,6 +281,39 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  public loadAiDifficulty(): void {
+    this.aiService.getChallengeDifficulty(+this.challengeId).subscribe({
+      next: (data) => {
+        this.aiDifficulty = data;
+      },
+      error: (e) => console.log('AI difficulty not available yet')
+    });
+  }
+
+  public generateAiHint(): void {
+    if (this.isHintLoading || this.aiHint) return;
+    this.isHintLoading = true;
+    this.aiService.getChallengeHint(+this.challengeId).subscribe({
+      next: (res) => {
+        this.isHintLoading = false;
+        // Simulate a typing effect
+        const fullHint = res.hint || 'No hint generated.';
+        this.aiHint = '';
+        let i = 0;
+        const interval = setInterval(() => {
+          this.aiHint! += fullHint.charAt(i);
+          i++;
+          if (i >= fullHint.length) clearInterval(interval);
+        }, 30); // Typewriter speed
+        this.playSound('type');
+      },
+      error: (e) => {
+        this.isHintLoading = false;
+        this.aiHint = 'Neural network offline. Hint generation failed.';
+      }
+    });
+  }
+
   public onLanguageChange(): void {
     this.languageMismatchError = null;
     if (this.challenge?.language) {
@@ -344,11 +383,11 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     };
 
     this.submissionService.submitCode(req).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.submissionResult = res;
         this.startPolling(res.id);
       },
-      error: (e) => {
+      error: (e: any) => {
         this.isSubmitting = false;
         this.submissionResult = { status: 'ERROR', errorOutput: 'Submission link failure.' };
         this.decrementHealth();
@@ -408,7 +447,7 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public loadMySubmissions(): void {
     if (!this.currentUserSub) return;
     this.submissionService.getUserSubmissions(this.currentUserSub).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         const currentChallengeSubs = res.filter((s: any) => s.challengeId == this.challengeId);
         this.mySubmissions = currentChallengeSubs.sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
       }

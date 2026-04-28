@@ -630,3 +630,102 @@
 }
 
 .loyalty-redeem p { margin: 0; }
+/* ── SUCCESS MESSAGE ─────────────────────────── */
+.success-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 48px;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+/* ── AI MESSAGE BOX ──────────────────────────── */
+.ai-message-box {
+  background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 500px;
+  animation: fadeIn 0.5s ease;
+}
+
+.ai-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: #8b5cf6;
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.ai-message {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  color: #e2e8f0;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── AI LOADING DOTS ─────────────────────────── */
+.ai-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.ai-dots span {
+  width: 8px;
+  height: 8px;
+  background: #8b5cf6;
+  border-radius: 50%;
+  animation: bounce 1s infinite;
+}
+
+.ai-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ai-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50%       { transform: translateY(-8px); opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.success-sub {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #64748b;
+  letter-spacing: 2px;
+}

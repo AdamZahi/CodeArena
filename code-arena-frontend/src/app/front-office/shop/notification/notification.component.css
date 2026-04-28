@@ -19,7 +19,7 @@
   max-width: 400px;
   background: #0d0d15;
   border: 1px solid #1a1a2e;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
   pointer-events: all;
   transition: all 0.4s ease;
   opacity: 0;
@@ -36,10 +36,25 @@
   transform: translateX(60px);
 }
 
-.notif-confirmed { border-color: rgba(139,92,246,0.5); box-shadow: 0 0 20px rgba(139,92,246,0.2); }
-.notif-shipped   { border-color: rgba(6,182,212,0.5);  box-shadow: 0 0 20px rgba(6,182,212,0.2); }
-.notif-delivered { border-color: rgba(16,185,129,0.5); box-shadow: 0 0 20px rgba(16,185,129,0.2); }
-.notif-cancelled { border-color: rgba(239,68,68,0.5);  box-shadow: 0 0 20px rgba(239,68,68,0.2); }
+.notif-confirmed {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.notif-shipped {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.notif-delivered {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.notif-cancelled {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
 
 .notif-icon {
   font-size: 24px;
@@ -47,7 +62,9 @@
   text-align: center;
 }
 
-.notif-body { flex: 1; }
+.notif-body {
+  flex: 1;
+}
 
 .notif-title {
   font-family: 'Orbitron', monospace;
@@ -74,14 +91,60 @@
   transition: color 0.2s;
 }
 
-.notif-close:hover { color: #e2e8f0; }
+.notif-close:hover {
+  color: #e2e8f0;
+}
+
 .notif-stock {
-  border-color: rgba(245,158,11,0.5);
-  box-shadow: 0 0 20px rgba(245,158,11,0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
   animation: pulse-border 2s infinite;
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: rgba(245,158,11,0.5); }
-  50%       { border-color: rgba(245,158,11,1); }
+
+  0%,
+  100% {
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+
+  50% {
+    border-color: rgba(245, 158, 11, 1);
+  }
+}
+
+.notif-admin {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+  animation: pulse-border-admin 2s infinite;
+}
+
+@keyframes pulse-border-admin {
+
+  0%,
+  100% {
+    border-color: rgba(6, 182, 212, 0.5);
+  }
+
+  50% {
+    border-color: rgba(6, 182, 212, 1);
+  }
+}
+
+.notif-candidature {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  animation: pulse-border-candidature 2s infinite;
+}
+
+@keyframes pulse-border-candidature {
+
+  0%,
+  100% {
+    border-color: rgba(139, 92, 246, 0.5);
+  }
+
+  50% {
+    border-color: rgba(139, 92, 246, 1);
+  }
 }

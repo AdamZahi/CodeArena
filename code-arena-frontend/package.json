@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "sonar": "sonar-scanner"
   },
   "private": true,
   "dependencies": {
@@ -21,6 +22,7 @@
     "@auth0/auth0-angular": "^2.7.0",
     "@auth0/auth0-spa-js": "^2.18.2",
     "@stomp/stompjs": "^7.3.0",
+    "@stripe/stripe-js": "^9.1.0",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
@@ -45,6 +47,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "qrcode": "^1.5.4",
+    "sonarqube-scanner": "^4.3.5",
     "typescript": "~5.5.2"
   }
 }

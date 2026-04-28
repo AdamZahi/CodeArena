@@ -12,6 +12,7 @@ export interface CurrentUser {
   firstName?: string;
   lastName?: string;
   nickname?: string;
+  avatarUrl?: string;
   role?: string;
   level?: number;
   totalXp?: number;
@@ -29,6 +30,7 @@ interface Auth0UserProfile {
   family_name?: string;
   name?: string;
   nickname?: string;
+  picture?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -132,12 +134,14 @@ export class AuthUserSyncService {
         const lastName = this.clean(profile.family_name) ?? parsed.lastName;
         const email = this.clean(profile.email);
         const nickname = this.clean(profile.nickname);
+        const avatarUrl = this.clean(profile.picture);
 
         const patch: {
           email?: string | null;
           firstName?: string | null;
           lastName?: string | null;
           nickname?: string | null;
+          avatarUrl?: string | null;
         } = {};
 
         if (!this.clean(user.email) && email) {
@@ -151,6 +155,9 @@ export class AuthUserSyncService {
         }
         if (!this.clean(user.nickname) && nickname) {
           patch.nickname = nickname;
+        }
+        if (!this.clean(user.avatarUrl) && avatarUrl) {
+          patch.avatarUrl = avatarUrl;
         }
 
         if (Object.keys(patch).length === 0) {

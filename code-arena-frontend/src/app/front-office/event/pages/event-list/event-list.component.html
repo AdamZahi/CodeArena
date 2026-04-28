@@ -54,6 +54,32 @@
     <p>// NO EVENTS FOUND</p>
   </div>
 
+  <div class="recommended-section" 
+       *ngIf="recommendedEvents.length > 0">
+      <div class="recommended-header">
+          <span class="ai-badge">🤖 AI</span>
+          <h2 class="recommended-title">
+              RECOMMENDED FOR YOU
+          </h2>
+      </div>
+      <div class="recommended-grid">
+          <div class="recommended-card"
+               *ngFor="let event of recommendedEvents"
+               (click)="openDetail(event.id)">
+              <div class="rec-type-badge"
+                   [class.badge-open]="event.type==='OPEN'"
+                   [class.badge-exclusive]="event.type==='EXCLUSIVE'">
+                  {{ event.type }}
+              </div>
+              <div class="rec-title">{{ event.title }}</div>
+              <div class="rec-category">{{ event.category }}</div>
+              <div class="rec-match">
+                  ✓ MATCHES YOUR PROFILE
+              </div>
+          </div>
+      </div>
+  </div>
+
   <!-- ── EVENTS GRID ────────────────────────────────── -->
   <div class="product-grid" *ngIf="!isLoading && filteredEvents.length > 0">
     <div

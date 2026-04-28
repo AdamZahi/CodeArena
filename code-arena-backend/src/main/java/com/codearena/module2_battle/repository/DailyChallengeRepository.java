@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface DailyChallengeRepository extends JpaRepository<DailyChallenge, UUID> {
 
-    Optional<DailyChallenge> findByChallengeDate(LocalDate date);
+    Optional<DailyChallenge> findFirstByChallengeDate(LocalDate date);
 
     // Step 5: recency filter — get challenge IDs used in the last N days
     @Query("SELECT dc FROM DailyChallenge dc WHERE dc.challengeDate >= :since ORDER BY dc.challengeDate DESC")

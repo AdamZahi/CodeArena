@@ -1,0 +1,1751 @@
+title,description,tags,difficulty,hint
+Maximum Subarray,"Given an integer array nums, find the subarray with the largest sum and return its sum.
+
+Input: nums = [-2,1,-3,4,-1,2,1,-5,4]
+Output: 6
+Explanation: The subarray [4,-1,2,1] has the largest sum 6.
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- -10^4 <= nums[i] <= 10^4","Array, Dynamic Programming",MEDIUM,"Use Kadane's algorithm: maintain a running sum and reset it to zero whenever it becomes negative, tracking the global maximum throughout."
+Product of Array Except Self,"Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i].
+
+Input: nums = [1,2,3,4]
+Output: [24,12,8,6]
+
+Constraints:
+- 2 <= nums.length <= 10^5
+- -30 <= nums[i] <= 30
+- The product of any prefix or suffix of nums fits in a 32-bit integer","Array, Prefix Sum",MEDIUM,"Use two passes: build a prefix product array from the left, then multiply by a running suffix product from the right."
+Contains Duplicate,"Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.
+
+Input: nums = [1,2,3,1]
+Output: true
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- -10^9 <= nums[i] <= 10^9","Array, Hash Table, Sorting",EASY,Insert each element into a hash set and check if it already exists before insertion.
+Best Time to Buy and Sell Stock,"You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy and a single day to sell. Return the maximum profit, or 0 if no profit is possible.
+
+Input: prices = [7,1,5,3,6,4]
+Output: 5
+
+Constraints:
+- 1 <= prices.length <= 10^5
+- 0 <= prices[i] <= 10^4","Array, Dynamic Programming",EASY,"Track the minimum price seen so far and at each step compute the profit if you sold today, keeping the global maximum."
+Rotate Array,"Given an integer array nums, rotate the array to the right by k steps.
+
+Input: nums = [1,2,3,4,5,6,7], k = 3
+Output: [5,6,7,1,2,3,4]
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- -2^31 <= nums[i] <= 2^31 - 1
+- 0 <= k <= 10^5","Array, Math, Two Pointers",MEDIUM,"Reverse the entire array, then reverse the first k elements and the remaining elements separately."
+Move Zeroes,"Given an integer array nums, move all 0's to the end of it while maintaining the relative order of the non-zero elements. You must do this in-place.
+
+Input: nums = [0,1,0,3,12]
+Output: [1,3,12,0,0]
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -2^31 <= nums[i] <= 2^31 - 1","Array, Two Pointers",EASY,"Use a slow pointer to track the position for the next non-zero element, and a fast pointer to scan through the array swapping non-zeros forward."
+Find All Duplicates in an Array,"Given an integer array nums of length n where all integers are in the range [1, n] and each integer appears once or twice, return an array of all the integers that appear twice.
+
+Input: nums = [4,3,2,7,8,2,3,1]
+Output: [2,3]
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 10^5
+- 1 <= nums[i] <= n","Array, Hash Table",MEDIUM,"Use the array itself as a hash map by negating the value at index nums[i]-1; if it is already negative, nums[i] is a duplicate."
+Maximum Product Subarray,"Given an integer array nums, find a subarray that has the largest product and return the product.
+
+Input: nums = [2,3,-2,4]
+Output: 6
+Explanation: [2,3] has the largest product 6.
+
+Constraints:
+- 1 <= nums.length <= 2 * 10^4
+- -10 <= nums[i] <= 10","Array, Dynamic Programming",MEDIUM,Track both the maximum and minimum product ending at each position since a negative number can turn a minimum product into a maximum.
+Find the Duplicate Number,"Given an array of integers nums containing n + 1 integers where each integer is in the range [1, n] inclusive, there is only one repeated number. Return this repeated number without modifying the array using O(1) extra space.
+
+Input: nums = [1,3,4,2,2]
+Output: 2
+
+Constraints:
+- 1 <= n <= 10^5
+- nums.length == n + 1
+- 1 <= nums[i] <= n","Array, Two Pointers, Binary Search",MEDIUM,Use Floyd's tortoise and hare cycle detection algorithm treating array values as next pointers.
+Shuffle an Array,"Given an integer array nums, design an algorithm to randomly shuffle the array. All permutations of the array should be equally likely.
+
+Input: nums = [1,2,3]
+Output: [1,2,3] (any permutation)
+
+Constraints:
+- 1 <= nums.length <= 50
+- -10^6 <= nums[i] <= 10^6","Array, Math",MEDIUM,"Use the Fisher-Yates shuffle algorithm: iterate from the end, swapping each element with a randomly chosen element from the unshuffled portion."
+Missing Number,"Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.
+
+Input: nums = [3,0,1]
+Output: 2
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 10^4
+- 0 <= nums[i] <= n
+- All numbers are unique","Array, Math, Bit Manipulation",EASY,Use the Gauss sum formula n*(n+1)/2 and subtract the actual sum of the array to find the missing number.
+Third Maximum Number,"Given an integer array nums, return the third distinct maximum number in this array. If the third maximum does not exist, return the maximum number.
+
+Input: nums = [3,2,1]
+Output: 1
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -2^31 <= nums[i] <= 2^31 - 1","Array, Sorting",EASY,"Maintain three variables tracking the first, second, and third maximums, updating them as you iterate through the array."
+Pascal's Triangle,"Given an integer numRows, return the first numRows of Pascal's triangle where each number is the sum of the two numbers directly above it.
+
+Input: numRows = 5
+Output: [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]
+
+Constraints:
+- 1 <= numRows <= 30","Array, Dynamic Programming",EASY,"Build each row iteratively where row[j] = previous_row[j-1] + previous_row[j], with 1s at both ends."
+Majority Element,"Given an array nums of size n, return the majority element. The majority element is the element that appears more than n/2 times.
+
+Input: nums = [3,2,3]
+Output: 3
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 5 * 10^4
+- -10^9 <= nums[i] <= 10^9","Array, Hash Table, Sorting",EASY,"Use Boyer-Moore voting algorithm: maintain a candidate and counter, incrementing for matches and decrementing for mismatches."
+Spiral Matrix,"Given an m x n matrix, return all elements of the matrix in spiral order.
+
+Input: matrix = [[1,2,3],[4,5,6],[7,8,9]]
+Output: [1,2,3,6,9,8,7,4,5]
+
+Constraints:
+- m == matrix.length
+- n == matrix[i].length
+- 1 <= m, n <= 10","Array, Matrix",MEDIUM,"Use four boundary pointers (top, bottom, left, right) and shrink them inward after traversing each side of the spiral."
+Set Matrix Zeroes,"Given an m x n integer matrix, if an element is 0, set its entire row and column to 0. You must do it in place.
+
+Input: matrix = [[1,1,1],[1,0,1],[1,1,1]]
+Output: [[1,0,1],[0,0,0],[1,0,1]]
+
+Constraints:
+- m == matrix.length
+- n == matrix[0].length
+- 1 <= m, n <= 200","Array, Matrix, Hash Table",MEDIUM,"Use the first row and first column as markers to record which rows and columns should be zeroed, using two boolean flags for the first row and column themselves."
+Two Sum,"Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+
+Input: nums = [2,7,11,15], target = 9
+Output: [0,1]
+
+Constraints:
+- 2 <= nums.length <= 10^4
+- -10^9 <= nums[i] <= 10^9
+- Only one valid answer exists","Array, Hash Table",EASY,"Use a hash map to store each number's index, checking if the complement (target minus current) already exists in the map."
+Group Anagrams,"Given an array of strings strs, group the anagrams together. You can return the answer in any order.
+
+Input: strs = [""eat"",""tea"",""tan"",""ate"",""nat"",""bat""]
+Output: [[""bat""],[""nat"",""tan""],[""ate"",""eat"",""tea""]]
+
+Constraints:
+- 1 <= strs.length <= 10^4
+- 0 <= strs[i].length <= 100","Array, Hash Table, String, Sorting",MEDIUM,"Sort each string's characters to form a canonical key, then group all strings sharing the same key using a hash map of lists."
+Valid Anagram,"Given two strings s and t, return true if t is an anagram of s, and false otherwise.
+
+Input: s = ""anagram"", t = ""nagaram""
+Output: true
+
+Constraints:
+- 1 <= s.length, t.length <= 5 * 10^4
+- s and t consist of lowercase English letters","Hash Table, String, Sorting",EASY,Build a frequency count array of 26 characters for both strings and compare them for equality.
+Longest Consecutive Sequence,"Given an unsorted array of integers nums, return the length of the longest consecutive elements sequence. You must write an algorithm that runs in O(n) time.
+
+Input: nums = [100,4,200,1,3,2]
+Output: 4
+Explanation: The longest consecutive sequence is [1,2,3,4].
+
+Constraints:
+- 0 <= nums.length <= 10^5
+- -10^9 <= nums[i] <= 10^9","Array, Hash Table, Union Find",MEDIUM,"Insert all numbers into a hash set, then for each number that is the start of a sequence (num-1 not in set), count consecutive numbers forward."
+Top K Frequent Elements,"Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.
+
+Input: nums = [1,1,1,2,2,3], k = 2
+Output: [1,2]
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- -10^4 <= nums[i] <= 10^4
+- k is in the range [1, number of unique elements]","Array, Hash Table, Heap, Sorting",MEDIUM,"Use a hash map to count frequencies, then use a min-heap of size k to extract the k most frequent elements in O(n log k) time."
+Isomorphic Strings,"Given two strings s and t, determine if they are isomorphic. Two strings are isomorphic if the characters in s can be replaced to get t with a one-to-one mapping.
+
+Input: s = ""egg"", t = ""add""
+Output: true
+
+Constraints:
+- 1 <= s.length <= 5 * 10^4
+- t.length == s.length","Hash Table, String",EASY,"Use two hash maps to maintain a bidirectional character mapping between s and t, verifying consistency at each position."
+Word Pattern,"Given a pattern and a string s, find if s follows the same pattern. Here follow means a full match such that there is a bijection between a letter in pattern and a non-empty word in s.
+
+Input: pattern = ""abba"", s = ""dog cat cat dog""
+Output: true
+
+Constraints:
+- 1 <= pattern.length <= 300
+- pattern contains only lowercase English letters
+- 1 <= s.length <= 3000","Hash Table, String",EASY,"Use two hash maps for bidirectional mapping between pattern characters and words, checking consistency at each position."
+Subarray Sum Equals K,"Given an array of integers nums and an integer k, return the total number of subarrays whose sum equals to k.
+
+Input: nums = [1,1,1], k = 2
+Output: 2
+
+Constraints:
+- 1 <= nums.length <= 2 * 10^4
+- -1000 <= nums[i] <= 1000
+- -10^7 <= k <= 10^7","Array, Hash Table, Prefix Sum",MEDIUM,"Use a hash map to store prefix sum frequencies; for each prefix sum, check how many times (current_prefix_sum - k) has occurred."
+First Unique Character in a String,"Given a string s, find the first non-repeating character in it and return its index. If it does not exist, return -1.
+
+Input: s = ""leetcode""
+Output: 0
+
+Constraints:
+- 1 <= s.length <= 10^5
+- s consists of only lowercase English letters","Hash Table, String, Queue",EASY,"Build a frequency map of all characters in one pass, then scan the string again to find the first character with count 1."
+Intersection of Two Arrays II,"Given two integer arrays nums1 and nums2, return an array of their intersection. Each element in the result must appear as many times as it shows in both arrays.
+
+Input: nums1 = [1,2,2,1], nums2 = [2,2]
+Output: [2,2]
+
+Constraints:
+- 1 <= nums1.length, nums2.length <= 1000
+- 0 <= nums1[i], nums2[i] <= 1000","Array, Hash Table, Sorting, Two Pointers",EASY,"Use a hash map to count occurrences in the smaller array, then iterate through the larger array decrementing counts to find common elements."
+Longest Palindromic Substring,"Given a string s, return the longest palindromic substring in s.
+
+Input: s = ""babad""
+Output: ""bab"" (or ""aba"")
+
+Constraints:
+- 1 <= s.length <= 1000
+- s consists of only digits and English letters","String, Dynamic Programming, Two Pointers",MEDIUM,"Expand around each character (and each pair of characters) as potential centers of a palindrome, tracking the longest found."
+Valid Palindrome,"A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.
+
+Input: s = ""A man, a plan, a canal: Panama""
+Output: true
+
+Constraints:
+- 1 <= s.length <= 2 * 10^5
+- s consists only of printable ASCII characters","String, Two Pointers",EASY,"Use two pointers from both ends, skipping non-alphanumeric characters and comparing lowercase versions."
+Longest Common Prefix,"Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string.
+
+Input: strs = [""flower"",""flow"",""flight""]
+Output: ""fl""
+
+Constraints:
+- 1 <= strs.length <= 200
+- 0 <= strs[i].length <= 200","String, Trie",EASY,"Compare characters at each position across all strings simultaneously, stopping at the first mismatch."
+String to Integer (atoi),"Implement the myAtoi function which converts a string to a 32-bit signed integer. Read and ignore leading whitespace, determine sign, read digits until non-digit or end, clamp to INT range.
+
+Input: s = ""   -42""
+Output: -42
+
+Constraints:
+- 0 <= s.length <= 200
+- s consists of English letters, digits, spaces, '+', '-', '.'","String, Math",MEDIUM,"Process the string sequentially: skip whitespace, detect sign, accumulate digits while checking for 32-bit integer overflow at each step."
+Reverse String,"Write a function that reverses a string in-place. The input is given as an array of characters.
+
+Input: s = [""h"",""e"",""l"",""l"",""o""]
+Output: [""o"",""l"",""l"",""e"",""h""]
+
+Constraints:
+- 1 <= s.length <= 10^5
+- s[i] is a printable ASCII character","String, Two Pointers",EASY,"Use two pointers at both ends of the array, swapping characters and moving inward until they meet."
+Reverse Words in a String,"Given an input string s, reverse the order of the words. A word is defined as a sequence of non-space characters.
+
+Input: s = ""the sky is blue""
+Output: ""blue is sky the""
+
+Constraints:
+- 1 <= s.length <= 10^4
+- s contains English letters, digits, and spaces","String, Two Pointers",MEDIUM,"Split the string by spaces, filter empty strings, then reverse the resulting list and join with single spaces."
+Zigzag Conversion,"The string is written in a zigzag pattern on a given number of rows. Write the code that will take a string and make this conversion.
+
+Input: s = ""PAYPALISHIRING"", numRows = 3
+Output: ""PAHNAPLSIIGYIR""
+
+Constraints:
+- 1 <= s.length <= 1000
+- 1 <= numRows <= 1000",String,MEDIUM,"Simulate the zigzag by maintaining an array of strings for each row, toggling direction at the top and bottom rows."
+Count and Say,"The count-and-say sequence is a sequence of digit strings defined by the recursive formula. countAndSay(1) = ""1"", countAndSay(n) is the run-length encoding of countAndSay(n-1).
+
+Input: n = 4
+Output: ""1211""
+
+Constraints:
+- 1 <= n <= 30","String, Recursion",MEDIUM,"Iteratively build each term by run-length encoding the previous term, counting consecutive identical digits."
+Implement strStr,"Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.
+
+Input: haystack = ""sadbutsad"", needle = ""sad""
+Output: 0
+
+Constraints:
+- 1 <= haystack.length, needle.length <= 10^4","String, Two Pointers",EASY,Use the KMP algorithm with a failure function array to avoid redundant character comparisons in the haystack.
+Three Sum,"Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j != k and nums[i] + nums[j] + nums[k] == 0.
+
+Input: nums = [-1,0,1,2,-1,-4]
+Output: [[-1,-1,2],[-1,0,1]]
+
+Constraints:
+- 3 <= nums.length <= 3000
+- -10^5 <= nums[i] <= 10^5","Array, Two Pointers, Sorting",MEDIUM,"Sort the array, fix one element, then use two pointers on the remaining portion to find pairs that sum to the negative of the fixed element."
+Container With Most Water,"Given n non-negative integers representing an elevation map where the width of each bar is 1, find two lines that together with the x-axis form a container that holds the most water.
+
+Input: height = [1,8,6,2,5,4,8,3,7]
+Output: 49
+
+Constraints:
+- n == height.length
+- 2 <= n <= 10^5
+- 0 <= height[i] <= 10^4","Array, Two Pointers, Greedy",MEDIUM,"Use two pointers at both ends, always moving the pointer with the shorter height inward while tracking the maximum area."
+Trapping Rain Water,"Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.
+
+Input: height = [0,1,0,2,1,0,1,3,2,1,2,1]
+Output: 6
+
+Constraints:
+- n == height.length
+- 1 <= n <= 2 * 10^4
+- 0 <= height[i] <= 10^5","Array, Two Pointers, Dynamic Programming, Stack",HARD,"Use two pointers from both ends, maintaining left_max and right_max; water at each position equals min(left_max, right_max) minus the height."
+Remove Duplicates from Sorted Array,"Given an integer array nums sorted in non-decreasing order, remove the duplicates in-place such that each unique element appears only once. Return the number of unique elements.
+
+Input: nums = [1,1,2]
+Output: 2, nums = [1,2,_]
+
+Constraints:
+- 1 <= nums.length <= 3 * 10^4
+- -100 <= nums[i] <= 100
+- nums is sorted in non-decreasing order","Array, Two Pointers",EASY,"Use a slow pointer to track the position of the last unique element, only advancing it when the fast pointer finds a new value."
+Sort Colors,"Given an array nums with n objects colored red (0), white (1), and blue (2), sort them in-place so that objects of the same color are adjacent, in the order red, white, and blue.
+
+Input: nums = [2,0,2,1,1,0]
+Output: [0,0,1,1,2,2]
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 300
+- nums[i] is 0, 1, or 2","Array, Two Pointers, Sorting",MEDIUM,"Use the Dutch National Flag algorithm with three pointers (low, mid, high) to partition elements into three groups in a single pass."
+Squares of a Sorted Array,"Given an integer array nums sorted in non-decreasing order, return an array of the squares of each number sorted in non-decreasing order.
+
+Input: nums = [-4,-1,0,3,10]
+Output: [0,1,9,16,100]
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -10^4 <= nums[i] <= 10^4
+- nums is sorted in non-decreasing order","Array, Two Pointers, Sorting",EASY,"Use two pointers at both ends comparing absolute values, filling the result array from the largest position backward."
+Boats to Save People,"You are given an array people where people[i] is the weight of the ith person, and an infinite number of boats that each carry at most limit weight. Each boat carries at most two people. Return the minimum number of boats.
+
+Input: people = [3,2,2,1], limit = 3
+Output: 3
+
+Constraints:
+- 1 <= people.length <= 5 * 10^4
+- 1 <= people[i] <= limit <= 3 * 10^4","Array, Two Pointers, Greedy, Sorting",MEDIUM,"Sort the array, then use two pointers from both ends pairing the heaviest with the lightest person if their sum fits within the limit."
+Longest Substring Without Repeating Characters,"Given a string s, find the length of the longest substring without repeating characters.
+
+Input: s = ""abcabcbb""
+Output: 3
+Explanation: The answer is ""abc"".
+
+Constraints:
+- 0 <= s.length <= 5 * 10^4
+- s consists of English letters, digits, symbols and spaces","Hash Table, String, Sliding Window",MEDIUM,"Use a sliding window with a hash set, expanding the right pointer and shrinking the left whenever a duplicate is found."
+Minimum Window Substring,"Given two strings s and t, return the minimum window substring of s such that every character in t (including duplicates) is included in the window.
+
+Input: s = ""ADOBECODEBANC"", t = ""ABC""
+Output: ""BANC""
+
+Constraints:
+- 1 <= s.length, t.length <= 10^5
+- s and t consist of uppercase and lowercase English letters","Hash Table, String, Sliding Window",HARD,"Use a sliding window with two frequency maps: expand right to include all required characters, then shrink left to find the minimum valid window."
+Sliding Window Maximum,"Given an array nums and a sliding window of size k moving from left to right, return the max value in each window position.
+
+Input: nums = [1,3,-1,-3,5,3,6,7], k = 3
+Output: [3,3,5,5,6,7]
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- -10^4 <= nums[i] <= 10^4
+- 1 <= k <= nums.length","Array, Queue, Sliding Window, Heap, Monotonic Stack",HARD,Use a monotonic decreasing deque that stores indices; remove elements outside the window and smaller elements from the back.
+Maximum Average Subarray I,"Given an integer array nums and an integer k, find a contiguous subarray whose length is equal to k that has the maximum average value and return this value.
+
+Input: nums = [1,12,-5,-6,50,3], k = 4
+Output: 12.75
+
+Constraints:
+- n == nums.length
+- 1 <= k <= n <= 10^5
+- -10^4 <= nums[i] <= 10^4","Array, Sliding Window",EASY,"Compute the sum of the first k elements, then slide the window by adding the next element and subtracting the leftmost, tracking the maximum sum."
+Permutation in String,"Given two strings s1 and s2, return true if s2 contains a permutation of s1.
+
+Input: s1 = ""ab"", s2 = ""eidbaooo""
+Output: true
+
+Constraints:
+- 1 <= s1.length, s2.length <= 10^4
+- s1 and s2 consist of lowercase English letters","Hash Table, String, Sliding Window, Two Pointers",MEDIUM,"Maintain a fixed-size sliding window of length len(s1) over s2, comparing character frequency counts at each position."
+Fruit Into Baskets,"You are visiting a farm that has a single row of fruit trees. You have two baskets and each basket can only hold one type of fruit. Return the maximum number of fruits you can pick.
+
+Input: fruits = [1,2,1]
+Output: 3
+
+Constraints:
+- 1 <= fruits.length <= 10^5
+- 0 <= fruits[i] < fruits.length","Array, Hash Table, Sliding Window",MEDIUM,Use a sliding window with a hash map tracking fruit types; shrink the window from the left when more than two types are present.
+Minimum Size Subarray Sum,"Given an array of positive integers nums and a positive integer target, return the minimal length of a subarray whose sum is greater than or equal to target.
+
+Input: target = 7, nums = [2,3,1,2,4,3]
+Output: 2
+
+Constraints:
+- 1 <= target <= 10^9
+- 1 <= nums.length <= 10^5
+- 1 <= nums[i] <= 10^4","Array, Sliding Window, Binary Search, Prefix Sum",MEDIUM,"Use a variable-size sliding window: expand right to increase the sum, shrink left when the sum meets the target, tracking the minimum length."
+Longest Repeating Character Replacement,"Given a string s and an integer k, you can choose any character and change it to any other uppercase English character at most k times. Return the length of the longest substring containing the same letter.
+
+Input: s = ""AABABBA"", k = 1
+Output: 4
+
+Constraints:
+- 1 <= s.length <= 10^5
+- s consists of only uppercase English letters
+- 0 <= k <= s.length","Hash Table, String, Sliding Window",MEDIUM,Use a sliding window tracking character frequencies; shrink the window when (window_length - max_frequency) exceeds k.
+Valid Parentheses,"Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
+
+Input: s = ""()[]{}""
+Output: true
+
+Constraints:
+- 1 <= s.length <= 10^4
+- s consists of parentheses only","String, Stack",EASY,"Push opening brackets onto a stack; when encountering a closing bracket, check if the stack's top matches the corresponding opening bracket."
+Min Stack,"Design a stack that supports push, pop, top, and retrieving the minimum element in constant time.
+
+Input: [""MinStack"",""push"",""push"",""push"",""getMin"",""pop"",""top"",""getMin""]
+Output: [null,null,null,null,-3,null,0,-2]
+
+Constraints:
+- -2^31 <= val <= 2^31 - 1
+- Methods pop, top and getMin will always be called on non-empty stacks","Stack, Design",MEDIUM,"Maintain two stacks: one for values and one for tracking the current minimum, pushing onto the min stack whenever the value is less than or equal to the current minimum."
+Daily Temperatures,"Given an array of integers temperatures representing daily temperatures, return an array answer such that answer[i] is the number of days you have to wait for a warmer temperature.
+
+Input: temperatures = [73,74,75,71,69,72,76,73]
+Output: [1,1,4,2,1,1,0,0]
+
+Constraints:
+- 1 <= temperatures.length <= 10^5
+- 30 <= temperatures[i] <= 100","Array, Stack, Monotonic Stack",MEDIUM,"Use a monotonic decreasing stack storing indices; when a warmer temperature is found, pop and compute the distance for all cooler days on the stack."
+Evaluate Reverse Polish Notation,"You are given an array of strings tokens that represents an arithmetic expression in Reverse Polish Notation. Evaluate the expression and return the result.
+
+Input: tokens = [""2"",""1"",""+"",""3"",""*""]
+Output: 9
+
+Constraints:
+- 1 <= tokens.length <= 10^4
+- tokens[i] is an operator or an integer in the range [-200, 200]","Array, Math, Stack",MEDIUM,"Use a stack: push numbers onto it, and when an operator is encountered, pop two operands, apply the operation, and push the result back."
+Largest Rectangle in Histogram,"Given an array of integers heights representing the histogram's bar height where the width of each bar is 1, return the area of the largest rectangle in the histogram.
+
+Input: heights = [2,1,5,6,2,3]
+Output: 10
+
+Constraints:
+- 1 <= heights.length <= 10^5
+- 0 <= heights[i] <= 10^4","Array, Stack, Monotonic Stack",HARD,"Use a monotonic increasing stack of indices; when a shorter bar is found, pop and compute the area using the popped height and the width between current index and new stack top."
+Next Greater Element I,"Given two distinct 0-indexed integer arrays nums1 and nums2 where nums1 is a subset of nums2, find the next greater element for each element of nums1 in nums2.
+
+Input: nums1 = [4,1,2], nums2 = [1,3,4,2]
+Output: [-1,3,-1]
+
+Constraints:
+- 1 <= nums1.length <= nums2.length <= 1000
+- 0 <= nums1[i], nums2[i] <= 10^4","Array, Hash Table, Stack, Monotonic Stack",EASY,"Use a monotonic decreasing stack to find the next greater element for each value in nums2, storing results in a hash map for O(1) lookup."
+Decode String,"Given an encoded string, return its decoded string. The encoding rule is: k[encoded_string], where the encoded_string inside the brackets is repeated exactly k times.
+
+Input: s = ""3[a]2[bc]""
+Output: ""aaabcbc""
+
+Constraints:
+- 1 <= s.length <= 30
+- s consists of lowercase English letters, digits, and square brackets","String, Stack, Recursion",MEDIUM,"Use a stack to push current string and count when encountering an opening bracket, then pop and repeat the accumulated string when encountering a closing bracket."
+Asteroid Collision,"Given an array of integers representing asteroids in a row where the absolute value represents size and the sign represents direction (positive=right, negative=left), find the state after all collisions.
+
+Input: asteroids = [5,10,-5]
+Output: [5,10]
+
+Constraints:
+- 2 <= asteroids.length <= 10^4
+- -1000 <= asteroids[i] <= 1000
+- asteroids[i] != 0","Array, Stack",MEDIUM,"Use a stack: push right-moving asteroids, and when a left-moving asteroid is encountered, pop and resolve collisions until the stack is empty or a larger right-moving asteroid remains."
+Implement Queue using Stacks,"Implement a first in first out (FIFO) queue using only two stacks.
+
+Input: [""MyQueue"",""push"",""push"",""peek"",""pop"",""empty""]
+Output: [null,null,null,1,1,false]
+
+Constraints:
+- 1 <= x <= 9
+- At most 100 calls will be made to push, pop, peek, and empty","Stack, Queue, Design",EASY,"Use two stacks: push onto one stack, and lazily transfer elements to the other stack (reversing order) only when a pop or peek is needed."
+Design Circular Queue,"Design your implementation of the circular queue. It should support enQueue, deQueue, Front, Rear, isEmpty, and isFull operations.
+
+Input: [""MyCircularQueue"",""enQueue"",""enQueue"",""enQueue"",""enQueue"",""Rear"",""isFull"",""deQueue"",""enQueue"",""Rear""]
+Output: [null,true,true,true,false,3,true,true,true,4]
+
+Constraints:
+- 1 <= k <= 1000
+- 0 <= value <= 1000
+- At most 3000 calls","Array, Queue, Design",MEDIUM,"Use a fixed-size array with front and rear pointers, using modulo arithmetic to wrap around and a count variable to track fullness."
+Number of Recent Calls,"Write a class that counts the number of recent requests within a certain time frame. Implement the ping method that returns the number of requests in the past 3000 milliseconds.
+
+Input: [""RecentCounter"",""ping"",""ping"",""ping"",""ping""]
+[[],[1],[100],[3001],[3002]]
+Output: [null,1,2,3,3]
+
+Constraints:
+- 1 <= t <= 10^9
+- Each test case will call ping with strictly increasing values of t","Queue, Design",EASY,Use a queue to store timestamps; dequeue elements older than t - 3000 and return the queue size.
+Reverse Linked List,"Given the head of a singly linked list, reverse the list and return the reversed list.
+
+Input: head = [1,2,3,4,5]
+Output: [5,4,3,2,1]
+
+Constraints:
+- The number of nodes in the list is in the range [0, 5000]
+- -5000 <= Node.val <= 5000","Linked List, Recursion",EASY,"Use three pointers (prev, current, next): save next, point current to prev, advance prev and current until the end."
+Merge Two Sorted Lists,"You are given the heads of two sorted linked lists. Merge the two lists into one sorted list by splicing together the nodes.
+
+Input: list1 = [1,2,4], list2 = [1,3,4]
+Output: [1,1,2,3,4,4]
+
+Constraints:
+- The number of nodes in both lists is in the range [0, 50]
+- -100 <= Node.val <= 100","Linked List, Recursion",EASY,"Use a dummy head node, compare values from both lists, and append the smaller node to the result while advancing that list's pointer."
+Linked List Cycle,"Given head of a linked list, determine if it has a cycle. A cycle exists if some node can be reached again by continuously following the next pointer.
+
+Input: head = [3,2,0,-4], pos = 1
+Output: true
+
+Constraints:
+- The number of nodes is in the range [0, 10^4]
+- -10^5 <= Node.val <= 10^5","Hash Table, Linked List, Two Pointers",EASY,"Use Floyd's cycle detection with slow and fast pointers: slow moves one step, fast moves two steps; if they meet, a cycle exists."
+Remove Nth Node From End of List,"Given the head of a linked list, remove the nth node from the end of the list and return its head.
+
+Input: head = [1,2,3,4,5], n = 2
+Output: [1,2,3,5]
+
+Constraints:
+- The number of nodes in the list is sz
+- 1 <= sz <= 30
+- 1 <= n <= sz","Linked List, Two Pointers",MEDIUM,"Use two pointers with a gap of n between them; when the fast pointer reaches the end, the slow pointer is at the node before the one to remove."
+Add Two Numbers,"Given two non-empty linked lists representing two non-negative integers stored in reverse order, add the two numbers and return the sum as a linked list.
+
+Input: l1 = [2,4,3], l2 = [5,6,4]
+Output: [7,0,8] (342 + 465 = 807)
+
+Constraints:
+- The number of nodes in each list is in the range [1, 100]
+- 0 <= Node.val <= 9","Linked List, Math, Recursion",MEDIUM,"Traverse both lists simultaneously, adding corresponding digits with a carry variable, creating new nodes for each digit of the result."
+Palindrome Linked List,"Given the head of a singly linked list, return true if it is a palindrome.
+
+Input: head = [1,2,2,1]
+Output: true
+
+Constraints:
+- The number of nodes in the list is in the range [1, 10^5]
+- 0 <= Node.val <= 9","Linked List, Two Pointers, Stack, Recursion",EASY,"Find the middle using fast and slow pointers, reverse the second half in-place, then compare both halves node by node."
+Merge K Sorted Lists,"Given an array of k linked lists, each sorted in ascending order, merge all the linked lists into one sorted linked list.
+
+Input: lists = [[1,4,5],[1,3,4],[2,6]]
+Output: [1,1,2,3,4,4,5,6]
+
+Constraints:
+- k == lists.length
+- 0 <= k <= 10^4
+- 0 <= lists[i].length <= 500","Linked List, Heap, Divide and Conquer, Sorting",HARD,"Use a min-heap to always extract the smallest head node across all lists, pushing the next node from that list back into the heap."
+LRU Cache,"Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement get and put operations in O(1) time.
+
+Input: [""LRUCache"",""put"",""put"",""get"",""put"",""get"",""put"",""get"",""get"",""get""]
+Output: [null,null,null,1,null,-1,null,-1,3,4]
+
+Constraints:
+- 1 <= capacity <= 3000
+- 0 <= key <= 10^4
+- 0 <= value <= 10^5","Hash Table, Linked List, Design",MEDIUM,Use a hash map combined with a doubly linked list: the map provides O(1) lookup while the list maintains access order for O(1) eviction.
+Odd Even Linked List,"Given the head of a singly linked list, group all the nodes with odd indices together followed by the nodes with even indices.
+
+Input: head = [1,2,3,4,5]
+Output: [1,3,5,2,4]
+
+Constraints:
+- The number of nodes in the linked list is in the range [0, 10^4]
+- -10^6 <= Node.val <= 10^6",Linked List,MEDIUM,"Maintain two separate chains (odd and even) using two pointers, then connect the odd chain's tail to the even chain's head."
+Binary Search,"Given a sorted array of integers nums and a target value, return the index of the target if found, or -1 if not present.
+
+Input: nums = [-1,0,3,5,9,12], target = 9
+Output: 4
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -10^4 < nums[i], target < 10^4
+- All integers in nums are unique
+- nums is sorted in ascending order","Array, Binary Search",EASY,"Maintain left and right pointers, compute mid, compare with target, and eliminate half the search space each iteration."
+Search in Rotated Sorted Array,"Given a rotated sorted array and a target, return the index of the target or -1. The original array was sorted in ascending order and rotated at some pivot.
+
+Input: nums = [4,5,6,7,0,1,2], target = 0
+Output: 4
+
+Constraints:
+- 1 <= nums.length <= 5000
+- -10^4 <= nums[i] <= 10^4
+- All values are unique","Array, Binary Search",MEDIUM,"Determine which half is sorted by comparing nums[left] with nums[mid], then check if the target lies within the sorted half to decide which side to search."
+Find Minimum in Rotated Sorted Array,"Given a rotated sorted array of unique elements, return the minimum element.
+
+Input: nums = [3,4,5,1,2]
+Output: 1
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 5000
+- All integers are unique
+- nums was originally sorted ascending and rotated 1 to n times","Array, Binary Search",MEDIUM,"Use binary search comparing nums[mid] with nums[right]: if mid is greater, the minimum is in the right half; otherwise it is in the left half including mid."
+Search Insert Position,"Given a sorted array of distinct integers and a target value, return the index if the target is found, or the index where it would be inserted.
+
+Input: nums = [1,3,5,6], target = 5
+Output: 2
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -10^4 <= nums[i] <= 10^4
+- nums contains distinct values sorted in ascending order","Array, Binary Search",EASY,"Use standard binary search; when the target is not found, the left pointer indicates the correct insertion position."
+Find Peak Element,"A peak element is an element strictly greater than its neighbors. Given an array nums, find a peak element and return its index.
+
+Input: nums = [1,2,3,1]
+Output: 2
+
+Constraints:
+- 1 <= nums.length <= 1000
+- -2^31 <= nums[i] <= 2^31 - 1
+- nums[i] != nums[i + 1] for all valid i","Array, Binary Search",MEDIUM,Use binary search: compare nums[mid] with nums[mid+1]; move toward the larger neighbor since a peak is guaranteed to exist in that direction.
+Koko Eating Bananas,"Koko can eat at most k bananas per hour from a pile. If the pile has fewer than k bananas, she finishes that pile in one hour. Return the minimum integer k such that she can eat all bananas within h hours.
+
+Input: piles = [3,6,7,11], h = 8
+Output: 4
+
+Constraints:
+- 1 <= piles.length <= 10^4
+- piles.length <= h <= 10^9
+- 1 <= piles[i] <= 10^9","Array, Binary Search",MEDIUM,"Binary search on the answer k: for each candidate speed, compute total hours needed using ceiling division, and find the minimum k where total hours <= h."
+Median of Two Sorted Arrays,"Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays in O(log(m+n)) time.
+
+Input: nums1 = [1,3], nums2 = [2]
+Output: 2.0
+
+Constraints:
+- nums1.length == m
+- nums2.length == n
+- 0 <= m <= 1000
+- 0 <= n <= 1000
+- 1 <= m + n <= 2000","Array, Binary Search, Divide and Conquer",HARD,"Binary search on the partition of the smaller array, ensuring the left partition of both arrays combined has the correct number of elements with proper ordering."
+First Bad Version,"You are a product manager and the current version is n. Versions are built on previous versions, so all versions after a bad version are also bad. Find the first bad version using the isBadVersion API.
+
+Input: n = 5, bad = 4
+Output: 4
+
+Constraints:
+- 1 <= bad <= n <= 2^31 - 1",Binary Search,EASY,"Use binary search with left and right pointers; when isBadVersion(mid) is true, search the left half; otherwise search the right half."
+Maximum Depth of Binary Tree,"Given the root of a binary tree, return its maximum depth. The maximum depth is the number of nodes along the longest path from the root down to the farthest leaf node.
+
+Input: root = [3,9,20,null,null,15,7]
+Output: 3
+
+Constraints:
+- The number of nodes is in the range [0, 10^4]
+- -100 <= Node.val <= 100","Tree, Binary Tree, DFS, BFS, Recursion",EASY,"Use recursion: the depth of a node is 1 plus the maximum of the depths of its left and right subtrees, with base case 0 for null nodes."
+Invert Binary Tree,"Given the root of a binary tree, invert the tree and return its root (swap left and right children recursively).
+
+Input: root = [4,2,7,1,3,6,9]
+Output: [4,7,2,9,6,3,1]
+
+Constraints:
+- The number of nodes is in the range [0, 100]
+- -100 <= Node.val <= 100","Tree, Binary Tree, DFS, BFS, Recursion",EASY,Recursively swap the left and right children at every node; base case is when the node is null.
+Binary Tree Level Order Traversal,"Given the root of a binary tree, return the level order traversal of its nodes' values (left to right, level by level).
+
+Input: root = [3,9,20,null,null,15,7]
+Output: [[3],[9,20],[15,7]]
+
+Constraints:
+- The number of nodes is in the range [0, 2000]
+- -1000 <= Node.val <= 1000","Tree, Binary Tree, BFS",MEDIUM,"Use BFS with a queue: process all nodes at the current level, adding their children to the queue for the next level."
+Symmetric Tree,"Given the root of a binary tree, check whether it is a mirror of itself (symmetric around its center).
+
+Input: root = [1,2,2,3,4,4,3]
+Output: true
+
+Constraints:
+- The number of nodes is in the range [1, 1000]
+- -100 <= Node.val <= 100","Tree, Binary Tree, DFS, BFS",EASY,"Use recursion comparing the left subtree's left child with the right subtree's right child, and vice versa."
+Path Sum,"Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf path where the sum of values equals targetSum.
+
+Input: root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22
+Output: true
+
+Constraints:
+- The number of nodes is in the range [0, 5000]
+- -1000 <= Node.val <= 1000","Tree, Binary Tree, DFS, Recursion",EASY,"Recursively subtract the current node's value from the target sum; at a leaf node, check if the remaining sum equals zero."
+Diameter of Binary Tree,"Given the root of a binary tree, return the length of the diameter. The diameter is the length of the longest path between any two nodes, which may or may not pass through the root.
+
+Input: root = [1,2,3,4,5]
+Output: 3
+
+Constraints:
+- The number of nodes is in the range [1, 10^4]
+- -100 <= Node.val <= 100","Tree, Binary Tree, DFS, Recursion",EASY,"At each node, the diameter through that node is left_depth + right_depth; use DFS to compute depths while tracking the global maximum diameter."
+Lowest Common Ancestor of a Binary Tree,"Given a binary tree, find the lowest common ancestor (LCA) of two given nodes. The LCA is the lowest node that has both p and q as descendants.
+
+Input: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+Output: 3
+
+Constraints:
+- The number of nodes is in the range [2, 10^5]
+- -10^9 <= Node.val <= 10^9
+- All values are unique","Tree, Binary Tree, DFS, Recursion",MEDIUM,"Recursively search left and right subtrees; if both return non-null, the current node is the LCA; otherwise return the non-null result."
+Serialize and Deserialize Binary Tree,"Design an algorithm to serialize and deserialize a binary tree. Serialization is converting a tree to a string, and deserialization is reconstructing the tree from the string.
+
+Input: root = [1,2,3,null,null,4,5]
+Output: [1,2,3,null,null,4,5]
+
+Constraints:
+- The number of nodes is in the range [0, 10^4]
+- -1000 <= Node.val <= 1000","Tree, Binary Tree, DFS, BFS, String, Design",HARD,"Use preorder DFS traversal with a delimiter for null nodes during serialization, and rebuild the tree recursively using a queue of tokens during deserialization."
+Binary Tree Maximum Path Sum,"Given the root, return the maximum path sum of any non-empty path. A path is any sequence of nodes where each pair of adjacent nodes has an edge.
+
+Input: root = [-10,9,20,null,null,15,7]
+Output: 42
+
+Constraints:
+- The number of nodes is in the range [1, 3 * 10^4]
+- -1000 <= Node.val <= 1000","Tree, Binary Tree, DFS, Dynamic Programming",HARD,"At each node compute the maximum single-path sum (node + max(left, right, 0)), while updating a global maximum with (node + max(left,0) + max(right,0))."
+Balanced Binary Tree,"Given a binary tree, determine if it is height-balanced. A height-balanced binary tree is one in which the depth of the two subtrees of every node never differs by more than one.
+
+Input: root = [3,9,20,null,null,15,7]
+Output: true
+
+Constraints:
+- The number of nodes is in the range [0, 5000]
+- -10^4 <= Node.val <= 10^4","Tree, Binary Tree, DFS, Recursion",EASY,"Use bottom-up recursion returning the height of each subtree; if any subtree's children differ in height by more than 1, return -1 to propagate the imbalance."
+Validate Binary Search Tree,"Given the root of a binary tree, determine if it is a valid binary search tree where left subtree values are strictly less and right subtree values are strictly greater.
+
+Input: root = [2,1,3]
+Output: true
+
+Constraints:
+- The number of nodes is in the range [1, 10^4]
+- -2^31 <= Node.val <= 2^31 - 1","Tree, BST, DFS, Binary Tree",MEDIUM,"Use DFS with min/max bounds: each node must fall within (min, max), updating max when going left and min when going right."
+Kth Smallest Element in a BST,"Given the root of a BST and an integer k, return the kth smallest value in the tree.
+
+Input: root = [3,1,4,null,2], k = 1
+Output: 1
+
+Constraints:
+- The number of nodes is n
+- 1 <= k <= n <= 10^4
+- 0 <= Node.val <= 10^4","Tree, BST, DFS, Binary Tree",MEDIUM,"Perform an inorder traversal (left, root, right) which visits BST nodes in sorted order, and return the kth element visited."
+Convert Sorted Array to BST,"Given an integer array nums sorted in ascending order, convert it to a height-balanced binary search tree.
+
+Input: nums = [-10,-3,0,5,9]
+Output: [0,-3,9,-10,null,5] (one possible answer)
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -10^4 <= nums[i] <= 10^4","Array, BST, Tree, Divide and Conquer, Binary Tree",EASY,"Recursively pick the middle element as the root, building the left subtree from the left half and the right subtree from the right half."
+Delete Node in a BST,"Given a root node of a BST and a key, delete the node with the given key and return the root.
+
+Input: root = [5,3,6,2,4,null,7], key = 3
+Output: [5,4,6,2,null,null,7]
+
+Constraints:
+- The number of nodes is in the range [0, 10^4]
+- -10^5 <= Node.val <= 10^5","Tree, BST, Binary Tree",MEDIUM,"Find the node to delete, then replace it with its inorder successor (smallest node in the right subtree) or inorder predecessor."
+Number of Islands,"Given an m x n 2D grid of '1's (land) and '0's (water), count the number of islands. An island is surrounded by water and formed by connecting adjacent lands horizontally or vertically.
+
+Input: grid = [[""1"",""1"",""0""],[""1"",""1"",""0""],[""0"",""0"",""1""]]
+Output: 2
+
+Constraints:
+- m == grid.length
+- n == grid[i].length
+- 1 <= m, n <= 300
+- grid[i][j] is '0' or '1'","Array, DFS, BFS, Graph, Matrix",MEDIUM,"Iterate through each cell; when a '1' is found, increment the island count and use DFS or BFS to mark all connected land cells as visited."
+Clone Graph,"Given a reference of a node in a connected undirected graph, return a deep copy of the graph.
+
+Input: adjList = [[2,4],[1,3],[2,4],[1,3]]
+Output: [[2,4],[1,3],[2,4],[1,3]]
+
+Constraints:
+- The number of nodes is in the range [0, 100]
+- 1 <= Node.val <= 100
+- Node.val is unique for each node","Hash Table, DFS, BFS, Graph",MEDIUM,"Use DFS or BFS with a hash map mapping original nodes to their clones; for each node, clone it and recursively clone all unvisited neighbors."
+Course Schedule,"There are numCourses courses labeled 0 to numCourses-1. You are given an array prerequisites where prerequisites[i] = [ai, bi] indicates you must take course bi before course ai. Return true if you can finish all courses.
+
+Input: numCourses = 2, prerequisites = [[1,0]]
+Output: true
+
+Constraints:
+- 1 <= numCourses <= 2000
+- 0 <= prerequisites.length <= 5000","DFS, BFS, Graph",MEDIUM,Use topological sort with Kahn's algorithm (BFS with in-degree tracking) or DFS with cycle detection using three-color marking.
+Pacific Atlantic Water Flow,"Given an m x n matrix of heights, return a list of cells from which water can flow to both the Pacific and Atlantic oceans.
+
+Input: heights = [[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]
+Output: [[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]]
+
+Constraints:
+- m == heights.length
+- n == heights[i].length
+- 1 <= m, n <= 200","Array, DFS, BFS, Graph, Matrix",MEDIUM,"Run BFS or DFS from all Pacific border cells and all Atlantic border cells separately, then find the intersection of reachable cells."
+Word Ladder,"Given beginWord, endWord, and a dictionary wordList, return the number of words in the shortest transformation sequence from beginWord to endWord, changing only one letter at a time.
+
+Input: beginWord = ""hit"", endWord = ""cog"", wordList = [""hot"",""dot"",""dog"",""lot"",""log"",""cog""]
+Output: 5
+
+Constraints:
+- 1 <= beginWord.length <= 10
+- endWord.length == beginWord.length
+- 1 <= wordList.length <= 5000","Hash Table, String, BFS",HARD,"Use BFS treating each word as a node and connecting words that differ by one letter, finding the shortest path from beginWord to endWord."
+Graph Valid Tree,"Given n nodes labeled from 0 to n-1 and a list of undirected edges, check whether these edges make up a valid tree (connected, no cycles).
+
+Input: n = 5, edges = [[0,1],[0,2],[0,3],[1,4]]
+Output: true
+
+Constraints:
+- 1 <= n <= 2000
+- 0 <= edges.length <= 5000","DFS, BFS, Graph, Union Find",MEDIUM,A valid tree has exactly n-1 edges and is connected; verify using Union Find or DFS to check connectivity and edge count.
+Rotting Oranges,"Given a grid where 0 is empty, 1 is fresh orange, and 2 is rotten, every minute each rotten orange rots adjacent fresh ones. Return the minimum number of minutes until no fresh orange remains, or -1 if impossible.
+
+Input: grid = [[2,1,1],[1,1,0],[0,1,1]]
+Output: 4
+
+Constraints:
+- m == grid.length
+- n == grid[i].length
+- 1 <= m, n <= 10","Array, BFS, Matrix",MEDIUM,"Use multi-source BFS starting from all rotten oranges simultaneously, expanding one level per minute until all reachable fresh oranges are rotten."
+Shortest Path in Binary Matrix,"Given an n x n binary matrix, return the length of the shortest clear path from top-left to bottom-right in an 8-directional grid. A clear path consists of 0 cells.
+
+Input: grid = [[0,1],[1,0]]
+Output: 2
+
+Constraints:
+- n == grid.length
+- n == grid[i].length
+- 1 <= n <= 100
+- grid[i][j] is 0 or 1","Array, BFS, Matrix",MEDIUM,"Use BFS from the top-left corner exploring all 8 directions, with the first time reaching bottom-right being the shortest path."
+Word Search II,"Given an m x n board of characters and a list of words, return all words that can be formed by sequentially adjacent cells (horizontally or vertically).
+
+Input: board = [[""o"",""a"",""a"",""n""],[""e"",""t"",""a"",""e""],[""i"",""h"",""k"",""r""],[""i"",""f"",""l"",""v""]], words = [""oath"",""pea"",""eat"",""rain""]
+Output: [""eat"",""oath""]
+
+Constraints:
+- m == board.length
+- n == board[i].length
+- 1 <= m, n <= 12
+- 1 <= words.length <= 3 * 10^4","Array, String, Backtracking, Trie, Matrix",HARD,"Build a trie from all words, then DFS from each cell in the board following trie edges, pruning branches that don't lead to any remaining word."
+Flood Fill,"Given an image represented by a 2D integer array, a starting pixel, and a color, perform a flood fill. Change the color of the starting pixel and all connected same-colored pixels.
+
+Input: image = [[1,1,1],[1,1,0],[1,0,1]], sr = 1, sc = 1, color = 2
+Output: [[2,2,2],[2,2,0],[2,0,1]]
+
+Constraints:
+- m == image.length
+- n == image[i].length
+- 1 <= m, n <= 50
+- 0 <= image[i][j], color < 2^16","Array, DFS, BFS, Matrix",EASY,"Use DFS from the starting pixel, recursively coloring all adjacent cells that have the same original color."
+Number of Connected Components,"Given n nodes and a list of edges, find the number of connected components in an undirected graph.
+
+Input: n = 5, edges = [[0,1],[1,2],[3,4]]
+Output: 2
+
+Constraints:
+- 1 <= n <= 2000
+- 0 <= edges.length <= 5000","DFS, BFS, Graph, Union Find",MEDIUM,"Use DFS or Union Find to group nodes into connected components, counting the number of distinct groups."
+Surrounded Regions,"Given an m x n board containing 'X' and 'O', capture all regions that are completely surrounded by 'X'. A region is captured by flipping all 'O's to 'X's.
+
+Input: board = [[""X"",""X"",""X"",""X""],[""X"",""O"",""O"",""X""],[""X"",""X"",""O"",""X""],[""X"",""O"",""X"",""X""]]
+Output: [[""X"",""X"",""X"",""X""],[""X"",""X"",""X"",""X""],[""X"",""X"",""X"",""X""],[""X"",""O"",""X"",""X""]]
+
+Constraints:
+- m == board.length
+- n == board[i].length
+- 1 <= m, n <= 200","Array, DFS, BFS, Matrix, Union Find",MEDIUM,DFS from all border 'O' cells to mark them as safe; then flip all remaining 'O' cells to 'X' since they are surrounded.
+Climbing Stairs,"You are climbing a staircase with n steps. Each time you can climb 1 or 2 steps. In how many distinct ways can you climb to the top?
+
+Input: n = 3
+Output: 3 (1+1+1, 1+2, 2+1)
+
+Constraints:
+- 1 <= n <= 45","Math, Dynamic Programming, Recursion",EASY,"Use dynamic programming where dp[i] = dp[i-1] + dp[i-2], recognizing this is the Fibonacci sequence."
+Coin Change,"Given an array of coin denominations and a total amount, return the fewest number of coins needed to make up that amount. If it cannot be made up, return -1.
+
+Input: coins = [1,2,5], amount = 11
+Output: 3 (5+5+1)
+
+Constraints:
+- 1 <= coins.length <= 12
+- 1 <= coins[i] <= 2^31 - 1
+- 0 <= amount <= 10^4","Array, Dynamic Programming, BFS",MEDIUM,"Use a 1D DP array where dp[i] = minimum coins for amount i, updating dp[j] = min(dp[j], dp[j-coin]+1) for each coin."
+Longest Increasing Subsequence,"Given an integer array nums, return the length of the longest strictly increasing subsequence.
+
+Input: nums = [10,9,2,5,3,7,101,18]
+Output: 4 ([2,3,7,101])
+
+Constraints:
+- 1 <= nums.length <= 2500
+- -10^4 <= nums[i] <= 10^4","Array, Binary Search, Dynamic Programming",MEDIUM,"Use a DP array where dp[i] is the length of the LIS ending at index i, or optimize to O(n log n) using patience sorting with binary search."
+House Robber,"Given an array representing money at each house, determine the maximum amount you can rob without robbing two adjacent houses.
+
+Input: nums = [1,2,3,1]
+Output: 4 (house 0 + house 2)
+
+Constraints:
+- 1 <= nums.length <= 100
+- 0 <= nums[i] <= 400","Array, Dynamic Programming",MEDIUM,"Use DP where dp[i] = max(dp[i-1], dp[i-2] + nums[i]): either skip the current house or rob it plus the best from two houses back."
+Longest Common Subsequence,"Given two strings text1 and text2, return the length of their longest common subsequence.
+
+Input: text1 = ""abcde"", text2 = ""ace""
+Output: 3 (""ace"")
+
+Constraints:
+- 1 <= text1.length, text2.length <= 1000
+- text1 and text2 consist of only lowercase English characters","String, Dynamic Programming",MEDIUM,"Build a 2D DP table where dp[i][j] = dp[i-1][j-1]+1 if characters match, otherwise max(dp[i-1][j], dp[i][j-1])."
+Unique Paths,"A robot is at the top-left corner of an m x n grid. It can only move right or down. How many unique paths exist to reach the bottom-right corner?
+
+Input: m = 3, n = 7
+Output: 28
+
+Constraints:
+- 1 <= m, n <= 100","Math, Dynamic Programming",MEDIUM,"Use a 2D DP table where dp[i][j] = dp[i-1][j] + dp[i][j-1], since you can only arrive from above or from the left."
+Word Break,"Given a string s and a dictionary of strings wordDict, return true if s can be segmented into a space-separated sequence of one or more dictionary words.
+
+Input: s = ""leetcode"", wordDict = [""leet"",""code""]
+Output: true
+
+Constraints:
+- 1 <= s.length <= 300
+- 1 <= wordDict.length <= 1000
+- 1 <= wordDict[i].length <= 20","Hash Table, String, Dynamic Programming, Trie",MEDIUM,Use a boolean DP array where dp[i] is true if s[0:i] can be segmented; for each position check all dictionary words that could end there.
+Edit Distance,"Given two strings word1 and word2, return the minimum number of operations required to convert word1 to word2 using insert, delete, or replace.
+
+Input: word1 = ""horse"", word2 = ""ros""
+Output: 3
+
+Constraints:
+- 0 <= word1.length, word2.length <= 500
+- word1 and word2 consist of lowercase English letters","String, Dynamic Programming",MEDIUM,"Build a 2D DP table where dp[i][j] is the edit distance for word1[0:i] and word2[0:j], considering insert, delete, and replace operations."
+Decode Ways,"Given a string s containing only digits, return the number of ways to decode it where A=1, B=2, ..., Z=26.
+
+Input: s = ""226""
+Output: 3 (""BZ"", ""VF"", ""BBF"")
+
+Constraints:
+- 1 <= s.length <= 100
+- s contains only digits and may contain leading zeros","String, Dynamic Programming",MEDIUM,Use DP where dp[i] depends on whether s[i] forms a valid single digit and whether s[i-1:i+1] forms a valid two-digit number between 10 and 26.
+Partition Equal Subset Sum,"Given an integer array nums, return true if you can partition the array into two subsets such that the sum of elements in both subsets is equal.
+
+Input: nums = [1,5,11,5]
+Output: true ([1,5,5] and [11])
+
+Constraints:
+- 1 <= nums.length <= 200
+- 1 <= nums[i] <= 100","Array, Dynamic Programming",MEDIUM,This is a 0/1 knapsack problem: use a boolean DP array of size totalSum/2 and check if any subset sums to exactly half the total.
+Longest Palindromic Subsequence,"Given a string s, find the longest palindromic subsequence's length.
+
+Input: s = ""bbbab""
+Output: 4 (""bbbb"")
+
+Constraints:
+- 1 <= s.length <= 1000
+- s consists only of lowercase English letters","String, Dynamic Programming",MEDIUM,"Use a 2D DP table where dp[i][j] is the LPS length for substring s[i..j], expanding from length 1 upward."
+Maximum Length of Repeated Subarray,"Given two integer arrays nums1 and nums2, return the maximum length of a subarray that appears in both arrays.
+
+Input: nums1 = [1,2,3,2,1], nums2 = [3,2,1,4,7]
+Output: 3 ([3,2,1])
+
+Constraints:
+- 1 <= nums1.length, nums2.length <= 1000
+- 0 <= nums1[i], nums2[i] <= 100","Array, Dynamic Programming, Binary Search",MEDIUM,"Use a 2D DP table where dp[i][j] is the length of the longest common suffix ending at nums1[i-1] and nums2[j-1], tracking the global maximum."
+Minimum Path Sum,"Given an m x n grid filled with non-negative numbers, find a path from top left to bottom right which minimizes the sum of all numbers along its path. You can only move down or right.
+
+Input: grid = [[1,3,1],[1,5,1],[4,2,1]]
+Output: 7 (1->3->1->1->1)
+
+Constraints:
+- m == grid.length
+- n == grid[i].length
+- 1 <= m, n <= 200
+- 0 <= grid[i][j] <= 200","Array, Dynamic Programming, Matrix",MEDIUM,"Use DP where dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]), building up from the top-left corner."
+Jump Game,"You are given an integer array nums. You are initially positioned at the first index. Each element represents your maximum jump length at that position. Determine if you can reach the last index.
+
+Input: nums = [2,3,1,1,4]
+Output: true
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- 0 <= nums[i] <= 10^5","Array, Dynamic Programming, Greedy",MEDIUM,"Track the farthest reachable index greedily; at each position, update the maximum reach and return false if you are stuck at a position beyond reach."
+Jump Game II,"Return the minimum number of jumps to reach the last index. You can assume that you can always reach the last index.
+
+Input: nums = [2,3,1,1,4]
+Output: 2
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- 0 <= nums[i] <= 1000","Array, Dynamic Programming, Greedy",MEDIUM,"Use a greedy BFS approach maintaining the current jump's end boundary and the farthest reachable position, incrementing jumps when crossing the boundary."
+Gas Station,"There are n gas stations along a circular route. Given arrays gas and cost, return the starting station's index if you can travel around the circuit once clockwise, or -1 if impossible.
+
+Input: gas = [1,2,3,4,5], cost = [3,4,5,1,2]
+Output: 3
+
+Constraints:
+- n == gas.length == cost.length
+- 1 <= n <= 10^5
+- 0 <= gas[i], cost[i] <= 10^4","Array, Greedy",MEDIUM,"Track the total surplus and current tank; if the current tank goes negative, reset the start to the next station since no station before could work."
+Task Scheduler,"Given a list of tasks with a cooldown interval n between same tasks, return the least number of units of times needed to complete all tasks.
+
+Input: tasks = [""A"",""A"",""A"",""B"",""B"",""B""], n = 2
+Output: 8
+
+Constraints:
+- 1 <= tasks.length <= 10^4
+- tasks[i] is uppercase English letter
+- 0 <= n <= 100","Array, Hash Table, Greedy, Sorting, Heap",MEDIUM,"The answer is max(tasks.length, (maxFreq-1) * (n+1) + countOfMaxFreq) where maxFreq is the highest task frequency."
+Non-overlapping Intervals,"Given an array of intervals, return the minimum number of intervals you need to remove to make the rest non-overlapping.
+
+Input: intervals = [[1,2],[2,3],[3,4],[1,3]]
+Output: 1
+
+Constraints:
+- 1 <= intervals.length <= 10^5
+- intervals[i].length == 2","Array, Dynamic Programming, Greedy, Sorting",MEDIUM,"Sort intervals by end time, then greedily keep intervals that don't overlap with the last kept interval, counting removals."
+Assign Cookies,"Assume you are a parent and want to give cookies to children. Each child i has a greed factor g[i] and each cookie j has a size s[j]. A child is content if s[j] >= g[i]. Maximize the number of content children.
+
+Input: g = [1,2,3], s = [1,1]
+Output: 1
+
+Constraints:
+- 1 <= g.length <= 3 * 10^4
+- 1 <= s.length <= 3 * 10^4
+- 1 <= g[i], s[j] <= 2^31 - 1","Array, Greedy, Sorting, Two Pointers",EASY,Sort both arrays and use two pointers to greedily assign the smallest sufficient cookie to the least greedy unsatisfied child.
+Partition Labels,"Given a string s, partition it so that each letter appears in at most one part. Return a list of integers representing the size of each part.
+
+Input: s = ""ababcbacadefegdehijhklij""
+Output: [9,7,8]
+
+Constraints:
+- 1 <= s.length <= 500
+- s consists of lowercase English letters","Hash Table, String, Greedy, Two Pointers",MEDIUM,"Track the last occurrence of each character, then greedily extend each partition to include all characters' last positions."
+Subsets,"Given an integer array nums of unique elements, return all possible subsets (the power set). The solution set must not contain duplicate subsets.
+
+Input: nums = [1,2,3]
+Output: [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
+
+Constraints:
+- 1 <= nums.length <= 10
+- -10 <= nums[i] <= 10
+- All elements are unique","Array, Backtracking, Bit Manipulation",MEDIUM,"Use backtracking: at each element, either include it or skip it, building all possible combinations recursively."
+Permutations,"Given an array nums of distinct integers, return all the possible permutations.
+
+Input: nums = [1,2,3]
+Output: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+
+Constraints:
+- 1 <= nums.length <= 6
+- -10 <= nums[i] <= 10
+- All integers are distinct","Array, Backtracking",MEDIUM,"Use backtracking with a visited set: for each position, try all unused elements, recurse, then backtrack by unmarking the element."
+Combination Sum,"Given an array of distinct integers candidates and a target integer, return all unique combinations where the chosen numbers sum to target. The same number may be used unlimited times.
+
+Input: candidates = [2,3,6,7], target = 7
+Output: [[2,2,3],[7]]
+
+Constraints:
+- 1 <= candidates.length <= 30
+- 2 <= candidates[i] <= 40
+- 1 <= target <= 40","Array, Backtracking",MEDIUM,"Use backtracking, allowing repeated selection of the same candidate; prune branches where the remaining target becomes negative."
+Letter Combinations of a Phone Number,"Given a string containing digits from 2-9, return all possible letter combinations that the number could represent (like phone keypad mapping).
+
+Input: digits = ""23""
+Output: [""ad"",""ae"",""af"",""bd"",""be"",""bf"",""cd"",""ce"",""cf""]
+
+Constraints:
+- 0 <= digits.length <= 4
+- digits[i] is a digit in the range ['2', '9']","Hash Table, String, Backtracking",MEDIUM,"Use backtracking with a digit-to-letters mapping, building combinations one character at a time for each digit."
+N-Queens,"Place n queens on an n x n chessboard such that no two queens attack each other. Return all distinct solutions.
+
+Input: n = 4
+Output: [["".Q.."",""...Q"",""Q..."",""..Q.""],[""..Q."",""Q..."",""...Q"","".Q..""]]
+
+Constraints:
+- 1 <= n <= 9","Array, Backtracking",HARD,"Use backtracking placing one queen per row, tracking attacked columns and diagonals using three hash sets."
+Generate Parentheses,"Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+
+Input: n = 3
+Output: [""((()))"",""(()())"",""(())()"",""()(())"",""()()()""]
+
+Constraints:
+- 1 <= n <= 8","String, Dynamic Programming, Backtracking",MEDIUM,"Use backtracking tracking open and close counts: add an open parenthesis if open < n, add a close if close < open."
+Palindrome Partitioning,"Given a string s, partition s such that every substring of the partition is a palindrome. Return all possible palindrome partitioning of s.
+
+Input: s = ""aab""
+Output: [[""a"",""a"",""b""],[""aa"",""b""]]
+
+Constraints:
+- 1 <= s.length <= 16
+- s consists of only lowercase English letters","String, Dynamic Programming, Backtracking",MEDIUM,"Use backtracking: at each position, try all substrings starting there that are palindromes, recurse on the remaining string."
+Word Search,"Given an m x n grid of characters board and a string word, return true if word exists in the grid by following sequentially adjacent cells.
+
+Input: board = [[""A"",""B"",""C"",""E""],[""S"",""F"",""C"",""S""],[""A"",""D"",""E"",""E""]], word = ""ABCCED""
+Output: true
+
+Constraints:
+- m == board.length
+- n == board[i].length
+- 1 <= m, n <= 6
+- 1 <= word.length <= 15","Array, String, Backtracking, Matrix",MEDIUM,"Use DFS backtracking from each cell matching the first character, marking cells as visited and unvisiting during backtrack."
+Merge Intervals,"Given an array of intervals, merge all overlapping intervals and return an array of the non-overlapping intervals that cover all the intervals in the input.
+
+Input: intervals = [[1,3],[2,6],[8,10],[15,18]]
+Output: [[1,6],[8,10],[15,18]]
+
+Constraints:
+- 1 <= intervals.length <= 10^4
+- intervals[i].length == 2
+- 0 <= start_i <= end_i <= 10^4","Array, Sorting",MEDIUM,"Sort intervals by start time, then merge overlapping ones by comparing the current interval's start with the previous interval's end."
+Kth Largest Element in an Array,"Given an integer array nums and an integer k, return the kth largest element in the array.
+
+Input: nums = [3,2,1,5,6,4], k = 2
+Output: 5
+
+Constraints:
+- 1 <= k <= nums.length <= 10^5
+- -10^4 <= nums[i] <= 10^4","Array, Sorting, Heap, Divide and Conquer",MEDIUM,"Use a min-heap of size k: iterate through all elements, pushing each one and popping when size exceeds k; the heap top is the kth largest."
+Sort List,"Given the head of a linked list, return the list after sorting it in ascending order in O(n log n) time and O(1) space.
+
+Input: head = [4,2,1,3]
+Output: [1,2,3,4]
+
+Constraints:
+- The number of nodes is in the range [0, 5 * 10^4]
+- -10^5 <= Node.val <= 10^5","Linked List, Two Pointers, Sorting, Divide and Conquer",MEDIUM,"Use bottom-up merge sort: split the list using slow/fast pointers, recursively sort both halves, and merge them."
+Meeting Rooms II,"Given an array of meeting time intervals, find the minimum number of conference rooms required.
+
+Input: intervals = [[0,30],[5,10],[15,20]]
+Output: 2
+
+Constraints:
+- 1 <= intervals.length <= 10^4
+- 0 <= start_i < end_i <= 10^6","Array, Sorting, Heap, Two Pointers",MEDIUM,"Sort intervals by start time and use a min-heap tracking end times; if the earliest ending room is free, reuse it, otherwise allocate a new room."
+Largest Number,"Given a list of non-negative integers, arrange them such that they form the largest number.
+
+Input: nums = [10,2]
+Output: ""210""
+
+Constraints:
+- 1 <= nums.length <= 100
+- 0 <= nums[i] <= 10^9","Array, String, Greedy, Sorting",MEDIUM,"Sort numbers using a custom comparator: compare a+b vs b+a as strings, placing the combination that forms the larger number first."
+Find Median from Data Stream,"Design a data structure that supports adding integers and finding the median of all elements so far.
+
+Input: [""MedianFinder"",""addNum"",""addNum"",""findMedian"",""addNum"",""findMedian""]
+Output: [null,null,null,1.5,null,2.0]
+
+Constraints:
+- -10^5 <= num <= 10^5
+- There will be at least one element before calling findMedian","Heap, Sorting, Design",HARD,"Use two heaps: a max-heap for the lower half and a min-heap for the upper half, keeping them balanced so the median is always accessible from the tops."
+Reorganize String,"Given a string s, rearrange the characters so that no two adjacent characters are the same. If not possible, return an empty string.
+
+Input: s = ""aab""
+Output: ""aba""
+
+Constraints:
+- 1 <= s.length <= 500
+- s consists of lowercase English letters","Hash Table, String, Greedy, Sorting, Heap",MEDIUM,"Use a max-heap of character frequencies, always placing the most frequent character next while ensuring it differs from the previous placement."
+Last Stone Weight,"You have a collection of stones, each with a weight. Each turn, take the two heaviest stones and smash them together. Return the weight of the last remaining stone, or 0.
+
+Input: stones = [2,7,4,1,8,1]
+Output: 1
+
+Constraints:
+- 1 <= stones.length <= 30
+- 1 <= stones[i] <= 1000","Array, Heap",EASY,"Use a max-heap: repeatedly extract the two largest stones, and push their difference back if non-zero."
+K Closest Points to Origin,"Given an array of points and an integer k, return the k closest points to the origin (0, 0).
+
+Input: points = [[1,3],[-2,2]], k = 1
+Output: [[-2,2]]
+
+Constraints:
+- 1 <= k <= points.length <= 10^4
+- -10^4 <= xi, yi <= 10^4","Array, Math, Heap, Sorting, Divide and Conquer",MEDIUM,"Use a max-heap of size k based on distance squared; push each point and pop when size exceeds k, leaving the k closest."
+Reverse Integer,"Given a signed 32-bit integer x, return x with its digits reversed. If reversing causes overflow, return 0.
+
+Input: x = 123
+Output: 321
+
+Constraints:
+- -2^31 <= x <= 2^31 - 1",Math,MEDIUM,"Extract digits one by one using modulo 10, build the reversed number, and check for 32-bit integer overflow before each multiplication."
+Palindrome Number,"Given an integer x, return true if x is a palindrome without converting it to a string.
+
+Input: x = 121
+Output: true
+
+Constraints:
+- -2^31 <= x <= 2^31 - 1",Math,EASY,Reverse only the second half of the number by building a reversed number until it is greater than or equal to the remaining number.
+Power of Three,"Given an integer n, return true if it is a power of three.
+
+Input: n = 27
+Output: true
+
+Constraints:
+- -2^31 <= n <= 2^31 - 1","Math, Recursion",EASY,"Repeatedly divide n by 3 while it is divisible; if the result is 1, it is a power of three."
+Count Primes,"Given an integer n, return the number of prime numbers that are strictly less than n.
+
+Input: n = 10
+Output: 4 (2, 3, 5, 7)
+
+Constraints:
+- 0 <= n <= 5 * 10^6","Array, Math",MEDIUM,"Use the Sieve of Eratosthenes: create a boolean array, mark multiples of each prime starting from 2, and count unmarked numbers."
+Roman to Integer,"Given a roman numeral string, convert it to an integer. Roman numerals are represented by I=1, V=5, X=10, L=50, C=100, D=500, M=1000.
+
+Input: s = ""MCMXCIV""
+Output: 1994
+
+Constraints:
+- 1 <= s.length <= 15
+- s contains only the characters I, V, X, L, C, D, M","Hash Table, Math, String",EASY,"Map each roman character to its value; traverse the string adding values, but subtract when a smaller value precedes a larger one."
+Happy Number,"A happy number is defined by replacing it with the sum of the squares of its digits repeatedly until it equals 1 or loops endlessly. Determine if n is happy.
+
+Input: n = 19
+Output: true (1^2+9^2=82, 8^2+2^2=68, ... eventually reaches 1)
+
+Constraints:
+- 1 <= n <= 2^31 - 1","Hash Table, Math, Two Pointers",EASY,Use Floyd's cycle detection or a hash set to detect if the digit-square-sum process enters an infinite loop without reaching 1.
+Excel Sheet Column Number,"Given a string columnTitle that represents a column title as appears in an Excel sheet, return its corresponding column number.
+
+Input: columnTitle = ""AB""
+Output: 28
+
+Constraints:
+- 1 <= columnTitle.length <= 7
+- columnTitle consists only of uppercase English letters","Math, String",EASY,"Treat the column title as a base-26 number, converting each character to its value (A=1, B=2, ...) and accumulating result = result * 26 + value."
+Single Number,"Given a non-empty array of integers nums, every element appears twice except for one. Find that single one with O(1) extra memory.
+
+Input: nums = [2,2,1]
+Output: 1
+
+Constraints:
+- 1 <= nums.length <= 3 * 10^4
+- -3 * 10^4 <= nums[i] <= 3 * 10^4
+- Each element appears twice except one","Array, Bit Manipulation",EASY,"XOR all elements together: since a XOR a = 0 and a XOR 0 = a, all duplicates cancel out leaving only the unique number."
+Number of 1 Bits,"Write a function that takes the binary representation of a positive integer and returns the number of set bits (1 bits), also known as the Hamming weight.
+
+Input: n = 11 (binary: 1011)
+Output: 3
+
+Constraints:
+- 1 <= n <= 2^31 - 1","Bit Manipulation, Divide and Conquer",EASY,"Use the trick n = n & (n-1) to clear the lowest set bit, counting iterations until n becomes zero."
+Power of Two,"Given an integer n, return true if it is a power of two.
+
+Input: n = 16
+Output: true
+
+Constraints:
+- -2^31 <= n <= 2^31 - 1","Math, Bit Manipulation, Recursion",EASY,A power of two has exactly one set bit; check n > 0 and (n & (n-1)) == 0.
+Counting Bits,"Given an integer n, return an array ans of length n+1 such that ans[i] is the number of 1's in the binary representation of i.
+
+Input: n = 5
+Output: [0,1,1,2,1,2]
+
+Constraints:
+- 0 <= n <= 10^5","Dynamic Programming, Bit Manipulation",EASY,"Use the recurrence ans[i] = ans[i >> 1] + (i & 1), leveraging that right-shifting removes the last bit."
+Reverse Bits,"Reverse bits of a given 32 bits unsigned integer.
+
+Input: n = 43261596 (00000010100101000001111010011100)
+Output: 964176192 (00111001011110000010100101000000)
+
+Constraints:
+- The input must be a binary string of length 32","Bit Manipulation, Divide and Conquer",EASY,"Extract the last bit of n using n & 1, shift the result left and add the bit, then right-shift n, repeating 32 times."
+Sum of Two Integers,"Given two integers a and b, return their sum without using the + or - operators.
+
+Input: a = 1, b = 2
+Output: 3
+
+Constraints:
+- -1000 <= a, b <= 1000","Math, Bit Manipulation",MEDIUM,"Use bitwise operations: XOR gives the sum without carries, AND shifted left gives the carries; repeat until no carries remain."
+Rotate Image,"You are given an n x n 2D matrix representing an image. Rotate the image by 90 degrees clockwise in-place.
+
+Input: matrix = [[1,2,3],[4,5,6],[7,8,9]]
+Output: [[7,4,1],[8,5,2],[9,6,3]]
+
+Constraints:
+- n == matrix.length == matrix[i].length
+- 1 <= n <= 20
+- -1000 <= matrix[i][j] <= 1000","Array, Math, Matrix",MEDIUM,"First transpose the matrix (swap matrix[i][j] with matrix[j][i]), then reverse each row to achieve 90-degree clockwise rotation."
+Search a 2D Matrix,"Given an m x n matrix where each row is sorted left to right and the first element of each row is greater than the last element of the previous row, determine if a target value is present.
+
+Input: matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
+Output: true
+
+Constraints:
+- m == matrix.length
+- n == matrix[i].length
+- 1 <= m, n <= 100","Array, Binary Search, Matrix",MEDIUM,"Treat the 2D matrix as a sorted 1D array and perform binary search, converting the 1D index to 2D coordinates using division and modulo."
+Valid Sudoku,"Determine if a 9 x 9 Sudoku board is valid. Only the filled cells need to be validated according to the rules.
+
+Input: board = [[""5"",""3"",...],[""6"",""."",...],...]
+Output: true
+
+Constraints:
+- board.length == 9
+- board[i].length == 9
+- board[i][j] is a digit 1-9 or '.'","Array, Hash Table, Matrix",MEDIUM,"Use three sets of hash sets (one per row, column, and 3x3 box) to track seen digits, returning false if any digit is seen twice in the same group."
+Game of Life,"Given an m x n grid of cells where each cell is alive (1) or dead (0), apply the rules of Conway's Game of Life and return the next state.
+
+Input: board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]
+Output: [[0,0,0],[1,0,1],[0,1,1],[0,1,0]]
+
+Constraints:
+- m == board.length
+- n == board[i].length
+- 1 <= m, n <= 25","Array, Matrix",MEDIUM,"Use in-place encoding with intermediate states (2 for alive-to-dead, 3 for dead-to-alive) to avoid using extra space, then decode in a second pass."
+Implement Trie (Prefix Tree),"Implement the Trie class with insert, search, and startsWith methods.
+
+Input: [""Trie"",""insert"",""search"",""search"",""startsWith"",""insert"",""search""]
+[[], [""apple""],[""apple""],[""app""],[""app""],[""app""],[""app""]]
+Output: [null,null,true,false,true,null,true]
+
+Constraints:
+- 1 <= word.length, prefix.length <= 2000
+- word and prefix consist only of lowercase English letters","Hash Table, String, Trie, Design",MEDIUM,Build a tree where each node has a map of children characters and a boolean flag marking end of word.
+Design Add and Search Words,"Design a data structure that supports adding new words and finding if a string matches any previously added string, where '.' can match any letter.
+
+Input: [""WordDictionary"",""addWord"",""addWord"",""search"",""search""]
+[[],[""bad""],[""dad""],[""bad""],["".ad""]]
+Output: [null,null,null,true,true]
+
+Constraints:
+- 1 <= word.length <= 25
+- word consists of lowercase English letters
+- search word may contain '.'","String, Trie, DFS, Design",MEDIUM,"Use a trie for storage; during search, when a '.' is encountered, recursively search all children at that level."
+Redundant Connection,"Given a graph that started as a tree with n nodes, one additional edge was added. Find the edge that can be removed so the resulting graph is a tree.
+
+Input: edges = [[1,2],[1,3],[2,3]]
+Output: [2,3]
+
+Constraints:
+- n == edges.length
+- 3 <= n <= 1000
+- edges[i].length == 2","DFS, BFS, Union Find, Graph",MEDIUM,Use Union Find: iterate through edges and union nodes; the first edge that connects two already-connected nodes is the redundant edge.
+Accounts Merge,"Given a list of accounts where each account contains a name and emails, merge accounts belonging to the same person (accounts sharing the same email).
+
+Input: accounts = [[""John"",""j1@m.co"",""j2@m.co""],[""John"",""j1@m.co"",""j3@m.co""],[""Mary"",""m@m.co""]]
+Output: [[""John"",""j1@m.co"",""j2@m.co"",""j3@m.co""],[""Mary"",""m@m.co""]]
+
+Constraints:
+- 1 <= accounts.length <= 1000
+- 2 <= accounts[i].length <= 10","Array, DFS, BFS, Union Find, Hash Table, String, Sorting",MEDIUM,"Use Union Find to group emails: for each account, union all emails together, then group emails by their root representative."
+Fibonacci Number,"The Fibonacci numbers form a sequence such that each number is the sum of the two preceding ones. Given n, calculate F(n).
+
+Input: n = 4
+Output: 3 (0, 1, 1, 2, 3)
+
+Constraints:
+- 0 <= n <= 30","Math, Dynamic Programming, Recursion",EASY,Use bottom-up iteration with two variables tracking the previous two Fibonacci numbers to avoid redundant recursive calls.
+"Pow(x, n)","Implement pow(x, n), which calculates x raised to the power n.
+
+Input: x = 2.0, n = 10
+Output: 1024.0
+
+Constraints:
+- -100.0 < x < 100.0
+- -2^31 <= n <= 2^31 - 1
+- n is an integer","Math, Recursion",MEDIUM,"Use fast exponentiation: if n is even, pow(x,n) = pow(x*x, n/2); if odd, multiply by x once, reducing the problem in O(log n) time."
+Maximum Subarray (D&C),"Given an integer array nums, find the contiguous subarray with the maximum sum using divide and conquer approach.
+
+Input: nums = [-2,1,-3,4,-1,2,1,-5,4]
+Output: 6
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- -10^4 <= nums[i] <= 10^4","Array, Divide and Conquer, Dynamic Programming",MEDIUM,"Divide the array into halves, recursively find the max subarray in each half and the max crossing subarray, then take the overall maximum."
+Merge Sort Array,"Given an array of integers, sort it using the merge sort algorithm and return the sorted array.
+
+Input: nums = [5,2,3,1]
+Output: [1,2,3,5]
+
+Constraints:
+- 1 <= nums.length <= 5 * 10^4
+- -5 * 10^4 <= nums[i] <= 5 * 10^4","Array, Divide and Conquer, Sorting",MEDIUM,Use three pointers starting from the back of both arrays to fill nums1 from right to left without overwriting unmerged elements.
+Next Greater Element II,"Given a circular integer array nums, return the next greater number for every element. The next greater number of a number x is the first greater number to its right in a circular traversal.
+
+Input: nums = [1,2,1]
+Output: [2,-1,2]
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -10^9 <= nums[i] <= 10^9","Array, Stack, Monotonic Stack",MEDIUM,"Iterate through the array twice (to handle circularity) using a monotonic decreasing stack of indices, popping and recording when a greater element is found."
+Sum of Subarray Minimums,"Given an array of integers arr, find the sum of min(b), where b ranges over every contiguous subarray of arr. Return the answer modulo 10^9 + 7.
+
+Input: arr = [3,1,2,4]
+Output: 17
+
+Constraints:
+- 1 <= arr.length <= 3 * 10^4
+- 1 <= arr[i] <= 3 * 10^4","Array, Dynamic Programming, Stack, Monotonic Stack",MEDIUM,"Use a monotonic increasing stack to find the previous and next smaller elements for each value, computing each element's contribution to all subarrays containing it."
+Trapping Rain Water (Stack),"Given n non-negative integers representing an elevation map, compute how much water it can trap using a stack-based approach.
+
+Input: height = [4,2,0,3,2,5]
+Output: 9
+
+Constraints:
+- n == height.length
+- 1 <= n <= 2 * 10^4
+- 0 <= height[i] <= 10^5","Array, Stack, Monotonic Stack, Two Pointers",HARD,"Use a monotonic decreasing stack: when a taller bar is found, pop and calculate trapped water between the current bar and the new stack top."
+Range Sum Query - Immutable,"Given an integer array nums, handle multiple queries of calculating the sum of elements between indices left and right inclusive.
+
+Input: nums = [-2,0,3,-5,2,-1]
+sumRange(0,2) = 1, sumRange(2,5) = -1
+
+Constraints:
+- 1 <= nums.length <= 10^4
+- -10^5 <= nums[i] <= 10^5
+- 0 <= left <= right < nums.length","Array, Prefix Sum, Design",EASY,"Precompute a prefix sum array where prefix[i] = sum of nums[0..i-1], then sumRange(l,r) = prefix[r+1] - prefix[l]."
+Contiguous Array,"Given a binary array nums, return the maximum length of a contiguous subarray with an equal number of 0 and 1.
+
+Input: nums = [0,1]
+Output: 2
+
+Constraints:
+- 1 <= nums.length <= 10^5
+- nums[i] is either 0 or 1","Array, Hash Table, Prefix Sum",MEDIUM,"Replace 0s with -1s and compute a running sum; use a hash map to store the first index of each sum, and the maximum subarray length occurs between equal sums."
+Product of Array Except Self (Prefix),"Given an integer array nums, return an array output such that output[i] is equal to the product of all the elements of nums except nums[i] without using division.
+
+Input: nums = [-1,1,0,-3,3]
+Output: [0,0,9,0,0]
+
+Constraints:
+- 2 <= nums.length <= 10^5
+- -30 <= nums[i] <= 30","Array, Prefix Sum",MEDIUM,"Build a left prefix product array and a right suffix product array, then multiply corresponding positions to get the answer without division."
+Two Sum II - Sorted Array,"Given a 1-indexed sorted array numbers and a target, return the indices of the two numbers that add up to target.
+
+Input: numbers = [2,7,11,15], target = 9
+Output: [1,2]
+
+Constraints:
+- 2 <= numbers.length <= 3 * 10^4
+- -1000 <= numbers[i] <= 1000
+- numbers is sorted in non-decreasing order","Array, Two Pointers, Binary Search",MEDIUM,"Use two pointers at both ends of the sorted array; move the left pointer right if sum is too small, right pointer left if sum is too large."
+Three Sum Closest,"Given an integer array nums and a target, find three integers in nums such that the sum is closest to target. Return the sum.
+
+Input: nums = [-1,2,1,-4], target = 1
+Output: 2 (-1+2+1)
+
+Constraints:
+- 3 <= nums.length <= 500
+- -1000 <= nums[i] <= 1000
+- -10^4 <= target <= 10^4","Array, Two Pointers, Sorting",MEDIUM,"Sort the array, fix one element, use two pointers for the remaining, and track the triplet sum closest to the target."
+Four Sum,"Given an array nums and an integer target, return all unique quadruplets [nums[a], nums[b], nums[c], nums[d]] such that a+b+c+d == target.
+
+Input: nums = [1,0,-1,0,-2,2], target = 0
+Output: [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+
+Constraints:
+- 1 <= nums.length <= 200
+- -10^9 <= nums[i] <= 10^9","Array, Two Pointers, Sorting",MEDIUM,"Sort the array, fix two elements with nested loops, then use two pointers on the remaining portion, skipping duplicates at each level."
+Two Sum Less Than K,"Given an array nums and integer k, return the maximum sum of a pair nums[i] + nums[j] that is less than k. If no such pair exists, return -1.
+
+Input: nums = [34,23,1,24,75,33,54,8], k = 60
+Output: 58
+
+Constraints:
+- 1 <= nums.length <= 100
+- 1 <= nums[i] <= 1000
+- 1 <= k <= 2000","Array, Two Pointers, Sorting",EASY,"Sort the array and use two pointers from both ends; when the sum is less than k, record it as a candidate and move left pointer right."
+Implement strStr (KMP),"Given two strings haystack and needle, return the index of the first occurrence of needle in haystack using the KMP algorithm. Return -1 if needle is not found.
+
+Input: haystack = ""hello"", needle = ""ll""
+Output: 2
+
+Constraints:
+- 1 <= haystack.length, needle.length <= 10^4","String, Two Pointers",MEDIUM,"Build the KMP failure function (partial match table) for the needle, then scan the haystack using the failure function to skip already-matched characters."
+Longest Valid Parentheses,"Given a string containing just '(' and ')', return the length of the longest valid (well-formed) parentheses substring.
+
+Input: s = ""(()""
+Output: 2
+
+Constraints:
+- 0 <= s.length <= 3 * 10^4
+- s[i] is '(' or ')'","String, Dynamic Programming, Stack",HARD,"Use a stack storing indices: push -1 as base, push index for '(', pop for ')' and compute length as current_index minus stack top."
+Minimum Number of Arrows to Burst Balloons,"Points represent balloons on a 2D plane. An arrow shot vertically at x bursts all balloons whose range includes x. Return the minimum number of arrows needed.
+
+Input: points = [[10,16],[2,8],[1,6],[7,12]]
+Output: 2
+
+Constraints:
+- 1 <= points.length <= 10^5
+- points[i].length == 2","Array, Greedy, Sorting",MEDIUM,"Sort balloons by end coordinate and greedily shoot at each balloon's end point, skipping all balloons already burst by that arrow."
+Course Schedule II,"Return the order in which you should take courses to finish all of them. If it is impossible, return an empty array.
+
+Input: numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]
+Output: [0,1,2,3] or [0,2,1,3]
+
+Constraints:
+- 1 <= numCourses <= 2000
+- 0 <= prerequisites.length <= 5000","DFS, BFS, Graph",MEDIUM,"Use topological sort with Kahn's algorithm: repeatedly process nodes with zero in-degree, building the course order."
+Minimum Operations to Make Array Equal,"Given an integer n, you have an array arr of length n where arr[i] = 2*i + 1. In one operation you pick two indices and increment one while decrementing the other. Return the minimum operations to make all elements equal.
+
+Input: n = 3
+Output: 2
+
+Constraints:
+- 1 <= n <= 10^4","Math, Greedy",MEDIUM,"The target value is n (the median), and the answer is the sum of differences between n and each element in the first half of the array."
+Find All Numbers Disappeared,"Given an array nums of n integers where nums[i] is in [1, n], return all the integers in [1, n] that do not appear in nums.
+
+Input: nums = [4,3,2,7,8,2,3,1]
+Output: [5,6]
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 10^5
+- 1 <= nums[i] <= n","Array, Hash Table",EASY,Mark indices as negative by negating nums[abs(nums[i])-1]; indices that remain positive correspond to missing numbers.
+Minimum Depth of Binary Tree,"Given a binary tree, find its minimum depth. The minimum depth is the number of nodes along the shortest path from the root to the nearest leaf.
+
+Input: root = [3,9,20,null,null,15,7]
+Output: 2
+
+Constraints:
+- The number of nodes is in the range [0, 10^5]
+- -1000 <= Node.val <= 1000","Tree, BFS, DFS, Binary Tree",EASY,"Use BFS level by level: the first leaf node encountered gives the minimum depth, which is more efficient than DFS for this problem."
+Binary Tree Zigzag Level Order,"Given the root of a binary tree, return the zigzag level order traversal of its nodes' values (left to right, then right to left, alternating).
+
+Input: root = [3,9,20,null,null,15,7]
+Output: [[3],[20,9],[15,7]]
+
+Constraints:
+- The number of nodes is in the range [0, 2000]
+- -100 <= Node.val <= 100","Tree, BFS, Binary Tree",MEDIUM,Use BFS with a flag to alternate direction; reverse the current level's values on every other level.
+Construct Binary Tree from Preorder and Inorder,"Given two integer arrays preorder and inorder, construct and return the binary tree.
+
+Input: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+Output: [3,9,20,null,null,15,7]
+
+Constraints:
+- 1 <= preorder.length <= 3000
+- inorder.length == preorder.length
+- All values are unique","Array, Hash Table, Tree, Binary Tree, Divide and Conquer",MEDIUM,"The first element of preorder is the root; find it in inorder to determine left and right subtree boundaries, then recurse."
+Minimum Window in Sorted Arrays,"Given two sorted arrays, find the minimum window [i,j] such that at least one element from each array falls in the range. Return the size of the smallest such window.
+
+Input: nums1 = [1,3,5], nums2 = [2,4,6]
+Output: 1
+
+Constraints:
+- 1 <= nums1.length, nums2.length <= 10^5","Array, Two Pointers, Binary Search, Sorting",MEDIUM,"Use two pointers or binary search to find the closest pair between the two sorted arrays, tracking the minimum absolute difference."
+Maximum Width of Binary Tree,"Given the root of a binary tree, return the maximum width of the tree. The width is the length between the leftmost and rightmost non-null nodes at each level.
+
+Input: root = [1,3,2,5,3,null,9]
+Output: 4
+
+Constraints:
+- The number of nodes is in the range [1, 3000]
+- -100 <= Node.val <= 100","Tree, BFS, DFS, Binary Tree",MEDIUM,"Use BFS assigning positions to nodes (left child = 2*pos, right child = 2*pos+1), computing max width as rightmost minus leftmost position plus one at each level."
+Ugly Number II,"Write a program to find the n-th ugly number. Ugly numbers are positive numbers whose prime factors only include 2, 3, 5.
+
+Input: n = 10
+Output: 12 (1,2,3,4,5,6,8,9,10,12)
+
+Constraints:
+- 1 <= n <= 1690","Hash Table, Math, Dynamic Programming, Heap",MEDIUM,"Use three pointers for factors 2, 3, and 5; at each step, generate the next ugly number as the minimum of currentUgly*2, currentUgly*3, and currentUgly*5."
+Perfect Squares,"Given an integer n, return the least number of perfect square numbers that sum to n.
+
+Input: n = 12
+Output: 3 (4+4+4)
+
+Constraints:
+- 1 <= n <= 10^4","Math, Dynamic Programming, BFS",MEDIUM,"Use DP where dp[i] = min(dp[i], dp[i-j*j]+1) for all j where j*j <= i, or use BFS treating each number as a node."
+House Robber II,"All houses are arranged in a circle. You cannot rob two adjacent houses. Given an array of non-negative integers representing the amount of money at each house, return the maximum amount you can rob.
+
+Input: nums = [2,3,2]
+Output: 3
+
+Constraints:
+- 1 <= nums.length <= 100
+- 0 <= nums[i] <= 1000","Array, Dynamic Programming",MEDIUM,"Run the House Robber I algorithm twice: once excluding the first house and once excluding the last house, then take the maximum."
+Coin Change II,"Given an amount and an array of coin denominations, return the number of combinations that make up that amount.
+
+Input: amount = 5, coins = [1,2,5]
+Output: 4
+
+Constraints:
+- 1 <= coins.length <= 300
+- 1 <= coins[i] <= 5000
+- 0 <= amount <= 5000","Array, Dynamic Programming",MEDIUM,"Use a 1D DP array where dp[j] += dp[j-coin] for each coin, iterating coins in the outer loop to avoid counting permutations."
+Target Sum,"Given an integer array nums and an integer target, assign + or - to each element to make the sum equal target. Return the number of ways.
+
+Input: nums = [1,1,1,1,1], target = 3
+Output: 5
+
+Constraints:
+- 1 <= nums.length <= 20
+- 0 <= nums[i] <= 1000
+- -1000 <= target <= 1000","Array, Dynamic Programming, Backtracking",MEDIUM,Convert to a subset sum problem: find subsets summing to (total+target)/2 using a 0/1 knapsack DP approach.
+Minimum Falling Path Sum,"Given an n x n array of integers matrix, return the minimum sum of any falling path through matrix. A falling path starts at any element in the first row and chooses one element from each row, moving to an adjacent column.
+
+Input: matrix = [[2,1,3],[6,5,4],[7,8,9]]
+Output: 13 (1+5+7)
+
+Constraints:
+- n == matrix.length == matrix[i].length
+- 1 <= n <= 100
+- -100 <= matrix[i][j] <= 100","Array, Dynamic Programming, Matrix",MEDIUM,"Use DP updating each cell to be the minimum of the three possible cells from the row above, building from top to bottom."
+Stone Game,"Two players take turns picking stones from either end of a row of stones. Each stone has a value. Return true if player 1 wins (assuming both play optimally).
+
+Input: piles = [5,3,4,5]
+Output: true
+
+Constraints:
+- 2 <= piles.length <= 500
+- piles.length is even
+- 1 <= piles[i] <= 500","Array, Math, Dynamic Programming, Game Theory",MEDIUM,Use interval DP where dp[i][j] represents the maximum score difference the current player can achieve from piles[i..j].
+Longest String Chain,"Given a list of words, a word chain is a sequence where each word is a predecessor of the next. Return the length of the longest possible word chain.
+
+Input: words = [""a"",""b"",""ba"",""bca"",""bda"",""bdca""]
+Output: 4 (a -> ba -> bda -> bdca)
+
+Constraints:
+- 1 <= words.length <= 1000
+- 1 <= words[i].length <= 16","Array, Hash Table, String, Dynamic Programming, Two Pointers",MEDIUM,"Sort words by length, then use DP with a hash map: for each word, try removing each character and look up whether the predecessor exists."
+Minimum Cost Climbing Stairs,"Given an array cost where cost[i] is the cost of step i, you can start from step 0 or 1. Return the minimum cost to reach the top of the floor.
+
+Input: cost = [10,15,20]
+Output: 15
+
+Constraints:
+- 2 <= cost.length <= 1000
+- 0 <= cost[i] <= 999","Array, Dynamic Programming",EASY,"Use DP where dp[i] = cost[i] + min(dp[i-1], dp[i-2]), with the answer being min(dp[n-1], dp[n-2]) since you can skip the last step."
+Interleaving String,"Given strings s1, s2, and s3, determine whether s3 is formed by an interleaving of s1 and s2.
+
+Input: s1 = ""aabcc"", s2 = ""dbbca"", s3 = ""aadbbcbcac""
+Output: true
+
+Constraints:
+- 0 <= s1.length, s2.length <= 100
+- 0 <= s3.length <= 200","String, Dynamic Programming",MEDIUM,Use a 2D DP table where dp[i][j] is true if s3[0..i+j-1] can be formed by interleaving s1[0..i-1] and s2[0..j-1].
+Regular Expression Matching,"Implement regular expression matching with support for '.' (matches any single character) and '*' (matches zero or more of the preceding element).
+
+Input: s = ""aa"", p = ""a*""
+Output: true
+
+Constraints:
+- 1 <= s.length <= 20
+- 1 <= p.length <= 20","String, Dynamic Programming, Recursion",HARD,"Use 2D DP where dp[i][j] indicates whether s[0..i-1] matches p[0..j-1], handling '*' by either ignoring the pattern pair or consuming a character."
+Wildcard Matching,"Given an input string s and a pattern p, implement wildcard pattern matching with '?' (matches any single character) and '*' (matches any sequence).
+
+Input: s = ""adceb"", p = ""*a*b""
+Output: true
+
+Constraints:
+- 0 <= s.length, p.length <= 2000","String, Dynamic Programming, Greedy, Recursion",HARD,"Use 2D DP where dp[i][j] = true if s[0..i-1] matches p[0..j-1], with '*' matching zero characters (dp[i][j-1]) or extending (dp[i-1][j])."
+Distinct Subsequences,"Given two strings s and t, return the number of distinct subsequences of s which equals t.
+
+Input: s = ""rabbbit"", t = ""rabbit""
+Output: 3
+
+Constraints:
+- 1 <= s.length, t.length <= 1000","String, Dynamic Programming",HARD,Use 2D DP where dp[i][j] counts ways to form t[0..j-1] from s[0..i-1]: dp[i][j] = dp[i-1][j] + (dp[i-1][j-1] if s[i-1]==t[j-1]).
+Burst Balloons,"Given n balloons with numbers on them, bursting balloon i gives nums[i-1]*nums[i]*nums[i+1] coins. Find the maximum coins you can collect.
+
+Input: nums = [3,1,5,8]
+Output: 167
+
+Constraints:
+- n == nums.length
+- 1 <= n <= 300
+- 0 <= nums[i] <= 100","Array, Dynamic Programming",HARD,"Use interval DP where dp[i][j] is the max coins for bursting all balloons between i and j, choosing the last balloon to burst in each interval."
+Minimum Number of Refueling Stops,"A car starts with startFuel liters and wants to reach target miles away. Along the way, there are gas stations. Return the fewest refueling stops needed.
+
+Input: target = 100, startFuel = 10, stations = [[10,60],[20,30],[30,30],[60,40]]
+Output: 2
+
+Constraints:
+- 1 <= target, startFuel <= 10^9
+- 0 <= stations.length <= 500","Array, Dynamic Programming, Greedy, Heap",HARD,"Use a max-heap: pass each station and add its fuel to the heap; when you run out of fuel, greedily refuel from the station with the most fuel."
+Cherry Pickup,"Given an n x n grid where each cell has cherries or thorns, find the maximum cherries you can collect going from (0,0) to (n-1,n-1) and back.
+
+Input: grid = [[0,1,-1],[1,0,-1],[1,1,1]]
+Output: 5
+
+Constraints:
+- n == grid.length
+- 1 <= n <= 50","Array, Dynamic Programming, Matrix",HARD,"Model as two people walking simultaneously from start to end using 3D DP on (row1, col1, row2) where col2 is derived from the step count."
+Maximal Rectangle,"Given a rows x cols binary matrix filled with 0's and 1's, find the largest rectangle containing only 1's and return its area.
+
+Input: matrix = [[""1"",""0"",""1"",""0"",""0""],[""1"",""0"",""1"",""1"",""1""],[""1"",""1"",""1"",""1"",""1""],[""1"",""0"",""0"",""1"",""0""]]
+Output: 6
+
+Constraints:
+- rows == matrix.length
+- cols == matrix[0].length
+- 1 <= rows, cols <= 200","Array, Dynamic Programming, Stack, Matrix, Monotonic Stack",HARD,"Build a histogram of heights for each row, then apply the largest rectangle in histogram algorithm using a monotonic stack on each row."
+Alien Dictionary,"Given a list of words sorted in an alien language order, derive the order of characters in this language.
+
+Input: words = [""wrt"",""wrf"",""er"",""ett"",""rftt""]
+Output: ""wertf""
+
+Constraints:
+- 1 <= words.length <= 100
+- 1 <= words[i].length <= 100","Array, String, DFS, BFS, Graph",HARD,"Build a directed graph from adjacent word comparisons (first differing character), then use topological sort to find the character order."
+Critical Connections in a Network,"Given n servers and connections between them, find all critical connections (bridges). A critical connection is an edge whose removal disconnects the graph.
+
+Input: n = 4, connections = [[0,1],[1,2],[2,0],[1,3]]
+Output: [[1,3]]
+
+Constraints:
+- 2 <= n <= 10^5
+- n - 1 <= connections.length <= 10^5","DFS, Graph",HARD,"Use Tarjan's bridge-finding algorithm with DFS, tracking discovery time and low-link values to identify edges where low[v] > disc[u]."
+Swim in Rising Water,"Given an n x n grid where grid[i][j] represents elevation, you can swim when the water level reaches the cell's elevation. Find the least time to swim from top-left to bottom-right.
+
+Input: grid = [[0,2],[1,3]]
+Output: 3
+
+Constraints:
+- n == grid.length
+- 2 <= n <= 50
+- 0 <= grid[i][j] < n^2","Array, Binary Search, DFS, BFS, Graph, Heap, Matrix, Union Find",HARD,"Use Dijkstra's algorithm with a min-heap, treating the maximum elevation along any path as the cost to minimize."
+Longest Increasing Path in a Matrix,"Given an m x n integers matrix, return the length of the longest increasing path. You can move in four directions.
+
+Input: matrix = [[9,9,4],[6,6,8],[2,1,1]]
+Output: 4 (1->2->6->9)
+
+Constraints:
+- m == matrix.length
+- n == matrix[i].length
+- 1 <= m, n <= 200","Array, Dynamic Programming, DFS, BFS, Graph, Matrix",HARD,"Use DFS with memoization: for each cell, recursively explore all four directions where the neighbor is strictly larger, caching the longest path from each cell."
+Shortest Bridge,"Given an n x n binary matrix with exactly two islands, return the smallest number of 0s you must flip to connect the two islands.
+
+Input: grid = [[0,1],[1,0]]
+Output: 1
+
+Constraints:
+- n == grid.length == grid[i].length
+- 2 <= n <= 100","Array, DFS, BFS, Matrix",MEDIUM,"Use DFS to find and mark all cells of one island, then BFS from that island's boundary expanding outward until reaching the second island."
+Network Delay Time,"Given a network of n nodes and weighted directed edges, send a signal from node k. Return the minimum time for all nodes to receive the signal, or -1 if impossible.
+
+Input: times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2
+Output: 2
+
+Constraints:
+- 1 <= k <= n <= 100
+- 1 <= times.length <= 6000","DFS, BFS, Graph, Heap",MEDIUM,Use Dijkstra's algorithm with a min-heap to find shortest paths from source k to all nodes; the answer is the maximum of all shortest distances.

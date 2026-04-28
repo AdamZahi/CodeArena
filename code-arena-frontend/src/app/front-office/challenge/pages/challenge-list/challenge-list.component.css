@@ -61,6 +61,122 @@
   z-index: 0;
 }
 
+/* ── AI PICKS GRID ── */
+.ai-picks-wrap {
+  max-width: 1200px;
+  margin: 20px auto;
+}
+
+.ai-title {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--neon);
+  font-size: 18px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ai-title::before {
+  content: '';
+  display: block;
+  width: 12px; height: 12px;
+  background: var(--neon);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--neon);
+}
+
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.ai-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--neon), var(--neon2));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.ai-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.ai-card:hover::before {
+  opacity: 1;
+}
+
+.ai-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-match {
+  color: #10b981;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.ai-challenge-title {
+  color: var(--text);
+  font-size: 18px;
+  margin: 0 0 10px 0;
+}
+
+.ai-reason {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 15px 0;
+  font-style: italic;
+}
+
+.ai-stats {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  color: var(--neon2);
+  margin-bottom: 15px;
+}
+
+.ai-chip {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--neon) !important;
+  color: var(--neon) !important;
+}
+.ai-chip::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(transparent, rgba(139, 92, 246, 0.3), transparent 30%);
+  animation: rotate 4s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(1turn); }
+}
+
 /* ── HEADER ─────────────────────────────────────── */
 .lc-header {
   display: flex;
@@ -407,3 +523,120 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* %% AI PICKS GRID %% */
+.ai-picks-wrap {
+  max-width: 1200px;
+  margin: 20px auto;
+}
+
+.ai-title {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--neon);
+  font-size: 18px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ai-title::before {
+  content: '';
+  display: block;
+  width: 12px; height: 12px;
+  background: var(--neon);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--neon);
+}
+
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.ai-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--neon), var(--neon2));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.ai-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.ai-card:hover::before {
+  opacity: 1;
+}
+
+.ai-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-match {
+  color: #10b981;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.ai-challenge-title {
+  color: var(--text);
+  font-size: 18px;
+  margin: 0 0 10px 0;
+}
+
+.ai-reason {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 15px 0;
+  font-style: italic;
+}
+
+.ai-stats {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  color: var(--neon2);
+  margin-bottom: 15px;
+}
+
+.ai-chip {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--neon) !important;
+  color: var(--neon) !important;
+}
+.ai-chip::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(transparent, rgba(139, 92, 246, 0.3), transparent 30%);
+  animation: rotate 4s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(1turn); }
+}
+

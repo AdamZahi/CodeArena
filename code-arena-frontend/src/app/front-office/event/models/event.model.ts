@@ -2,6 +2,7 @@ export interface ProgrammingEvent {
   id: string;
   title: string;
   description: string;
+  location?: string;
   organizerId: string;
   status: string;
   startDate: string;
@@ -24,6 +25,7 @@ export interface ProgrammingEvent {
 export interface EventRegistration {
   id: string;
   participantId: string;
+  participantName?: string;
   eventId: string;
   status: 'CONFIRMED' | 'WAITLIST' | 'CANCELLED';
   qrCode: string;
@@ -34,6 +36,7 @@ export interface EventInvitation {
   id: string;
   eventId: string;
   participantId: string;
+  participantName?: string;
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
   sentAt: string;
   respondedAt: string;
@@ -43,6 +46,7 @@ export interface EventCandidature {
   id: string;
   eventId: string;
   participantId: string;
+  participantName?: string;
   motivation: string;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   appliedAt: string;

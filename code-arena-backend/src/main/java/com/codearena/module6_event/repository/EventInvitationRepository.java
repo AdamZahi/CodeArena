@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface EventInvitationRepository extends JpaRepository<EventInvitation, UUID> {
 
-    Optional<EventInvitation> findByEventIdAndParticipantId(UUID eventId, String participantId);
+    Optional<EventInvitation> findFirstByEventIdAndParticipantId(UUID eventId, String participantId);
 
     List<EventInvitation> findByParticipantId(String participantId);
 
