@@ -37,6 +37,9 @@ import { AuthUserSyncService } from '../../core/auth/auth-user-sync.service';
         <a routerLink="/arenatalk" routerLinkActive="active">
         <span class="link-label">ARENA TALK</span>
         </a>
+        <a routerLink="/coaching-quiz" routerLinkActive="active">
+        <span class="link-label">COACHING</span>
+        </a>
       </nav>
 
       <div class="actions">

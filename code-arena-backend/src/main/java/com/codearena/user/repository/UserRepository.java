@@ -10,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.UUID;
-
+import com.codearena.user.entity.Role;
+import java.util.List;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByAuth0Id(String auth0Id);
 
@@ -22,4 +23,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT COUNT(u) + 1 FROM User u WHERE u.totalXp > :xp")
     int countUsersByTotalXpGreaterThan(@Param("xp") long xp);
+
+    //coach
+    Optional<User> findByEmail(String email);
+    List<User> findByRole(Role role);
 }
