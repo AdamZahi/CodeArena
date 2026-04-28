@@ -2,7 +2,12 @@ package com.codearena.module2_battle.service;
 
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
+import com.codearena.module2_battle.dto.ChallengeComparisonResponse;
+import com.codearena.module2_battle.dto.MatchComparisonResponse;
+import com.codearena.module2_battle.dto.PlayerChallengeAttemptResponse;
+import com.codearena.module2_battle.dto.PlayerScoreResponse;
 import com.codearena.module2_battle.dto.PostMatchSummaryResponse;
+import com.codearena.module2_battle.dto.ScoreBreakdownResponse;
 import com.codearena.module2_battle.dto.ReplayResponse;
 import com.codearena.module2_battle.dto.SeasonLeaderboardResponse;
 import com.codearena.module2_battle.dto.SeasonLeaderboardEntryResponse;
