@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -40,12 +41,17 @@ public class UserServiceImpl implements UserService {
         if (jwt == null) {
             return buildAnonymousUser();
         }
-        User user = userRepository.findByAuth0Id(jwt.getSubject())
-            .orElse(null);
-        if (user == null) {
+        try {
+            User user = userRepository.findByAuth0Id(jwt.getSubject())
+                .orElse(null);
+            if (user == null) {
+                return buildAnonymousUser();
+            }
+            return userMapper.toResponse(user);
+        } catch (DataAccessException ex) {
+            log.debug("Falling back to anonymous user because the database is unavailable: {}", ex.getMostSpecificCause().getMessage());
             return buildAnonymousUser();
         }
-        return userMapper.toResponse(user);
     }
 
     @Override
@@ -95,66 +101,70 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void syncFromJwt(Jwt jwt) {
-        User user = userRepository.findByAuth0Id(jwt.getSubject()).orElse(null);
-        String email = resolveEmail(jwt);
-        String firstName = resolveFirstName(jwt);
-        String lastName = resolveLastName(jwt, firstName);
-        String nickname = resolveNickname(jwt);
+        try {
+            User user = userRepository.findByAuth0Id(jwt.getSubject()).orElse(null);
+            String email = resolveEmail(jwt);
+            String firstName = resolveFirstName(jwt);
+            String lastName = resolveLastName(jwt, firstName);
+            String nickname = resolveNickname(jwt);
 
-        if (email == null || firstName == null || lastName == null || nickname == null) {
-            Auth0ManagementService.Auth0UserProfile profile = auth0ManagementService.getUserProfile(jwt.getSubject());
-            if (profile != null) {
-                email = firstNonBlank(email, normalize(profile.email()));
-                nickname = firstNonBlank(nickname, normalize(profile.nickname()));
+            if (email == null || firstName == null || lastName == null || nickname == null) {
+                Auth0ManagementService.Auth0UserProfile profile = auth0ManagementService.getUserProfile(jwt.getSubject());
+                if (profile != null) {
+                    email = firstNonBlank(email, normalize(profile.email()));
+                    nickname = firstNonBlank(nickname, normalize(profile.nickname()));
 
-                String profileName = firstNonBlank(normalize(profile.name()), nickname);
-                String profileFirstName = firstNonBlank(normalize(profile.givenName()), extractFirstName(profileName));
+                    String profileName = firstNonBlank(normalize(profile.name()), nickname);
+                    String profileFirstName = firstNonBlank(normalize(profile.givenName()), extractFirstName(profileName));
 
-                firstName = firstNonBlank(firstName, profileFirstName);
-                lastName = firstNonBlank(
-                    lastName,
-                    normalize(profile.familyName()),
-                    extractLastName(profileName, firstName)
-                );
+                    firstName = firstNonBlank(firstName, profileFirstName);
+                    lastName = firstNonBlank(
+                        lastName,
+                        normalize(profile.familyName()),
+                        extractLastName(profileName, firstName)
+                    );
+                }
             }
-        }
 
-        if (user == null) {
-            user = User.builder()
-                .auth0Id(jwt.getSubject())
-                .email(email)
-                .firstName(firstName)
-                .lastName(lastName)
-                .nickname(nickname)
-                .role(resolveRole(jwt))
-                .authProvider(resolveAuthProvider(jwt))
-                .isActive(true)
-                .build();
-            userRepository.save(user);
-            return;
-        }
+            if (user == null) {
+                user = User.builder()
+                    .auth0Id(jwt.getSubject())
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .nickname(nickname)
+                    .role(resolveRole(jwt))
+                    .authProvider(resolveAuthProvider(jwt))
+                    .isActive(true)
+                    .build();
+                userRepository.save(user);
+                return;
+            }
 
-        boolean updated = false;
+            boolean updated = false;
 
-        if (email != null && !email.equals(user.getEmail())) {
-            user.setEmail(email);
-            updated = true;
-        }
-        if (firstName != null && !firstName.equals(user.getFirstName())) {
-            user.setFirstName(firstName);
-            updated = true;
-        }
-        if (lastName != null && !lastName.equals(user.getLastName())) {
-            user.setLastName(lastName);
-            updated = true;
-        }
-        if (nickname != null && !nickname.equals(user.getNickname())) {
-            user.setNickname(nickname);
-            updated = true;
-        }
+            if (email != null && !email.equals(user.getEmail())) {
+                user.setEmail(email);
+                updated = true;
+            }
+            if (firstName != null && !firstName.equals(user.getFirstName())) {
+                user.setFirstName(firstName);
+                updated = true;
+            }
+            if (lastName != null && !lastName.equals(user.getLastName())) {
+                user.setLastName(lastName);
+                updated = true;
+            }
+            if (nickname != null && !nickname.equals(user.getNickname())) {
+                user.setNickname(nickname);
+                updated = true;
+            }
 
-        if (updated) {
-            userRepository.save(user);
+            if (updated) {
+                userRepository.save(user);
+            }
+        } catch (DataAccessException ex) {
+            log.debug("Skipping JWT user sync for {} because the database is unavailable: {}", jwt.getSubject(), ex.getMostSpecificCause().getMessage());
         }
     }
 

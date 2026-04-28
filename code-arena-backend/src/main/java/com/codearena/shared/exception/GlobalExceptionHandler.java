@@ -7,7 +7,11 @@ import com.codearena.shared.response.ApiException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.CannotCreateTransactionException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -190,5 +194,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler({
+        DataAccessResourceFailureException.class,
+        CannotCreateTransactionException.class,
+        TransactionSystemException.class,
+        JpaSystemException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleDatabaseUnavailable(Exception ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse.<Void>builder()
+            .success(false)
+            .message("Database unavailable. Please start MySQL and try again.")
+            .timestamp(Instant.now())
+            .build());
     }
 }

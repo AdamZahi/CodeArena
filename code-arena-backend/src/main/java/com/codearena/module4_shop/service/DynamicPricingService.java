@@ -6,6 +6,7 @@ import com.codearena.module4_shop.repository.ShopItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -94,6 +95,8 @@ public class DynamicPricingService {
                 messagingTemplate.convertAndSend("/topic/price-updates", priceUpdates);
                 log.info("Broadcast {} dynamic price updates", priceUpdates.size());
             }
+        } catch (DataAccessException ex) {
+            log.debug("Skipping dynamic pricing broadcast because the database is unavailable: {}", ex.getMostSpecificCause().getMessage());
         } catch (Exception e) {
             log.error("Dynamic pricing broadcast failed: {}", e.getMessage());
         }

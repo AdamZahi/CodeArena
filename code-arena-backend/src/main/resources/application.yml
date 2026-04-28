@@ -6,6 +6,7 @@ spring:
     url: jdbc:mysql://localhost:3306/codearena?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
       mode: never
@@ -21,6 +22,7 @@ spring:
           starttls:
             enable: true
   jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: none
     open-in-view: true
