@@ -2,10 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
 import { SurvivalPlayComponent } from './survival-play.component';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { TimerAudioService } from '../../services/timer-audio.service';
 import { VoiceNavigationService } from '../../services/voice-navigation.service';
+
+const MOCK_USER_SUB = 'auth0|test-user';
 
 describe('SurvivalPlayComponent', () => {
   let component: SurvivalPlayComponent;
@@ -23,7 +26,7 @@ describe('SurvivalPlayComponent', () => {
 
     tqServiceMock = {
       startSurvivalSession: jasmine.createSpy('startSurvivalSession').and.returnValue(of({
-        id: 'sess-1', userId: 'test-user-001',
+        id: 'sess-1', userId: MOCK_USER_SUB,
         livesRemaining: 3, waveReached: 1, score: 0, active: true
       })),
       getChapters: jasmine.createSpy('getChapters').and.returnValue(of([]))
@@ -35,9 +38,12 @@ describe('SurvivalPlayComponent', () => {
     ]);
     audioMock.getTimeForDifficulty.and.returnValue(30);
 
+    const authMock = { user$: of({ sub: MOCK_USER_SUB }) };
+
     await TestBed.configureTestingModule({
       imports: [SurvivalPlayComponent],
       providers: [
+        { provide: AuthService, useValue: authMock },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: TerminalQuestService, useValue: tqServiceMock },
         { provide: TimerAudioService, useValue: audioMock },
@@ -71,8 +77,8 @@ describe('SurvivalPlayComponent', () => {
     expect(component.gameOver).toBeFalse();
   });
 
-  it('should have userId = "test-user-001"', () => {
-    expect(component.userId).toBe('test-user-001');
+  it('should set userId from auth user', () => {
+    expect(component.userId).toBe(MOCK_USER_SUB);
   });
 
   it('getMinutes should return padded minutes', () => {

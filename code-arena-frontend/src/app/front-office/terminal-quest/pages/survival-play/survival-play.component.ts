@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { filter, take } from 'rxjs/operators';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { TimerAudioService } from '../../services/timer-audio.service';
 import { VoiceNavigationService } from '../../services/voice-navigation.service';
@@ -47,10 +49,11 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
   private pendingTimeouts: ReturnType<typeof setTimeout>[] = [];
 
   readonly ledRange = [1, 2, 3, 4, 5];
-  readonly userId = 'test-user-001';
+  userId = '';
   readonly heartRange = [1, 2, 3];
 
   constructor(
+    private readonly auth: AuthService,
     private tqService: TerminalQuestService,
     private router: Router,
     public audio: TimerAudioService,
@@ -58,7 +61,13 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.startGame();
+    this.auth.user$.pipe(
+      filter(u => !!u),
+      take(1)
+    ).subscribe(user => {
+      this.userId = user?.sub ?? '';
+      this.startGame();
+    });
 
     this.voiceNav.registerPageCommands('survival-play', (cmd: string) => {
       if (cmd === 'hint' || cmd === 'indice') {
@@ -171,7 +180,7 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
 
   private startGame(): void {
     this.isLoading = true;
-    this.tqService.startSurvivalSession(this.userId).subscribe({
+    this.tqService.startSurvivalSession().subscribe({
       next: (session) => {
         this.session = session;
         this.lives = session.livesRemaining;
@@ -215,7 +224,7 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.scrollTerminal();
 
-    this.tqService.submitSurvivalAnswer(this.session.id, this.userId, this.currentChallenge.id, cmd).subscribe({
+    this.tqService.submitSurvivalAnswer(this.session.id, this.currentChallenge.id, cmd).subscribe({
       next: (res) => {
         this.lives = res.livesRemaining;
         this.wave = res.waveReached;

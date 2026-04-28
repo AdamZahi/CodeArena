@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { filter, take } from 'rxjs/operators';
 import { TerminalQuestService } from '../../services/terminal-quest.service';
 import { TimerAudioService } from '../../services/timer-audio.service';
 import { TtsService } from '../../services/tts.service';
@@ -53,10 +55,11 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
   adaptiveMessage = '';
 
   readonly ledRange = [1, 2, 3, 4, 5];
-  readonly userId = 'test-user-001';
+  userId = '';
   private missionId = '';
 
   constructor(
+    private readonly auth: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private tqService: TerminalQuestService,
@@ -72,6 +75,13 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
     this.missionId = this.route.snapshot.paramMap.get('levelId') ?? '';
     if (!this.missionId) { this.isLoading = false; return; }
 
+    this.auth.user$.pipe(
+      filter(u => !!u),
+      take(1)
+    ).subscribe(user => {
+      this.userId = user?.sub ?? '';
+    });
+
     this.tqService.getMissionById(this.missionId).subscribe({
       next: (mission) => {
         this.mission = mission;
@@ -83,7 +93,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
         this.startTimer();
 
         this.isAdaptiveLoading = true;
-        this.adaptiveService.predictAdaptation(this.userId, this.missionId).subscribe({
+        this.adaptiveService.predictAdaptation(this.missionId).subscribe({
           next: (prediction) => {
             console.log('[adaptive] response from backend:', prediction);
             this.adaptivePrediction = prediction;
@@ -205,7 +215,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.scrollTerminal();
 
-    this.tqService.submitMissionAnswer(this.missionId, this.userId, cmd).subscribe({
+    this.tqService.submitMissionAnswer(this.missionId, cmd).subscribe({
       next: (res) => {
         this.result = res;
         this.isCorrect = res.correct;

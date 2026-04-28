@@ -5,6 +5,8 @@ import com.codearena.module8_terminalquest.service.SurvivalSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +22,10 @@ public class SurvivalSessionController {
     private final SurvivalSessionService survivalSessionService;
 
     @PostMapping("/sessions")
-    public ResponseEntity<SurvivalSessionDto> startSession(@RequestBody StartSurvivalRequest request) {
+    public ResponseEntity<SurvivalSessionDto> startSession(
+            @RequestBody StartSurvivalRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        request.setUserId(jwt.getSubject());
         return ResponseEntity.ok(survivalSessionService.startSession(request));
     }
 
@@ -36,9 +41,9 @@ public class SurvivalSessionController {
         return ResponseEntity.ok(survivalSessionService.submitAnswer(sessionId, request));
     }
 
-    @GetMapping("/sessions/user/{userId}")
-    public ResponseEntity<List<SurvivalSessionDto>> getSessionsByUser(@PathVariable String userId) {
-        return ResponseEntity.ok(survivalSessionService.getSessionsByUser(userId));
+    @GetMapping("/sessions/me")
+    public ResponseEntity<List<SurvivalSessionDto>> getMySessions(@AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(survivalSessionService.getSessionsByUser(jwt.getSubject()));
     }
 
     @GetMapping("/sessions/{id}")

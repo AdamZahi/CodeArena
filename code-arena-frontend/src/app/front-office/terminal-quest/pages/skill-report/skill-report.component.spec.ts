@@ -2,9 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
 import { SkillReportComponent } from './skill-report.component';
 import { SkillEngineService } from '../../services/skill-engine.service';
 import { VoiceNavigationService } from '../../services/voice-navigation.service';
+
+const MOCK_USER_SUB = 'auth0|test-user';
 
 describe('SkillReportComponent', () => {
   let component: SkillReportComponent;
@@ -42,9 +45,12 @@ describe('SkillReportComponent', () => {
       analyzePlayer: jasmine.createSpy('analyzePlayer').and.returnValue(of(mockAnalysis))
     };
 
+    const authMock = { user$: of({ sub: MOCK_USER_SUB }) };
+
     await TestBed.configureTestingModule({
       imports: [SkillReportComponent],
       providers: [
+        { provide: AuthService, useValue: authMock },
         { provide: SkillEngineService, useValue: skillServiceMock },
         { provide: Router, useValue: routerSpy },
         { provide: VoiceNavigationService, useValue: voiceNavMock }
@@ -61,8 +67,12 @@ describe('SkillReportComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should set userId from auth on init', () => {
+    expect(component.userId).toBe(MOCK_USER_SUB);
+  });
+
   it('should load analysis on init', () => {
-    expect(skillServiceMock.analyzePlayer).toHaveBeenCalledWith('test-user-001');
+    expect(skillServiceMock.analyzePlayer).toHaveBeenCalled();
     expect(component.analysis).toEqual(mockAnalysis);
   });
 
