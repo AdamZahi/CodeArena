@@ -451,9 +451,26 @@ public class PurchaseServiceImpl implements PurchaseService {
                 )
                 .collect(Collectors.toList());
 
+        String participantName = userRepository
+                .findByAuth0Id(purchase.getParticipantId())
+                .map(u -> {
+                    if (u.getFirstName() != null && u.getLastName() != null) {
+                        return u.getFirstName() + " " + u.getLastName();
+                    } else if (u.getNickname() != null) {
+                        return u.getNickname();
+                    } else {
+                        return u.getEmail();
+                    }
+                })
+                .orElseGet(() -> {
+                    String[] parts = purchase.getParticipantId().split("\\|");
+                    return parts.length > 1 ? parts[1].substring(0, 8) : purchase.getParticipantId().substring(0, 8);
+                });
+
         return PurchaseResponse.builder()
                 .id(purchase.getId())
                 .participantId(purchase.getParticipantId())
+                .participantName(participantName)
                 .totalPrice(purchase.getTotalPrice())
                 .status(purchase.getStatus())
                 .createdAt(purchase.getCreatedAt())

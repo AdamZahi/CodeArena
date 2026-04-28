@@ -63,8 +63,7 @@
 
           <!-- Participant -->
           <td>
-            <span class="participant-id">{{ order.participantId }}</span>
-          </td>
+          <span class="participant-id">{{ order.participantName || order.participantId }}</span>          </td>
 
           <!-- Items count -->
           <td>
@@ -136,8 +135,7 @@
       </div>
 
       <div class="modal-meta">
-        <span>👤 {{ selectedOrder.participantId }}</span>
-        <span>📅 {{ selectedOrder.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+      <span>👤 {{ selectedOrder.participantName || selectedOrder.participantId }}</span>        <span>📅 {{ selectedOrder.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
       </div>
 
       <div class="modal-items">

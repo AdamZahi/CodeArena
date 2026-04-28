@@ -27,7 +27,8 @@ export interface Order {
   items:         OrderItem[];  // list of items on this receipt
   totalPrice:    number;       // sum of all items
   status:        OrderStatus;  // current status
-  createdAt:     string;       // when it was placed
+  createdAt:     string;  
+  participantName: string;     // when it was placed
 }
 
 // ─── Checkout Request ─────────────────────────────────────────────
