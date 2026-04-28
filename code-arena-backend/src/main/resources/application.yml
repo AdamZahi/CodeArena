@@ -92,7 +92,7 @@ battle:
 execution:
   piston:
     enabled: true
-    base-url: http://192.168.0.163:2000/api/v2
+    base-url: http://192.168.0.195:2000/api/v2
     timeout-seconds: 10
     compile-timeout-ms: 3000
     run-timeout-ms: 3000

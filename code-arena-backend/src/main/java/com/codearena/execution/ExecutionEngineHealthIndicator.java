@@ -42,8 +42,7 @@ public class ExecutionEngineHealthIndicator implements HealthIndicator {
                 .withDetail("failureRate", failureRate + "%")
                 .withDetail("lastEngineUsed", fallbackService.getLastEngineUsed())
                 .withDetail("pistonEnabled", config.getPiston().isEnabled())
-                .withDetail("pistonBaseUrl", config.getPiston().getBaseUrl())
-                .withDetail("judge0BaseUrl", config.getJudge0().getBaseUrl())
+            .withDetail("pistonBaseUrl", config.getPiston().getBaseUrl())
                 .build();
     }
 }
