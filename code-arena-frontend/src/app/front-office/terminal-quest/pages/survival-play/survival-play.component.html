@@ -75,13 +75,20 @@
         </div>
       </div>
 
+      <!-- Hint -->
+      <div class="hint-section" *ngIf="showHint && currentChallenge?.hint">
+        <div class="hint-block">&#128161; {{ currentChallenge!.hint }}</div>
+      </div>
+
       <div class="terminal-input-row">
         <span class="input-prompt">$&nbsp;</span>
         <input
+          #terminalInput
           type="text"
           class="terminal-input"
           [(ngModel)]="currentCommand"
           (keyup.enter)="executeCommand()"
+          (keydown)="onInputKeyDown($event)"
           [disabled]="isSubmitting"
           placeholder="type your command..."
           autocomplete="off"

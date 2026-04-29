@@ -4,6 +4,7 @@ import com.codearena.module8_terminalquest.dto.LevelProgressDto;
 import com.codearena.module8_terminalquest.dto.SubmitAnswerRequest;
 import com.codearena.module8_terminalquest.dto.SubmitAnswerResponse;
 import com.codearena.module8_terminalquest.service.LevelProgressService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class LevelProgressController {
     @PostMapping("/levels/{levelId}/submit")
     public ResponseEntity<SubmitAnswerResponse> submitAnswer(
             @PathVariable UUID levelId,
-            @RequestBody SubmitAnswerRequest request,
+            @Valid @RequestBody SubmitAnswerRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         request.setUserId(jwt.getSubject());
         return ResponseEntity.ok(levelProgressService.submitAnswer(levelId, request));
@@ -47,7 +48,7 @@ public class LevelProgressController {
     @PostMapping("/missions/{missionId}/submit")
     public ResponseEntity<SubmitAnswerResponse> submitMissionAnswer(
             @PathVariable UUID missionId,
-            @RequestBody SubmitAnswerRequest request,
+            @Valid @RequestBody SubmitAnswerRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         request.setUserId(jwt.getSubject());
         return ResponseEntity.ok(levelProgressService.submitMissionAnswer(missionId, request));

@@ -3,6 +3,7 @@ package com.codearena.module8_terminalquest.controller;
 import com.codearena.module8_terminalquest.dto.CreateStoryChapterRequest;
 import com.codearena.module8_terminalquest.dto.StoryChapterDto;
 import com.codearena.module8_terminalquest.service.StoryChapterService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +34,13 @@ public class StoryChapterController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<StoryChapterDto> createChapter(@RequestBody CreateStoryChapterRequest request) {
+    public ResponseEntity<StoryChapterDto> createChapter(@Valid @RequestBody CreateStoryChapterRequest request) {
         return ResponseEntity.ok(storyChapterService.createChapter(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<StoryChapterDto> updateChapter(@PathVariable UUID id, @RequestBody CreateStoryChapterRequest request) {
+    public ResponseEntity<StoryChapterDto> updateChapter(@PathVariable UUID id, @Valid @RequestBody CreateStoryChapterRequest request) {
         return ResponseEntity.ok(storyChapterService.updateChapter(id, request));
     }
 

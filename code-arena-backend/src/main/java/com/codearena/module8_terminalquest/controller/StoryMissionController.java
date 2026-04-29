@@ -3,6 +3,7 @@ package com.codearena.module8_terminalquest.controller;
 import com.codearena.module8_terminalquest.dto.CreateStoryMissionRequest;
 import com.codearena.module8_terminalquest.dto.StoryMissionDto;
 import com.codearena.module8_terminalquest.service.StoryMissionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +34,14 @@ public class StoryMissionController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<StoryMissionDto> createMission(@RequestBody CreateStoryMissionRequest request) {
+    public ResponseEntity<StoryMissionDto> createMission(@Valid @RequestBody CreateStoryMissionRequest request) {
         return ResponseEntity.ok(storyMissionService.createMission(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<StoryMissionDto> updateMission(@PathVariable UUID id,
-                                                          @RequestBody CreateStoryMissionRequest request) {
+                                                          @Valid @RequestBody CreateStoryMissionRequest request) {
         return ResponseEntity.ok(storyMissionService.updateMission(id, request));
     }
 

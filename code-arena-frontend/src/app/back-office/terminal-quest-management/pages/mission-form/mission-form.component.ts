@@ -106,7 +106,7 @@ export class MissionFormComponent implements OnInit {
       },
       error: (err) => {
         console.error('Save failed:', err);
-        this.errorMsg = 'Failed to save mission. Check that acceptedAnswers is valid JSON.';
+        this.errorMsg = err.error?.message || 'Failed to save mission. Please try again.';
         this.isSaving = false;
       }
     });
