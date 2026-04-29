@@ -19,6 +19,7 @@ import {
   ActivityRequest,
   ShareUrlResponse,
   SharedResultDTO,
+  MatchComparisonResponse,
 } from '../models/battle-room.model';
 import { MatchHistoryResponse } from '../../reward-profile/models/match-history.model';
 import { SeasonLeaderboardResponse, XpLeaderboardResponse } from '../../reward-profile/models/leaderboard.model';
@@ -103,6 +104,10 @@ export class BattleService extends ApiService {
 
   getScoreboard(roomId: string): Observable<PostMatchSummaryResponse> {
     return this.http.get<PostMatchSummaryResponse>(`${this.baseUrl}/results/${roomId}/scoreboard`);
+  }
+
+  getMatchComparison(roomId: string): Observable<MatchComparisonResponse> {
+    return this.http.get<MatchComparisonResponse>(`${this.baseUrl}/results/${roomId}/compare`);
   }
 
   // ── Shareable Result endpoints ────────────────────────────

@@ -47,16 +47,30 @@ public class CodeWrapperService {
             log.debug("Could not detect Python function name");
             return null;
         }
-        // Redirect stdout while the user code runs, then restore and call the function.
-        // testCaseInput is already valid Python kwargs, e.g. "nums = [1,3,5,6], target = 5"
-        return "import sys as __cw_sys, io as __cw_io\n"
+        // Convert "x = 121, y = [1,2,3]" → "121, [1,2,3]" so we don't depend on the user's
+        // parameter names matching the test-case variable names.
+        String positionalArgs = kwargsToPositionalArgs(testCaseInput, false);
+        if (positionalArgs == null) return null;
+
+        // Redirect stdout during the user code (suppresses their hardcoded prints), call the
+        // function, and emit the result in LeetCode-style format: bools as true/false (lowercase),
+        // lists without spaces, everything else via str(...).
+        return "import sys as __cw_sys, io as __cw_io, json as __cw_json\n"
              + "__cw_real = __cw_sys.stdout\n"
              + "__cw_sys.stdout = __cw_io.StringIO()\n"
              + "\n"
              + code + "\n"
              + "\n"
              + "__cw_sys.stdout = __cw_real\n"
-             + "print(" + funcName + "(" + testCaseInput + "))\n";
+             + "__cw_r = " + funcName + "(" + positionalArgs + ")\n"
+             + "if isinstance(__cw_r, bool):\n"
+             + "    print('true' if __cw_r else 'false')\n"
+             + "elif isinstance(__cw_r, (list, tuple, dict)):\n"
+             + "    print(__cw_json.dumps(__cw_r, separators=(',', ':')))\n"
+             + "elif __cw_r is None:\n"
+             + "    print('null')\n"
+             + "else:\n"
+             + "    print(__cw_r)\n";
     }
 
     static String detectPythonFunction(String code) {
@@ -107,20 +121,24 @@ public class CodeWrapperService {
             log.debug("Could not detect Java class/method");
             return null;
         }
+        // The runner class is named Main (matches Piston's filename convention). To avoid the
+        // "public class must match filename" rule, strip the `public` modifier from the user's
+        // class declaration. javac then accepts both classes in one Main.java file.
+        String userCode = code.replaceAll("\\bpublic\\s+class\\s+" + java.util.regex.Pattern.quote(className),
+                                          "class " + className);
+
         List<String[]> params = parseKwargs(testCaseInput);
         if (params.isEmpty()) return null;
 
-        // Detect parameter types from the method signature
         List<String[]> methodParams = detectJavaMethodParams(code, methodName);
         if (methodParams.isEmpty() || methodParams.size() != params.size()) return null;
 
         StringBuilder main = new StringBuilder();
-        main.append(code).append("\n\n");
-        main.append("class __CW_Main {\n");
+        main.append(userCode).append("\n\n");
+        main.append("public class Main {\n");
         main.append("    public static void main(String[] args) {\n");
         main.append("        ").append(className).append(" __cw_sol = new ").append(className).append("();\n");
 
-        // Build variable declarations and argument list
         StringBuilder argList = new StringBuilder();
         for (int i = 0; i < params.size(); i++) {
             String type  = methodParams.get(i)[0];
@@ -132,13 +150,31 @@ public class CodeWrapperService {
             argList.append("__cw_").append(name);
         }
 
-        main.append("        System.out.println(__cw_sol.").append(methodName).append("(").append(argList).append("));\n");
+        main.append("        System.out.println(__cwFmt(__cw_sol.").append(methodName).append("(").append(argList).append(")));\n");
+        main.append("    }\n\n");
+        main.append("    static String __cwFmt(Object o) {\n");
+        main.append("        if (o == null) return \"null\";\n");
+        main.append("        if (o instanceof int[])     return java.util.Arrays.toString((int[]) o).replace(\" \", \"\");\n");
+        main.append("        if (o instanceof long[])    return java.util.Arrays.toString((long[]) o).replace(\" \", \"\");\n");
+        main.append("        if (o instanceof double[])  return java.util.Arrays.toString((double[]) o).replace(\" \", \"\");\n");
+        main.append("        if (o instanceof boolean[]) return java.util.Arrays.toString((boolean[]) o).replace(\" \", \"\");\n");
+        main.append("        if (o instanceof char[])    return java.util.Arrays.toString((char[]) o).replace(\" \", \"\");\n");
+        main.append("        if (o instanceof Object[]) {\n");
+        main.append("            Object[] arr = (Object[]) o;\n");
+        main.append("            if (arr.length > 0 && arr[0] != null && arr[0].getClass().isArray()) {\n");
+        main.append("                return java.util.Arrays.deepToString(arr).replace(\" \", \"\");\n");
+        main.append("            }\n");
+        main.append("            return java.util.Arrays.toString(arr).replace(\" \", \"\");\n");
+        main.append("        }\n");
+        main.append("        if (o instanceof java.util.Collection) return o.toString().replace(\" \", \"\");\n");
+        main.append("        if (o instanceof java.util.Map)        return o.toString().replace(\" \", \"\");\n");
+        main.append("        return String.valueOf(o);\n");
         main.append("    }\n");
         main.append("}\n");
         return main.toString();
     }
 
-    static String detectJavaClass(String code) {
+    public static String detectJavaClass(String code) {
         Pattern p = Pattern.compile("class\\s+(\\w+)\\s*\\{", Pattern.MULTILINE);
         Matcher m = p.matcher(code);
         return m.find() ? m.group(1) : null;

@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
 
 :host {
   --neon: #8b5cf6;
@@ -524,7 +524,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── AI PICKS GRID ── */
+/* %% AI PICKS GRID %% */
 .ai-picks-wrap {
   max-width: 1200px;
   margin: 20px auto;
@@ -639,3 +639,4 @@
 @keyframes rotate {
   100% { transform: rotate(1turn); }
 }
+

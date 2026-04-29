@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
 
 :host {
   --neon: #8b5cf6;
@@ -914,7 +914,7 @@
   margin-bottom: 24px;
 }
 
-/* ── AI ANALYSIS CARD ── */
+/* %% AI ANALYSIS CARD %% */
 .ai-analysis-card {
   background: var(--card2);
   border: 1px solid rgba(139, 92, 246, 0.2);
@@ -998,3 +998,4 @@
   font-size: 18px;
   margin-right: 8px;
 }
+

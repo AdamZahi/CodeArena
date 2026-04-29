@@ -42,6 +42,8 @@ export class BattleLobbyComponent implements OnInit, OnDestroy {
   readyUpdating = false;
   isHost = false;
   inviteCopied = false;
+  startingBattle = false;
+  private battleStartFallbackTimer: ReturnType<typeof setTimeout> | null = null;
   eventLog: LogEntry[] = [];
 
   countdownActive = false;
@@ -108,6 +110,10 @@ export class BattleLobbyComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.battleStartFallbackTimer) {
+      clearTimeout(this.battleStartFallbackTimer);
+      this.battleStartFallbackTimer = null;
+    }
     this.ws.disconnect();
   }
 
@@ -181,6 +187,10 @@ export class BattleLobbyComponent implements OnInit, OnDestroy {
   }
 
   private onBattleStarted(_room: BattleRoomResponse): void {
+    if (this.battleStartFallbackTimer) {
+      clearTimeout(this.battleStartFallbackTimer);
+      this.battleStartFallbackTimer = null;
+    }
     this.router.navigate(['/battle/room', this.roomId]);
   }
 
@@ -205,7 +215,32 @@ export class BattleLobbyComponent implements OnInit, OnDestroy {
   }
 
   startBattle(): void {
-    this.battleService.startBattle(this.roomId).subscribe();
+    if (this.startingBattle) {
+      return;
+    }
+
+    this.startingBattle = true;
+    this.battleService.startBattle(this.roomId).subscribe({
+      next: () => {
+        // The host should be moved by the BATTLE_STARTED websocket event.
+        // If the websocket handshake is flaky, fall back to navigation after the countdown window.
+        if (this.battleStartFallbackTimer) {
+          clearTimeout(this.battleStartFallbackTimer);
+        }
+        this.battleStartFallbackTimer = setTimeout(() => {
+          this.router.navigate(['/battle/room', this.roomId]);
+        }, 7000);
+      },
+      error: (error) => {
+        const message = error?.error?.message ?? error?.message ?? '';
+        if (error?.status === 409) {
+          this.router.navigate(['/battle/room', this.roomId]);
+          return;
+        }
+
+        this.startingBattle = false;
+      },
+    });
   }
 
   kickPlayer(userId: string): void {

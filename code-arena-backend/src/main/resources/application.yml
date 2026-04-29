@@ -52,12 +52,9 @@ app:
       #publishable-key: pk_test_dummy_key_for_now
 
 
-
-
-
-stripe:
-  secret-key: sk_test_YOUR_STRIPE_KEY_HERE
-  webhook-secret: dummy_webhook_secret
+#stripe:
+  #secret-key: sk_test_dummy_key_for_now
+  #webhook-secret: dummy_webhook_secret
 
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
