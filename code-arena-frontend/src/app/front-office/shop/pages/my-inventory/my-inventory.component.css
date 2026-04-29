@@ -782,7 +782,7 @@
 }
 
 @keyframes fillIn {
-  from { width: 0% !important; }
+  from { width: 0%; }
 }
 
 .eco-progress-glow {

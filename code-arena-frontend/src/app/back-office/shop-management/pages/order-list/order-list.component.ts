@@ -152,6 +152,16 @@ loadQrCode(orderId: string): void {
   });
 }
 exportOrders(): void {
-  window.open(`${environment.apiBaseUrl}/api/shop/orders/export`, '_blank');
+  this.shopService.exportOrders().subscribe({
+    next: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'orders.xlsx';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    },
+    error: (err) => console.error('Export failed', err)
+  });
 }
 }

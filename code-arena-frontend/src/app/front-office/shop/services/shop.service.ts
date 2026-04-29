@@ -130,4 +130,9 @@ export class ShopService extends ApiService {
       { amount, currency: 'usd' }
     );
   }
+exportOrders(): Observable<Blob> {
+  return this.http.get(`${environment.apiBaseUrl}/api/shop/orders/export`, {
+    responseType: 'blob'
+  });
+}
 }

@@ -51,11 +51,6 @@ app:
      # secret-key: sk_test_dummy_key_for_now
       #publishable-key: pk_test_dummy_key_for_now
 
-
-#stripe:
-  #secret-key: sk_test_dummy_key_for_now
-  #webhook-secret: dummy_webhook_secret
-
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
   base-url: https://ce.judge0.com
