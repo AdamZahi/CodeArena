@@ -62,9 +62,19 @@ export class OutcomeDonutChartComponent implements AfterViewInit, OnChanges {
 
   @ViewChild('cv') canvasRef?: ElementRef<HTMLCanvasElement>;
   private chart?: Chart;
+  private renderQueued = false;
 
-  ngAfterViewInit(): void { this.render(); }
-  ngOnChanges(): void { if (this.canvasRef) this.render(); }
+  ngAfterViewInit(): void { this.scheduleRender(); }
+  ngOnChanges(): void { this.scheduleRender(); }
+
+  private scheduleRender(): void {
+    if (this.renderQueued) return;
+    this.renderQueued = true;
+    queueMicrotask(() => {
+      this.renderQueued = false;
+      this.render();
+    });
+  }
 
   pct(rate: number) { return `${Math.round((rate ?? 0) * 100)}%`; }
 

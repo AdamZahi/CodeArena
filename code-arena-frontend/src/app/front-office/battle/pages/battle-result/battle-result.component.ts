@@ -60,6 +60,9 @@ export class BattleResultComponent implements OnInit, OnDestroy {
   comparisonError = '';
   activeChallengeIndex = 0;
   expandedAttempts = new Set<string>();
+  private comparisonRetryTimer: any = null;
+  private comparisonRetryCount = 0;
+  private readonly MAX_COMPARISON_RETRIES = 12;
 
   get isRankedMode(): boolean {
     return !!this.summary && !this.UNRANKED_MODES.includes(this.summary.mode);
@@ -105,10 +108,18 @@ export class BattleResultComponent implements OnInit, OnDestroy {
     });
 
     // Load post-match comparison (transparency view)
-    this.loadComparison();
+    this.loadComparison(false);
 
     // Also listen via WebSocket for spectator feed
     this.ws.connect(this.roomId);
+
+    this.ws.matchFinished$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.roomId === this.roomId) {
+          this.loadComparison(true);
+        }
+      });
 
     this.ws.spectatorFeed$
       .pipe(takeUntil(this.destroy$))
@@ -118,6 +129,10 @@ export class BattleResultComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.comparisonRetryTimer) {
+      clearTimeout(this.comparisonRetryTimer);
+      this.comparisonRetryTimer = null;
+    }
     this.ws.disconnect();
   }
 
@@ -206,17 +221,33 @@ export class BattleResultComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadComparison(): void {
+  private loadComparison(forceReload: boolean): void {
+    if (this.comparisonLoading && !forceReload) return;
+    if (this.comparisonRetryTimer) {
+      clearTimeout(this.comparisonRetryTimer);
+      this.comparisonRetryTimer = null;
+    }
     this.comparisonLoading = true;
     this.battleService.getMatchComparison(this.roomId).subscribe({
       next: (data) => {
         this.comparison = data;
         this.comparisonLoading = false;
+        this.comparisonError = '';
+        this.comparisonRetryCount = 0;
         this.activeChallengeIndex = 0;
       },
       error: (err) => {
+        const status = err?.status;
+        const notReady = status === 404 || status === 409 || status === 425;
+
+        if (notReady && this.comparisonRetryCount < this.MAX_COMPARISON_RETRIES) {
+          this.comparisonRetryCount += 1;
+          this.comparisonRetryTimer = setTimeout(() => this.loadComparison(true), 750);
+          return;
+        }
+
         this.comparisonLoading = false;
-        this.comparisonError = err?.status === 403
+        this.comparisonError = status === 403
           ? 'Only match participants can view this comparison.'
           : 'Comparison data is not available yet.';
       },

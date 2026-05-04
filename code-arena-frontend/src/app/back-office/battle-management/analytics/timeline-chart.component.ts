@@ -64,13 +64,23 @@ export class TimelineChartComponent implements AfterViewInit, OnChanges {
 
   @ViewChild('cv') canvasRef?: ElementRef<HTMLCanvasElement>;
   private chart?: Chart;
+  private renderQueued = false;
 
   ngAfterViewInit(): void {
-    this.render();
+    this.scheduleRender();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data'] && this.canvasRef) this.render();
+    if (changes['data'] || changes['loading']) this.scheduleRender();
+  }
+
+  private scheduleRender(): void {
+    if (this.renderQueued) return;
+    this.renderQueued = true;
+    queueMicrotask(() => {
+      this.renderQueued = false;
+      this.render();
+    });
   }
 
   private render() {

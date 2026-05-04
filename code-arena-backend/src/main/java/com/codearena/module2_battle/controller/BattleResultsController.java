@@ -28,6 +28,15 @@ public class BattleResultsController {
         return ResponseEntity.ok(summary);
     }
 
+    @GetMapping("/{roomId}/compare")
+    public ResponseEntity<MatchComparisonResponse> getMatchComparison(
+            @PathVariable String roomId,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        MatchComparisonResponse comparison = battleResultsService.getMatchComparison(roomId, userId);
+        return ResponseEntity.ok(comparison);
+    }
+
     @GetMapping("/{roomId}/replay")
     public ResponseEntity<ReplayResponse> getReplay(
             @PathVariable String roomId,

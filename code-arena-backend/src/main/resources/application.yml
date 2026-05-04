@@ -27,7 +27,7 @@ spring:
             enable: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     open-in-view: true
   security:
     oauth2:
@@ -44,17 +44,17 @@ codearena:
 
 app:
   cors:
-    allowed-origins: "http://localhost:4200"
+    allowed-origins: "http://localhost:4200" 
   shop:
     admin-email: islemazzouz04@gmail.com
-    #stripe:
-     # secret-key: sk_test_dummy_key_for_now
-      #publishable-key: pk_test_dummy_key_for_now
+    stripe:
+      secret-key: dummy_test_secret_key
+      publishable-key: dummy_test_publishable_key
 
 
-#stripe:
-  #secret-key: sk_test_dummy_key_for_now
-  #webhook-secret: dummy_webhook_secret
+stripe:
+  secret-key: dummy_root_secret_key
+  webhook-secret: dummy_root_webhook_secret
 
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
@@ -72,24 +72,22 @@ battle:
     practice-minutes: -1
     daily-minutes: -1
   ranker:
-    base-url: http://localhost:8010
+    base-url: ${ranker.base-url}
     connect-timeout-ms: 1500
     read-timeout-ms: 4000
     enabled: true
   classifier:
-    base-url: http://localhost:8011
+    base-url: ${classifier.base-url}
     connect-timeout-ms: 1500
     read-timeout-ms: 8000
     enabled: true
 
 
-gemini:
-  api-key: AIzaSyDKSn7vTUZ0grJFQjqzqmzynXVF1shQEq4
 
 ai-model:
-  url: http://localhost:5000
+  url: ${ai-model}
 
 piston:
-  base-url: http://192.168.0.195:2000
+  base-url: ${piston.base-url}
   run-timeout-ms: 15000
   memory-limit-bytes: 256000000
