@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export type GiftType = 'COINS' | 'FIRE' | 'CROWN' | 'ROCKET';
 
@@ -31,7 +32,7 @@ export interface GiftTransaction {
   providedIn: 'root'
 })
 export class GiftService {
-  private apiUrl = '/api/arenatalk/gifts';
+  private apiUrl = `${environment.apiBaseUrl}/api/arenatalk/gifts`;
 
   constructor(private http: HttpClient) {}
 

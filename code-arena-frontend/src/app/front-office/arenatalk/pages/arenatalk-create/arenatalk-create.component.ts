@@ -233,7 +233,7 @@ Return exactly this structure:
     this.auth.getAccessTokenSilently().pipe(
       switchMap(token => {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const keycloakId = payload.sub;
+        const auth0Id = payload.sub;
 
         const hubPayload: any = {
           name: this.hubForm.value.name.trim(),
@@ -242,7 +242,7 @@ Return exactly this structure:
           iconUrl: this.hubForm.value.iconUrl?.trim() || '',
           category: this.selectedCategory,
           visibility: this.selectedVisibility,
-          keycloakId: keycloakId
+          auth0Id: auth0Id
         };
 
         return this.arenatalkService.createHub(hubPayload).pipe(

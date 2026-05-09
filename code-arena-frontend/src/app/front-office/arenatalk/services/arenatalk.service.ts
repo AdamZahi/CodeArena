@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Hub, TextChannel, Message, ReadReceipt } from '../models/arenatalk.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ArenatalkService {
-  private apiUrl = '/api/arenatalk';
+  private apiUrl = `${environment.apiBaseUrl}/api/arenatalk`;
 
   constructor(private http: HttpClient) {}
 
