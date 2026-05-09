@@ -36,9 +36,6 @@ spring:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
 
-
-
-
 codearena:
   base-url: https://codearena.app
 
@@ -47,9 +44,16 @@ app:
     allowed-origins: "http://localhost:4200"
   shop:
     admin-email: islemazzouz04@gmail.com
-    #stripe:
-     # secret-key: sk_test_dummy_key_for_now
-      #publishable-key: pk_test_dummy_key_for_now
+    stripe:
+      secret-key: dummy_test_secret_key
+      publishable-key: dummy_test_publishable_key
+
+stripe:
+  secret-key: dummy_root_secret_key
+  webhook-secret: dummy_root_webhook_secret
+
+gemini:
+  api-key: ${GEMINI_API_KEY:AIzaSyDKSn7vTUZ0grJFQjqzqmzynXVF1shQEq4}
 
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
@@ -67,24 +71,20 @@ battle:
     practice-minutes: -1
     daily-minutes: -1
   ranker:
-    base-url: http://localhost:8010
+    base-url: ${ranker.base-url:http://localhost:8010}
     connect-timeout-ms: 1500
     read-timeout-ms: 4000
     enabled: true
   classifier:
-    base-url: http://localhost:8011
+    base-url: ${classifier.base-url:http://localhost:8011}
     connect-timeout-ms: 1500
     read-timeout-ms: 8000
     enabled: true
 
-
-gemini:
-  api-key: AIzaSyDKSn7vTUZ0grJFQjqzqmzynXVF1shQEq4
-
 ai-model:
-  url: http://localhost:5000
+  url: ${ai-model:http://localhost:5000}
 
 piston:
-  base-url: http://192.168.0.195:2000
+  base-url: ${PISTON_BASE_URL:http://192.168.0.195:2000}
   run-timeout-ms: 15000
   memory-limit-bytes: 256000000

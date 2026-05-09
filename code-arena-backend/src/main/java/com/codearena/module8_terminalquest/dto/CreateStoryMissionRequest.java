@@ -1,5 +1,8 @@
 package com.codearena.module8_terminalquest.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,14 +15,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateStoryMissionRequest {
+    @NotNull(message = "Chapter ID is required")
     private UUID chapterId;
+    @NotBlank(message = "Title is required")
     private String title;
+    @NotBlank(message = "Context is required")
     private String context;
+    @NotBlank(message = "Task is required")
     private String task;
     private String acceptedAnswers; // JSON array e.g. ["cmd1", "cmd2"]
     private String hint;
+    @Min(value = 1, message = "Order index must be at least 1")
     private int orderIndex;
+    @NotBlank(message = "Difficulty is required")
     private String difficulty; // EASY, MEDIUM, HARD
     private boolean isBoss;
+    @Min(value = 1, message = "XP reward must be at least 1")
     private int xpReward;
 }

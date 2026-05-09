@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface ArenNotification {
   id: number;
@@ -14,7 +15,7 @@ export interface ArenNotification {
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private apiUrl = '/api/arenatalk/notifications';
+  private apiUrl = `${environment.apiBaseUrl}/api/arenatalk/notifications`;
   private notificationsSubject = new BehaviorSubject<ArenNotification[]>([]);
   notifications$ = this.notificationsSubject.asObservable();
 

@@ -94,7 +94,7 @@
         </div>
         <div class="mini-actions channel-form-actions">
           <button class="primary-mini-btn" (click)="createChannel()"
-            [disabled]="name.invalid || !newChannel.name?.trim()">Create</button>
+            [disabled]="name.invalid || !newChannel.name.trim()">Create</button>
           <button class="ghost-mini-btn" (click)="closeCreateChannelForm()">Cancel</button>
         </div>
       </div>

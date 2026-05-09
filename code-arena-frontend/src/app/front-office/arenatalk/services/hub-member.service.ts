@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface HubMember {
   id: number;
@@ -20,18 +21,17 @@ export interface HubMember {
 
 @Injectable({ providedIn: 'root' })
 export class HubMemberService {
-
-  private apiUrl = '/api/arenatalk/hubs';
+  private apiUrl = `${environment.apiBaseUrl}/api/arenatalk/hubs`;
 
   constructor(private http: HttpClient) {}
 
   joinHub(hubId: number, keycloakId: string): Observable<HubMember> {
-    return this.http.post<HubMember>(`${this.apiUrl}/${hubId}/join`, { keycloakId });
+    return this.http.post<HubMember>(`${this.apiUrl}/${hubId}/join`, { auth0Id: keycloakId });
   }
 
   leaveHub(hubId: number, keycloakId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${hubId}/leave`, {
-      body: { keycloakId }
+      body: { auth0Id: keycloakId }
     });
   }
 
@@ -47,7 +47,7 @@ export class HubMemberService {
   acceptRequest(hubId: number, memberId: number, keycloakId: string): Observable<HubMember> {
     return this.http.post<HubMember>(
       `${this.apiUrl}/${hubId}/requests/${memberId}/accept`,
-      { keycloakId }
+      { auth0Id: keycloakId }
     );
   }
 
@@ -59,7 +59,7 @@ export class HubMemberService {
   rejectRequest(hubId: number, memberId: number, keycloakId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/${hubId}/requests/${memberId}/reject`,
-      { body: { keycloakId } }
+      { body: { auth0Id: keycloakId } }
     );
   }
 

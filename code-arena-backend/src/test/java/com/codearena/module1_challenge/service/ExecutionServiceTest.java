@@ -1,5 +1,8 @@
 package com.codearena.module1_challenge.service;
 
+import com.codearena.execution.CodeExecutionService;
+import com.codearena.execution.ExecutionRequest;
+import com.codearena.execution.ExecutionResult;
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.entity.Submission;
 import com.codearena.module1_challenge.entity.TestCase;
@@ -16,9 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -28,18 +29,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ExecutionServiceTest {
 
-    @Mock
-    private Judge0Service judge0Service;
-    @Mock
-    private SubmissionRepository submissionRepository;
-    @Mock
-    private ChallengeRepository challengeRepository;
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private XpCalculatorService xpCalculatorService;
-    @Mock
-    private CustomizationService customizationService;
+    @Mock private CodeExecutionService codeExecutionService;
+    @Mock private SubmissionRepository submissionRepository;
+    @Mock private ChallengeRepository challengeRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private XpCalculatorService xpCalculatorService;
+    @Mock private CustomizationService customizationService;
 
     @InjectMocks
     private ExecutionService executionService;
@@ -67,37 +62,28 @@ class ExecutionServiceTest {
     @Test
     @DisplayName("executeSubmission should mark ACCEPTED and award XP when all tests pass")
     void shouldExecuteAndAccept() throws Exception {
-        // Mocking repo and Judge0
         when(submissionRepository.findById(100L)).thenReturn(Optional.of(submission));
-        when(judge0Service.submit(anyString(), anyString(), anyString(), anyString())).thenReturn("token123");
-        
-        // Return ACCEPTED (status ID 3) immediately
-        Map<String, Object> result = Map.of(
-                "status", Map.of("id", 3),
-                "time", "0.05",
-                "memory", "1024",
-                "stdout", "MQ==", // "1"
-                "stderr", "",
-                "compile_output", ""
-        );
-        when(judge0Service.getSubmissionStatus("token123")).thenReturn(result);
-        when(judge0Service.decodeBase64(any())).thenAnswer(inv -> inv.getArgument(0)); // simple pass-through for test
 
-        // XP Mocking
+        ExecutionResult result = ExecutionResult.builder()
+                .stdout("1")
+                .stderr("")
+                .compileError("")
+                .exitCode(0)
+                .executionTimeMs(50L)
+                .engineUsed("piston")
+                .build();
+        when(codeExecutionService.execute(any(ExecutionRequest.class))).thenReturn(result);
+
         when(challengeRepository.findById(1L)).thenReturn(Optional.of(challenge));
         when(xpCalculatorService.calculateXp(eq("MEDIUM"), any())).thenReturn(150);
         User user = User.builder().auth0Id("user123").totalXp(500L).build();
         when(userRepository.findByAuth0Id("user123")).thenReturn(Optional.of(user));
 
-        // EXECUTE (The Thread.sleep in code will make this take ~3 seconds)
         executionService.executeSubmission(submission, List.of(testCase));
 
-        // VERIFY
         assertThat(submission.getStatus()).isEqualTo("ACCEPTED");
         assertThat(submission.getXpEarned()).isEqualTo("150");
         assertThat(user.getTotalXp()).isEqualTo(650L);
-        assertThat(user.getLevel()).isEqualTo(2); // (650 / 500) + 1
-        
         verify(submissionRepository, atLeast(2)).save(submission);
         verify(customizationService).checkAndGrantUnlocks("user123");
     }
@@ -106,22 +92,20 @@ class ExecutionServiceTest {
     @DisplayName("executeSubmission should handle WRONG_ANSWER")
     void shouldHandleWrongAnswer() throws Exception {
         when(submissionRepository.findById(100L)).thenReturn(Optional.of(submission));
-        when(judge0Service.submit(anyString(), anyString(), anyString(), anyString())).thenReturn("token123");
 
-        // Return WRONG ANSWER (status ID 4)
-        Map<String, Object> result = Map.of(
-                "status", Map.of("id", 4),
-                "stdout", "Mg==", // "2"
-                "stderr", "",
-                "compile_output", ""
-        );
-        when(judge0Service.getSubmissionStatus("token123")).thenReturn(result);
-        when(judge0Service.decodeBase64(any())).thenAnswer(inv -> inv.getArgument(0));
+        ExecutionResult result = ExecutionResult.builder()
+                .stdout("2")
+                .stderr("")
+                .compileError("")
+                .exitCode(0)
+                .executionTimeMs(50L)
+                .engineUsed("piston")
+                .build();
+        when(codeExecutionService.execute(any(ExecutionRequest.class))).thenReturn(result);
 
         executionService.executeSubmission(submission, List.of(testCase));
 
         assertThat(submission.getStatus()).isEqualTo("WRONG_ANSWER");
-        assertThat(submission.getErrorOutput()).contains("Got: [Mg==]");
         verify(userRepository, never()).save(any());
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -24,11 +24,14 @@ interface TerminalLine {
 })
 export class SurvivalPlayComponent implements OnInit, OnDestroy {
   @ViewChild('terminalOutput') terminalOutput!: ElementRef<HTMLDivElement>;
+  @ViewChild('terminalInput') terminalInputRef!: ElementRef<HTMLInputElement>;
 
   session: SurvivalSession | null = null;
   currentChallenge: StoryLevel | null = null;
   commandHistory: TerminalLine[] = [];
   currentCommand = '';
+  private inputHistory: string[] = [];
+  private historyIndex = -1;
   lives = 3;
   wave = 1;
   score = 0;
@@ -206,6 +209,7 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
         this.addLine('Session started — 3 lives remaining. Good luck.', 'info');
         if (this.currentChallenge) {
           this.startTimer();
+          this.focusInput();
         }
       },
       error: () => {
@@ -219,6 +223,8 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
     const cmd = this.currentCommand.trim();
     if (!cmd || this.isSubmitting || !this.session || !this.currentChallenge || this.gameOver) return;
 
+    this.inputHistory.push(cmd);
+    this.historyIndex = -1;
     this.addLine(`$ ${cmd}`, 'input');
     this.currentCommand = '';
     this.isSubmitting = true;
@@ -230,6 +236,7 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
         this.wave = res.waveReached;
         this.score = res.score;
         this.isSubmitting = false;
+        this.focusInput();
 
         if (res.correct) {
           this.clearTimer();
@@ -240,10 +247,12 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
           this.scheduleTransition(() => {
             this.commandHistory = [];
             this.showHint = false;
+            this.historyIndex = -1;
             this.currentChallenge = res.nextChallenge;
             if (this.currentChallenge) {
               this.addLine('New challenge. Type your command.', 'info');
               this.startTimer();
+              this.focusInput();
             }
           }, 900);
         } else {
@@ -269,6 +278,7 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         this.addLine('Connection error. Try again.', 'error');
         this.scrollTerminal();
+        this.focusInput();
       }
     });
   }
@@ -305,11 +315,45 @@ export class SurvivalPlayComponent implements OnInit, OnDestroy {
     this.isDanger = false;
     this.colonBlink = false;
     this.showHint = false;
+    this.inputHistory = [];
+    this.historyIndex = -1;
     this.startGame();
   }
 
   goToLeaderboard(): void {
     this.router.navigate(['/terminal-quest/survival/leaderboard']);
+  }
+
+  onInputKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!this.inputHistory.length) return;
+      this.historyIndex = Math.min(this.historyIndex + 1, this.inputHistory.length - 1);
+      this.currentCommand = this.inputHistory[this.inputHistory.length - 1 - this.historyIndex];
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (this.historyIndex <= 0) { this.historyIndex = -1; this.currentCommand = ''; return; }
+      this.historyIndex--;
+      this.currentCommand = this.inputHistory[this.inputHistory.length - 1 - this.historyIndex];
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      this.showHint = !this.showHint;
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'Escape') {
+      if (this.showHint) { this.showHint = false; }
+      else if (this.gameOver) { this.goToLeaderboard(); }
+    } else if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      this.commandHistory = [];
+    }
+  }
+
+  private focusInput(): void {
+    setTimeout(() => this.terminalInputRef?.nativeElement?.focus(), 50);
   }
 
   private addLine(text: string, type: TerminalLine['type']): void {

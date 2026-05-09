@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface ArenaTalkWallet {
   id: number;
@@ -15,7 +16,7 @@ export interface ArenaTalkWallet {
   providedIn: 'root'
 })
 export class ArenaTalkWalletService {
-  private apiUrl = '/api/arenatalk/wallet';
+  private apiUrl = `${environment.apiBaseUrl}/api/arenatalk/wallet`;
 
   constructor(private http: HttpClient) {}
 

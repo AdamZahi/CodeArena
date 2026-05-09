@@ -105,9 +105,19 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
                         """, nativeQuery = true)
                 List<Object[]> findByIdSanitized(@Param("id") Long id);
 
-
-    @Query("SELECT c.id, c.title, c.description, c.difficulty FROM Challenge c WHERE c.id IN :ids")
+    @Query(value = """
+            SELECT CAST(c.id AS UNSIGNED) AS id,
+                 c.title,
+                 c.description,
+                 c.difficulty,
+                 c.tags,
+                 c.language,
+                 c.author_id,
+                 c.created_at
+            FROM challenge c
+            WHERE TRIM(c.id) REGEXP '^[0-9]+$'
+              AND CAST(TRIM(c.id) AS UNSIGNED) IN (:ids)
+            """, nativeQuery = true)
     List<Object[]> findByIdsSanitized(@Param("ids") List<Long> ids);
-
 
 }

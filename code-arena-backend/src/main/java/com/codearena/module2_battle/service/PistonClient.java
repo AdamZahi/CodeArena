@@ -24,11 +24,12 @@ import java.util.Map;
 public class PistonClient {
 
     private final RestTemplate restTemplate;
-    private final String baseUrl;
+    private final String executeUrl;
 
     public PistonClient(@Value("${piston.base-url}") String baseUrl) {
         this.restTemplate = new RestTemplate();
-        this.baseUrl = baseUrl;
+        String normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+        this.executeUrl = normalizedBaseUrl + "/api/v2/execute";
     }
 
     /**
@@ -38,8 +39,6 @@ public class PistonClient {
     @SuppressWarnings("unchecked")
     public PistonExecutionResult execute(PistonExecutionRequest request) {
         try {
-            String url = baseUrl + "/api/v2/execute";
-
             Map<String, Object> body = new HashMap<>();
             body.put("language", request.getLanguage());
             body.put("version", request.getVersion());
@@ -60,7 +59,7 @@ public class PistonClient {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            ResponseEntity<Map> response = restTemplate.postForEntity(executeUrl, entity, Map.class);
 
             if (response.getBody() == null) {
                 throw new CodeExecutionUnavailableException(
@@ -123,6 +122,21 @@ public class PistonClient {
             log.error("Failed to execute code on Piston: {}", e.getMessage());
             throw new CodeExecutionUnavailableException(e);
         }
+    }
+
+    private static String normalizeBaseUrl(String rawBaseUrl) {
+        if (rawBaseUrl == null || rawBaseUrl.isBlank()) {
+            throw new IllegalArgumentException("piston.base-url must not be blank");
+        }
+
+        String normalized = rawBaseUrl.trim();
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        if (normalized.endsWith("/api/v2")) {
+            normalized = normalized.substring(0, normalized.length() - "/api/v2".length());
+        }
+        return normalized;
     }
 
     private static int toInt(Object value, int defaultValue) {

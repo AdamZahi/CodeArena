@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,6 +111,8 @@ class SubmissionControllerTest {
         @Test
         @DisplayName("should return submissions for a specific user (admin endpoint)")
         void shouldReturnUserSubmissions() {
+            when(jwt.getSubject()).thenReturn(USER_ID);
+            when(jwt.getClaimAsStringList("https://codearena.com/roles")).thenReturn(List.of("ADMIN"));
             when(submissionService.getUserSubmissions("target-user")).thenReturn(List.of(sampleSubmission));
 
             ResponseEntity<List<SubmissionDto>> response = submissionController.getUserSubmissions("target-user", jwt);

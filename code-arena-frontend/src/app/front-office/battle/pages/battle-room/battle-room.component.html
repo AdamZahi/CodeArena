@@ -156,14 +156,14 @@
     <div class="editor-section">
       <div class="editor-toolbar">
         <select class="lang-select" [(ngModel)]="selectedLanguage">
-          <option value="python">Python 3.12</option>
-          <option value="javascript">JavaScript (Node 20)</option>
-          <option value="java">Java 15</option>
-          <option value="go">Go 1.16</option>
-          <option value="rust">Rust 1.50</option>
-          <option value="csharp">C# (.NET 5)</option>
-          <option value="php">PHP 8.2</option>
-          <option value="bash">Bash 5.2</option>
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+          <option value="csharp">C#</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="typescript">TypeScript</option>
         </select>
 
         <div class="toolbar-right">
@@ -222,20 +222,6 @@
         </span>
         <span *ngIf="lastSubmissionResult.memoryKb !== null">
           <span class="detail-label">Memory:</span> {{ lastSubmissionResult.memoryKb }}KB
-        </span>
-        <span *ngIf="lastSubmissionResult.aiScore != null"
-              class="ai-score"
-              [class.fallback]="lastSubmissionResult.aiScoreFallback">
-          <span class="detail-label">AI Score:</span>
-          {{ lastSubmissionResult.aiScore | number:'1.0-1' }} / 100
-          <span *ngIf="lastSubmissionResult.aiScoreFallback" class="ai-score-tag" title="Ranker offline — fallback estimate">~</span>
-        </span>
-        <span *ngIf="lastSubmissionResult.complexityDisplay" class="complexity-badge">
-          <span class="detail-label">Complexity:</span>
-          {{ lastSubmissionResult.complexityDisplay }}
-          <span *ngIf="lastSubmissionResult.complexityConfidence != null" class="complexity-confidence">
-            ({{ (lastSubmissionResult.complexityConfidence * 100) | number:'1.0-0' }}% conf.)
-          </span>
         </span>
       </div>
       <div class="result-feedback" *ngIf="lastSubmissionResult.feedback">

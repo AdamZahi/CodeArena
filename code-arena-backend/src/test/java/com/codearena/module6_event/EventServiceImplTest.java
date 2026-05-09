@@ -32,6 +32,10 @@ class EventServiceImplTest {
     @Mock EventMapper eventMapper;
     @InjectMocks EventServiceImpl eventService;
 
+    @Mock com.codearena.module6_event.repository.EventCandidatureRepository candidatureRepository;
+    @Mock com.codearena.module6_event.repository.EventInvitationRepository invitationRepository;
+
+
     @Test
     void createEvent_shouldSaveAndReturnDto() {
         // Given

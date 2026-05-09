@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface VoiceChannel {
   id: number;
@@ -10,7 +11,7 @@ export interface VoiceChannel {
 
 @Injectable({ providedIn: 'root' })
 export class VoiceChannelService {
-  private apiUrl = '/api/arenatalk/hubs';
+  private apiUrl = `${environment.apiBaseUrl}/api/arenatalk/hubs`;
 
   constructor(private http: HttpClient) {}
 

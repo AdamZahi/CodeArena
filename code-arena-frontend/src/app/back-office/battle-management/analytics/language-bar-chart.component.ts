@@ -53,9 +53,19 @@ export class LanguageBarChartComponent implements AfterViewInit, OnChanges {
 
   @ViewChild('cv') canvasRef?: ElementRef<HTMLCanvasElement>;
   private chart?: Chart;
+  private renderQueued = false;
 
-  ngAfterViewInit(): void { this.render(); }
-  ngOnChanges(): void { if (this.canvasRef) this.render(); }
+  ngAfterViewInit(): void { this.scheduleRender(); }
+  ngOnChanges(): void { this.scheduleRender(); }
+
+  private scheduleRender(): void {
+    if (this.renderQueued) return;
+    this.renderQueued = true;
+    queueMicrotask(() => {
+      this.renderQueued = false;
+      this.render();
+    });
+  }
 
   private render() {
     if (!this.canvasRef || this.data.length === 0) return;
