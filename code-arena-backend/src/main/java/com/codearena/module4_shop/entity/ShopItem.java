@@ -38,6 +38,15 @@ public class ShopItem {
     @Column(nullable = false)
     private ItemType category;
 
+
+    @Column(name = "eco_score")
+    private Integer ecoScore;
+// AI-generated eco score (1-10) from Flask NLP model
+// Stored in DB so we don't re-score on every page load
+// null = not yet scored
+
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+
 }

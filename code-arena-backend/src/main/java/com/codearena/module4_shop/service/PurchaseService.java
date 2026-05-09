@@ -27,7 +27,7 @@ public interface PurchaseService {
     PurchaseResponse updateOrderStatus(UUID id, OrderStatus status);
 
     // Cancel order
-    PurchaseResponse cancelOrder(UUID id);
+    PurchaseResponse cancelOrder(UUID orderId, String participantId);
 
     // ── MÉTIERS AVANCÉS ───────────────────────────
 

@@ -1,0 +1,1472 @@
+[
+  {
+    "title": "Maximum Subarray",
+    "description": "Given an integer array nums, find the subarray with the largest sum and return its sum.\n\nInput: nums = [-2,1,-3,4,-1,2,1,-5,4]\nOutput: 6\nExplanation: The subarray [4,-1,2,1] has the largest sum 6.\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- -10^4 <= nums[i] <= 10^4",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use Kadane's algorithm: maintain a running sum and reset it to zero whenever it becomes negative, tracking the global maximum throughout."
+  },
+  {
+    "title": "Product of Array Except Self",
+    "description": "Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i].\n\nInput: nums = [1,2,3,4]\nOutput: [24,12,8,6]\n\nConstraints:\n- 2 <= nums.length <= 10^5\n- -30 <= nums[i] <= 30\n- The product of any prefix or suffix of nums fits in a 32-bit integer",
+    "tags": "Array, Prefix Sum",
+    "difficulty": "MEDIUM",
+    "hint": "Use two passes: build a prefix product array from the left, then multiply by a running suffix product from the right."
+  },
+  {
+    "title": "Contains Duplicate",
+    "description": "Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.\n\nInput: nums = [1,2,3,1]\nOutput: true\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- -10^9 <= nums[i] <= 10^9",
+    "tags": "Array, Hash Table, Sorting",
+    "difficulty": "EASY",
+    "hint": "Insert each element into a hash set and check if it already exists before insertion."
+  },
+  {
+    "title": "Best Time to Buy and Sell Stock",
+    "description": "You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy and a single day to sell. Return the maximum profit, or 0 if no profit is possible.\n\nInput: prices = [7,1,5,3,6,4]\nOutput: 5\n\nConstraints:\n- 1 <= prices.length <= 10^5\n- 0 <= prices[i] <= 10^4",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "EASY",
+    "hint": "Track the minimum price seen so far and at each step compute the profit if you sold today, keeping the global maximum."
+  },
+  {
+    "title": "Rotate Array",
+    "description": "Given an integer array nums, rotate the array to the right by k steps.\n\nInput: nums = [1,2,3,4,5,6,7], k = 3\nOutput: [5,6,7,1,2,3,4]\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- -2^31 <= nums[i] <= 2^31 - 1\n- 0 <= k <= 10^5",
+    "tags": "Array, Math, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Reverse the entire array, then reverse the first k elements and the remaining elements separately."
+  },
+  {
+    "title": "Move Zeroes",
+    "description": "Given an integer array nums, move all 0's to the end of it while maintaining the relative order of the non-zero elements. You must do this in-place.\n\nInput: nums = [0,1,0,3,12]\nOutput: [1,3,12,0,0]\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -2^31 <= nums[i] <= 2^31 - 1",
+    "tags": "Array, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use a slow pointer to track the position for the next non-zero element, and a fast pointer to scan through the array swapping non-zeros forward."
+  },
+  {
+    "title": "Find All Duplicates in an Array",
+    "description": "Given an integer array nums of length n where all integers are in the range [1, n] and each integer appears once or twice, return an array of all the integers that appear twice.\n\nInput: nums = [4,3,2,7,8,2,3,1]\nOutput: [2,3]\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 10^5\n- 1 <= nums[i] <= n",
+    "tags": "Array, Hash Table",
+    "difficulty": "MEDIUM",
+    "hint": "Use the array itself as a hash map by negating the value at index nums[i]-1; if it is already negative, nums[i] is a duplicate."
+  },
+  {
+    "title": "Maximum Product Subarray",
+    "description": "Given an integer array nums, find a subarray that has the largest product and return the product.\n\nInput: nums = [2,3,-2,4]\nOutput: 6\nExplanation: [2,3] has the largest product 6.\n\nConstraints:\n- 1 <= nums.length <= 2 * 10^4\n- -10 <= nums[i] <= 10",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Track both the maximum and minimum product ending at each position since a negative number can turn a minimum product into a maximum."
+  },
+  {
+    "title": "Find the Duplicate Number",
+    "description": "Given an array of integers nums containing n + 1 integers where each integer is in the range [1, n] inclusive, there is only one repeated number. Return this repeated number without modifying the array using O(1) extra space.\n\nInput: nums = [1,3,4,2,2]\nOutput: 2\n\nConstraints:\n- 1 <= n <= 10^5\n- nums.length == n + 1\n- 1 <= nums[i] <= n",
+    "tags": "Array, Two Pointers, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Use Floyd's tortoise and hare cycle detection algorithm treating array values as next pointers."
+  },
+  {
+    "title": "Shuffle an Array",
+    "description": "Given an integer array nums, design an algorithm to randomly shuffle the array. All permutations of the array should be equally likely.\n\nInput: nums = [1,2,3]\nOutput: [1,2,3] (any permutation)\n\nConstraints:\n- 1 <= nums.length <= 50\n- -10^6 <= nums[i] <= 10^6",
+    "tags": "Array, Math",
+    "difficulty": "MEDIUM",
+    "hint": "Use the Fisher-Yates shuffle algorithm: iterate from the end, swapping each element with a randomly chosen element from the unshuffled portion."
+  },
+  {
+    "title": "Missing Number",
+    "description": "Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.\n\nInput: nums = [3,0,1]\nOutput: 2\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 10^4\n- 0 <= nums[i] <= n\n- All numbers are unique",
+    "tags": "Array, Math, Bit Manipulation",
+    "difficulty": "EASY",
+    "hint": "Use the Gauss sum formula n*(n+1)/2 and subtract the actual sum of the array to find the missing number."
+  },
+  {
+    "title": "Third Maximum Number",
+    "description": "Given an integer array nums, return the third distinct maximum number in this array. If the third maximum does not exist, return the maximum number.\n\nInput: nums = [3,2,1]\nOutput: 1\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -2^31 <= nums[i] <= 2^31 - 1",
+    "tags": "Array, Sorting",
+    "difficulty": "EASY",
+    "hint": "Maintain three variables tracking the first, second, and third maximums, updating them as you iterate through the array."
+  },
+  {
+    "title": "Pascal's Triangle",
+    "description": "Given an integer numRows, return the first numRows of Pascal's triangle where each number is the sum of the two numbers directly above it.\n\nInput: numRows = 5\nOutput: [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]\n\nConstraints:\n- 1 <= numRows <= 30",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "EASY",
+    "hint": "Build each row iteratively where row[j] = previous_row[j-1] + previous_row[j], with 1s at both ends."
+  },
+  {
+    "title": "Majority Element",
+    "description": "Given an array nums of size n, return the majority element. The majority element is the element that appears more than n/2 times.\n\nInput: nums = [3,2,3]\nOutput: 3\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 5 * 10^4\n- -10^9 <= nums[i] <= 10^9",
+    "tags": "Array, Hash Table, Sorting",
+    "difficulty": "EASY",
+    "hint": "Use Boyer-Moore voting algorithm: maintain a candidate and counter, incrementing for matches and decrementing for mismatches."
+  },
+  {
+    "title": "Spiral Matrix",
+    "description": "Given an m x n matrix, return all elements of the matrix in spiral order.\n\nInput: matrix = [[1,2,3],[4,5,6],[7,8,9]]\nOutput: [1,2,3,6,9,8,7,4,5]\n\nConstraints:\n- m == matrix.length\n- n == matrix[i].length\n- 1 <= m, n <= 10",
+    "tags": "Array, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use four boundary pointers (top, bottom, left, right) and shrink them inward after traversing each side of the spiral."
+  },
+  {
+    "title": "Set Matrix Zeroes",
+    "description": "Given an m x n integer matrix, if an element is 0, set its entire row and column to 0. You must do it in place.\n\nInput: matrix = [[1,1,1],[1,0,1],[1,1,1]]\nOutput: [[1,0,1],[0,0,0],[1,0,1]]\n\nConstraints:\n- m == matrix.length\n- n == matrix[0].length\n- 1 <= m, n <= 200",
+    "tags": "Array, Matrix, Hash Table",
+    "difficulty": "MEDIUM",
+    "hint": "Use the first row and first column as markers to record which rows and columns should be zeroed, using two boolean flags for the first row and column themselves."
+  },
+  {
+    "title": "Two Sum",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\n\nConstraints:\n- 2 <= nums.length <= 10^4\n- -10^9 <= nums[i] <= 10^9\n- Only one valid answer exists",
+    "tags": "Array, Hash Table",
+    "difficulty": "EASY",
+    "hint": "Use a hash map to store each number's index, checking if the complement (target minus current) already exists in the map."
+  },
+  {
+    "title": "Group Anagrams",
+    "description": "Given an array of strings strs, group the anagrams together. You can return the answer in any order.\n\nInput: strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]\nOutput: [[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]\n\nConstraints:\n- 1 <= strs.length <= 10^4\n- 0 <= strs[i].length <= 100",
+    "tags": "Array, Hash Table, String, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort each string's characters to form a canonical key, then group all strings sharing the same key using a hash map of lists."
+  },
+  {
+    "title": "Valid Anagram",
+    "description": "Given two strings s and t, return true if t is an anagram of s, and false otherwise.\n\nInput: s = \"anagram\", t = \"nagaram\"\nOutput: true\n\nConstraints:\n- 1 <= s.length, t.length <= 5 * 10^4\n- s and t consist of lowercase English letters",
+    "tags": "Hash Table, String, Sorting",
+    "difficulty": "EASY",
+    "hint": "Build a frequency count array of 26 characters for both strings and compare them for equality."
+  },
+  {
+    "title": "Longest Consecutive Sequence",
+    "description": "Given an unsorted array of integers nums, return the length of the longest consecutive elements sequence. You must write an algorithm that runs in O(n) time.\n\nInput: nums = [100,4,200,1,3,2]\nOutput: 4\nExplanation: The longest consecutive sequence is [1,2,3,4].\n\nConstraints:\n- 0 <= nums.length <= 10^5\n- -10^9 <= nums[i] <= 10^9",
+    "tags": "Array, Hash Table, Union Find",
+    "difficulty": "MEDIUM",
+    "hint": "Insert all numbers into a hash set, then for each number that is the start of a sequence (num-1 not in set), count consecutive numbers forward."
+  },
+  {
+    "title": "Top K Frequent Elements",
+    "description": "Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.\n\nInput: nums = [1,1,1,2,2,3], k = 2\nOutput: [1,2]\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- -10^4 <= nums[i] <= 10^4\n- k is in the range [1, number of unique elements]",
+    "tags": "Array, Hash Table, Heap, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Use a hash map to count frequencies, then use a min-heap of size k to extract the k most frequent elements in O(n log k) time."
+  },
+  {
+    "title": "Isomorphic Strings",
+    "description": "Given two strings s and t, determine if they are isomorphic. Two strings are isomorphic if the characters in s can be replaced to get t with a one-to-one mapping.\n\nInput: s = \"egg\", t = \"add\"\nOutput: true\n\nConstraints:\n- 1 <= s.length <= 5 * 10^4\n- t.length == s.length",
+    "tags": "Hash Table, String",
+    "difficulty": "EASY",
+    "hint": "Use two hash maps to maintain a bidirectional character mapping between s and t, verifying consistency at each position."
+  },
+  {
+    "title": "Word Pattern",
+    "description": "Given a pattern and a string s, find if s follows the same pattern. Here follow means a full match such that there is a bijection between a letter in pattern and a non-empty word in s.\n\nInput: pattern = \"abba\", s = \"dog cat cat dog\"\nOutput: true\n\nConstraints:\n- 1 <= pattern.length <= 300\n- pattern contains only lowercase English letters\n- 1 <= s.length <= 3000",
+    "tags": "Hash Table, String",
+    "difficulty": "EASY",
+    "hint": "Use two hash maps for bidirectional mapping between pattern characters and words, checking consistency at each position."
+  },
+  {
+    "title": "Subarray Sum Equals K",
+    "description": "Given an array of integers nums and an integer k, return the total number of subarrays whose sum equals to k.\n\nInput: nums = [1,1,1], k = 2\nOutput: 2\n\nConstraints:\n- 1 <= nums.length <= 2 * 10^4\n- -1000 <= nums[i] <= 1000\n- -10^7 <= k <= 10^7",
+    "tags": "Array, Hash Table, Prefix Sum",
+    "difficulty": "MEDIUM",
+    "hint": "Use a hash map to store prefix sum frequencies; for each prefix sum, check how many times (current_prefix_sum - k) has occurred."
+  },
+  {
+    "title": "First Unique Character in a String",
+    "description": "Given a string s, find the first non-repeating character in it and return its index. If it does not exist, return -1.\n\nInput: s = \"leetcode\"\nOutput: 0\n\nConstraints:\n- 1 <= s.length <= 10^5\n- s consists of only lowercase English letters",
+    "tags": "Hash Table, String, Queue",
+    "difficulty": "EASY",
+    "hint": "Build a frequency map of all characters in one pass, then scan the string again to find the first character with count 1."
+  },
+  {
+    "title": "Intersection of Two Arrays II",
+    "description": "Given two integer arrays nums1 and nums2, return an array of their intersection. Each element in the result must appear as many times as it shows in both arrays.\n\nInput: nums1 = [1,2,2,1], nums2 = [2,2]\nOutput: [2,2]\n\nConstraints:\n- 1 <= nums1.length, nums2.length <= 1000\n- 0 <= nums1[i], nums2[i] <= 1000",
+    "tags": "Array, Hash Table, Sorting, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use a hash map to count occurrences in the smaller array, then iterate through the larger array decrementing counts to find common elements."
+  },
+  {
+    "title": "Longest Palindromic Substring",
+    "description": "Given a string s, return the longest palindromic substring in s.\n\nInput: s = \"babad\"\nOutput: \"bab\" (or \"aba\")\n\nConstraints:\n- 1 <= s.length <= 1000\n- s consists of only digits and English letters",
+    "tags": "String, Dynamic Programming, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Expand around each character (and each pair of characters) as potential centers of a palindrome, tracking the longest found."
+  },
+  {
+    "title": "Valid Palindrome",
+    "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.\n\nInput: s = \"A man, a plan, a canal: Panama\"\nOutput: true\n\nConstraints:\n- 1 <= s.length <= 2 * 10^5\n- s consists only of printable ASCII characters",
+    "tags": "String, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use two pointers from both ends, skipping non-alphanumeric characters and comparing lowercase versions."
+  },
+  {
+    "title": "Longest Common Prefix",
+    "description": "Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string.\n\nInput: strs = [\"flower\",\"flow\",\"flight\"]\nOutput: \"fl\"\n\nConstraints:\n- 1 <= strs.length <= 200\n- 0 <= strs[i].length <= 200",
+    "tags": "String, Trie",
+    "difficulty": "EASY",
+    "hint": "Compare characters at each position across all strings simultaneously, stopping at the first mismatch."
+  },
+  {
+    "title": "String to Integer (atoi)",
+    "description": "Implement the myAtoi function which converts a string to a 32-bit signed integer. Read and ignore leading whitespace, determine sign, read digits until non-digit or end, clamp to INT range.\n\nInput: s = \"   -42\"\nOutput: -42\n\nConstraints:\n- 0 <= s.length <= 200\n- s consists of English letters, digits, spaces, '+', '-', '.'",
+    "tags": "String, Math",
+    "difficulty": "MEDIUM",
+    "hint": "Process the string sequentially: skip whitespace, detect sign, accumulate digits while checking for 32-bit integer overflow at each step."
+  },
+  {
+    "title": "Reverse String",
+    "description": "Write a function that reverses a string in-place. The input is given as an array of characters.\n\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n\nConstraints:\n- 1 <= s.length <= 10^5\n- s[i] is a printable ASCII character",
+    "tags": "String, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use two pointers at both ends of the array, swapping characters and moving inward until they meet."
+  },
+  {
+    "title": "Reverse Words in a String",
+    "description": "Given an input string s, reverse the order of the words. A word is defined as a sequence of non-space characters.\n\nInput: s = \"the sky is blue\"\nOutput: \"blue is sky the\"\n\nConstraints:\n- 1 <= s.length <= 10^4\n- s contains English letters, digits, and spaces",
+    "tags": "String, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Split the string by spaces, filter empty strings, then reverse the resulting list and join with single spaces."
+  },
+  {
+    "title": "Zigzag Conversion",
+    "description": "The string is written in a zigzag pattern on a given number of rows. Write the code that will take a string and make this conversion.\n\nInput: s = \"PAYPALISHIRING\", numRows = 3\nOutput: \"PAHNAPLSIIGYIR\"\n\nConstraints:\n- 1 <= s.length <= 1000\n- 1 <= numRows <= 1000",
+    "tags": "String",
+    "difficulty": "MEDIUM",
+    "hint": "Simulate the zigzag by maintaining an array of strings for each row, toggling direction at the top and bottom rows."
+  },
+  {
+    "title": "Count and Say",
+    "description": "The count-and-say sequence is a sequence of digit strings defined by the recursive formula. countAndSay(1) = \"1\", countAndSay(n) is the run-length encoding of countAndSay(n-1).\n\nInput: n = 4\nOutput: \"1211\"\n\nConstraints:\n- 1 <= n <= 30",
+    "tags": "String, Recursion",
+    "difficulty": "MEDIUM",
+    "hint": "Iteratively build each term by run-length encoding the previous term, counting consecutive identical digits."
+  },
+  {
+    "title": "Implement strStr",
+    "description": "Return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.\n\nInput: haystack = \"sadbutsad\", needle = \"sad\"\nOutput: 0\n\nConstraints:\n- 1 <= haystack.length, needle.length <= 10^4",
+    "tags": "String, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use the KMP algorithm with a failure function array to avoid redundant character comparisons in the haystack."
+  },
+  {
+    "title": "Three Sum",
+    "description": "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j != k and nums[i] + nums[j] + nums[k] == 0.\n\nInput: nums = [-1,0,1,2,-1,-4]\nOutput: [[-1,-1,2],[-1,0,1]]\n\nConstraints:\n- 3 <= nums.length <= 3000\n- -10^5 <= nums[i] <= 10^5",
+    "tags": "Array, Two Pointers, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort the array, fix one element, then use two pointers on the remaining portion to find pairs that sum to the negative of the fixed element."
+  },
+  {
+    "title": "Container With Most Water",
+    "description": "Given n non-negative integers representing an elevation map where the width of each bar is 1, find two lines that together with the x-axis form a container that holds the most water.\n\nInput: height = [1,8,6,2,5,4,8,3,7]\nOutput: 49\n\nConstraints:\n- n == height.length\n- 2 <= n <= 10^5\n- 0 <= height[i] <= 10^4",
+    "tags": "Array, Two Pointers, Greedy",
+    "difficulty": "MEDIUM",
+    "hint": "Use two pointers at both ends, always moving the pointer with the shorter height inward while tracking the maximum area."
+  },
+  {
+    "title": "Trapping Rain Water",
+    "description": "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.\n\nInput: height = [0,1,0,2,1,0,1,3,2,1,2,1]\nOutput: 6\n\nConstraints:\n- n == height.length\n- 1 <= n <= 2 * 10^4\n- 0 <= height[i] <= 10^5",
+    "tags": "Array, Two Pointers, Dynamic Programming, Stack",
+    "difficulty": "HARD",
+    "hint": "Use two pointers from both ends, maintaining left_max and right_max; water at each position equals min(left_max, right_max) minus the height."
+  },
+  {
+    "title": "Remove Duplicates from Sorted Array",
+    "description": "Given an integer array nums sorted in non-decreasing order, remove the duplicates in-place such that each unique element appears only once. Return the number of unique elements.\n\nInput: nums = [1,1,2]\nOutput: 2, nums = [1,2,_]\n\nConstraints:\n- 1 <= nums.length <= 3 * 10^4\n- -100 <= nums[i] <= 100\n- nums is sorted in non-decreasing order",
+    "tags": "Array, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use a slow pointer to track the position of the last unique element, only advancing it when the fast pointer finds a new value."
+  },
+  {
+    "title": "Sort Colors",
+    "description": "Given an array nums with n objects colored red (0), white (1), and blue (2), sort them in-place so that objects of the same color are adjacent, in the order red, white, and blue.\n\nInput: nums = [2,0,2,1,1,0]\nOutput: [0,0,1,1,2,2]\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 300\n- nums[i] is 0, 1, or 2",
+    "tags": "Array, Two Pointers, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Use the Dutch National Flag algorithm with three pointers (low, mid, high) to partition elements into three groups in a single pass."
+  },
+  {
+    "title": "Squares of a Sorted Array",
+    "description": "Given an integer array nums sorted in non-decreasing order, return an array of the squares of each number sorted in non-decreasing order.\n\nInput: nums = [-4,-1,0,3,10]\nOutput: [0,1,9,16,100]\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -10^4 <= nums[i] <= 10^4\n- nums is sorted in non-decreasing order",
+    "tags": "Array, Two Pointers, Sorting",
+    "difficulty": "EASY",
+    "hint": "Use two pointers at both ends comparing absolute values, filling the result array from the largest position backward."
+  },
+  {
+    "title": "Boats to Save People",
+    "description": "You are given an array people where people[i] is the weight of the ith person, and an infinite number of boats that each carry at most limit weight. Each boat carries at most two people. Return the minimum number of boats.\n\nInput: people = [3,2,2,1], limit = 3\nOutput: 3\n\nConstraints:\n- 1 <= people.length <= 5 * 10^4\n- 1 <= people[i] <= limit <= 3 * 10^4",
+    "tags": "Array, Two Pointers, Greedy, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort the array, then use two pointers from both ends pairing the heaviest with the lightest person if their sum fits within the limit."
+  },
+  {
+    "title": "Longest Substring Without Repeating Characters",
+    "description": "Given a string s, find the length of the longest substring without repeating characters.\n\nInput: s = \"abcabcbb\"\nOutput: 3\nExplanation: The answer is \"abc\".\n\nConstraints:\n- 0 <= s.length <= 5 * 10^4\n- s consists of English letters, digits, symbols and spaces",
+    "tags": "Hash Table, String, Sliding Window",
+    "difficulty": "MEDIUM",
+    "hint": "Use a sliding window with a hash set, expanding the right pointer and shrinking the left whenever a duplicate is found."
+  },
+  {
+    "title": "Minimum Window Substring",
+    "description": "Given two strings s and t, return the minimum window substring of s such that every character in t (including duplicates) is included in the window.\n\nInput: s = \"ADOBECODEBANC\", t = \"ABC\"\nOutput: \"BANC\"\n\nConstraints:\n- 1 <= s.length, t.length <= 10^5\n- s and t consist of uppercase and lowercase English letters",
+    "tags": "Hash Table, String, Sliding Window",
+    "difficulty": "HARD",
+    "hint": "Use a sliding window with two frequency maps: expand right to include all required characters, then shrink left to find the minimum valid window."
+  },
+  {
+    "title": "Sliding Window Maximum",
+    "description": "Given an array nums and a sliding window of size k moving from left to right, return the max value in each window position.\n\nInput: nums = [1,3,-1,-3,5,3,6,7], k = 3\nOutput: [3,3,5,5,6,7]\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- -10^4 <= nums[i] <= 10^4\n- 1 <= k <= nums.length",
+    "tags": "Array, Queue, Sliding Window, Heap, Monotonic Stack",
+    "difficulty": "HARD",
+    "hint": "Use a monotonic decreasing deque that stores indices; remove elements outside the window and smaller elements from the back."
+  },
+  {
+    "title": "Maximum Average Subarray I",
+    "description": "Given an integer array nums and an integer k, find a contiguous subarray whose length is equal to k that has the maximum average value and return this value.\n\nInput: nums = [1,12,-5,-6,50,3], k = 4\nOutput: 12.75\n\nConstraints:\n- n == nums.length\n- 1 <= k <= n <= 10^5\n- -10^4 <= nums[i] <= 10^4",
+    "tags": "Array, Sliding Window",
+    "difficulty": "EASY",
+    "hint": "Compute the sum of the first k elements, then slide the window by adding the next element and subtracting the leftmost, tracking the maximum sum."
+  },
+  {
+    "title": "Permutation in String",
+    "description": "Given two strings s1 and s2, return true if s2 contains a permutation of s1.\n\nInput: s1 = \"ab\", s2 = \"eidbaooo\"\nOutput: true\n\nConstraints:\n- 1 <= s1.length, s2.length <= 10^4\n- s1 and s2 consist of lowercase English letters",
+    "tags": "Hash Table, String, Sliding Window, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Maintain a fixed-size sliding window of length len(s1) over s2, comparing character frequency counts at each position."
+  },
+  {
+    "title": "Fruit Into Baskets",
+    "description": "You are visiting a farm that has a single row of fruit trees. You have two baskets and each basket can only hold one type of fruit. Return the maximum number of fruits you can pick.\n\nInput: fruits = [1,2,1]\nOutput: 3\n\nConstraints:\n- 1 <= fruits.length <= 10^5\n- 0 <= fruits[i] < fruits.length",
+    "tags": "Array, Hash Table, Sliding Window",
+    "difficulty": "MEDIUM",
+    "hint": "Use a sliding window with a hash map tracking fruit types; shrink the window from the left when more than two types are present."
+  },
+  {
+    "title": "Minimum Size Subarray Sum",
+    "description": "Given an array of positive integers nums and a positive integer target, return the minimal length of a subarray whose sum is greater than or equal to target.\n\nInput: target = 7, nums = [2,3,1,2,4,3]\nOutput: 2\n\nConstraints:\n- 1 <= target <= 10^9\n- 1 <= nums.length <= 10^5\n- 1 <= nums[i] <= 10^4",
+    "tags": "Array, Sliding Window, Binary Search, Prefix Sum",
+    "difficulty": "MEDIUM",
+    "hint": "Use a variable-size sliding window: expand right to increase the sum, shrink left when the sum meets the target, tracking the minimum length."
+  },
+  {
+    "title": "Longest Repeating Character Replacement",
+    "description": "Given a string s and an integer k, you can choose any character and change it to any other uppercase English character at most k times. Return the length of the longest substring containing the same letter.\n\nInput: s = \"AABABBA\", k = 1\nOutput: 4\n\nConstraints:\n- 1 <= s.length <= 10^5\n- s consists of only uppercase English letters\n- 0 <= k <= s.length",
+    "tags": "Hash Table, String, Sliding Window",
+    "difficulty": "MEDIUM",
+    "hint": "Use a sliding window tracking character frequencies; shrink the window when (window_length - max_frequency) exceeds k."
+  },
+  {
+    "title": "Valid Parentheses",
+    "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nInput: s = \"()[]{}\"\nOutput: true\n\nConstraints:\n- 1 <= s.length <= 10^4\n- s consists of parentheses only",
+    "tags": "String, Stack",
+    "difficulty": "EASY",
+    "hint": "Push opening brackets onto a stack; when encountering a closing bracket, check if the stack's top matches the corresponding opening bracket."
+  },
+  {
+    "title": "Min Stack",
+    "description": "Design a stack that supports push, pop, top, and retrieving the minimum element in constant time.\n\nInput: [\"MinStack\",\"push\",\"push\",\"push\",\"getMin\",\"pop\",\"top\",\"getMin\"]\nOutput: [null,null,null,null,-3,null,0,-2]\n\nConstraints:\n- -2^31 <= val <= 2^31 - 1\n- Methods pop, top and getMin will always be called on non-empty stacks",
+    "tags": "Stack, Design",
+    "difficulty": "MEDIUM",
+    "hint": "Maintain two stacks: one for values and one for tracking the current minimum, pushing onto the min stack whenever the value is less than or equal to the current minimum."
+  },
+  {
+    "title": "Daily Temperatures",
+    "description": "Given an array of integers temperatures representing daily temperatures, return an array answer such that answer[i] is the number of days you have to wait for a warmer temperature.\n\nInput: temperatures = [73,74,75,71,69,72,76,73]\nOutput: [1,1,4,2,1,1,0,0]\n\nConstraints:\n- 1 <= temperatures.length <= 10^5\n- 30 <= temperatures[i] <= 100",
+    "tags": "Array, Stack, Monotonic Stack",
+    "difficulty": "MEDIUM",
+    "hint": "Use a monotonic decreasing stack storing indices; when a warmer temperature is found, pop and compute the distance for all cooler days on the stack."
+  },
+  {
+    "title": "Evaluate Reverse Polish Notation",
+    "description": "You are given an array of strings tokens that represents an arithmetic expression in Reverse Polish Notation. Evaluate the expression and return the result.\n\nInput: tokens = [\"2\",\"1\",\"+\",\"3\",\"*\"]\nOutput: 9\n\nConstraints:\n- 1 <= tokens.length <= 10^4\n- tokens[i] is an operator or an integer in the range [-200, 200]",
+    "tags": "Array, Math, Stack",
+    "difficulty": "MEDIUM",
+    "hint": "Use a stack: push numbers onto it, and when an operator is encountered, pop two operands, apply the operation, and push the result back."
+  },
+  {
+    "title": "Largest Rectangle in Histogram",
+    "description": "Given an array of integers heights representing the histogram's bar height where the width of each bar is 1, return the area of the largest rectangle in the histogram.\n\nInput: heights = [2,1,5,6,2,3]\nOutput: 10\n\nConstraints:\n- 1 <= heights.length <= 10^5\n- 0 <= heights[i] <= 10^4",
+    "tags": "Array, Stack, Monotonic Stack",
+    "difficulty": "HARD",
+    "hint": "Use a monotonic increasing stack of indices; when a shorter bar is found, pop and compute the area using the popped height and the width between current index and new stack top."
+  },
+  {
+    "title": "Next Greater Element I",
+    "description": "Given two distinct 0-indexed integer arrays nums1 and nums2 where nums1 is a subset of nums2, find the next greater element for each element of nums1 in nums2.\n\nInput: nums1 = [4,1,2], nums2 = [1,3,4,2]\nOutput: [-1,3,-1]\n\nConstraints:\n- 1 <= nums1.length <= nums2.length <= 1000\n- 0 <= nums1[i], nums2[i] <= 10^4",
+    "tags": "Array, Hash Table, Stack, Monotonic Stack",
+    "difficulty": "EASY",
+    "hint": "Use a monotonic decreasing stack to find the next greater element for each value in nums2, storing results in a hash map for O(1) lookup."
+  },
+  {
+    "title": "Decode String",
+    "description": "Given an encoded string, return its decoded string. The encoding rule is: k[encoded_string], where the encoded_string inside the brackets is repeated exactly k times.\n\nInput: s = \"3[a]2[bc]\"\nOutput: \"aaabcbc\"\n\nConstraints:\n- 1 <= s.length <= 30\n- s consists of lowercase English letters, digits, and square brackets",
+    "tags": "String, Stack, Recursion",
+    "difficulty": "MEDIUM",
+    "hint": "Use a stack to push current string and count when encountering an opening bracket, then pop and repeat the accumulated string when encountering a closing bracket."
+  },
+  {
+    "title": "Asteroid Collision",
+    "description": "Given an array of integers representing asteroids in a row where the absolute value represents size and the sign represents direction (positive=right, negative=left), find the state after all collisions.\n\nInput: asteroids = [5,10,-5]\nOutput: [5,10]\n\nConstraints:\n- 2 <= asteroids.length <= 10^4\n- -1000 <= asteroids[i] <= 1000\n- asteroids[i] != 0",
+    "tags": "Array, Stack",
+    "difficulty": "MEDIUM",
+    "hint": "Use a stack: push right-moving asteroids, and when a left-moving asteroid is encountered, pop and resolve collisions until the stack is empty or a larger right-moving asteroid remains."
+  },
+  {
+    "title": "Implement Queue using Stacks",
+    "description": "Implement a first in first out (FIFO) queue using only two stacks.\n\nInput: [\"MyQueue\",\"push\",\"push\",\"peek\",\"pop\",\"empty\"]\nOutput: [null,null,null,1,1,false]\n\nConstraints:\n- 1 <= x <= 9\n- At most 100 calls will be made to push, pop, peek, and empty",
+    "tags": "Stack, Queue, Design",
+    "difficulty": "EASY",
+    "hint": "Use two stacks: push onto one stack, and lazily transfer elements to the other stack (reversing order) only when a pop or peek is needed."
+  },
+  {
+    "title": "Design Circular Queue",
+    "description": "Design your implementation of the circular queue. It should support enQueue, deQueue, Front, Rear, isEmpty, and isFull operations.\n\nInput: [\"MyCircularQueue\",\"enQueue\",\"enQueue\",\"enQueue\",\"enQueue\",\"Rear\",\"isFull\",\"deQueue\",\"enQueue\",\"Rear\"]\nOutput: [null,true,true,true,false,3,true,true,true,4]\n\nConstraints:\n- 1 <= k <= 1000\n- 0 <= value <= 1000\n- At most 3000 calls",
+    "tags": "Array, Queue, Design",
+    "difficulty": "MEDIUM",
+    "hint": "Use a fixed-size array with front and rear pointers, using modulo arithmetic to wrap around and a count variable to track fullness."
+  },
+  {
+    "title": "Number of Recent Calls",
+    "description": "Write a class that counts the number of recent requests within a certain time frame. Implement the ping method that returns the number of requests in the past 3000 milliseconds.\n\nInput: [\"RecentCounter\",\"ping\",\"ping\",\"ping\",\"ping\"]\n[[],[1],[100],[3001],[3002]]\nOutput: [null,1,2,3,3]\n\nConstraints:\n- 1 <= t <= 10^9\n- Each test case will call ping with strictly increasing values of t",
+    "tags": "Queue, Design",
+    "difficulty": "EASY",
+    "hint": "Use a queue to store timestamps; dequeue elements older than t - 3000 and return the queue size."
+  },
+  {
+    "title": "Reverse Linked List",
+    "description": "Given the head of a singly linked list, reverse the list and return the reversed list.\n\nInput: head = [1,2,3,4,5]\nOutput: [5,4,3,2,1]\n\nConstraints:\n- The number of nodes in the list is in the range [0, 5000]\n- -5000 <= Node.val <= 5000",
+    "tags": "Linked List, Recursion",
+    "difficulty": "EASY",
+    "hint": "Use three pointers (prev, current, next): save next, point current to prev, advance prev and current until the end."
+  },
+  {
+    "title": "Merge Two Sorted Lists",
+    "description": "You are given the heads of two sorted linked lists. Merge the two lists into one sorted list by splicing together the nodes.\n\nInput: list1 = [1,2,4], list2 = [1,3,4]\nOutput: [1,1,2,3,4,4]\n\nConstraints:\n- The number of nodes in both lists is in the range [0, 50]\n- -100 <= Node.val <= 100",
+    "tags": "Linked List, Recursion",
+    "difficulty": "EASY",
+    "hint": "Use a dummy head node, compare values from both lists, and append the smaller node to the result while advancing that list's pointer."
+  },
+  {
+    "title": "Linked List Cycle",
+    "description": "Given head of a linked list, determine if it has a cycle. A cycle exists if some node can be reached again by continuously following the next pointer.\n\nInput: head = [3,2,0,-4], pos = 1\nOutput: true\n\nConstraints:\n- The number of nodes is in the range [0, 10^4]\n- -10^5 <= Node.val <= 10^5",
+    "tags": "Hash Table, Linked List, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use Floyd's cycle detection with slow and fast pointers: slow moves one step, fast moves two steps; if they meet, a cycle exists."
+  },
+  {
+    "title": "Remove Nth Node From End of List",
+    "description": "Given the head of a linked list, remove the nth node from the end of the list and return its head.\n\nInput: head = [1,2,3,4,5], n = 2\nOutput: [1,2,3,5]\n\nConstraints:\n- The number of nodes in the list is sz\n- 1 <= sz <= 30\n- 1 <= n <= sz",
+    "tags": "Linked List, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Use two pointers with a gap of n between them; when the fast pointer reaches the end, the slow pointer is at the node before the one to remove."
+  },
+  {
+    "title": "Add Two Numbers",
+    "description": "Given two non-empty linked lists representing two non-negative integers stored in reverse order, add the two numbers and return the sum as a linked list.\n\nInput: l1 = [2,4,3], l2 = [5,6,4]\nOutput: [7,0,8] (342 + 465 = 807)\n\nConstraints:\n- The number of nodes in each list is in the range [1, 100]\n- 0 <= Node.val <= 9",
+    "tags": "Linked List, Math, Recursion",
+    "difficulty": "MEDIUM",
+    "hint": "Traverse both lists simultaneously, adding corresponding digits with a carry variable, creating new nodes for each digit of the result."
+  },
+  {
+    "title": "Palindrome Linked List",
+    "description": "Given the head of a singly linked list, return true if it is a palindrome.\n\nInput: head = [1,2,2,1]\nOutput: true\n\nConstraints:\n- The number of nodes in the list is in the range [1, 10^5]\n- 0 <= Node.val <= 9",
+    "tags": "Linked List, Two Pointers, Stack, Recursion",
+    "difficulty": "EASY",
+    "hint": "Find the middle using fast and slow pointers, reverse the second half in-place, then compare both halves node by node."
+  },
+  {
+    "title": "Merge K Sorted Lists",
+    "description": "Given an array of k linked lists, each sorted in ascending order, merge all the linked lists into one sorted linked list.\n\nInput: lists = [[1,4,5],[1,3,4],[2,6]]\nOutput: [1,1,2,3,4,4,5,6]\n\nConstraints:\n- k == lists.length\n- 0 <= k <= 10^4\n- 0 <= lists[i].length <= 500",
+    "tags": "Linked List, Heap, Divide and Conquer, Sorting",
+    "difficulty": "HARD",
+    "hint": "Use a min-heap to always extract the smallest head node across all lists, pushing the next node from that list back into the heap."
+  },
+  {
+    "title": "LRU Cache",
+    "description": "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement get and put operations in O(1) time.\n\nInput: [\"LRUCache\",\"put\",\"put\",\"get\",\"put\",\"get\",\"put\",\"get\",\"get\",\"get\"]\nOutput: [null,null,null,1,null,-1,null,-1,3,4]\n\nConstraints:\n- 1 <= capacity <= 3000\n- 0 <= key <= 10^4\n- 0 <= value <= 10^5",
+    "tags": "Hash Table, Linked List, Design",
+    "difficulty": "MEDIUM",
+    "hint": "Use a hash map combined with a doubly linked list: the map provides O(1) lookup while the list maintains access order for O(1) eviction."
+  },
+  {
+    "title": "Odd Even Linked List",
+    "description": "Given the head of a singly linked list, group all the nodes with odd indices together followed by the nodes with even indices.\n\nInput: head = [1,2,3,4,5]\nOutput: [1,3,5,2,4]\n\nConstraints:\n- The number of nodes in the linked list is in the range [0, 10^4]\n- -10^6 <= Node.val <= 10^6",
+    "tags": "Linked List",
+    "difficulty": "MEDIUM",
+    "hint": "Maintain two separate chains (odd and even) using two pointers, then connect the odd chain's tail to the even chain's head."
+  },
+  {
+    "title": "Binary Search",
+    "description": "Given a sorted array of integers nums and a target value, return the index of the target if found, or -1 if not present.\n\nInput: nums = [-1,0,3,5,9,12], target = 9\nOutput: 4\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -10^4 < nums[i], target < 10^4\n- All integers in nums are unique\n- nums is sorted in ascending order",
+    "tags": "Array, Binary Search",
+    "difficulty": "EASY",
+    "hint": "Maintain left and right pointers, compute mid, compare with target, and eliminate half the search space each iteration."
+  },
+  {
+    "title": "Search in Rotated Sorted Array",
+    "description": "Given a rotated sorted array and a target, return the index of the target or -1. The original array was sorted in ascending order and rotated at some pivot.\n\nInput: nums = [4,5,6,7,0,1,2], target = 0\nOutput: 4\n\nConstraints:\n- 1 <= nums.length <= 5000\n- -10^4 <= nums[i] <= 10^4\n- All values are unique",
+    "tags": "Array, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Determine which half is sorted by comparing nums[left] with nums[mid], then check if the target lies within the sorted half to decide which side to search."
+  },
+  {
+    "title": "Find Minimum in Rotated Sorted Array",
+    "description": "Given a rotated sorted array of unique elements, return the minimum element.\n\nInput: nums = [3,4,5,1,2]\nOutput: 1\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 5000\n- All integers are unique\n- nums was originally sorted ascending and rotated 1 to n times",
+    "tags": "Array, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Use binary search comparing nums[mid] with nums[right]: if mid is greater, the minimum is in the right half; otherwise it is in the left half including mid."
+  },
+  {
+    "title": "Search Insert Position",
+    "description": "Given a sorted array of distinct integers and a target value, return the index if the target is found, or the index where it would be inserted.\n\nInput: nums = [1,3,5,6], target = 5\nOutput: 2\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -10^4 <= nums[i] <= 10^4\n- nums contains distinct values sorted in ascending order",
+    "tags": "Array, Binary Search",
+    "difficulty": "EASY",
+    "hint": "Use standard binary search; when the target is not found, the left pointer indicates the correct insertion position."
+  },
+  {
+    "title": "Find Peak Element",
+    "description": "A peak element is an element strictly greater than its neighbors. Given an array nums, find a peak element and return its index.\n\nInput: nums = [1,2,3,1]\nOutput: 2\n\nConstraints:\n- 1 <= nums.length <= 1000\n- -2^31 <= nums[i] <= 2^31 - 1\n- nums[i] != nums[i + 1] for all valid i",
+    "tags": "Array, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Use binary search: compare nums[mid] with nums[mid+1]; move toward the larger neighbor since a peak is guaranteed to exist in that direction."
+  },
+  {
+    "title": "Koko Eating Bananas",
+    "description": "Koko can eat at most k bananas per hour from a pile. If the pile has fewer than k bananas, she finishes that pile in one hour. Return the minimum integer k such that she can eat all bananas within h hours.\n\nInput: piles = [3,6,7,11], h = 8\nOutput: 4\n\nConstraints:\n- 1 <= piles.length <= 10^4\n- piles.length <= h <= 10^9\n- 1 <= piles[i] <= 10^9",
+    "tags": "Array, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Binary search on the answer k: for each candidate speed, compute total hours needed using ceiling division, and find the minimum k where total hours <= h."
+  },
+  {
+    "title": "Median of Two Sorted Arrays",
+    "description": "Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays in O(log(m+n)) time.\n\nInput: nums1 = [1,3], nums2 = [2]\nOutput: 2.0\n\nConstraints:\n- nums1.length == m\n- nums2.length == n\n- 0 <= m <= 1000\n- 0 <= n <= 1000\n- 1 <= m + n <= 2000",
+    "tags": "Array, Binary Search, Divide and Conquer",
+    "difficulty": "HARD",
+    "hint": "Binary search on the partition of the smaller array, ensuring the left partition of both arrays combined has the correct number of elements with proper ordering."
+  },
+  {
+    "title": "First Bad Version",
+    "description": "You are a product manager and the current version is n. Versions are built on previous versions, so all versions after a bad version are also bad. Find the first bad version using the isBadVersion API.\n\nInput: n = 5, bad = 4\nOutput: 4\n\nConstraints:\n- 1 <= bad <= n <= 2^31 - 1",
+    "tags": "Binary Search",
+    "difficulty": "EASY",
+    "hint": "Use binary search with left and right pointers; when isBadVersion(mid) is true, search the left half; otherwise search the right half."
+  },
+  {
+    "title": "Maximum Depth of Binary Tree",
+    "description": "Given the root of a binary tree, return its maximum depth. The maximum depth is the number of nodes along the longest path from the root down to the farthest leaf node.\n\nInput: root = [3,9,20,null,null,15,7]\nOutput: 3\n\nConstraints:\n- The number of nodes is in the range [0, 10^4]\n- -100 <= Node.val <= 100",
+    "tags": "Tree, Binary Tree, DFS, BFS, Recursion",
+    "difficulty": "EASY",
+    "hint": "Use recursion: the depth of a node is 1 plus the maximum of the depths of its left and right subtrees, with base case 0 for null nodes."
+  },
+  {
+    "title": "Invert Binary Tree",
+    "description": "Given the root of a binary tree, invert the tree and return its root (swap left and right children recursively).\n\nInput: root = [4,2,7,1,3,6,9]\nOutput: [4,7,2,9,6,3,1]\n\nConstraints:\n- The number of nodes is in the range [0, 100]\n- -100 <= Node.val <= 100",
+    "tags": "Tree, Binary Tree, DFS, BFS, Recursion",
+    "difficulty": "EASY",
+    "hint": "Recursively swap the left and right children at every node; base case is when the node is null."
+  },
+  {
+    "title": "Binary Tree Level Order Traversal",
+    "description": "Given the root of a binary tree, return the level order traversal of its nodes' values (left to right, level by level).\n\nInput: root = [3,9,20,null,null,15,7]\nOutput: [[3],[9,20],[15,7]]\n\nConstraints:\n- The number of nodes is in the range [0, 2000]\n- -1000 <= Node.val <= 1000",
+    "tags": "Tree, Binary Tree, BFS",
+    "difficulty": "MEDIUM",
+    "hint": "Use BFS with a queue: process all nodes at the current level, adding their children to the queue for the next level."
+  },
+  {
+    "title": "Symmetric Tree",
+    "description": "Given the root of a binary tree, check whether it is a mirror of itself (symmetric around its center).\n\nInput: root = [1,2,2,3,4,4,3]\nOutput: true\n\nConstraints:\n- The number of nodes is in the range [1, 1000]\n- -100 <= Node.val <= 100",
+    "tags": "Tree, Binary Tree, DFS, BFS",
+    "difficulty": "EASY",
+    "hint": "Use recursion comparing the left subtree's left child with the right subtree's right child, and vice versa."
+  },
+  {
+    "title": "Path Sum",
+    "description": "Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf path where the sum of values equals targetSum.\n\nInput: root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22\nOutput: true\n\nConstraints:\n- The number of nodes is in the range [0, 5000]\n- -1000 <= Node.val <= 1000",
+    "tags": "Tree, Binary Tree, DFS, Recursion",
+    "difficulty": "EASY",
+    "hint": "Recursively subtract the current node's value from the target sum; at a leaf node, check if the remaining sum equals zero."
+  },
+  {
+    "title": "Diameter of Binary Tree",
+    "description": "Given the root of a binary tree, return the length of the diameter. The diameter is the length of the longest path between any two nodes, which may or may not pass through the root.\n\nInput: root = [1,2,3,4,5]\nOutput: 3\n\nConstraints:\n- The number of nodes is in the range [1, 10^4]\n- -100 <= Node.val <= 100",
+    "tags": "Tree, Binary Tree, DFS, Recursion",
+    "difficulty": "EASY",
+    "hint": "At each node, the diameter through that node is left_depth + right_depth; use DFS to compute depths while tracking the global maximum diameter."
+  },
+  {
+    "title": "Lowest Common Ancestor of a Binary Tree",
+    "description": "Given a binary tree, find the lowest common ancestor (LCA) of two given nodes. The LCA is the lowest node that has both p and q as descendants.\n\nInput: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1\nOutput: 3\n\nConstraints:\n- The number of nodes is in the range [2, 10^5]\n- -10^9 <= Node.val <= 10^9\n- All values are unique",
+    "tags": "Tree, Binary Tree, DFS, Recursion",
+    "difficulty": "MEDIUM",
+    "hint": "Recursively search left and right subtrees; if both return non-null, the current node is the LCA; otherwise return the non-null result."
+  },
+  {
+    "title": "Serialize and Deserialize Binary Tree",
+    "description": "Design an algorithm to serialize and deserialize a binary tree. Serialization is converting a tree to a string, and deserialization is reconstructing the tree from the string.\n\nInput: root = [1,2,3,null,null,4,5]\nOutput: [1,2,3,null,null,4,5]\n\nConstraints:\n- The number of nodes is in the range [0, 10^4]\n- -1000 <= Node.val <= 1000",
+    "tags": "Tree, Binary Tree, DFS, BFS, String, Design",
+    "difficulty": "HARD",
+    "hint": "Use preorder DFS traversal with a delimiter for null nodes during serialization, and rebuild the tree recursively using a queue of tokens during deserialization."
+  },
+  {
+    "title": "Binary Tree Maximum Path Sum",
+    "description": "Given the root, return the maximum path sum of any non-empty path. A path is any sequence of nodes where each pair of adjacent nodes has an edge.\n\nInput: root = [-10,9,20,null,null,15,7]\nOutput: 42\n\nConstraints:\n- The number of nodes is in the range [1, 3 * 10^4]\n- -1000 <= Node.val <= 1000",
+    "tags": "Tree, Binary Tree, DFS, Dynamic Programming",
+    "difficulty": "HARD",
+    "hint": "At each node compute the maximum single-path sum (node + max(left, right, 0)), while updating a global maximum with (node + max(left,0) + max(right,0))."
+  },
+  {
+    "title": "Balanced Binary Tree",
+    "description": "Given a binary tree, determine if it is height-balanced. A height-balanced binary tree is one in which the depth of the two subtrees of every node never differs by more than one.\n\nInput: root = [3,9,20,null,null,15,7]\nOutput: true\n\nConstraints:\n- The number of nodes is in the range [0, 5000]\n- -10^4 <= Node.val <= 10^4",
+    "tags": "Tree, Binary Tree, DFS, Recursion",
+    "difficulty": "EASY",
+    "hint": "Use bottom-up recursion returning the height of each subtree; if any subtree's children differ in height by more than 1, return -1 to propagate the imbalance."
+  },
+  {
+    "title": "Validate Binary Search Tree",
+    "description": "Given the root of a binary tree, determine if it is a valid binary search tree where left subtree values are strictly less and right subtree values are strictly greater.\n\nInput: root = [2,1,3]\nOutput: true\n\nConstraints:\n- The number of nodes is in the range [1, 10^4]\n- -2^31 <= Node.val <= 2^31 - 1",
+    "tags": "Tree, BST, DFS, Binary Tree",
+    "difficulty": "MEDIUM",
+    "hint": "Use DFS with min/max bounds: each node must fall within (min, max), updating max when going left and min when going right."
+  },
+  {
+    "title": "Kth Smallest Element in a BST",
+    "description": "Given the root of a BST and an integer k, return the kth smallest value in the tree.\n\nInput: root = [3,1,4,null,2], k = 1\nOutput: 1\n\nConstraints:\n- The number of nodes is n\n- 1 <= k <= n <= 10^4\n- 0 <= Node.val <= 10^4",
+    "tags": "Tree, BST, DFS, Binary Tree",
+    "difficulty": "MEDIUM",
+    "hint": "Perform an inorder traversal (left, root, right) which visits BST nodes in sorted order, and return the kth element visited."
+  },
+  {
+    "title": "Convert Sorted Array to BST",
+    "description": "Given an integer array nums sorted in ascending order, convert it to a height-balanced binary search tree.\n\nInput: nums = [-10,-3,0,5,9]\nOutput: [0,-3,9,-10,null,5] (one possible answer)\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -10^4 <= nums[i] <= 10^4",
+    "tags": "Array, BST, Tree, Divide and Conquer, Binary Tree",
+    "difficulty": "EASY",
+    "hint": "Recursively pick the middle element as the root, building the left subtree from the left half and the right subtree from the right half."
+  },
+  {
+    "title": "Delete Node in a BST",
+    "description": "Given a root node of a BST and a key, delete the node with the given key and return the root.\n\nInput: root = [5,3,6,2,4,null,7], key = 3\nOutput: [5,4,6,2,null,null,7]\n\nConstraints:\n- The number of nodes is in the range [0, 10^4]\n- -10^5 <= Node.val <= 10^5",
+    "tags": "Tree, BST, Binary Tree",
+    "difficulty": "MEDIUM",
+    "hint": "Find the node to delete, then replace it with its inorder successor (smallest node in the right subtree) or inorder predecessor."
+  },
+  {
+    "title": "Number of Islands",
+    "description": "Given an m x n 2D grid of '1's (land) and '0's (water), count the number of islands. An island is surrounded by water and formed by connecting adjacent lands horizontally or vertically.\n\nInput: grid = [[\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\"],[\"0\",\"0\",\"1\"]]\nOutput: 2\n\nConstraints:\n- m == grid.length\n- n == grid[i].length\n- 1 <= m, n <= 300\n- grid[i][j] is '0' or '1'",
+    "tags": "Array, DFS, BFS, Graph, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Iterate through each cell; when a '1' is found, increment the island count and use DFS or BFS to mark all connected land cells as visited."
+  },
+  {
+    "title": "Clone Graph",
+    "description": "Given a reference of a node in a connected undirected graph, return a deep copy of the graph.\n\nInput: adjList = [[2,4],[1,3],[2,4],[1,3]]\nOutput: [[2,4],[1,3],[2,4],[1,3]]\n\nConstraints:\n- The number of nodes is in the range [0, 100]\n- 1 <= Node.val <= 100\n- Node.val is unique for each node",
+    "tags": "Hash Table, DFS, BFS, Graph",
+    "difficulty": "MEDIUM",
+    "hint": "Use DFS or BFS with a hash map mapping original nodes to their clones; for each node, clone it and recursively clone all unvisited neighbors."
+  },
+  {
+    "title": "Course Schedule",
+    "description": "There are numCourses courses labeled 0 to numCourses-1. You are given an array prerequisites where prerequisites[i] = [ai, bi] indicates you must take course bi before course ai. Return true if you can finish all courses.\n\nInput: numCourses = 2, prerequisites = [[1,0]]\nOutput: true\n\nConstraints:\n- 1 <= numCourses <= 2000\n- 0 <= prerequisites.length <= 5000",
+    "tags": "DFS, BFS, Graph",
+    "difficulty": "MEDIUM",
+    "hint": "Use topological sort with Kahn's algorithm (BFS with in-degree tracking) or DFS with cycle detection using three-color marking."
+  },
+  {
+    "title": "Pacific Atlantic Water Flow",
+    "description": "Given an m x n matrix of heights, return a list of cells from which water can flow to both the Pacific and Atlantic oceans.\n\nInput: heights = [[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]\nOutput: [[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]]\n\nConstraints:\n- m == heights.length\n- n == heights[i].length\n- 1 <= m, n <= 200",
+    "tags": "Array, DFS, BFS, Graph, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Run BFS or DFS from all Pacific border cells and all Atlantic border cells separately, then find the intersection of reachable cells."
+  },
+  {
+    "title": "Word Ladder",
+    "description": "Given beginWord, endWord, and a dictionary wordList, return the number of words in the shortest transformation sequence from beginWord to endWord, changing only one letter at a time.\n\nInput: beginWord = \"hit\", endWord = \"cog\", wordList = [\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]\nOutput: 5\n\nConstraints:\n- 1 <= beginWord.length <= 10\n- endWord.length == beginWord.length\n- 1 <= wordList.length <= 5000",
+    "tags": "Hash Table, String, BFS",
+    "difficulty": "HARD",
+    "hint": "Use BFS treating each word as a node and connecting words that differ by one letter, finding the shortest path from beginWord to endWord."
+  },
+  {
+    "title": "Graph Valid Tree",
+    "description": "Given n nodes labeled from 0 to n-1 and a list of undirected edges, check whether these edges make up a valid tree (connected, no cycles).\n\nInput: n = 5, edges = [[0,1],[0,2],[0,3],[1,4]]\nOutput: true\n\nConstraints:\n- 1 <= n <= 2000\n- 0 <= edges.length <= 5000",
+    "tags": "DFS, BFS, Graph, Union Find",
+    "difficulty": "MEDIUM",
+    "hint": "A valid tree has exactly n-1 edges and is connected; verify using Union Find or DFS to check connectivity and edge count."
+  },
+  {
+    "title": "Rotting Oranges",
+    "description": "Given a grid where 0 is empty, 1 is fresh orange, and 2 is rotten, every minute each rotten orange rots adjacent fresh ones. Return the minimum number of minutes until no fresh orange remains, or -1 if impossible.\n\nInput: grid = [[2,1,1],[1,1,0],[0,1,1]]\nOutput: 4\n\nConstraints:\n- m == grid.length\n- n == grid[i].length\n- 1 <= m, n <= 10",
+    "tags": "Array, BFS, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use multi-source BFS starting from all rotten oranges simultaneously, expanding one level per minute until all reachable fresh oranges are rotten."
+  },
+  {
+    "title": "Shortest Path in Binary Matrix",
+    "description": "Given an n x n binary matrix, return the length of the shortest clear path from top-left to bottom-right in an 8-directional grid. A clear path consists of 0 cells.\n\nInput: grid = [[0,1],[1,0]]\nOutput: 2\n\nConstraints:\n- n == grid.length\n- n == grid[i].length\n- 1 <= n <= 100\n- grid[i][j] is 0 or 1",
+    "tags": "Array, BFS, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use BFS from the top-left corner exploring all 8 directions, with the first time reaching bottom-right being the shortest path."
+  },
+  {
+    "title": "Word Search II",
+    "description": "Given an m x n board of characters and a list of words, return all words that can be formed by sequentially adjacent cells (horizontally or vertically).\n\nInput: board = [[\"o\",\"a\",\"a\",\"n\"],[\"e\",\"t\",\"a\",\"e\"],[\"i\",\"h\",\"k\",\"r\"],[\"i\",\"f\",\"l\",\"v\"]], words = [\"oath\",\"pea\",\"eat\",\"rain\"]\nOutput: [\"eat\",\"oath\"]\n\nConstraints:\n- m == board.length\n- n == board[i].length\n- 1 <= m, n <= 12\n- 1 <= words.length <= 3 * 10^4",
+    "tags": "Array, String, Backtracking, Trie, Matrix",
+    "difficulty": "HARD",
+    "hint": "Build a trie from all words, then DFS from each cell in the board following trie edges, pruning branches that don't lead to any remaining word."
+  },
+  {
+    "title": "Flood Fill",
+    "description": "Given an image represented by a 2D integer array, a starting pixel, and a color, perform a flood fill. Change the color of the starting pixel and all connected same-colored pixels.\n\nInput: image = [[1,1,1],[1,1,0],[1,0,1]], sr = 1, sc = 1, color = 2\nOutput: [[2,2,2],[2,2,0],[2,0,1]]\n\nConstraints:\n- m == image.length\n- n == image[i].length\n- 1 <= m, n <= 50\n- 0 <= image[i][j], color < 2^16",
+    "tags": "Array, DFS, BFS, Matrix",
+    "difficulty": "EASY",
+    "hint": "Use DFS from the starting pixel, recursively coloring all adjacent cells that have the same original color."
+  },
+  {
+    "title": "Number of Connected Components",
+    "description": "Given n nodes and a list of edges, find the number of connected components in an undirected graph.\n\nInput: n = 5, edges = [[0,1],[1,2],[3,4]]\nOutput: 2\n\nConstraints:\n- 1 <= n <= 2000\n- 0 <= edges.length <= 5000",
+    "tags": "DFS, BFS, Graph, Union Find",
+    "difficulty": "MEDIUM",
+    "hint": "Use DFS or Union Find to group nodes into connected components, counting the number of distinct groups."
+  },
+  {
+    "title": "Surrounded Regions",
+    "description": "Given an m x n board containing 'X' and 'O', capture all regions that are completely surrounded by 'X'. A region is captured by flipping all 'O's to 'X's.\n\nInput: board = [[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"O\",\"O\",\"X\"],[\"X\",\"X\",\"O\",\"X\"],[\"X\",\"O\",\"X\",\"X\"]]\nOutput: [[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"X\",\"X\",\"X\"],[\"X\",\"O\",\"X\",\"X\"]]\n\nConstraints:\n- m == board.length\n- n == board[i].length\n- 1 <= m, n <= 200",
+    "tags": "Array, DFS, BFS, Matrix, Union Find",
+    "difficulty": "MEDIUM",
+    "hint": "DFS from all border 'O' cells to mark them as safe; then flip all remaining 'O' cells to 'X' since they are surrounded."
+  },
+  {
+    "title": "Climbing Stairs",
+    "description": "You are climbing a staircase with n steps. Each time you can climb 1 or 2 steps. In how many distinct ways can you climb to the top?\n\nInput: n = 3\nOutput: 3 (1+1+1, 1+2, 2+1)\n\nConstraints:\n- 1 <= n <= 45",
+    "tags": "Math, Dynamic Programming, Recursion",
+    "difficulty": "EASY",
+    "hint": "Use dynamic programming where dp[i] = dp[i-1] + dp[i-2], recognizing this is the Fibonacci sequence."
+  },
+  {
+    "title": "Coin Change",
+    "description": "Given an array of coin denominations and a total amount, return the fewest number of coins needed to make up that amount. If it cannot be made up, return -1.\n\nInput: coins = [1,2,5], amount = 11\nOutput: 3 (5+5+1)\n\nConstraints:\n- 1 <= coins.length <= 12\n- 1 <= coins[i] <= 2^31 - 1\n- 0 <= amount <= 10^4",
+    "tags": "Array, Dynamic Programming, BFS",
+    "difficulty": "MEDIUM",
+    "hint": "Use a 1D DP array where dp[i] = minimum coins for amount i, updating dp[j] = min(dp[j], dp[j-coin]+1) for each coin."
+  },
+  {
+    "title": "Longest Increasing Subsequence",
+    "description": "Given an integer array nums, return the length of the longest strictly increasing subsequence.\n\nInput: nums = [10,9,2,5,3,7,101,18]\nOutput: 4 ([2,3,7,101])\n\nConstraints:\n- 1 <= nums.length <= 2500\n- -10^4 <= nums[i] <= 10^4",
+    "tags": "Array, Binary Search, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use a DP array where dp[i] is the length of the LIS ending at index i, or optimize to O(n log n) using patience sorting with binary search."
+  },
+  {
+    "title": "House Robber",
+    "description": "Given an array representing money at each house, determine the maximum amount you can rob without robbing two adjacent houses.\n\nInput: nums = [1,2,3,1]\nOutput: 4 (house 0 + house 2)\n\nConstraints:\n- 1 <= nums.length <= 100\n- 0 <= nums[i] <= 400",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use DP where dp[i] = max(dp[i-1], dp[i-2] + nums[i]): either skip the current house or rob it plus the best from two houses back."
+  },
+  {
+    "title": "Longest Common Subsequence",
+    "description": "Given two strings text1 and text2, return the length of their longest common subsequence.\n\nInput: text1 = \"abcde\", text2 = \"ace\"\nOutput: 3 (\"ace\")\n\nConstraints:\n- 1 <= text1.length, text2.length <= 1000\n- text1 and text2 consist of only lowercase English characters",
+    "tags": "String, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Build a 2D DP table where dp[i][j] = dp[i-1][j-1]+1 if characters match, otherwise max(dp[i-1][j], dp[i][j-1])."
+  },
+  {
+    "title": "Unique Paths",
+    "description": "A robot is at the top-left corner of an m x n grid. It can only move right or down. How many unique paths exist to reach the bottom-right corner?\n\nInput: m = 3, n = 7\nOutput: 28\n\nConstraints:\n- 1 <= m, n <= 100",
+    "tags": "Math, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use a 2D DP table where dp[i][j] = dp[i-1][j] + dp[i][j-1], since you can only arrive from above or from the left."
+  },
+  {
+    "title": "Word Break",
+    "description": "Given a string s and a dictionary of strings wordDict, return true if s can be segmented into a space-separated sequence of one or more dictionary words.\n\nInput: s = \"leetcode\", wordDict = [\"leet\",\"code\"]\nOutput: true\n\nConstraints:\n- 1 <= s.length <= 300\n- 1 <= wordDict.length <= 1000\n- 1 <= wordDict[i].length <= 20",
+    "tags": "Hash Table, String, Dynamic Programming, Trie",
+    "difficulty": "MEDIUM",
+    "hint": "Use a boolean DP array where dp[i] is true if s[0:i] can be segmented; for each position check all dictionary words that could end there."
+  },
+  {
+    "title": "Edit Distance",
+    "description": "Given two strings word1 and word2, return the minimum number of operations required to convert word1 to word2 using insert, delete, or replace.\n\nInput: word1 = \"horse\", word2 = \"ros\"\nOutput: 3\n\nConstraints:\n- 0 <= word1.length, word2.length <= 500\n- word1 and word2 consist of lowercase English letters",
+    "tags": "String, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Build a 2D DP table where dp[i][j] is the edit distance for word1[0:i] and word2[0:j], considering insert, delete, and replace operations."
+  },
+  {
+    "title": "Decode Ways",
+    "description": "Given a string s containing only digits, return the number of ways to decode it where A=1, B=2, ..., Z=26.\n\nInput: s = \"226\"\nOutput: 3 (\"BZ\", \"VF\", \"BBF\")\n\nConstraints:\n- 1 <= s.length <= 100\n- s contains only digits and may contain leading zeros",
+    "tags": "String, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use DP where dp[i] depends on whether s[i] forms a valid single digit and whether s[i-1:i+1] forms a valid two-digit number between 10 and 26."
+  },
+  {
+    "title": "Partition Equal Subset Sum",
+    "description": "Given an integer array nums, return true if you can partition the array into two subsets such that the sum of elements in both subsets is equal.\n\nInput: nums = [1,5,11,5]\nOutput: true ([1,5,5] and [11])\n\nConstraints:\n- 1 <= nums.length <= 200\n- 1 <= nums[i] <= 100",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "This is a 0/1 knapsack problem: use a boolean DP array of size totalSum/2 and check if any subset sums to exactly half the total."
+  },
+  {
+    "title": "Longest Palindromic Subsequence",
+    "description": "Given a string s, find the longest palindromic subsequence's length.\n\nInput: s = \"bbbab\"\nOutput: 4 (\"bbbb\")\n\nConstraints:\n- 1 <= s.length <= 1000\n- s consists only of lowercase English letters",
+    "tags": "String, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use a 2D DP table where dp[i][j] is the LPS length for substring s[i..j], expanding from length 1 upward."
+  },
+  {
+    "title": "Maximum Length of Repeated Subarray",
+    "description": "Given two integer arrays nums1 and nums2, return the maximum length of a subarray that appears in both arrays.\n\nInput: nums1 = [1,2,3,2,1], nums2 = [3,2,1,4,7]\nOutput: 3 ([3,2,1])\n\nConstraints:\n- 1 <= nums1.length, nums2.length <= 1000\n- 0 <= nums1[i], nums2[i] <= 100",
+    "tags": "Array, Dynamic Programming, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Use a 2D DP table where dp[i][j] is the length of the longest common suffix ending at nums1[i-1] and nums2[j-1], tracking the global maximum."
+  },
+  {
+    "title": "Minimum Path Sum",
+    "description": "Given an m x n grid filled with non-negative numbers, find a path from top left to bottom right which minimizes the sum of all numbers along its path. You can only move down or right.\n\nInput: grid = [[1,3,1],[1,5,1],[4,2,1]]\nOutput: 7 (1->3->1->1->1)\n\nConstraints:\n- m == grid.length\n- n == grid[i].length\n- 1 <= m, n <= 200\n- 0 <= grid[i][j] <= 200",
+    "tags": "Array, Dynamic Programming, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use DP where dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]), building up from the top-left corner."
+  },
+  {
+    "title": "Jump Game",
+    "description": "You are given an integer array nums. You are initially positioned at the first index. Each element represents your maximum jump length at that position. Determine if you can reach the last index.\n\nInput: nums = [2,3,1,1,4]\nOutput: true\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- 0 <= nums[i] <= 10^5",
+    "tags": "Array, Dynamic Programming, Greedy",
+    "difficulty": "MEDIUM",
+    "hint": "Track the farthest reachable index greedily; at each position, update the maximum reach and return false if you are stuck at a position beyond reach."
+  },
+  {
+    "title": "Jump Game II",
+    "description": "Return the minimum number of jumps to reach the last index. You can assume that you can always reach the last index.\n\nInput: nums = [2,3,1,1,4]\nOutput: 2\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- 0 <= nums[i] <= 1000",
+    "tags": "Array, Dynamic Programming, Greedy",
+    "difficulty": "MEDIUM",
+    "hint": "Use a greedy BFS approach maintaining the current jump's end boundary and the farthest reachable position, incrementing jumps when crossing the boundary."
+  },
+  {
+    "title": "Gas Station",
+    "description": "There are n gas stations along a circular route. Given arrays gas and cost, return the starting station's index if you can travel around the circuit once clockwise, or -1 if impossible.\n\nInput: gas = [1,2,3,4,5], cost = [3,4,5,1,2]\nOutput: 3\n\nConstraints:\n- n == gas.length == cost.length\n- 1 <= n <= 10^5\n- 0 <= gas[i], cost[i] <= 10^4",
+    "tags": "Array, Greedy",
+    "difficulty": "MEDIUM",
+    "hint": "Track the total surplus and current tank; if the current tank goes negative, reset the start to the next station since no station before could work."
+  },
+  {
+    "title": "Task Scheduler",
+    "description": "Given a list of tasks with a cooldown interval n between same tasks, return the least number of units of times needed to complete all tasks.\n\nInput: tasks = [\"A\",\"A\",\"A\",\"B\",\"B\",\"B\"], n = 2\nOutput: 8\n\nConstraints:\n- 1 <= tasks.length <= 10^4\n- tasks[i] is uppercase English letter\n- 0 <= n <= 100",
+    "tags": "Array, Hash Table, Greedy, Sorting, Heap",
+    "difficulty": "MEDIUM",
+    "hint": "The answer is max(tasks.length, (maxFreq-1) * (n+1) + countOfMaxFreq) where maxFreq is the highest task frequency."
+  },
+  {
+    "title": "Non-overlapping Intervals",
+    "description": "Given an array of intervals, return the minimum number of intervals you need to remove to make the rest non-overlapping.\n\nInput: intervals = [[1,2],[2,3],[3,4],[1,3]]\nOutput: 1\n\nConstraints:\n- 1 <= intervals.length <= 10^5\n- intervals[i].length == 2",
+    "tags": "Array, Dynamic Programming, Greedy, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort intervals by end time, then greedily keep intervals that don't overlap with the last kept interval, counting removals."
+  },
+  {
+    "title": "Assign Cookies",
+    "description": "Assume you are a parent and want to give cookies to children. Each child i has a greed factor g[i] and each cookie j has a size s[j]. A child is content if s[j] >= g[i]. Maximize the number of content children.\n\nInput: g = [1,2,3], s = [1,1]\nOutput: 1\n\nConstraints:\n- 1 <= g.length <= 3 * 10^4\n- 1 <= s.length <= 3 * 10^4\n- 1 <= g[i], s[j] <= 2^31 - 1",
+    "tags": "Array, Greedy, Sorting, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Sort both arrays and use two pointers to greedily assign the smallest sufficient cookie to the least greedy unsatisfied child."
+  },
+  {
+    "title": "Partition Labels",
+    "description": "Given a string s, partition it so that each letter appears in at most one part. Return a list of integers representing the size of each part.\n\nInput: s = \"ababcbacadefegdehijhklij\"\nOutput: [9,7,8]\n\nConstraints:\n- 1 <= s.length <= 500\n- s consists of lowercase English letters",
+    "tags": "Hash Table, String, Greedy, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Track the last occurrence of each character, then greedily extend each partition to include all characters' last positions."
+  },
+  {
+    "title": "Subsets",
+    "description": "Given an integer array nums of unique elements, return all possible subsets (the power set). The solution set must not contain duplicate subsets.\n\nInput: nums = [1,2,3]\nOutput: [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]\n\nConstraints:\n- 1 <= nums.length <= 10\n- -10 <= nums[i] <= 10\n- All elements are unique",
+    "tags": "Array, Backtracking, Bit Manipulation",
+    "difficulty": "MEDIUM",
+    "hint": "Use backtracking: at each element, either include it or skip it, building all possible combinations recursively."
+  },
+  {
+    "title": "Permutations",
+    "description": "Given an array nums of distinct integers, return all the possible permutations.\n\nInput: nums = [1,2,3]\nOutput: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]\n\nConstraints:\n- 1 <= nums.length <= 6\n- -10 <= nums[i] <= 10\n- All integers are distinct",
+    "tags": "Array, Backtracking",
+    "difficulty": "MEDIUM",
+    "hint": "Use backtracking with a visited set: for each position, try all unused elements, recurse, then backtrack by unmarking the element."
+  },
+  {
+    "title": "Combination Sum",
+    "description": "Given an array of distinct integers candidates and a target integer, return all unique combinations where the chosen numbers sum to target. The same number may be used unlimited times.\n\nInput: candidates = [2,3,6,7], target = 7\nOutput: [[2,2,3],[7]]\n\nConstraints:\n- 1 <= candidates.length <= 30\n- 2 <= candidates[i] <= 40\n- 1 <= target <= 40",
+    "tags": "Array, Backtracking",
+    "difficulty": "MEDIUM",
+    "hint": "Use backtracking, allowing repeated selection of the same candidate; prune branches where the remaining target becomes negative."
+  },
+  {
+    "title": "Letter Combinations of a Phone Number",
+    "description": "Given a string containing digits from 2-9, return all possible letter combinations that the number could represent (like phone keypad mapping).\n\nInput: digits = \"23\"\nOutput: [\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]\n\nConstraints:\n- 0 <= digits.length <= 4\n- digits[i] is a digit in the range ['2', '9']",
+    "tags": "Hash Table, String, Backtracking",
+    "difficulty": "MEDIUM",
+    "hint": "Use backtracking with a digit-to-letters mapping, building combinations one character at a time for each digit."
+  },
+  {
+    "title": "N-Queens",
+    "description": "Place n queens on an n x n chessboard such that no two queens attack each other. Return all distinct solutions.\n\nInput: n = 4\nOutput: [[\".Q..\",\"...Q\",\"Q...\",\"..Q.\"],[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"]]\n\nConstraints:\n- 1 <= n <= 9",
+    "tags": "Array, Backtracking",
+    "difficulty": "HARD",
+    "hint": "Use backtracking placing one queen per row, tracking attacked columns and diagonals using three hash sets."
+  },
+  {
+    "title": "Generate Parentheses",
+    "description": "Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.\n\nInput: n = 3\nOutput: [\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]\n\nConstraints:\n- 1 <= n <= 8",
+    "tags": "String, Dynamic Programming, Backtracking",
+    "difficulty": "MEDIUM",
+    "hint": "Use backtracking tracking open and close counts: add an open parenthesis if open < n, add a close if close < open."
+  },
+  {
+    "title": "Palindrome Partitioning",
+    "description": "Given a string s, partition s such that every substring of the partition is a palindrome. Return all possible palindrome partitioning of s.\n\nInput: s = \"aab\"\nOutput: [[\"a\",\"a\",\"b\"],[\"aa\",\"b\"]]\n\nConstraints:\n- 1 <= s.length <= 16\n- s consists of only lowercase English letters",
+    "tags": "String, Dynamic Programming, Backtracking",
+    "difficulty": "MEDIUM",
+    "hint": "Use backtracking: at each position, try all substrings starting there that are palindromes, recurse on the remaining string."
+  },
+  {
+    "title": "Word Search",
+    "description": "Given an m x n grid of characters board and a string word, return true if word exists in the grid by following sequentially adjacent cells.\n\nInput: board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"ABCCED\"\nOutput: true\n\nConstraints:\n- m == board.length\n- n == board[i].length\n- 1 <= m, n <= 6\n- 1 <= word.length <= 15",
+    "tags": "Array, String, Backtracking, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use DFS backtracking from each cell matching the first character, marking cells as visited and unvisiting during backtrack."
+  },
+  {
+    "title": "Merge Intervals",
+    "description": "Given an array of intervals, merge all overlapping intervals and return an array of the non-overlapping intervals that cover all the intervals in the input.\n\nInput: intervals = [[1,3],[2,6],[8,10],[15,18]]\nOutput: [[1,6],[8,10],[15,18]]\n\nConstraints:\n- 1 <= intervals.length <= 10^4\n- intervals[i].length == 2\n- 0 <= start_i <= end_i <= 10^4",
+    "tags": "Array, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort intervals by start time, then merge overlapping ones by comparing the current interval's start with the previous interval's end."
+  },
+  {
+    "title": "Kth Largest Element in an Array",
+    "description": "Given an integer array nums and an integer k, return the kth largest element in the array.\n\nInput: nums = [3,2,1,5,6,4], k = 2\nOutput: 5\n\nConstraints:\n- 1 <= k <= nums.length <= 10^5\n- -10^4 <= nums[i] <= 10^4",
+    "tags": "Array, Sorting, Heap, Divide and Conquer",
+    "difficulty": "MEDIUM",
+    "hint": "Use a min-heap of size k: iterate through all elements, pushing each one and popping when size exceeds k; the heap top is the kth largest."
+  },
+  {
+    "title": "Sort List",
+    "description": "Given the head of a linked list, return the list after sorting it in ascending order in O(n log n) time and O(1) space.\n\nInput: head = [4,2,1,3]\nOutput: [1,2,3,4]\n\nConstraints:\n- The number of nodes is in the range [0, 5 * 10^4]\n- -10^5 <= Node.val <= 10^5",
+    "tags": "Linked List, Two Pointers, Sorting, Divide and Conquer",
+    "difficulty": "MEDIUM",
+    "hint": "Use bottom-up merge sort: split the list using slow/fast pointers, recursively sort both halves, and merge them."
+  },
+  {
+    "title": "Meeting Rooms II",
+    "description": "Given an array of meeting time intervals, find the minimum number of conference rooms required.\n\nInput: intervals = [[0,30],[5,10],[15,20]]\nOutput: 2\n\nConstraints:\n- 1 <= intervals.length <= 10^4\n- 0 <= start_i < end_i <= 10^6",
+    "tags": "Array, Sorting, Heap, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Sort intervals by start time and use a min-heap tracking end times; if the earliest ending room is free, reuse it, otherwise allocate a new room."
+  },
+  {
+    "title": "Largest Number",
+    "description": "Given a list of non-negative integers, arrange them such that they form the largest number.\n\nInput: nums = [10,2]\nOutput: \"210\"\n\nConstraints:\n- 1 <= nums.length <= 100\n- 0 <= nums[i] <= 10^9",
+    "tags": "Array, String, Greedy, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort numbers using a custom comparator: compare a+b vs b+a as strings, placing the combination that forms the larger number first."
+  },
+  {
+    "title": "Find Median from Data Stream",
+    "description": "Design a data structure that supports adding integers and finding the median of all elements so far.\n\nInput: [\"MedianFinder\",\"addNum\",\"addNum\",\"findMedian\",\"addNum\",\"findMedian\"]\nOutput: [null,null,null,1.5,null,2.0]\n\nConstraints:\n- -10^5 <= num <= 10^5\n- There will be at least one element before calling findMedian",
+    "tags": "Heap, Sorting, Design",
+    "difficulty": "HARD",
+    "hint": "Use two heaps: a max-heap for the lower half and a min-heap for the upper half, keeping them balanced so the median is always accessible from the tops."
+  },
+  {
+    "title": "Reorganize String",
+    "description": "Given a string s, rearrange the characters so that no two adjacent characters are the same. If not possible, return an empty string.\n\nInput: s = \"aab\"\nOutput: \"aba\"\n\nConstraints:\n- 1 <= s.length <= 500\n- s consists of lowercase English letters",
+    "tags": "Hash Table, String, Greedy, Sorting, Heap",
+    "difficulty": "MEDIUM",
+    "hint": "Use a max-heap of character frequencies, always placing the most frequent character next while ensuring it differs from the previous placement."
+  },
+  {
+    "title": "Last Stone Weight",
+    "description": "You have a collection of stones, each with a weight. Each turn, take the two heaviest stones and smash them together. Return the weight of the last remaining stone, or 0.\n\nInput: stones = [2,7,4,1,8,1]\nOutput: 1\n\nConstraints:\n- 1 <= stones.length <= 30\n- 1 <= stones[i] <= 1000",
+    "tags": "Array, Heap",
+    "difficulty": "EASY",
+    "hint": "Use a max-heap: repeatedly extract the two largest stones, and push their difference back if non-zero."
+  },
+  {
+    "title": "K Closest Points to Origin",
+    "description": "Given an array of points and an integer k, return the k closest points to the origin (0, 0).\n\nInput: points = [[1,3],[-2,2]], k = 1\nOutput: [[-2,2]]\n\nConstraints:\n- 1 <= k <= points.length <= 10^4\n- -10^4 <= xi, yi <= 10^4",
+    "tags": "Array, Math, Heap, Sorting, Divide and Conquer",
+    "difficulty": "MEDIUM",
+    "hint": "Use a max-heap of size k based on distance squared; push each point and pop when size exceeds k, leaving the k closest."
+  },
+  {
+    "title": "Reverse Integer",
+    "description": "Given a signed 32-bit integer x, return x with its digits reversed. If reversing causes overflow, return 0.\n\nInput: x = 123\nOutput: 321\n\nConstraints:\n- -2^31 <= x <= 2^31 - 1",
+    "tags": "Math",
+    "difficulty": "MEDIUM",
+    "hint": "Extract digits one by one using modulo 10, build the reversed number, and check for 32-bit integer overflow before each multiplication."
+  },
+  {
+    "title": "Palindrome Number",
+    "description": "Given an integer x, return true if x is a palindrome without converting it to a string.\n\nInput: x = 121\nOutput: true\n\nConstraints:\n- -2^31 <= x <= 2^31 - 1",
+    "tags": "Math",
+    "difficulty": "EASY",
+    "hint": "Reverse only the second half of the number by building a reversed number until it is greater than or equal to the remaining number."
+  },
+  {
+    "title": "Power of Three",
+    "description": "Given an integer n, return true if it is a power of three.\n\nInput: n = 27\nOutput: true\n\nConstraints:\n- -2^31 <= n <= 2^31 - 1",
+    "tags": "Math, Recursion",
+    "difficulty": "EASY",
+    "hint": "Repeatedly divide n by 3 while it is divisible; if the result is 1, it is a power of three."
+  },
+  {
+    "title": "Count Primes",
+    "description": "Given an integer n, return the number of prime numbers that are strictly less than n.\n\nInput: n = 10\nOutput: 4 (2, 3, 5, 7)\n\nConstraints:\n- 0 <= n <= 5 * 10^6",
+    "tags": "Array, Math",
+    "difficulty": "MEDIUM",
+    "hint": "Use the Sieve of Eratosthenes: create a boolean array, mark multiples of each prime starting from 2, and count unmarked numbers."
+  },
+  {
+    "title": "Roman to Integer",
+    "description": "Given a roman numeral string, convert it to an integer. Roman numerals are represented by I=1, V=5, X=10, L=50, C=100, D=500, M=1000.\n\nInput: s = \"MCMXCIV\"\nOutput: 1994\n\nConstraints:\n- 1 <= s.length <= 15\n- s contains only the characters I, V, X, L, C, D, M",
+    "tags": "Hash Table, Math, String",
+    "difficulty": "EASY",
+    "hint": "Map each roman character to its value; traverse the string adding values, but subtract when a smaller value precedes a larger one."
+  },
+  {
+    "title": "Happy Number",
+    "description": "A happy number is defined by replacing it with the sum of the squares of its digits repeatedly until it equals 1 or loops endlessly. Determine if n is happy.\n\nInput: n = 19\nOutput: true (1^2+9^2=82, 8^2+2^2=68, ... eventually reaches 1)\n\nConstraints:\n- 1 <= n <= 2^31 - 1",
+    "tags": "Hash Table, Math, Two Pointers",
+    "difficulty": "EASY",
+    "hint": "Use Floyd's cycle detection or a hash set to detect if the digit-square-sum process enters an infinite loop without reaching 1."
+  },
+  {
+    "title": "Excel Sheet Column Number",
+    "description": "Given a string columnTitle that represents a column title as appears in an Excel sheet, return its corresponding column number.\n\nInput: columnTitle = \"AB\"\nOutput: 28\n\nConstraints:\n- 1 <= columnTitle.length <= 7\n- columnTitle consists only of uppercase English letters",
+    "tags": "Math, String",
+    "difficulty": "EASY",
+    "hint": "Treat the column title as a base-26 number, converting each character to its value (A=1, B=2, ...) and accumulating result = result * 26 + value."
+  },
+  {
+    "title": "Single Number",
+    "description": "Given a non-empty array of integers nums, every element appears twice except for one. Find that single one with O(1) extra memory.\n\nInput: nums = [2,2,1]\nOutput: 1\n\nConstraints:\n- 1 <= nums.length <= 3 * 10^4\n- -3 * 10^4 <= nums[i] <= 3 * 10^4\n- Each element appears twice except one",
+    "tags": "Array, Bit Manipulation",
+    "difficulty": "EASY",
+    "hint": "XOR all elements together: since a XOR a = 0 and a XOR 0 = a, all duplicates cancel out leaving only the unique number."
+  },
+  {
+    "title": "Number of 1 Bits",
+    "description": "Write a function that takes the binary representation of a positive integer and returns the number of set bits (1 bits), also known as the Hamming weight.\n\nInput: n = 11 (binary: 1011)\nOutput: 3\n\nConstraints:\n- 1 <= n <= 2^31 - 1",
+    "tags": "Bit Manipulation, Divide and Conquer",
+    "difficulty": "EASY",
+    "hint": "Use the trick n = n & (n-1) to clear the lowest set bit, counting iterations until n becomes zero."
+  },
+  {
+    "title": "Power of Two",
+    "description": "Given an integer n, return true if it is a power of two.\n\nInput: n = 16\nOutput: true\n\nConstraints:\n- -2^31 <= n <= 2^31 - 1",
+    "tags": "Math, Bit Manipulation, Recursion",
+    "difficulty": "EASY",
+    "hint": "A power of two has exactly one set bit; check n > 0 and (n & (n-1)) == 0."
+  },
+  {
+    "title": "Counting Bits",
+    "description": "Given an integer n, return an array ans of length n+1 such that ans[i] is the number of 1's in the binary representation of i.\n\nInput: n = 5\nOutput: [0,1,1,2,1,2]\n\nConstraints:\n- 0 <= n <= 10^5",
+    "tags": "Dynamic Programming, Bit Manipulation",
+    "difficulty": "EASY",
+    "hint": "Use the recurrence ans[i] = ans[i >> 1] + (i & 1), leveraging that right-shifting removes the last bit."
+  },
+  {
+    "title": "Reverse Bits",
+    "description": "Reverse bits of a given 32 bits unsigned integer.\n\nInput: n = 43261596 (00000010100101000001111010011100)\nOutput: 964176192 (00111001011110000010100101000000)\n\nConstraints:\n- The input must be a binary string of length 32",
+    "tags": "Bit Manipulation, Divide and Conquer",
+    "difficulty": "EASY",
+    "hint": "Extract the last bit of n using n & 1, shift the result left and add the bit, then right-shift n, repeating 32 times."
+  },
+  {
+    "title": "Sum of Two Integers",
+    "description": "Given two integers a and b, return their sum without using the + or - operators.\n\nInput: a = 1, b = 2\nOutput: 3\n\nConstraints:\n- -1000 <= a, b <= 1000",
+    "tags": "Math, Bit Manipulation",
+    "difficulty": "MEDIUM",
+    "hint": "Use bitwise operations: XOR gives the sum without carries, AND shifted left gives the carries; repeat until no carries remain."
+  },
+  {
+    "title": "Rotate Image",
+    "description": "You are given an n x n 2D matrix representing an image. Rotate the image by 90 degrees clockwise in-place.\n\nInput: matrix = [[1,2,3],[4,5,6],[7,8,9]]\nOutput: [[7,4,1],[8,5,2],[9,6,3]]\n\nConstraints:\n- n == matrix.length == matrix[i].length\n- 1 <= n <= 20\n- -1000 <= matrix[i][j] <= 1000",
+    "tags": "Array, Math, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "First transpose the matrix (swap matrix[i][j] with matrix[j][i]), then reverse each row to achieve 90-degree clockwise rotation."
+  },
+  {
+    "title": "Search a 2D Matrix",
+    "description": "Given an m x n matrix where each row is sorted left to right and the first element of each row is greater than the last element of the previous row, determine if a target value is present.\n\nInput: matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3\nOutput: true\n\nConstraints:\n- m == matrix.length\n- n == matrix[i].length\n- 1 <= m, n <= 100",
+    "tags": "Array, Binary Search, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Treat the 2D matrix as a sorted 1D array and perform binary search, converting the 1D index to 2D coordinates using division and modulo."
+  },
+  {
+    "title": "Valid Sudoku",
+    "description": "Determine if a 9 x 9 Sudoku board is valid. Only the filled cells need to be validated according to the rules.\n\nInput: board = [[\"5\",\"3\",...],[\"6\",\".\",...],...]\nOutput: true\n\nConstraints:\n- board.length == 9\n- board[i].length == 9\n- board[i][j] is a digit 1-9 or '.'",
+    "tags": "Array, Hash Table, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use three sets of hash sets (one per row, column, and 3x3 box) to track seen digits, returning false if any digit is seen twice in the same group."
+  },
+  {
+    "title": "Game of Life",
+    "description": "Given an m x n grid of cells where each cell is alive (1) or dead (0), apply the rules of Conway's Game of Life and return the next state.\n\nInput: board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]\nOutput: [[0,0,0],[1,0,1],[0,1,1],[0,1,0]]\n\nConstraints:\n- m == board.length\n- n == board[i].length\n- 1 <= m, n <= 25",
+    "tags": "Array, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use in-place encoding with intermediate states (2 for alive-to-dead, 3 for dead-to-alive) to avoid using extra space, then decode in a second pass."
+  },
+  {
+    "title": "Implement Trie (Prefix Tree)",
+    "description": "Implement the Trie class with insert, search, and startsWith methods.\n\nInput: [\"Trie\",\"insert\",\"search\",\"search\",\"startsWith\",\"insert\",\"search\"]\n[[], [\"apple\"],[\"apple\"],[\"app\"],[\"app\"],[\"app\"],[\"app\"]]\nOutput: [null,null,true,false,true,null,true]\n\nConstraints:\n- 1 <= word.length, prefix.length <= 2000\n- word and prefix consist only of lowercase English letters",
+    "tags": "Hash Table, String, Trie, Design",
+    "difficulty": "MEDIUM",
+    "hint": "Build a tree where each node has a map of children characters and a boolean flag marking end of word."
+  },
+  {
+    "title": "Design Add and Search Words",
+    "description": "Design a data structure that supports adding new words and finding if a string matches any previously added string, where '.' can match any letter.\n\nInput: [\"WordDictionary\",\"addWord\",\"addWord\",\"search\",\"search\"]\n[[],[\"bad\"],[\"dad\"],[\"bad\"],[\".ad\"]]\nOutput: [null,null,null,true,true]\n\nConstraints:\n- 1 <= word.length <= 25\n- word consists of lowercase English letters\n- search word may contain '.'",
+    "tags": "String, Trie, DFS, Design",
+    "difficulty": "MEDIUM",
+    "hint": "Use a trie for storage; during search, when a '.' is encountered, recursively search all children at that level."
+  },
+  {
+    "title": "Redundant Connection",
+    "description": "Given a graph that started as a tree with n nodes, one additional edge was added. Find the edge that can be removed so the resulting graph is a tree.\n\nInput: edges = [[1,2],[1,3],[2,3]]\nOutput: [2,3]\n\nConstraints:\n- n == edges.length\n- 3 <= n <= 1000\n- edges[i].length == 2",
+    "tags": "DFS, BFS, Union Find, Graph",
+    "difficulty": "MEDIUM",
+    "hint": "Use Union Find: iterate through edges and union nodes; the first edge that connects two already-connected nodes is the redundant edge."
+  },
+  {
+    "title": "Accounts Merge",
+    "description": "Given a list of accounts where each account contains a name and emails, merge accounts belonging to the same person (accounts sharing the same email).\n\nInput: accounts = [[\"John\",\"j1@m.co\",\"j2@m.co\"],[\"John\",\"j1@m.co\",\"j3@m.co\"],[\"Mary\",\"m@m.co\"]]\nOutput: [[\"John\",\"j1@m.co\",\"j2@m.co\",\"j3@m.co\"],[\"Mary\",\"m@m.co\"]]\n\nConstraints:\n- 1 <= accounts.length <= 1000\n- 2 <= accounts[i].length <= 10",
+    "tags": "Array, DFS, BFS, Union Find, Hash Table, String, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Use Union Find to group emails: for each account, union all emails together, then group emails by their root representative."
+  },
+  {
+    "title": "Fibonacci Number",
+    "description": "The Fibonacci numbers form a sequence such that each number is the sum of the two preceding ones. Given n, calculate F(n).\n\nInput: n = 4\nOutput: 3 (0, 1, 1, 2, 3)\n\nConstraints:\n- 0 <= n <= 30",
+    "tags": "Math, Dynamic Programming, Recursion",
+    "difficulty": "EASY",
+    "hint": "Use bottom-up iteration with two variables tracking the previous two Fibonacci numbers to avoid redundant recursive calls."
+  },
+  {
+    "title": "Pow(x, n)",
+    "description": "Implement pow(x, n), which calculates x raised to the power n.\n\nInput: x = 2.0, n = 10\nOutput: 1024.0\n\nConstraints:\n- -100.0 < x < 100.0\n- -2^31 <= n <= 2^31 - 1\n- n is an integer",
+    "tags": "Math, Recursion",
+    "difficulty": "MEDIUM",
+    "hint": "Use fast exponentiation: if n is even, pow(x,n) = pow(x*x, n/2); if odd, multiply by x once, reducing the problem in O(log n) time."
+  },
+  {
+    "title": "Maximum Subarray (D&C)",
+    "description": "Given an integer array nums, find the contiguous subarray with the maximum sum using divide and conquer approach.\n\nInput: nums = [-2,1,-3,4,-1,2,1,-5,4]\nOutput: 6\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- -10^4 <= nums[i] <= 10^4",
+    "tags": "Array, Divide and Conquer, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Divide the array into halves, recursively find the max subarray in each half and the max crossing subarray, then take the overall maximum."
+  },
+  {
+    "title": "Merge Sort Array",
+    "description": "Given an array of integers, sort it using the merge sort algorithm and return the sorted array.\n\nInput: nums = [5,2,3,1]\nOutput: [1,2,3,5]\n\nConstraints:\n- 1 <= nums.length <= 5 * 10^4\n- -5 * 10^4 <= nums[i] <= 5 * 10^4",
+    "tags": "Array, Divide and Conquer, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Recursively split the array in half until single elements remain, then merge sorted halves by comparing elements from both sides."
+  },
+  {
+    "title": "Next Greater Element II",
+    "description": "Given a circular integer array nums, return the next greater number for every element. The next greater number of a number x is the first greater number to its right in a circular traversal.\n\nInput: nums = [1,2,1]\nOutput: [2,-1,2]\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -10^9 <= nums[i] <= 10^9",
+    "tags": "Array, Stack, Monotonic Stack",
+    "difficulty": "MEDIUM",
+    "hint": "Iterate through the array twice (to handle circularity) using a monotonic decreasing stack of indices, popping and recording when a greater element is found."
+  },
+  {
+    "title": "Sum of Subarray Minimums",
+    "description": "Given an array of integers arr, find the sum of min(b), where b ranges over every contiguous subarray of arr. Return the answer modulo 10^9 + 7.\n\nInput: arr = [3,1,2,4]\nOutput: 17\n\nConstraints:\n- 1 <= arr.length <= 3 * 10^4\n- 1 <= arr[i] <= 3 * 10^4",
+    "tags": "Array, Dynamic Programming, Stack, Monotonic Stack",
+    "difficulty": "MEDIUM",
+    "hint": "Use a monotonic increasing stack to find the previous and next smaller elements for each value, computing each element's contribution to all subarrays containing it."
+  },
+  {
+    "title": "Trapping Rain Water (Stack)",
+    "description": "Given n non-negative integers representing an elevation map, compute how much water it can trap using a stack-based approach.\n\nInput: height = [4,2,0,3,2,5]\nOutput: 9\n\nConstraints:\n- n == height.length\n- 1 <= n <= 2 * 10^4\n- 0 <= height[i] <= 10^5",
+    "tags": "Array, Stack, Monotonic Stack, Two Pointers",
+    "difficulty": "HARD",
+    "hint": "Use a monotonic decreasing stack: when a taller bar is found, pop and calculate trapped water between the current bar and the new stack top."
+  },
+  {
+    "title": "Range Sum Query - Immutable",
+    "description": "Given an integer array nums, handle multiple queries of calculating the sum of elements between indices left and right inclusive.\n\nInput: nums = [-2,0,3,-5,2,-1]\nsumRange(0,2) = 1, sumRange(2,5) = -1\n\nConstraints:\n- 1 <= nums.length <= 10^4\n- -10^5 <= nums[i] <= 10^5\n- 0 <= left <= right < nums.length",
+    "tags": "Array, Prefix Sum, Design",
+    "difficulty": "EASY",
+    "hint": "Precompute a prefix sum array where prefix[i] = sum of nums[0..i-1], then sumRange(l,r) = prefix[r+1] - prefix[l]."
+  },
+  {
+    "title": "Contiguous Array",
+    "description": "Given a binary array nums, return the maximum length of a contiguous subarray with an equal number of 0 and 1.\n\nInput: nums = [0,1]\nOutput: 2\n\nConstraints:\n- 1 <= nums.length <= 10^5\n- nums[i] is either 0 or 1",
+    "tags": "Array, Hash Table, Prefix Sum",
+    "difficulty": "MEDIUM",
+    "hint": "Replace 0s with -1s and compute a running sum; use a hash map to store the first index of each sum, and the maximum subarray length occurs between equal sums."
+  },
+  {
+    "title": "Product of Array Except Self (Prefix)",
+    "description": "Given an integer array nums, return an array output such that output[i] is equal to the product of all the elements of nums except nums[i] without using division.\n\nInput: nums = [-1,1,0,-3,3]\nOutput: [0,0,9,0,0]\n\nConstraints:\n- 2 <= nums.length <= 10^5\n- -30 <= nums[i] <= 30",
+    "tags": "Array, Prefix Sum",
+    "difficulty": "MEDIUM",
+    "hint": "Build a left prefix product array and a right suffix product array, then multiply corresponding positions to get the answer without division."
+  },
+  {
+    "title": "Two Sum II - Sorted Array",
+    "description": "Given a 1-indexed sorted array numbers and a target, return the indices of the two numbers that add up to target.\n\nInput: numbers = [2,7,11,15], target = 9\nOutput: [1,2]\n\nConstraints:\n- 2 <= numbers.length <= 3 * 10^4\n- -1000 <= numbers[i] <= 1000\n- numbers is sorted in non-decreasing order",
+    "tags": "Array, Two Pointers, Binary Search",
+    "difficulty": "MEDIUM",
+    "hint": "Use two pointers at both ends of the sorted array; move the left pointer right if sum is too small, right pointer left if sum is too large."
+  },
+  {
+    "title": "Three Sum Closest",
+    "description": "Given an integer array nums and a target, find three integers in nums such that the sum is closest to target. Return the sum.\n\nInput: nums = [-1,2,1,-4], target = 1\nOutput: 2 (-1+2+1)\n\nConstraints:\n- 3 <= nums.length <= 500\n- -1000 <= nums[i] <= 1000\n- -10^4 <= target <= 10^4",
+    "tags": "Array, Two Pointers, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort the array, fix one element, use two pointers for the remaining, and track the triplet sum closest to the target."
+  },
+  {
+    "title": "Four Sum",
+    "description": "Given an array nums and an integer target, return all unique quadruplets [nums[a], nums[b], nums[c], nums[d]] such that a+b+c+d == target.\n\nInput: nums = [1,0,-1,0,-2,2], target = 0\nOutput: [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]\n\nConstraints:\n- 1 <= nums.length <= 200\n- -10^9 <= nums[i] <= 10^9",
+    "tags": "Array, Two Pointers, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort the array, fix two elements with nested loops, then use two pointers on the remaining portion, skipping duplicates at each level."
+  },
+  {
+    "title": "Two Sum Less Than K",
+    "description": "Given an array nums and integer k, return the maximum sum of a pair nums[i] + nums[j] that is less than k. If no such pair exists, return -1.\n\nInput: nums = [34,23,1,24,75,33,54,8], k = 60\nOutput: 58\n\nConstraints:\n- 1 <= nums.length <= 100\n- 1 <= nums[i] <= 1000\n- 1 <= k <= 2000",
+    "tags": "Array, Two Pointers, Sorting",
+    "difficulty": "EASY",
+    "hint": "Sort the array and use two pointers from both ends; when the sum is less than k, record it as a candidate and move left pointer right."
+  },
+  {
+    "title": "Implement strStr (KMP)",
+    "description": "Given two strings haystack and needle, return the index of the first occurrence of needle in haystack using the KMP algorithm. Return -1 if needle is not found.\n\nInput: haystack = \"hello\", needle = \"ll\"\nOutput: 2\n\nConstraints:\n- 1 <= haystack.length, needle.length <= 10^4",
+    "tags": "String, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Build the KMP failure function (partial match table) for the needle, then scan the haystack using the failure function to skip already-matched characters."
+  },
+  {
+    "title": "Longest Valid Parentheses",
+    "description": "Given a string containing just '(' and ')', return the length of the longest valid (well-formed) parentheses substring.\n\nInput: s = \"(()\"\nOutput: 2\n\nConstraints:\n- 0 <= s.length <= 3 * 10^4\n- s[i] is '(' or ')'",
+    "tags": "String, Dynamic Programming, Stack",
+    "difficulty": "HARD",
+    "hint": "Use a stack storing indices: push -1 as base, push index for '(', pop for ')' and compute length as current_index minus stack top."
+  },
+  {
+    "title": "Minimum Number of Arrows to Burst Balloons",
+    "description": "Points represent balloons on a 2D plane. An arrow shot vertically at x bursts all balloons whose range includes x. Return the minimum number of arrows needed.\n\nInput: points = [[10,16],[2,8],[1,6],[7,12]]\nOutput: 2\n\nConstraints:\n- 1 <= points.length <= 10^5\n- points[i].length == 2",
+    "tags": "Array, Greedy, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Sort balloons by end coordinate and greedily shoot at each balloon's end point, skipping all balloons already burst by that arrow."
+  },
+  {
+    "title": "Course Schedule II",
+    "description": "Return the order in which you should take courses to finish all of them. If it is impossible, return an empty array.\n\nInput: numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]\nOutput: [0,1,2,3] or [0,2,1,3]\n\nConstraints:\n- 1 <= numCourses <= 2000\n- 0 <= prerequisites.length <= 5000",
+    "tags": "DFS, BFS, Graph",
+    "difficulty": "MEDIUM",
+    "hint": "Use topological sort with Kahn's algorithm: repeatedly process nodes with zero in-degree, building the course order."
+  },
+  {
+    "title": "Minimum Operations to Make Array Equal",
+    "description": "Given an integer n, you have an array arr of length n where arr[i] = 2*i + 1. In one operation you pick two indices and increment one while decrementing the other. Return the minimum operations to make all elements equal.\n\nInput: n = 3\nOutput: 2\n\nConstraints:\n- 1 <= n <= 10^4",
+    "tags": "Math, Greedy",
+    "difficulty": "MEDIUM",
+    "hint": "The target value is n (the median), and the answer is the sum of differences between n and each element in the first half of the array."
+  },
+  {
+    "title": "Find All Numbers Disappeared",
+    "description": "Given an array nums of n integers where nums[i] is in [1, n], return all the integers in [1, n] that do not appear in nums.\n\nInput: nums = [4,3,2,7,8,2,3,1]\nOutput: [5,6]\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 10^5\n- 1 <= nums[i] <= n",
+    "tags": "Array, Hash Table",
+    "difficulty": "EASY",
+    "hint": "Mark indices as negative by negating nums[abs(nums[i])-1]; indices that remain positive correspond to missing numbers."
+  },
+  {
+    "title": "Minimum Depth of Binary Tree",
+    "description": "Given a binary tree, find its minimum depth. The minimum depth is the number of nodes along the shortest path from the root to the nearest leaf.\n\nInput: root = [3,9,20,null,null,15,7]\nOutput: 2\n\nConstraints:\n- The number of nodes is in the range [0, 10^5]\n- -1000 <= Node.val <= 1000",
+    "tags": "Tree, BFS, DFS, Binary Tree",
+    "difficulty": "EASY",
+    "hint": "Use BFS level by level: the first leaf node encountered gives the minimum depth, which is more efficient than DFS for this problem."
+  },
+  {
+    "title": "Binary Tree Zigzag Level Order",
+    "description": "Given the root of a binary tree, return the zigzag level order traversal of its nodes' values (left to right, then right to left, alternating).\n\nInput: root = [3,9,20,null,null,15,7]\nOutput: [[3],[20,9],[15,7]]\n\nConstraints:\n- The number of nodes is in the range [0, 2000]\n- -100 <= Node.val <= 100",
+    "tags": "Tree, BFS, Binary Tree",
+    "difficulty": "MEDIUM",
+    "hint": "Use BFS with a flag to alternate direction; reverse the current level's values on every other level."
+  },
+  {
+    "title": "Construct Binary Tree from Preorder and Inorder",
+    "description": "Given two integer arrays preorder and inorder, construct and return the binary tree.\n\nInput: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]\nOutput: [3,9,20,null,null,15,7]\n\nConstraints:\n- 1 <= preorder.length <= 3000\n- inorder.length == preorder.length\n- All values are unique",
+    "tags": "Array, Hash Table, Tree, Binary Tree, Divide and Conquer",
+    "difficulty": "MEDIUM",
+    "hint": "The first element of preorder is the root; find it in inorder to determine left and right subtree boundaries, then recurse."
+  },
+  {
+    "title": "Minimum Window in Sorted Arrays",
+    "description": "Given two sorted arrays, find the minimum window [i,j] such that at least one element from each array falls in the range. Return the size of the smallest such window.\n\nInput: nums1 = [1,3,5], nums2 = [2,4,6]\nOutput: 1\n\nConstraints:\n- 1 <= nums1.length, nums2.length <= 10^5",
+    "tags": "Array, Two Pointers, Binary Search, Sorting",
+    "difficulty": "MEDIUM",
+    "hint": "Use two pointers or binary search to find the closest pair between the two sorted arrays, tracking the minimum absolute difference."
+  },
+  {
+    "title": "Maximum Width of Binary Tree",
+    "description": "Given the root of a binary tree, return the maximum width of the tree. The width is the length between the leftmost and rightmost non-null nodes at each level.\n\nInput: root = [1,3,2,5,3,null,9]\nOutput: 4\n\nConstraints:\n- The number of nodes is in the range [1, 3000]\n- -100 <= Node.val <= 100",
+    "tags": "Tree, BFS, DFS, Binary Tree",
+    "difficulty": "MEDIUM",
+    "hint": "Use BFS assigning positions to nodes (left child = 2*pos, right child = 2*pos+1), computing max width as rightmost minus leftmost position plus one at each level."
+  },
+  {
+    "title": "Ugly Number II",
+    "description": "Write a program to find the n-th ugly number. Ugly numbers are positive numbers whose prime factors only include 2, 3, 5.\n\nInput: n = 10\nOutput: 12 (1,2,3,4,5,6,8,9,10,12)\n\nConstraints:\n- 1 <= n <= 1690",
+    "tags": "Hash Table, Math, Dynamic Programming, Heap",
+    "difficulty": "MEDIUM",
+    "hint": "Use three pointers for factors 2, 3, and 5; at each step, generate the next ugly number as the minimum of currentUgly*2, currentUgly*3, and currentUgly*5."
+  },
+  {
+    "title": "Perfect Squares",
+    "description": "Given an integer n, return the least number of perfect square numbers that sum to n.\n\nInput: n = 12\nOutput: 3 (4+4+4)\n\nConstraints:\n- 1 <= n <= 10^4",
+    "tags": "Math, Dynamic Programming, BFS",
+    "difficulty": "MEDIUM",
+    "hint": "Use DP where dp[i] = min(dp[i], dp[i-j*j]+1) for all j where j*j <= i, or use BFS treating each number as a node."
+  },
+  {
+    "title": "House Robber II",
+    "description": "All houses are arranged in a circle. You cannot rob two adjacent houses. Given an array of non-negative integers representing the amount of money at each house, return the maximum amount you can rob.\n\nInput: nums = [2,3,2]\nOutput: 3\n\nConstraints:\n- 1 <= nums.length <= 100\n- 0 <= nums[i] <= 1000",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Run the House Robber I algorithm twice: once excluding the first house and once excluding the last house, then take the maximum."
+  },
+  {
+    "title": "Coin Change II",
+    "description": "Given an amount and an array of coin denominations, return the number of combinations that make up that amount.\n\nInput: amount = 5, coins = [1,2,5]\nOutput: 4\n\nConstraints:\n- 1 <= coins.length <= 300\n- 1 <= coins[i] <= 5000\n- 0 <= amount <= 5000",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use a 1D DP array where dp[j] += dp[j-coin] for each coin, iterating coins in the outer loop to avoid counting permutations."
+  },
+  {
+    "title": "Target Sum",
+    "description": "Given an integer array nums and an integer target, assign + or - to each element to make the sum equal target. Return the number of ways.\n\nInput: nums = [1,1,1,1,1], target = 3\nOutput: 5\n\nConstraints:\n- 1 <= nums.length <= 20\n- 0 <= nums[i] <= 1000\n- -1000 <= target <= 1000",
+    "tags": "Array, Dynamic Programming, Backtracking",
+    "difficulty": "MEDIUM",
+    "hint": "Convert to a subset sum problem: find subsets summing to (total+target)/2 using a 0/1 knapsack DP approach."
+  },
+  {
+    "title": "Minimum Falling Path Sum",
+    "description": "Given an n x n array of integers matrix, return the minimum sum of any falling path through matrix. A falling path starts at any element in the first row and chooses one element from each row, moving to an adjacent column.\n\nInput: matrix = [[2,1,3],[6,5,4],[7,8,9]]\nOutput: 13 (1+5+7)\n\nConstraints:\n- n == matrix.length == matrix[i].length\n- 1 <= n <= 100\n- -100 <= matrix[i][j] <= 100",
+    "tags": "Array, Dynamic Programming, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use DP updating each cell to be the minimum of the three possible cells from the row above, building from top to bottom."
+  },
+  {
+    "title": "Stone Game",
+    "description": "Two players take turns picking stones from either end of a row of stones. Each stone has a value. Return true if player 1 wins (assuming both play optimally).\n\nInput: piles = [5,3,4,5]\nOutput: true\n\nConstraints:\n- 2 <= piles.length <= 500\n- piles.length is even\n- 1 <= piles[i] <= 500",
+    "tags": "Array, Math, Dynamic Programming, Game Theory",
+    "difficulty": "MEDIUM",
+    "hint": "Use interval DP where dp[i][j] represents the maximum score difference the current player can achieve from piles[i..j]."
+  },
+  {
+    "title": "Longest String Chain",
+    "description": "Given a list of words, a word chain is a sequence where each word is a predecessor of the next. Return the length of the longest possible word chain.\n\nInput: words = [\"a\",\"b\",\"ba\",\"bca\",\"bda\",\"bdca\"]\nOutput: 4 (a -> ba -> bda -> bdca)\n\nConstraints:\n- 1 <= words.length <= 1000\n- 1 <= words[i].length <= 16",
+    "tags": "Array, Hash Table, String, Dynamic Programming, Two Pointers",
+    "difficulty": "MEDIUM",
+    "hint": "Sort words by length, then use DP with a hash map: for each word, try removing each character and look up whether the predecessor exists."
+  },
+  {
+    "title": "Minimum Cost Climbing Stairs",
+    "description": "Given an array cost where cost[i] is the cost of step i, you can start from step 0 or 1. Return the minimum cost to reach the top of the floor.\n\nInput: cost = [10,15,20]\nOutput: 15\n\nConstraints:\n- 2 <= cost.length <= 1000\n- 0 <= cost[i] <= 999",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "EASY",
+    "hint": "Use DP where dp[i] = cost[i] + min(dp[i-1], dp[i-2]), with the answer being min(dp[n-1], dp[n-2]) since you can skip the last step."
+  },
+  {
+    "title": "Interleaving String",
+    "description": "Given strings s1, s2, and s3, determine whether s3 is formed by an interleaving of s1 and s2.\n\nInput: s1 = \"aabcc\", s2 = \"dbbca\", s3 = \"aadbbcbcac\"\nOutput: true\n\nConstraints:\n- 0 <= s1.length, s2.length <= 100\n- 0 <= s3.length <= 200",
+    "tags": "String, Dynamic Programming",
+    "difficulty": "MEDIUM",
+    "hint": "Use a 2D DP table where dp[i][j] is true if s3[0..i+j-1] can be formed by interleaving s1[0..i-1] and s2[0..j-1]."
+  },
+  {
+    "title": "Regular Expression Matching",
+    "description": "Implement regular expression matching with support for '.' (matches any single character) and '*' (matches zero or more of the preceding element).\n\nInput: s = \"aa\", p = \"a*\"\nOutput: true\n\nConstraints:\n- 1 <= s.length <= 20\n- 1 <= p.length <= 20",
+    "tags": "String, Dynamic Programming, Recursion",
+    "difficulty": "HARD",
+    "hint": "Use 2D DP where dp[i][j] indicates whether s[0..i-1] matches p[0..j-1], handling '*' by either ignoring the pattern pair or consuming a character."
+  },
+  {
+    "title": "Wildcard Matching",
+    "description": "Given an input string s and a pattern p, implement wildcard pattern matching with '?' (matches any single character) and '*' (matches any sequence).\n\nInput: s = \"adceb\", p = \"*a*b\"\nOutput: true\n\nConstraints:\n- 0 <= s.length, p.length <= 2000",
+    "tags": "String, Dynamic Programming, Greedy, Recursion",
+    "difficulty": "HARD",
+    "hint": "Use 2D DP where dp[i][j] = true if s[0..i-1] matches p[0..j-1], with '*' matching zero characters (dp[i][j-1]) or extending (dp[i-1][j])."
+  },
+  {
+    "title": "Distinct Subsequences",
+    "description": "Given two strings s and t, return the number of distinct subsequences of s which equals t.\n\nInput: s = \"rabbbit\", t = \"rabbit\"\nOutput: 3\n\nConstraints:\n- 1 <= s.length, t.length <= 1000",
+    "tags": "String, Dynamic Programming",
+    "difficulty": "HARD",
+    "hint": "Use 2D DP where dp[i][j] counts ways to form t[0..j-1] from s[0..i-1]: dp[i][j] = dp[i-1][j] + (dp[i-1][j-1] if s[i-1]==t[j-1])."
+  },
+  {
+    "title": "Burst Balloons",
+    "description": "Given n balloons with numbers on them, bursting balloon i gives nums[i-1]*nums[i]*nums[i+1] coins. Find the maximum coins you can collect.\n\nInput: nums = [3,1,5,8]\nOutput: 167\n\nConstraints:\n- n == nums.length\n- 1 <= n <= 300\n- 0 <= nums[i] <= 100",
+    "tags": "Array, Dynamic Programming",
+    "difficulty": "HARD",
+    "hint": "Use interval DP where dp[i][j] is the max coins for bursting all balloons between i and j, choosing the last balloon to burst in each interval."
+  },
+  {
+    "title": "Minimum Number of Refueling Stops",
+    "description": "A car starts with startFuel liters and wants to reach target miles away. Along the way, there are gas stations. Return the fewest refueling stops needed.\n\nInput: target = 100, startFuel = 10, stations = [[10,60],[20,30],[30,30],[60,40]]\nOutput: 2\n\nConstraints:\n- 1 <= target, startFuel <= 10^9\n- 0 <= stations.length <= 500",
+    "tags": "Array, Dynamic Programming, Greedy, Heap",
+    "difficulty": "HARD",
+    "hint": "Use a max-heap: pass each station and add its fuel to the heap; when you run out of fuel, greedily refuel from the station with the most fuel."
+  },
+  {
+    "title": "Cherry Pickup",
+    "description": "Given an n x n grid where each cell has cherries or thorns, find the maximum cherries you can collect going from (0,0) to (n-1,n-1) and back.\n\nInput: grid = [[0,1,-1],[1,0,-1],[1,1,1]]\nOutput: 5\n\nConstraints:\n- n == grid.length\n- 1 <= n <= 50",
+    "tags": "Array, Dynamic Programming, Matrix",
+    "difficulty": "HARD",
+    "hint": "Model as two people walking simultaneously from start to end using 3D DP on (row1, col1, row2) where col2 is derived from the step count."
+  },
+  {
+    "title": "Maximal Rectangle",
+    "description": "Given a rows x cols binary matrix filled with 0's and 1's, find the largest rectangle containing only 1's and return its area.\n\nInput: matrix = [[\"1\",\"0\",\"1\",\"0\",\"0\"],[\"1\",\"0\",\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\",\"1\",\"1\"],[\"1\",\"0\",\"0\",\"1\",\"0\"]]\nOutput: 6\n\nConstraints:\n- rows == matrix.length\n- cols == matrix[0].length\n- 1 <= rows, cols <= 200",
+    "tags": "Array, Dynamic Programming, Stack, Matrix, Monotonic Stack",
+    "difficulty": "HARD",
+    "hint": "Build a histogram of heights for each row, then apply the largest rectangle in histogram algorithm using a monotonic stack on each row."
+  },
+  {
+    "title": "Alien Dictionary",
+    "description": "Given a list of words sorted in an alien language order, derive the order of characters in this language.\n\nInput: words = [\"wrt\",\"wrf\",\"er\",\"ett\",\"rftt\"]\nOutput: \"wertf\"\n\nConstraints:\n- 1 <= words.length <= 100\n- 1 <= words[i].length <= 100",
+    "tags": "Array, String, DFS, BFS, Graph",
+    "difficulty": "HARD",
+    "hint": "Build a directed graph from adjacent word comparisons (first differing character), then use topological sort to find the character order."
+  },
+  {
+    "title": "Critical Connections in a Network",
+    "description": "Given n servers and connections between them, find all critical connections (bridges). A critical connection is an edge whose removal disconnects the graph.\n\nInput: n = 4, connections = [[0,1],[1,2],[2,0],[1,3]]\nOutput: [[1,3]]\n\nConstraints:\n- 2 <= n <= 10^5\n- n - 1 <= connections.length <= 10^5",
+    "tags": "DFS, Graph",
+    "difficulty": "HARD",
+    "hint": "Use Tarjan's bridge-finding algorithm with DFS, tracking discovery time and low-link values to identify edges where low[v] > disc[u]."
+  },
+  {
+    "title": "Swim in Rising Water",
+    "description": "Given an n x n grid where grid[i][j] represents elevation, you can swim when the water level reaches the cell's elevation. Find the least time to swim from top-left to bottom-right.\n\nInput: grid = [[0,2],[1,3]]\nOutput: 3\n\nConstraints:\n- n == grid.length\n- 2 <= n <= 50\n- 0 <= grid[i][j] < n^2",
+    "tags": "Array, Binary Search, DFS, BFS, Graph, Heap, Matrix, Union Find",
+    "difficulty": "HARD",
+    "hint": "Use Dijkstra's algorithm with a min-heap, treating the maximum elevation along any path as the cost to minimize."
+  },
+  {
+    "title": "Longest Increasing Path in a Matrix",
+    "description": "Given an m x n integers matrix, return the length of the longest increasing path. You can move in four directions.\n\nInput: matrix = [[9,9,4],[6,6,8],[2,1,1]]\nOutput: 4 (1->2->6->9)\n\nConstraints:\n- m == matrix.length\n- n == matrix[i].length\n- 1 <= m, n <= 200",
+    "tags": "Array, Dynamic Programming, DFS, BFS, Graph, Matrix",
+    "difficulty": "HARD",
+    "hint": "Use DFS with memoization: for each cell, recursively explore all four directions where the neighbor is strictly larger, caching the longest path from each cell."
+  },
+  {
+    "title": "Shortest Bridge",
+    "description": "Given an n x n binary matrix with exactly two islands, return the smallest number of 0s you must flip to connect the two islands.\n\nInput: grid = [[0,1],[1,0]]\nOutput: 1\n\nConstraints:\n- n == grid.length == grid[i].length\n- 2 <= n <= 100",
+    "tags": "Array, DFS, BFS, Matrix",
+    "difficulty": "MEDIUM",
+    "hint": "Use DFS to find and mark all cells of one island, then BFS from that island's boundary expanding outward until reaching the second island."
+  },
+  {
+    "title": "Network Delay Time",
+    "description": "Given a network of n nodes and weighted directed edges, send a signal from node k. Return the minimum time for all nodes to receive the signal, or -1 if impossible.\n\nInput: times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2\nOutput: 2\n\nConstraints:\n- 1 <= k <= n <= 100\n- 1 <= times.length <= 6000",
+    "tags": "DFS, BFS, Graph, Heap",
+    "difficulty": "MEDIUM",
+    "hint": "Use Dijkstra's algorithm with a min-heap to find shortest paths from source k to all nodes; the answer is the maximum of all shortest distances."
+  }
+]

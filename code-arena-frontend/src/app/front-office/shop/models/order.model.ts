@@ -22,12 +22,13 @@ export interface OrderItem {
 // ─── Order Interface ──────────────────────────────────────────────
 // The full receipt — created when participant clicks checkout
 export interface Order {
-  id:            string;
-  participantId: string;       // who bought it
-  items:         OrderItem[];  // list of items on this receipt
-  totalPrice:    number;       // sum of all items
-  status:        OrderStatus;  // current status
-  createdAt:     string;       // when it was placed
+  id:              string;
+  participantId:   string;       // who bought it (Auth0 sub)
+  participantName: string;       // human readable name from users table
+  items:           OrderItem[];  // list of items on this receipt
+  totalPrice:      number;       // sum of all items
+  status:          OrderStatus;  // current status
+  createdAt:       string;       // when it was placed
 }
 
 // ─── Checkout Request ─────────────────────────────────────────────

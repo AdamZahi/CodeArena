@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ public class RegistrationController {
 
     private final RegistrationService registrationService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/register")
     public ResponseEntity<RegistrationResponseDTO> register(
             @PathVariable("id") UUID eventId,
@@ -35,6 +37,7 @@ public class RegistrationController {
                 .body(registrationService.register(eventId, participantId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}/register")
     public ResponseEntity<Void> cancelRegistration(
             @PathVariable("id") UUID eventId,
@@ -44,12 +47,14 @@ public class RegistrationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}/participants")
     public ResponseEntity<List<RegistrationResponseDTO>> getEventParticipants(
             @PathVariable("id") UUID eventId) {
         return ResponseEntity.ok(registrationService.getEventParticipants(eventId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me/registrations")
     public ResponseEntity<List<RegistrationResponseDTO>> getMyRegistrations(
             @AuthenticationPrincipal Jwt jwt) {

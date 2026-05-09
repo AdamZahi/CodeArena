@@ -7,7 +7,7 @@
     </div>
     <div class="header-actions">
       <button class="header-btn" (click)="toggleDashboard()">
-        📊 DASHBOARD
+        {{ showDashboard ? '📋 EVENT LIST' : '📊 DASHBOARD' }}
       </button>
       <button class="header-btn btn-create" (click)="goCreate()">
         + CREATE EVENT
@@ -60,7 +60,7 @@
   </div>
 
   <!-- TABLE -->
-  <table class="events-table">
+  <table class="events-table" *ngIf="!showDashboard">
     <thead>
       <tr>
         <th>TITLE</th>

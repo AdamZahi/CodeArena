@@ -2,6 +2,7 @@ package com.codearena.config;
 
 import com.codearena.user.entity.User;
 import com.codearena.user.repository.UserRepository;
+import com.codearena.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -19,9 +20,13 @@ import java.util.Collections;
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
+        // Sync user info from token claims (nickname, email, etc.)
+        userService.syncFromJwt(source);
+        
         Collection<GrantedAuthority> authorities = extractAuthorities(source);
         return new JwtAuthenticationToken(source, authorities);
     }
@@ -32,7 +37,7 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
             return Collections.emptySet();
         }
 
-        return userRepository.findByKeycloakId(sub)
+        return userRepository.findByAuth0Id(sub)
                 .map(User::getRole)
                 .map(role -> (Collection<GrantedAuthority>) java.util.Set.<GrantedAuthority>of(
                         new SimpleGrantedAuthority("ROLE_" + role.name())

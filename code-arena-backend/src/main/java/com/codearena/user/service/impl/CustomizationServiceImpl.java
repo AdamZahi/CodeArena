@@ -82,27 +82,27 @@ public class CustomizationServiceImpl implements CustomizationService {
     // ========== USER: Unlocks & Equip ==========
 
     @Override
-    public List<UserUnlockDTO> getMyUnlocks(String keycloakId) {
-        List<UserUnlock> unlocks = unlockRepo.findByUserId(keycloakId);
+    public List<UserUnlockDTO> getMyUnlocks(String auth0Id) {
+        List<UserUnlock> unlocks = unlockRepo.findByUserId(auth0Id);
         return unlocks.stream().map(this::toUnlockDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<UserUnlockDTO> getMyUnlocksByType(String keycloakId, String itemType) {
-        List<UserUnlock> unlocks = unlockRepo.findByUserIdAndItemType(keycloakId, itemType.toUpperCase());
+    public List<UserUnlockDTO> getMyUnlocksByType(String auth0Id, String itemType) {
+        List<UserUnlock> unlocks = unlockRepo.findByUserIdAndItemType(auth0Id, itemType.toUpperCase());
         return unlocks.stream().map(this::toUnlockDTO).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public void equipItem(String keycloakId, EquipItemRequest request) {
+    public void equipItem(String auth0Id, EquipItemRequest request) {
         // Verify the user owns this item
-        boolean owns = unlockRepo.existsByUserIdAndItemKey(keycloakId, request.getItemKey());
+        boolean owns = unlockRepo.existsByUserIdAndItemKey(auth0Id, request.getItemKey());
         if (!owns) {
             throw new RuntimeException("You haven't unlocked this item: " + request.getItemKey());
         }
 
-        User user = userRepo.findByKeycloakId(keycloakId)
+        User user = userRepo.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         switch (request.getItemType().toUpperCase()) {
@@ -148,12 +148,12 @@ public class CustomizationServiceImpl implements CustomizationService {
 
     @Override
     @Transactional
-    public void grantDefaultItems(String keycloakId) {
+    public void grantDefaultItems(String auth0Id) {
         List<CustomizationItem> defaults = itemRepo.findByIsDefaultTrue();
         for (CustomizationItem item : defaults) {
-            if (!unlockRepo.existsByUserIdAndItemKey(keycloakId, item.getItemKey())) {
+            if (!unlockRepo.existsByUserIdAndItemKey(auth0Id, item.getItemKey())) {
                 UserUnlock unlock = UserUnlock.builder()
-                        .userId(keycloakId)
+                        .userId(auth0Id)
                         .itemType(item.getItemType())
                         .itemKey(item.getItemKey())
                         .acquisitionSource("DEFAULT")
@@ -165,34 +165,34 @@ public class CustomizationServiceImpl implements CustomizationService {
 
     @Override
     @Transactional
-    public void checkAndGrantUnlocks(String keycloakId) {
-        User user = userRepo.findByKeycloakId(keycloakId)
+    public void checkAndGrantUnlocks(String auth0Id) {
+        User user = userRepo.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Grant items by LEVEL threshold
         List<CustomizationItem> levelItems = itemRepo
                 .findByUnlockTypeAndUnlockThresholdLessThanEqual("LEVEL", user.getLevel());
-        grantItems(keycloakId, levelItems, "LEVEL_UP");
+        grantItems(auth0Id, levelItems, "LEVEL_UP");
 
         // Grant items by XP threshold
         List<CustomizationItem> xpItems = itemRepo
                 .findByUnlockTypeAndUnlockThresholdLessThanEqual("XP", (user.getTotalXp() != null ? user.getTotalXp().intValue() : 0));
-        grantItems(keycloakId, xpItems, "XP_MILESTONE");
+        grantItems(auth0Id, xpItems, "XP_MILESTONE");
 
-        log.info("Checked and granted unlocks for user {}", keycloakId);
+        log.info("Checked and granted unlocks for user {}", auth0Id);
     }
 
-    private void grantItems(String keycloakId, List<CustomizationItem> items, String source) {
+    private void grantItems(String auth0Id, List<CustomizationItem> items, String source) {
         for (CustomizationItem item : items) {
-            if (!unlockRepo.existsByUserIdAndItemKey(keycloakId, item.getItemKey())) {
+            if (!unlockRepo.existsByUserIdAndItemKey(auth0Id, item.getItemKey())) {
                 UserUnlock unlock = UserUnlock.builder()
-                        .userId(keycloakId)
+                        .userId(auth0Id)
                         .itemType(item.getItemType())
                         .itemKey(item.getItemKey())
                         .acquisitionSource(source)
                         .build();
                 unlockRepo.save(unlock);
-                log.info("Unlocked {} for user {} (source: {})", item.getItemKey(), keycloakId, source);
+                log.info("Unlocked {} for user {} (source: {})", item.getItemKey(), auth0Id, source);
             }
         }
     }

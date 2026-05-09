@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ChallengeService } from '../../services/challenge.service';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
+import { AiService, RecommendationDto } from '../../services/ai.service';
 
 @Component({
   selector: 'app-challenge-list',
@@ -18,15 +19,30 @@ export class ChallengeListComponent implements OnInit {
   public isLoading = true;
   public searchTerm = '';
   public selectedDifficulty = '';
+  public aiRecommendations: RecommendationDto[] = [];
+  public showAiPicks = false;
 
   constructor(
     private challengeService: ChallengeService,
+    private aiService: AiService,
     private router: Router,
     public auth: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadChallenges();
+    if (this.auth.isAuthenticated$) {
+      this.loadAiRecommendations();
+    }
+  }
+
+  public loadAiRecommendations(): void {
+    this.aiService.getRecommendations(3).subscribe({
+      next: (data: any) => {
+        this.aiRecommendations = data || [];
+      },
+      error: (err: any) => console.error('Failed to load AI recommendations', err)
+    });
   }
 
   public loadChallenges(): void {
@@ -50,10 +66,18 @@ export class ChallengeListComponent implements OnInit {
 
   public filterByDifficulty(diff: string): void {
     this.selectedDifficulty = diff;
+    this.showAiPicks = false;
+    this.applyFilters();
+  }
+
+  public toggleAiPicks(): void {
+    this.showAiPicks = true;
+    this.selectedDifficulty = '';
     this.applyFilters();
   }
 
   public onSearch(): void {
+    this.showAiPicks = false;
     this.applyFilters();
   }
 
@@ -75,13 +99,16 @@ export class ChallengeListComponent implements OnInit {
   }
 
   public getLanguageName(id: string): string {
-    switch (id) {
-      case '62': return 'JAVA (13)';
-      case '71': return 'PYTHON (3.8)';
-      case '50': return 'C (GCC 9.2)';
-      case '54': return 'C++ (GCC 9.2)';
-      case '63': return 'JS (NODE 12)';
-      default: return 'UNKNOWN';
+    switch ((id || '').toLowerCase()) {
+      case 'python':     return 'PYTHON 3.12';
+      case 'javascript': return 'JS (NODE 20)';
+      case 'java':       return 'JAVA 15';
+      case 'go':         return 'GO 1.16';
+      case 'rust':       return 'RUST 1.50';
+      case 'csharp':     return 'C# (.NET 5)';
+      case 'php':        return 'PHP 8.2';
+      case 'bash':       return 'BASH 5.2';
+      default:           return (id || 'UNKNOWN').toUpperCase();
     }
   }
 }

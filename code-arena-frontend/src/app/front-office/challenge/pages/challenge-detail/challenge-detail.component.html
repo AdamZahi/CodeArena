@@ -10,10 +10,10 @@
       <button *ngIf="isAdmin" 
               class="toolbar-anticheat" 
               (click)="toggleAntiCheat()"
-              [class.active]="challenge?.antiCheatEnabled"
-              [title]="challenge?.antiCheatEnabled ? 'Disable Anti-Cheat' : 'Enable Anti-Cheat'">
+              [class.active]="antiCheatEnabled"
+              [title]="antiCheatEnabled ? 'Disable Anti-Cheat' : 'Enable Anti-Cheat'">
         <span class="ac-icon">🛡️</span>
-        <span class="ac-text">ANTI_CHEAT: {{ challenge?.antiCheatEnabled ? 'ON' : 'OFF' }}</span>
+        <span class="ac-text">ANTI_CHEAT: {{ antiCheatEnabled ? 'ON' : 'OFF' }}</span>
       </button>
 
       <button class="toolbar-sound-btn" (click)="toggleSound()" [title]="isMuted ? 'Unmute Sounds' : 'Mute Sounds'">
@@ -44,9 +44,10 @@
 
         <div *ngIf="!isLoading && challenge" 
              class="desc-content" 
-             [class.restricted]="challenge?.antiCheatEnabled"
+             [class.restricted]="antiCheatEnabled"
              (copy)="blockEvent($event)" 
-             (contextmenu)="blockEvent($event)">
+             (contextmenu)="blockEvent($event)"
+             (selectstart)="blockEvent($event)">
           <!-- HACKER HEALTH BAR -->
           <div class="hacker-health-container">
             <div class="health-label">
@@ -100,6 +101,44 @@
           <!-- ═══ LUXURY LEETCODE ACCORDION ═══ -->
           <div class="lc-premium-accordion">
 
+            <!-- Section: AI Database Analysis -->
+            <div class="acc-box" *ngIf="aiDifficulty">
+              <div class="acc-header" (click)="langInfoOpen = !langInfoOpen" [class.active]="langInfoOpen">
+                <div class="acc-title-group">
+                  <i class="acc-icon ai-icon">🧠</i>
+                  <span class="acc-label">AI Analysis</span>
+                </div>
+                <div class="acc-chevron" [class.rotated]="langInfoOpen"></div>
+              </div>
+              <div class="acc-body" *ngIf="langInfoOpen">
+                <div class="ai-analysis-card">
+                  <div class="ai-stat-row">
+                    <span>True AI Difficulty:</span>
+                    <span class="ai-score" [style.color]="aiDifficulty.aiDifficultyScore > 66 ? '#ef4444' : aiDifficulty.aiDifficultyScore > 33 ? '#f59e0b' : '#10b981'">
+                      {{ aiDifficulty.aiDifficultyScore | number:'1.0-1' }} / 100
+                    </span>
+                  </div>
+                  <div class="ai-gauge-bg">
+                    <div class="ai-gauge-fill" 
+                         [style.width.%]="aiDifficulty.aiDifficultyScore"
+                         [style.background]="aiDifficulty.aiDifficultyScore > 66 ? '#ef4444' : aiDifficulty.aiDifficultyScore > 33 ? '#f59e0b' : '#10b981'">
+                    </div>
+                  </div>
+                  <div class="ai-stat-row" style="margin-top: 15px;">
+                    <span>Global Pass Rate:</span>
+                    <span>{{ (aiDifficulty.passRate * 100) | number:'1.0-1' }}%</span>
+                  </div>
+                  <div class="ai-stat-row">
+                    <span>Avg. Attempts Required:</span>
+                    <span>{{ aiDifficulty.avgAttempts | number:'1.0-1' }}</span>
+                  </div>
+                  <p class="ai-insight" *ngIf="aiDifficulty.aiDifficultyScore > 75">
+                    ⚠️ The Neural Network warns that this challenge is significantly harder than its original classification.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Section: Topics -->
             <div class="acc-box" *ngIf="getTags(challenge.tags).length > 0">
               <div class="acc-header" (click)="topicsOpen = !topicsOpen" [class.active]="topicsOpen">
@@ -138,17 +177,25 @@
             </div>
 
             <!-- Section: Hint -->
-            <div class="acc-box" *ngIf="challenge.difficulty !== 'EASY'">
+            <div class="acc-box">
               <div class="acc-header" (click)="hintsOpen = !hintsOpen" [class.active]="hintsOpen">
                 <div class="acc-title-group">
                   <i class="acc-icon hint-icon">💡</i>
-                  <span class="acc-label">Hint</span>
+                  <span class="acc-label">AI Hint Generator</span>
                 </div>
                 <div class="acc-chevron" [class.rotated]="hintsOpen"></div>
               </div>
               <div class="acc-body" *ngIf="hintsOpen">
-                <div class="hint-card">
-                  <p>Analyzing the constraints is key. Can you find a solution with O(N) complexity using a hash table to store indices?</p>
+                <div class="hint-card" style="padding: 10px;">
+                  <button class="ai-hint-btn" (click)="generateAiHint()" *ngIf="!aiHint && !isHintLoading">
+                     💡 DEMAND AI HINT
+                  </button>
+                  <div class="ai-hint-loading" *ngIf="isHintLoading">
+                     PROCESSING NEURAL VECTORS...
+                  </div>
+                  <div class="ai-hint-text" *ngIf="aiHint">
+                     <span class="ai-bot-icon">🤖</span> {{ aiHint }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -227,6 +274,12 @@
                 <span>RUNTIME: {{ submissionResult.executionTime || 0 }}s</span>
                 <span>MEMORY: {{ submissionResult.memoryUsed || 0 }} KB</span>
              </div>
+             <div class="history-row" *ngIf="submissionResult.complexityDisplay">
+                <span>COMPLEXITY: {{ submissionResult.complexityDisplay }}</span>
+                <span *ngIf="submissionResult.complexityConfidence != null">
+                  CONFIDENCE: {{ (submissionResult.complexityConfidence * 100) | number:'1.0-0' }}%
+                </span>
+             </div>
              <pre class="result-error" *ngIf="submissionResult.errorOutput">{{ submissionResult.errorOutput }}</pre>
           </div>
         </div>
@@ -246,9 +299,19 @@
     <div class="lc-right">
       <div class="editor-topbar">
         <span class="editor-label">TERMINAL_v1.0</span>
-        <select class="lang-select" [(ngModel)]="language" (change)="onLanguageChange()">
-          <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
-        </select>
+        <div class="lang-select-wrapper">
+          <select class="lang-select" 
+                  [(ngModel)]="language" 
+                  (change)="onLanguageChange()"
+                  [disabled]="isLanguageLocked"
+                  [class.locked]="isLanguageLocked">
+            <option *ngFor="let lang of languages" [value]="lang.id">{{ lang.name }}</option>
+          </select>
+          <span *ngIf="isLanguageLocked" class="lock-indicator" title="Language is enforced for this challenge">🔒</span>
+        </div>
+      </div>
+      <div class="lang-mismatch-banner" *ngIf="languageMismatchError">
+        {{ languageMismatchError }}
       </div>
 
       <div class="editor-body">
@@ -272,7 +335,7 @@
         <div class="game-over-overlay" *ngIf="isGameOver">
           <div class="glitch-wrapper">
              <div class="glitch-text" data-text="LINK_SEVERED">LINK_SEVERED</div>
-             <button class="retry-btn" (click)="reestablishConnection()">RE-ESTABLISH_CONNECTION</button>
+             <button class="retry-btn" style="cursor: not-allowed; opacity: 0.8;">RE-ESTABLISHING IN {{ autoReconnectTimer }}s...</button>
           </div>
         </div>
       </div>

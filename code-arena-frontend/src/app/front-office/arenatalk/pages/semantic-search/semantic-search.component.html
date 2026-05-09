@@ -1,0 +1,31 @@
+<div class="semantic-search-box">
+  <div class="search-input-row">
+    <span class="ai-badge">🧠 AI</span>
+    <input
+      type="text"
+      [(ngModel)]="query"
+      placeholder="Search by meaning... (e.g. 'meeting tomorrow')"
+      (keyup.enter)="search()"
+    />
+    <button class="search-btn" (click)="search()" [disabled]="isLoading">
+      {{ isLoading ? '...' : '🔍' }}
+    </button>
+    <button class="clear-btn" *ngIf="searched" (click)="clear()">✕</button>
+  </div>
+
+  <div class="results-box" *ngIf="searched">
+    <div *ngIf="results.length === 0" class="no-results">
+      No similar messages found.
+    </div>
+
+    <div class="result-card" *ngFor="let r of results">
+      <div class="result-header">
+        <span class="result-sender">{{ r.sender }}</span>
+        <span class="result-score" [style.color]="getScoreColor(r.score)">
+          {{ (r.score * 100).toFixed(0) }}% match
+        </span>
+      </div>
+      <p class="result-content">{{ r.content }}</p>
+    </div>
+  </div>
+</div>

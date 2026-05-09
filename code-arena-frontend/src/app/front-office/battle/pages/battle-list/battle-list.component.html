@@ -231,6 +231,9 @@
           [(ngModel)]="inviteToken"
         />
       </div>
+      <div class="form-group" *ngIf="joinError">
+        <small style="color:#ff6b6b; font-weight:600;">{{ joinError }}</small>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-outline" (click)="showJoinModal = false">CANCEL</button>

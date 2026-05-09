@@ -36,7 +36,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
             WHERE TRIM(c.id) REGEXP '^[0-9]+$'
               AND CAST(TRIM(c.id) AS UNSIGNED) = :id
             """, nativeQuery = true)
-        boolean existsByNumericId(@Param("id") Long id);
+        int existsByNumericId(@Param("id") Long id);
 
         @Modifying
         @Query(value = """
@@ -104,4 +104,18 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
                         LIMIT 1
                         """, nativeQuery = true)
                 List<Object[]> findByIdSanitized(@Param("id") Long id);
+
+
+        @Query(value = """
+                        SELECT CAST(TRIM(c.id) AS UNSIGNED) AS id,
+                                     c.title,
+                                     c.description,
+                                     c.difficulty
+                        FROM challenge c
+                        WHERE TRIM(c.id) REGEXP '^[0-9]+$'
+                            AND CAST(TRIM(c.id) AS UNSIGNED) IN (:ids)
+                        """, nativeQuery = true)
+        List<Object[]> findByIdsSanitized(@Param("ids") List<Long> ids);
+
+
 }

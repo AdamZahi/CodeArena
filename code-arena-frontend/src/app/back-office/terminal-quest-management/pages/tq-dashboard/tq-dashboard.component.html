@@ -1,0 +1,205 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <span class="kicker">ADMIN — MODULE 8</span>
+      <h1 class="page-title">TERMINAL QUEST <span class="accent">DASHBOARD</span></h1>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/admin/terminal-quest/chapters" class="btn-secondary">MANAGE CHAPTERS</a>
+      <button class="btn-primary" (click)="exportGlobalPdf()">EXPORT PDF</button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING DATA...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+
+    <div class="error-banner" *ngIf="error">{{ error }}</div>
+
+    <!-- ── STATS CARDS ──────────────────────────────── -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">TOTAL PLAYERS</span>
+        <span class="stat-value purple">{{ overview?.totalPlayers ?? globalStats?.totalActivePlayers ?? 0 }}</span>
+        <span class="stat-sub">active users</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">SURVIVAL SESSIONS</span>
+        <span class="stat-value cyan">{{ overview?.totalSurvivalSessions ?? globalStats?.totalSurvivalSessions ?? 0 }}</span>
+        <span class="stat-sub">all time</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">STORY COMPLETION</span>
+        <span class="stat-value green">{{ completionRatePct }}%</span>
+        <span class="stat-sub">{{ globalStats?.totalStoryCompletions ?? 0 }} / {{ globalStats?.totalStoryAttempts ?? 0 }} attempts</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">TOTAL CHAPTERS</span>
+        <span class="stat-value">{{ chapters.length }}</span>
+        <span class="stat-sub">story chapters</span>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW + DIFFICULTY ──────────────────────────── -->
+    <div class="two-col" *ngIf="overview">
+      <div class="table-wrapper">
+        <div class="section-header"><span class="section-title">PLATFORM OVERVIEW</span></div>
+        <div class="overview-grid">
+          <div class="ov-item">
+            <span class="ov-label">Mission Attempts</span>
+            <span class="ov-value">{{ overview.totalMissionAttempts }}</span>
+          </div>
+          <div class="ov-item">
+            <span class="ov-label">Mission Completions</span>
+            <span class="ov-value green">{{ overview.totalMissionCompletions }}</span>
+          </div>
+          <div class="ov-item">
+            <span class="ov-label">Overall Rate</span>
+            <span class="ov-value cyan">{{ overview.overallCompletionRate }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrapper" *ngIf="difficultyStats.length > 0">
+        <div class="section-header"><span class="section-title">DIFFICULTY BREAKDOWN</span></div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>DIFFICULTY</th>
+              <th class="center">ATTEMPTS</th>
+              <th class="center">COMPLETIONS</th>
+              <th>RATE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of difficultyStats">
+              <td><span class="diff-badge" [ngClass]="'diff-' + d.difficulty.toLowerCase()">{{ d.difficulty }}</span></td>
+              <td class="center">{{ d.totalAttempts }}</td>
+              <td class="center">{{ d.completions }}</td>
+              <td>
+                <div class="rate-row">
+                  <div class="rate-bar"><div class="rate-fill" [style.width.%]="d.completionRate"></div></div>
+                  <span class="rate-text">{{ d.completionRate }}%</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── LEADERBOARD ──────────────────────────────── -->
+    <div class="table-wrapper" *ngIf="leaderboard.length > 0" style="margin-bottom: 24px;">
+      <div class="section-header">
+        <span class="section-title">TOP SURVIVAL PLAYERS</span>
+        <a routerLink="player/top" class="section-link">View all →</a>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>RANK</th>
+            <th>PLAYER</th>
+            <th class="center">BEST WAVE</th>
+            <th class="center">BEST SCORE</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of leaderboard">
+            <td class="rank-cell">#{{ entry.rank }}</td>
+            <td class="chapter-name">{{ entry.userId }}</td>
+            <td class="center">{{ entry.bestWave }}</td>
+            <td class="center">{{ entry.bestScore }}</td>
+            <td><a [routerLink]="['player', entry.userId]" class="view-link">VIEW →</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── PLAYER SEARCH ──────────────────────────────── -->
+    <div class="table-wrapper" style="margin-bottom: 24px;">
+      <div class="section-header"><span class="section-title">PLAYER SEARCH</span></div>
+      <div class="search-row">
+        <input class="search-input" [(ngModel)]="searchQuery" placeholder="Search by user ID..."
+               (keyup.enter)="searchPlayers()" />
+        <button class="btn-secondary search-btn" (click)="searchPlayers()">SEARCH</button>
+      </div>
+      <div class="loading-inline" *ngIf="isSearching">Searching...</div>
+      <table class="data-table" *ngIf="searchResults && searchResults.length > 0">
+        <thead>
+          <tr>
+            <th>PLAYER ID</th>
+            <th class="center">ATTEMPTS</th>
+            <th class="center">COMPLETED</th>
+            <th class="center">STARS</th>
+            <th class="center">RATE</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of searchResults">
+            <td class="chapter-name">{{ p.userId }}</td>
+            <td class="center">{{ p.totalAttempts }}</td>
+            <td class="center">{{ p.completedMissions }}</td>
+            <td class="center">{{ p.totalStars }}</td>
+            <td class="center">{{ p.completionRate }}%</td>
+            <td><a [routerLink]="['player', p.userId]" class="view-link">VIEW →</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="empty-state" *ngIf="searchResults !== null && searchResults.length === 0">
+        <span class="empty-icon">🔍</span>
+        <p>No players found for "{{ searchQuery }}"</p>
+      </div>
+    </div>
+
+    <!-- ── CHAPTER STATS TABLE ──────────────────────── -->
+    <div class="table-wrapper" *ngIf="globalStats?.chapterStats?.length; else noStats">
+      <div class="section-header"><span class="section-title">CHAPTER STATS</span></div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>CHAPTER</th>
+            <th class="center">LEVELS</th>
+            <th class="center">ATTEMPTS</th>
+            <th class="center">COMPLETIONS</th>
+            <th>COMPLETION RATE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ch of globalStats!.chapterStats">
+            <td class="chapter-name">{{ ch.chapterTitle }}</td>
+            <td class="center">{{ ch.totalLevels }}</td>
+            <td class="center">{{ ch.totalAttempts }}</td>
+            <td class="center">{{ ch.totalCompletions }}</td>
+            <td>
+              <div class="rate-row">
+                <div class="rate-bar">
+                  <div class="rate-fill"
+                    [style.width.%]="ch.completionRate > 1 ? ch.completionRate : ch.completionRate * 100">
+                  </div>
+                </div>
+                <span class="rate-text">
+                  {{ ch.completionRate > 1 ? ch.completionRate.toFixed(1) : (ch.completionRate * 100).toFixed(1) }}%
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noStats>
+      <div class="empty-state">
+        <span class="empty-icon">📊</span>
+        <p>No stats yet — play some games to generate data.</p>
+      </div>
+    </ng-template>
+
+  </ng-container>
+</div>

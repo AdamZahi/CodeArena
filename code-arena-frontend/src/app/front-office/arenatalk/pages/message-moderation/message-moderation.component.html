@@ -1,0 +1,12 @@
+<div class="moderation-overlay" *ngIf="show">
+  <div class="moderation-card">
+    <div class="moderation-icon">⚠️</div>
+    <h3>Message Flagged</h3>
+    <p class="moderation-reason">{{ warning }}</p>
+    <p class="moderation-question">Do you still want to send this message?</p>
+    <div class="moderation-actions">
+      <button class="cancel-btn" (click)="onCancel()">Cancel</button>
+      <button class="send-anyway-btn" (click)="onSendAnyway()">Send Anyway</button>
+    </div>
+  </div>
+</div>

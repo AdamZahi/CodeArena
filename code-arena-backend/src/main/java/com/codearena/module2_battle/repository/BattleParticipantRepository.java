@@ -48,4 +48,22 @@ public interface BattleParticipantRepository extends JpaRepository<BattlePartici
     @Query("SELECT COALESCE(SUM(bp.score), 0) FROM BattleParticipant bp JOIN BattleRoom br ON bp.roomId = CAST(br.id AS string) " +
            "WHERE bp.userId = :userId AND br.status = 'FINISHED' AND bp.role = 'PLAYER'")
     long sumScoreByUserId(@Param("userId") String userId);
+
+
+    /////////////////////////////////:
+    @Query("SELECT COUNT(p) FROM BattleParticipant p WHERE p.rank = 1")
+    long countGlobalWins();
+
+    @Query("SELECT COUNT(p) FROM BattleParticipant p WHERE p.roomId IN (SELECT CAST(b.id AS string) FROM BattleRoom b WHERE b.status = com.codearena.module2_battle.enums.BattleRoomStatus.FINISHED)")
+    long countGlobalFinishedSlots();
+
+    @Query("SELECT COUNT(DISTINCT p.userId) FROM BattleParticipant p")
+    long countDistinctParticipants();
+
+    @Query("SELECT p.userId, COUNT(p), SUM(CASE WHEN p.rank = 1 THEN 1 ELSE 0 END) FROM BattleParticipant p GROUP BY p.userId ORDER BY SUM(CASE WHEN p.rank = 1 THEN 1 ELSE 0 END) DESC")
+    List<Object[]> findTopPlayersByWins(Pageable pageable);
+
+    List<BattleParticipant> findByRoomId(String roomId);
+
+    long countByRoomId(String roomId);
 }

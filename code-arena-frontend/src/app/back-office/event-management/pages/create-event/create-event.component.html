@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <form class="create-card" (ngSubmit)="submit()" novalidate>
+  <form class="create-card" (ngSubmit)="submit()" #eventForm="ngForm" novalidate>
     <!-- Title -->
     <label class="form-label">TITLE</label>
     <input
@@ -14,9 +14,17 @@
       type="text"
       name="title"
       [(ngModel)]="title"
+      #titleModel="ngModel"
       placeholder="Enter event title"
       required
+      minlength="3"
+      maxlength="100"
+      [class.input-error]="titleModel.invalid && (titleModel.dirty || titleModel.touched)"
     />
+    <div class="field-error" *ngIf="titleModel.invalid && (titleModel.dirty || titleModel.touched)">
+      <span *ngIf="titleModel.errors?.['required']">Title is required.</span>
+      <span *ngIf="titleModel.errors?.['minlength']">Minimum 3 characters.</span>
+    </div>
 
     <!-- Description -->
     <label class="form-label">DESCRIPTION</label>
@@ -24,11 +32,17 @@
       class="event-textarea"
       name="description"
       [(ngModel)]="description"
+      #descModel="ngModel"
       placeholder="Describe the event..."
       rows="5"
       required
+      minlength="10"
+      [class.input-error]="descModel.invalid && (descModel.dirty || descModel.touched)"
     ></textarea>
-
+    <div class="field-error" *ngIf="descModel.invalid && (descModel.dirty || descModel.touched)">
+      <span *ngIf="descModel.errors?.['required']">Description is required.</span>
+      <span *ngIf="descModel.errors?.['minlength']">Minimum 10 characters.</span>
+    </div>
 
     <!-- Location -->
     <label class="form-label">LOCATION</label>
@@ -37,9 +51,14 @@
       type="text"
       name="location"
       [(ngModel)]="location"
+      #locModel="ngModel"
       placeholder="Event Location (or Virtual)"
       required
+      [class.input-error]="locModel.invalid && (locModel.dirty || locModel.touched)"
     />
+    <div class="field-error" *ngIf="locModel.invalid && (locModel.dirty || locModel.touched)">
+      Location is required.
+    </div>
 
     <!-- Type Toggle -->
     <div class="section-title">TYPE</div>
@@ -86,7 +105,9 @@
           type="datetime-local"
           name="startDate"
           [(ngModel)]="startDate"
+          #startModel="ngModel"
           required
+          [class.input-error]="startModel.invalid && (startModel.dirty || startModel.touched)"
         />
       </div>
       <div class="date-col">
@@ -96,9 +117,14 @@
           type="datetime-local"
           name="endDate"
           [(ngModel)]="endDate"
+          #endModel="ngModel"
           required
+          [class.input-error]="endModel.invalid && (endModel.dirty || endModel.touched)"
         />
       </div>
+    </div>
+    <div class="field-error" *ngIf="(startModel.invalid && (startModel.dirty || startModel.touched)) || (endModel.invalid && (endModel.dirty || endModel.touched))">
+      Both dates are required.
     </div>
 
     <!-- Max participants -->
@@ -108,9 +134,15 @@
       type="number"
       name="maxParticipants"
       min="1"
+      max="1000"
       [(ngModel)]="maxParticipants"
+      #maxModel="ngModel"
       required
+      [class.input-error]="maxModel.invalid && (maxModel.dirty || maxModel.touched)"
     />
+    <div class="field-error" *ngIf="maxModel.invalid && (maxModel.dirty || maxModel.touched)">
+      Must be between 1 and 1000.
+    </div>
 
     <!-- Status -->
     <label class="form-label">STATUS</label>
@@ -125,9 +157,10 @@
     <div class="success-msg" *ngIf="successMessage">{{ successMessage }}</div>
 
     <!-- Submit -->
-    <button class="checkout-btn" type="submit" [disabled]="isSubmitting">
+    <button class="checkout-btn" type="submit" [disabled]="isSubmitting || eventForm.invalid">
       {{ isSubmitting ? 'CREATING...' : '[ CREATE EVENT ]' }}
     </button>
   </form>
+
 </div>
 

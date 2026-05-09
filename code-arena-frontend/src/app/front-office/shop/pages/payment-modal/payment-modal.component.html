@@ -1,0 +1,136 @@
+<!-- ── MODAL OVERLAY ──────────────────────────── -->
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+
+    <!-- ── SUCCESS STATE ──────────────────────── -->
+    <div class="success-screen" *ngIf="isSuccess">
+      <div class="success-icon">✓</div>
+      <h2 class="success-title">PAYMENT SUCCESSFUL</h2>
+      <p class="success-sub">Processing your order...</p>
+      <div class="success-pulse"></div>
+    </div>
+
+    <!-- ── PAYMENT FORM ───────────────────────── -->
+    <div class="payment-form" *ngIf="!isSuccess">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="header-left">
+          <h2 class="modal-title">// SECURE PAYMENT</h2>
+          <p class="modal-sub">{{ itemCount }} item(s) · {{ amount | currency }}</p>
+        </div>
+        <button class="close-btn" (click)="close()" [disabled]="isProcessing">✕</button>
+      </div>
+
+      <!-- ── ANIMATED CARD PREVIEW ──────────────── -->
+      <div class="card-preview-wrapper">
+        <div class="card-preview" [class.flipped]="isCardFlipped">
+
+          <!-- Card Front -->
+          <div class="card-front">
+            <div class="card-top">
+              <div class="card-chip"></div>
+              <div class="card-network">VISA</div>
+            </div>
+            <div class="card-number">•••• •••• •••• ••••</div>
+            <div class="card-bottom">
+              <div class="card-holder">
+                <span class="card-label">CARD HOLDER</span>
+                <span class="card-value">{{ cardholderName || 'YOUR NAME' }}</span>
+              </div>
+              <div class="card-expiry">
+                <span class="card-label">EXPIRES</span>
+                <span class="card-value">MM/YY</span>
+              </div>
+            </div>
+            <div class="card-glow"></div>
+          </div>
+
+          <!-- Card Back -->
+          <div class="card-back">
+            <div class="card-strip"></div>
+            <div class="card-cvv-box">
+              <span class="card-label">CVV</span>
+              <span class="card-value">•••</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── LOADING ────────────────────────────── -->
+      <div class="stripe-loading" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Initializing secure payment...</p>
+      </div>
+
+      <!-- ── FORM FIELDS ────────────────────────── -->
+      <div class="form-fields" *ngIf="!isLoading">
+
+        <!-- Cardholder Name -->
+        <div class="field-group">
+          <label class="field-label">CARDHOLDER NAME</label>
+          <input
+            class="field-input"
+            type="text"
+            placeholder="John Doe"
+            [(ngModel)]="cardholderName"
+            [class.error]="errorMessage && !cardholderName"
+            (focus)="isCardFlipped = false"
+          />
+        </div>
+
+        <!-- Stripe Card Element -->
+        <div class="field-group">
+          <label class="field-label">CARD DETAILS</label>
+          <div
+            id="stripe-card-element"
+            class="stripe-element"
+            [class.error]="errorMessage && !isCardComplete">
+          </div>
+          <p class="field-hint">Test card: 4242 4242 4242 4242 · Any future date · Any CVV</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-msg" *ngIf="errorMessage">
+          ⚠ {{ errorMessage }}
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Items ({{ itemCount }})</span>
+            <span>{{ amount | currency }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>TOTAL CHARGE</span>
+            <span class="total-amount">{{ amount | currency }}</span>
+          </div>
+        </div>
+
+        <!-- Pay Button -->
+        <button
+          class="pay-btn"
+          (click)="pay()"
+          [disabled]="isProcessing || isLoading">
+          <span *ngIf="!isProcessing">
+            🔒 PAY {{ amount | currency }}
+          </span>
+          <span *ngIf="isProcessing" class="processing">
+            <span class="spinner-small"></span>
+            PROCESSING...
+          </span>
+        </button>
+
+        <!-- Security badges -->
+        <div class="security-badges">
+          <span>🔒 SSL Encrypted</span>
+          <span>⚡ Powered by Stripe</span>
+          <span>✓ PCI Compliant</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

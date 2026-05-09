@@ -1,0 +1,121 @@
+<div class="admin-container">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <a [routerLink]="['/admin/terminal-quest/missions', chapterId]" class="back-btn">&#8592; MISSIONS</a>
+      <h1 class="page-title">{{ isEditMode ? 'EDIT' : 'NEW' }} <span class="accent">MISSION</span></h1>
+    </div>
+  </div>
+
+  <!-- ── LOADING ────────────────────────────────────── -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <span class="loader-text">LOADING MISSION...</span>
+  </div>
+
+  <!-- ── FORM ───────────────────────────────────────── -->
+  <div class="form-card" *ngIf="!isLoading">
+
+    <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+
+      <!-- Row 1: title + orderIndex + difficulty + xpReward -->
+      <div class="form-row">
+        <div class="form-group grow" [class.invalid]="isInvalid('title')">
+          <label class="form-label">TITLE <span class="required">*</span></label>
+          <input type="text" class="form-input" formControlName="title"
+            placeholder="e.g. Redémarrer le service nginx" />
+          <span class="field-error" *ngIf="isInvalid('title')">Title is required.</span>
+        </div>
+        <div class="form-group narrow" [class.invalid]="isInvalid('orderIndex')">
+          <label class="form-label">ORDER <span class="required">*</span></label>
+          <input type="number" class="form-input" formControlName="orderIndex" min="1" />
+          <span class="field-error" *ngIf="isInvalid('orderIndex')">Min 1.</span>
+        </div>
+        <div class="form-group narrow" [class.invalid]="isInvalid('difficulty')">
+          <label class="form-label">DIFFICULTY <span class="required">*</span></label>
+          <select class="form-select" formControlName="difficulty">
+            <option value="EASY">EASY</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HARD">HARD</option>
+          </select>
+        </div>
+        <div class="form-group narrow" [class.invalid]="isInvalid('xpReward')">
+          <label class="form-label">XP REWARD <span class="required">*</span></label>
+          <input type="number" class="form-input" formControlName="xpReward" min="1" />
+          <span class="field-error" *ngIf="isInvalid('xpReward')">Min 1.</span>
+        </div>
+      </div>
+
+      <!-- Context (narrative) -->
+      <div class="form-group" [class.invalid]="isInvalid('context')">
+        <label class="form-label">
+          CONTEXT <span class="required">*</span>
+          <span class="form-hint">— The narrative story text shown as a DevOps Lead dialogue</span>
+        </label>
+        <textarea class="form-textarea narrative" formControlName="context" rows="6"
+          placeholder="Le serveur de production est tombé à 2h du matin. Notre monitoring a détecté une anomalie..."></textarea>
+        <span class="field-error" *ngIf="isInvalid('context')">Context is required.</span>
+      </div>
+
+      <!-- Task (objective) -->
+      <div class="form-group" [class.invalid]="isInvalid('task')">
+        <label class="form-label">
+          TASK <span class="required">*</span>
+          <span class="form-hint">— Short objective shown to the player (1-2 sentences)</span>
+        </label>
+        <input type="text" class="form-input" formControlName="task"
+          placeholder="Redémarre le service nginx pour rétablir le serveur web." />
+        <span class="field-error" *ngIf="isInvalid('task')">Task is required.</span>
+      </div>
+
+      <!-- Accepted Answers -->
+      <div class="form-group" [class.invalid]="isInvalid('acceptedAnswers')">
+        <label class="form-label">
+          ACCEPTED ANSWERS{{ isEditMode ? '' : ' *' }}
+        </label>
+        <textarea class="form-textarea monospace" formControlName="acceptedAnswers" rows="3"
+          placeholder='["systemctl restart nginx", "service nginx restart"]'></textarea>
+        <span class="field-hint">
+          JSON array of accepted commands. All variants that should be accepted.
+          Example: <code>["cmd1", "cmd2"]</code>
+        </span>
+        <span class="field-hint warn" *ngIf="isEditMode">
+          &#9888; Current answers are hidden for security. Leave empty to keep existing, or enter new values to replace.
+        </span>
+        <span class="field-error" *ngIf="isInvalid('acceptedAnswers')">Required for new missions.</span>
+      </div>
+
+      <!-- Hint -->
+      <div class="form-group">
+        <label class="form-label">HINT <span class="optional">(optional)</span></label>
+        <input type="text" class="form-input" formControlName="hint"
+          placeholder="Optional hint shown after wrong attempts." />
+      </div>
+
+      <!-- Boss toggle -->
+      <div class="form-group">
+        <label class="toggle-label">
+          <input type="checkbox" class="toggle-input" formControlName="isBoss" />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-text">BOSS MISSION</span>
+          <span class="toggle-hint">Boss missions are highlighted with a special indicator.</span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <a [routerLink]="['/admin/terminal-quest/missions', chapterId]" class="btn-cancel">CANCEL</a>
+        <button type="submit" class="btn-save" [disabled]="isSaving">
+          {{ isSaving ? 'SAVING...' : (isEditMode ? 'UPDATE MISSION' : 'CREATE MISSION') }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

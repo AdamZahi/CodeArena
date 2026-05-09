@@ -52,4 +52,10 @@ public interface ShopService {
 
     // Get out of stock count
     Long getOutOfStockCount();
+
+    // Save AI-generated eco score to product (called by Angular after Flask scoring)
+    void saveEcoScore(UUID productId, int ecoScore);
+    // emplemnting ai correctly
+    ShopItemDto analyzeAndSaveEcoScore(UUID productId);
+
 }

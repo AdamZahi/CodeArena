@@ -6,7 +6,9 @@ import { ChallengeService } from '../../services/challenge.service';
 import { SubmissionService } from '../../services/submission.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap, takeWhile, take } from 'rxjs/operators';
+import { AiService, ChallengeDifficultyDto } from '../../services/ai.service';
 import { AuthService } from '@auth0/auth0-angular';
+import { AuthUserSyncService } from '../../../../core/auth/auth-user-sync.service';
 
 @Component({
   selector: 'app-challenge-detail',
@@ -18,23 +20,31 @@ import { AuthService } from '@auth0/auth0-angular';
 export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public challengeId!: string;
   public challenge: any;
+  public aiDifficulty: ChallengeDifficultyDto | null = null;
+  public aiHint: string | null = null;
+  public isHintLoading = false;
   public isLoading = true;
   public activeTab: 'description' | 'submissions' = 'description';
 
   public code = '';
-  public language = '62'; // Java Default
+  public language = 'python'; // Default Piston runtime
   public languages = [
-    { id: '62', name: 'Java (OpenJDK 13)' },
-    { id: '71', name: 'Python (3.8)' },
-    { id: '50', name: 'C (GCC 9.2)' },
-    { id: '54', name: 'C++ (GCC 9.2)' },
-    { id: '63', name: 'JavaScript (Node 12)' }
+    { id: 'python',     name: 'Python 3.12' },
+    { id: 'javascript', name: 'JavaScript (Node 20)' },
+    { id: 'java',       name: 'Java 15' },
+    { id: 'go',         name: 'Go 1.16' },
+    { id: 'rust',       name: 'Rust 1.50' },
+    { id: 'csharp',     name: 'C# (.NET 5)' },
+    { id: 'php',        name: 'PHP 8.2' },
+    { id: 'bash',       name: 'Bash 5.2' }
   ];
 
   public isSubmitting = false;
   public submissionResult: any = null;
   public mySubmissions: any[] = [];
   public lineCount = 1;
+  public languageMismatchError: string | null = null;
+  public isLanguageLocked = false;
   private pollSub?: Subscription;
 
   // Accordion toggles
@@ -51,6 +61,8 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public healthPercent = 100;
   public isGameOver = false;
   public isMuted = false;
+  public autoReconnectTimer = 20;
+  private reconnectInterval: any;
 
   // Discussion & Voting
   public comments: any[] = [];
@@ -61,12 +73,15 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
   public userVote: string | null = null;
   public currentUserSub: string | null = null;
   public isAdmin = false;
+  public antiCheatEnabled = true; // Anti-cheat ON by default
 
   constructor(
     private route: ActivatedRoute,
     private challengeService: ChallengeService,
     private submissionService: SubmissionService,
-    public auth: AuthService
+    private aiService: AiService,
+    public auth: AuthService,
+    private authUserSync: AuthUserSyncService
   ) {}
 
   ngOnInit(): void {
@@ -81,18 +96,19 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.loadMySubmissions();
       this.loadVotes();
       this.loadComments();
+      this.loadAiDifficulty();
 
+      // Get Auth0 user info (for sub claim)
       this.auth.user$.subscribe(user => {
         if (user) {
           this.currentUserSub = user.sub || null;
-          // Admin check - looking for 'ADMIN' role in custom claims, or nickname toggle
-          const roles: string[] = (user as any)['https://codearena.com/roles'] || (user as any)['roles'] || [];
-          const nickname = user.nickname?.toUpperCase() || '';
-          
-          this.isAdmin = roles.includes('ADMIN') || 
-                         nickname.includes('ADMIN') || 
-                         nickname === 'GABABHIMZAKATAKA' || // Dev bypass
-                         this.currentUserSub === this.challenge?.authorId;
+        }
+      });
+
+      // Check admin role from backend (the real source of truth)
+      this.authUserSync.currentUser$.subscribe(backendUser => {
+        if (backendUser) {
+          this.isAdmin = backendUser.role === 'ADMIN';
         }
       });
     }
@@ -108,17 +124,53 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     return `codearena_health_${this.challengeId}`;
   }
 
+  private getReconnectTimeKey(): string {
+    return `codearena_reconnect_time_${this.challengeId}`;
+  }
+
   private loadHealthState(): void {
     const saved = localStorage.getItem(this.getHealthKey());
     if (saved !== null) {
       this.trialsLeft = parseInt(saved, 10);
       this.healthPercent = (this.trialsLeft / this.maxTrials) * 100;
       this.isGameOver = this.trialsLeft <= 0;
+      if (this.isGameOver) {
+        this.startReconnectTimer();
+      }
     } else {
       this.trialsLeft = this.maxTrials;
       this.healthPercent = 100;
       this.isGameOver = false;
     }
+  }
+
+  private startReconnectTimer(): void {
+    const reconnectKey = this.getReconnectTimeKey();
+    const reconnectTimeStr = localStorage.getItem(reconnectKey);
+    let reconnectTime = reconnectTimeStr ? parseInt(reconnectTimeStr, 10) : Date.now() + 20000;
+    
+    if (!reconnectTimeStr) {
+        localStorage.setItem(reconnectKey, reconnectTime.toString());
+    }
+
+    if (this.reconnectInterval) {
+      clearInterval(this.reconnectInterval);
+    }
+
+    const initialDiff = reconnectTime - Date.now();
+    this.autoReconnectTimer = initialDiff > 0 ? Math.ceil(initialDiff / 1000) : 0;
+
+    this.reconnectInterval = setInterval(() => {
+      const now = Date.now();
+      const difference = reconnectTime - now;
+
+      if (difference <= 0) {
+        clearInterval(this.reconnectInterval);
+        this.reestablishConnection();
+      } else {
+        this.autoReconnectTimer = Math.ceil(difference / 1000);
+      }
+    }, 1000);
   }
 
   private saveHealthState(): void {
@@ -199,6 +251,7 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.pollSub) this.pollSub.unsubscribe();
+    if (this.reconnectInterval) clearInterval(this.reconnectInterval);
   }
 
   public loadChallenge(): void {
@@ -215,6 +268,11 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
         
         this.code = this.getBoilerplate(this.language);
         this.updateLineNumbers();
+
+        // Lock the language dropdown if the challenge enforces a specific language
+        if (this.challenge?.language) {
+          this.isLanguageLocked = true;
+        }
       },
       error: (e) => {
         console.error('Error loading challenge:', e);
@@ -223,12 +281,46 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  public loadAiDifficulty(): void {
+    this.aiService.getChallengeDifficulty(+this.challengeId).subscribe({
+      next: (data) => {
+        this.aiDifficulty = data;
+      },
+      error: (e) => console.log('AI difficulty not available yet')
+    });
+  }
+
+  public generateAiHint(): void {
+    if (this.isHintLoading || this.aiHint) return;
+    this.isHintLoading = true;
+    this.aiService.getChallengeHint(+this.challengeId).subscribe({
+      next: (res) => {
+        this.isHintLoading = false;
+        // Simulate a typing effect
+        const fullHint = res.hint || 'No hint generated.';
+        this.aiHint = '';
+        let i = 0;
+        const interval = setInterval(() => {
+          this.aiHint! += fullHint.charAt(i);
+          i++;
+          if (i >= fullHint.length) clearInterval(interval);
+        }, 30); // Typewriter speed
+        this.playSound('type');
+      },
+      error: (e) => {
+        this.isHintLoading = false;
+        this.aiHint = 'Neural network offline. Hint generation failed.';
+      }
+    });
+  }
+
   public onLanguageChange(): void {
+    this.languageMismatchError = null;
     if (this.challenge?.language) {
       const challengeLang = this.challenge.language.toString().trim();
       if (this.language !== challengeLang) {
-        const langName = this.getLanguageName(challengeLang);
-        alert(`The required language for this problem is ${langName}. Unsupported languages are disabled.`);
+        const requiredName = this.getLanguageName(challengeLang);
+        this.languageMismatchError = `⚠ PROTOCOL VIOLATION: This challenge requires ${requiredName}. Language has been reset.`;
         this.language = challengeLang;
         this.code = this.getBoilerplate(this.language);
         return;
@@ -262,6 +354,24 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   public submitCode(): void {
     if (!this.code.trim() || this.isSubmitting || this.isGameOver) return;
+
+    // Language enforcement check
+    if (this.challenge?.language) {
+      const requiredLang = this.challenge.language.toString().trim();
+      if (this.language !== requiredLang) {
+        const requiredName = this.getLanguageName(requiredLang);
+        const selectedName = this.getLanguageName(this.language);
+        this.submissionResult = {
+          status: 'LANGUAGE_MISMATCH',
+          errorOutput: `⛔ SUBMISSION BLOCKED: This challenge requires ${requiredName}, but you selected ${selectedName}. Please use the correct language.`
+        };
+        this.activeTab = 'submissions';
+        this.playSound('fail');
+        return;
+      }
+    }
+
+    this.languageMismatchError = null;
     this.isSubmitting = true;
     this.submissionResult = null;
     this.activeTab = 'submissions';
@@ -273,11 +383,11 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     };
 
     this.submissionService.submitCode(req).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.submissionResult = res;
         this.startPolling(res.id);
       },
-      error: (e) => {
+      error: (e: any) => {
         this.isSubmitting = false;
         this.submissionResult = { status: 'ERROR', errorOutput: 'Submission link failure.' };
         this.decrementHealth();
@@ -323,14 +433,21 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
       this.isGameOver = true;
       this.healthPercent = 0;
       this.saveHealthState();
+      
+      const reconnectKey = this.getReconnectTimeKey();
+      if (!localStorage.getItem(reconnectKey)) {
+        localStorage.setItem(reconnectKey, (Date.now() + 20000).toString());
+      }
+      
       this.playSound('gameover');
-      alert('⚡ SYSTEM TERMINATED: OUT OF TRIALS. HACKER NEURAL LINK SEVERED.');
+      this.startReconnectTimer();
     }
   }
 
   public loadMySubmissions(): void {
-    this.submissionService.getUserSubmissions('user-123').subscribe({
-      next: (res) => {
+    if (!this.currentUserSub) return;
+    this.submissionService.getUserSubmissions(this.currentUserSub).subscribe({
+      next: (res: any) => {
         const currentChallengeSubs = res.filter((s: any) => s.challengeId == this.challengeId);
         this.mySubmissions = currentChallengeSubs.sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
       }
@@ -363,11 +480,14 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
 
   private getBoilerplate(langId: string): string {
     switch (langId) {
-      case '62': return 'import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String line = sc.nextLine().trim();\n        \n        // TODO: Solve the problem here\n        \n        System.out.println(line);\n    }\n}';
-      case '71': return 'import sys\n\n# Read input from stdin\nline = input().strip()\n\n# TODO: Solve the problem\n\n# Print result to stdout\nprint(line)';
-      case '50': return '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main() {\n    char line[1024];\n    // Read input from stdin\n    fgets(line, sizeof(line), stdin);\n    \n    // TODO: Solve the problem\n    \n    // Print result to stdout\n    printf("%s", line);\n    return 0;\n}';
-      case '54': return '#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\nint main() {\n    string line;\n    // Read input from stdin\n    getline(cin, line);\n    \n    // TODO: Solve the problem\n    \n    // Print result to stdout\n    cout << line << endl;\n    return 0;\n}';
-      case '63': return '// Read input from stdin\nconst input = require("fs").readFileSync("/dev/stdin", "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nconsole.log(lines[0]);';
+      case 'java': return 'import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String line = sc.nextLine().trim();\n        \n        // TODO: Solve the problem here\n        \n        System.out.println(line);\n    }\n}';
+      case 'python': return 'import sys\n\n# Read input from stdin\nline = input().strip()\n\n# TODO: Solve the problem\n\n# Print result to stdout\nprint(line)';
+      case 'javascript': return '// Read input from stdin\nconst input = require("fs").readFileSync("/dev/stdin", "utf8").trim();\nconst lines = input.split("\\n");\n\n// TODO: Solve the problem\n\n// Print result to stdout\nconsole.log(lines[0]);';
+      case 'go': return 'package main\n\nimport (\n    "bufio"\n    "fmt"\n    "os"\n)\n\nfunc main() {\n    reader := bufio.NewReader(os.Stdin)\n    line, _ := reader.ReadString(\'\\n\')\n    // TODO: Solve the problem\n    fmt.Print(line)\n}';
+      case 'rust': return 'use std::io::{self, BufRead};\n\nfn main() {\n    let stdin = io::stdin();\n    let line = stdin.lock().lines().next().unwrap().unwrap();\n    // TODO: Solve the problem\n    println!("{}", line);\n}';
+      case 'csharp': return 'using System;\n\nclass Main {\n    static void Main() {\n        string line = Console.ReadLine();\n        // TODO: Solve the problem\n        Console.WriteLine(line);\n    }\n}';
+      case 'php': return '<?php\n$line = trim(fgets(STDIN));\n// TODO: Solve the problem\necho $line;\n';
+      case 'bash': return '#!/bin/bash\nread line\n# TODO: Solve the problem\necho "$line"\n';
       default: return '// Write your solution here\n// Read from stdin, print to stdout\n';
     }
   }
@@ -443,16 +563,16 @@ export class ChallengeDetailComponent implements OnInit, OnDestroy {
     this.healthPercent = 100;
     this.isGameOver = false;
     this.saveHealthState();
+    localStorage.removeItem(this.getReconnectTimeKey());
     window.location.reload();
   }
 
   public toggleAntiCheat(): void {
-    if (!this.challenge) return;
-    this.challenge.antiCheatEnabled = !this.challenge.antiCheatEnabled;
+    this.antiCheatEnabled = !this.antiCheatEnabled;
   }
 
   public blockEvent(event: Event): void {
-    if (this.challenge?.antiCheatEnabled) {
+    if (this.antiCheatEnabled) {
       event.preventDefault();
     }
   }

@@ -21,8 +21,8 @@ public class ProfileCustomizationController {
     /** Get all items the current user has unlocked */
     @GetMapping("/unlocks")
     public ResponseEntity<List<UserUnlockDTO>> getMyUnlocks(@AuthenticationPrincipal Jwt jwt) {
-        String keycloakId = jwt.getSubject();
-        return ResponseEntity.ok(customizationService.getMyUnlocks(keycloakId));
+        String auth0Id = jwt.getSubject();
+        return ResponseEntity.ok(customizationService.getMyUnlocks(auth0Id));
     }
 
     /** Get unlocked items filtered by type (ICON, BORDER, TITLE, BADGE, BANNER) */
@@ -30,8 +30,8 @@ public class ProfileCustomizationController {
     public ResponseEntity<List<UserUnlockDTO>> getMyUnlocksByType(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable String type) {
-        String keycloakId = jwt.getSubject();
-        return ResponseEntity.ok(customizationService.getMyUnlocksByType(keycloakId, type));
+        String auth0Id = jwt.getSubject();
+        return ResponseEntity.ok(customizationService.getMyUnlocksByType(auth0Id, type));
     }
 
     /** Equip an item on the user's profile */
@@ -39,17 +39,17 @@ public class ProfileCustomizationController {
     public ResponseEntity<Void> equipItem(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody EquipItemRequest request) {
-        String keycloakId = jwt.getSubject();
-        customizationService.equipItem(keycloakId, request);
+        String auth0Id = jwt.getSubject();
+        customizationService.equipItem(auth0Id, request);
         return ResponseEntity.ok().build();
     }
 
     /** Grant default items and check for new unlocks based on level/XP */
     @PostMapping("/sync")
     public ResponseEntity<Void> syncUnlocks(@AuthenticationPrincipal Jwt jwt) {
-        String keycloakId = jwt.getSubject();
-        customizationService.grantDefaultItems(keycloakId);
-        customizationService.checkAndGrantUnlocks(keycloakId);
+        String auth0Id = jwt.getSubject();
+        customizationService.grantDefaultItems(auth0Id);
+        customizationService.checkAndGrantUnlocks(auth0Id);
         return ResponseEntity.ok().build();
     }
 }

@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.codearena.module2_battle.util.UserDisplayUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -119,9 +120,6 @@ public class BattleFeedService {
     }
 
     private String resolveUsername(String userId) {
-        if (userId == null) return "Unknown";
-        return userRepository.findByKeycloakId(userId)
-                .map(u -> u.getNickname() != null ? u.getNickname() : u.getFirstName())
-                .orElse(userId);
+        return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
 }

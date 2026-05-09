@@ -6,7 +6,7 @@ import com.codearena.module2_battle.service.MatchHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,8 +19,8 @@ public class BattleHistoryController {
     @GetMapping("/me")
     public ResponseEntity<MatchHistoryPageResponse> getMyMatchHistory(
             @ModelAttribute MatchHistoryPageRequest request,
-            JwtAuthenticationToken principal) {
-        String userId = principal.getToken().getSubject();
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return ResponseEntity.ok(matchHistoryService.getMatchHistory(userId, userId, request));
     }
 
@@ -28,8 +28,8 @@ public class BattleHistoryController {
     public ResponseEntity<MatchHistoryPageResponse> getUserMatchHistory(
             @PathVariable String userId,
             @ModelAttribute MatchHistoryPageRequest request,
-            JwtAuthenticationToken principal) {
-        String requestingUserId = principal != null ? principal.getToken().getSubject() : null;
+            @AuthenticationPrincipal Jwt jwt) {
+        String requestingUserId = jwt != null ? jwt.getSubject() : null;
         return ResponseEntity.ok(matchHistoryService.getMatchHistory(userId, requestingUserId, request));
     }
 }

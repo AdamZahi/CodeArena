@@ -99,7 +99,7 @@ public class BattleModuleDataSeeder {
      */
     private void seedDailyChallenge() {
         LocalDate today = LocalDate.now();
-        if (dailyChallengeRepository.findByChallengeDate(today).isPresent()) {
+        if (dailyChallengeRepository.findFirstByChallengeDate(today).isPresent()) {
             log.info("Daily challenge for {} already exists — skipping", today);
             return;
         }

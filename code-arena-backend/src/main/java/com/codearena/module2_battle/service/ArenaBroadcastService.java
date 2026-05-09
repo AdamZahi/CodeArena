@@ -1,6 +1,13 @@
 package com.codearena.module2_battle.service;
 
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.LobbyEvent;
+import com.codearena.module2_battle.dto.ArenaStateResponse;
+import com.codearena.module2_battle.dto.SubmissionResultResponse;
+import com.codearena.module2_battle.dto.OpponentProgressEvent;
+import com.codearena.module2_battle.dto.SpectatorFeedEvent;
+import com.codearena.module2_battle.dto.MatchFinishedEvent;
+import com.codearena.module2_battle.dto.OpponentActivityEvent;
+import com.codearena.module2_battle.dto.TestCaseProgressEvent;
 import com.codearena.module2_battle.enums.LobbyEventType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

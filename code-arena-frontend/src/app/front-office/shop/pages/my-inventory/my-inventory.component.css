@@ -462,3 +462,574 @@
   font-family: 'Orbitron', monospace;
   letter-spacing: 1px;
 }
+
+/* ── LOYALTY PANEL ──────────────────────────────── */
+.loyalty-panel {
+  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(6,182,212,0.05));
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loyalty-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 2px;
+  background: linear-gradient(90deg, transparent, #8b5cf6, #06b6d4, transparent);
+  animation: scanLine 3s linear infinite;
+}
+
+@keyframes scanLine {
+  0%   { left: -60%; }
+  100% { left: 160%; }
+}
+
+.loyalty-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.loyalty-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.loyalty-emoji {
+  font-size: 36px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.loyalty-level {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  display: block;
+}
+
+.loyalty-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 4px 0 0;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.loyalty-points-display {
+  text-align: right;
+}
+
+.loyalty-points-number {
+  font-family: 'Orbitron', monospace;
+  font-size: 40px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1;
+}
+
+.loyalty-points-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: #64748b;
+  letter-spacing: 3px;
+}
+
+/* ── PROGRESS BAR ─────────────────────────────── */
+.loyalty-progress-wrap {
+  margin-bottom: 16px;
+}
+
+.loyalty-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.loyalty-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease;
+  box-shadow: 0 0 8px currentColor;
+    
+}
+
+.loyalty-progress-label {
+  font-size: 11px;
+  color: #64748b;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* ── ECO BONUS TAGS ───────────────────────────── */
+.eco-bonus-info {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.eco-bonus-tag {
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #10b981;
+}
+
+/* ── REDEEM VALUE ─────────────────────────────── */
+.loyalty-redeem {
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+.redeem-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  color: #f59e0b;
+}
+
+/* ── ECO IMPACT SECTION ──────────────────────── */
+.eco-impact-section {
+  background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(6,182,212,0.04));
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.eco-impact-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 2px;
+  background: linear-gradient(90deg, transparent, #10b981, #06b6d4, transparent);
+  animation: ecoScan 4s linear infinite;
+}
+
+@keyframes ecoScan {
+  0%   { left: -50%; }
+  100% { left: 150%; }
+}
+
+.eco-impact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.eco-impact-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.eco-planet {
+  font-size: 40px;
+  animation: spin 8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.eco-impact-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  margin: 0 0 4px;
+}
+
+.eco-impact-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.eco-rating-badge {
+  border: 2px solid;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50%       { box-shadow: 0 0 12px 2px currentColor; opacity: 0.9; }
+}
+
+/* ── STATS GRID ──────────────────────────────── */
+.eco-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.eco-stat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  animation: statSlideIn 0.5s ease both;
+  transition: transform 0.3s;
+}
+
+.eco-stat-card:hover { transform: translateY(-4px); }
+
+.eco-stat-card.green   { border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.05); }
+.eco-stat-card.emerald { border-color: rgba(6,182,212,0.2);  background: rgba(6,182,212,0.05); }
+.eco-stat-card.purple  { border-color: rgba(139,92,246,0.2); background: rgba(139,92,246,0.05); }
+
+@keyframes statSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.eco-stat-icon { font-size: 24px; margin-bottom: 8px; }
+
+.eco-stat-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 900;
+  color: #e2e8f0;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.eco-stat-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  color: #64748b;
+  letter-spacing: 2px;
+}
+
+/* ── ECO PROGRESS ────────────────────────────── */
+.eco-progress-section { }
+
+.eco-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.eco-progress-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 2px;
+}
+
+.eco-progress-pct {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.eco-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.eco-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  animation: fillIn 1.5s ease both;
+}
+
+@keyframes fillIn {
+  from { width: 0% !important; }
+}
+
+.eco-progress-glow {
+  position: absolute;
+  right: 0; top: 0;
+  width: 20px; height: 100%;
+  background: rgba(255,255,255,0.4);
+  border-radius: 4px;
+  animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+
+.eco-progress-msg {
+  font-size: 12px;
+  color: #64748b;
+  font-family: 'Rajdhani', sans-serif;
+  margin: 0;
+}
+/* ── COUPONS SECTION ──────────────────────────────────────────── */
+.coupons-section {
+  margin: 2rem 0;
+  animation: fadeInUp 0.5s ease;
+}
+
+.coupons-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.coupons-icon {
+  font-size: 1.8rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.coupons-header h3 {
+  color: #e2e8f0;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.coupons-count {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  padding: 0.2rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ── GRID ─────────────────────────────────────────────────────── */
+.coupons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* ── COUPON CARD ──────────────────────────────────────────────── */
+.coupon-card {
+  position: relative;
+  background: linear-gradient(135deg, #0d0d18 0%, #12121e 100%);
+  border: 1px solid #8b5cf630;
+  border-radius: 12px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  animation: slideInCard 0.4s ease both;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.coupon-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 8px 30px #8b5cf640;
+  border-color: #8b5cf6;
+}
+
+@keyframes slideInCard {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LEFT ACCENT BAR ──────────────────────────────────────────── */
+.coupon-accent {
+  width: 5px;
+  background: linear-gradient(180deg, #8b5cf6, #06b6d4, #10b981);
+  flex-shrink: 0;
+  animation: gradientShift 3s ease infinite;
+  background-size: 100% 200%;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 0% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* ── COUPON BODY ──────────────────────────────────────────────── */
+.coupon-body {
+  padding: 1rem 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── TOP ROW ──────────────────────────────────────────────────── */
+.coupon-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.coupon-badge {
+  background: #8b5cf620;
+  color: #8b5cf6;
+  border: 1px solid #8b5cf640;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.coupon-discount {
+  font-size: 1.4rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
+/* ── CODE ROW ─────────────────────────────────────────────────── */
+.coupon-code-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #0a0a14;
+  border: 1px dashed #8b5cf650;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+}
+
+.coupon-code {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 2px;
+  flex: 1;
+}
+
+.coupon-copy-btn {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.coupon-copy-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #8b5cf660;
+}
+
+.coupon-copy-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── BOTTOM ROW ───────────────────────────────────────────────── */
+.coupon-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.coupon-date {
+  font-size: 0.7rem;
+  color: #475569;
+}
+
+.coupon-validity {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* ── TICKET DOTS ──────────────────────────────────────────────── */
+.coupon-dots {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 0.5rem 0.4rem;
+  gap: 3px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8b5cf630;
+  border: 1px solid #8b5cf650;
+}
+
+/* ── FADE IN UP ───────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.copy-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #10b981;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 700;
+  z-index: 9999;
+  animation: fadeInUp 0.3s ease;
+  box-shadow: 0 4px 20px #10b98150;
+}

@@ -1,0 +1,32 @@
+import csv
+import os
+
+os.makedirs("dataset", exist_ok=True)
+
+rows = [
+    ["certification", "category", "min_score", "weight", "description"],
+    ["RHCSA", "filesystem", 70, 0.20, "File management and navigation"],
+    ["RHCSA", "network",    65, 0.15, "Basic network diagnostics"],
+    ["RHCSA", "process",    60, 0.15, "Process management"],
+    ["RHCSA", "security",   75, 0.25, "User and permission management"],
+    ["RHCSA", "disk",       70, 0.15, "Disk and storage management"],
+    ["RHCSA", "service",    65, 0.10, "Service management with systemctl"],
+    ["LPIC-1", "filesystem", 65, 0.20, "File system hierarchy and commands"],
+    ["LPIC-1", "network",    60, 0.20, "Network fundamentals"],
+    ["LPIC-1", "process",    55, 0.15, "Process lifecycle"],
+    ["LPIC-1", "security",   60, 0.15, "Basic security"],
+    ["LPIC-1", "disk",       65, 0.15, "Disk partitioning and filesystems"],
+    ["LPIC-1", "service",    55, 0.15, "System services"],
+    ["CompTIA Linux+", "filesystem", 60, 0.18, "File operations"],
+    ["CompTIA Linux+", "network",    55, 0.18, "Network configuration"],
+    ["CompTIA Linux+", "process",    50, 0.16, "Process control"],
+    ["CompTIA Linux+", "security",   65, 0.20, "Security fundamentals"],
+    ["CompTIA Linux+", "disk",       60, 0.14, "Storage management"],
+    ["CompTIA Linux+", "service",    50, 0.14, "Service administration"],
+]
+
+with open("dataset/skill_benchmarks.csv", "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerows(rows)
+
+print("skill_benchmarks.csv generated.")

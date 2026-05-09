@@ -30,16 +30,18 @@ public class CandidatureController {
 
     private final CandidatureService candidatureService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/candidature")
     public ResponseEntity<CandidatureResponseDTO> submitCandidature(
             @PathVariable("id") UUID eventId,
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody CandidatureRequestDTO dto) {
+            @jakarta.validation.Valid @RequestBody CandidatureRequestDTO dto) {
         String participantId = jwt.getSubject();
         CandidatureResponseDTO created =
                 candidatureService.submitCandidature(eventId, participantId, dto.getMotivation());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}/candidatures")

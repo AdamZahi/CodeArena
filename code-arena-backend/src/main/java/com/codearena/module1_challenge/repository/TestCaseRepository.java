@@ -23,7 +23,7 @@ public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
 						WHERE TRIM(tc.id) REGEXP '^[0-9]+$'
 							AND CAST(TRIM(tc.id) AS UNSIGNED) = :id
 						""", nativeQuery = true)
-		boolean existsByNumericId(@Param("id") Long id);
+		int existsByNumericId(@Param("id") Long id);
 
 		@Modifying
 		@Query(value = """

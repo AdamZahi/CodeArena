@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Arena — The Team</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon: #8b5cf6;
+    --neon2: #06b6d4;
+    --neon3: #10b981;
+    --dark: #0a0a0f;
+    --card: #0d0d15;
+    --card2: #12121e;
+    --border: #1a1a2e;
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SCAN LINE ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon), transparent);
+    animation: scan-line 4s linear infinite;
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  section { position: relative; z-index: 1; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes scan-line {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  @keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.6; }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes borderGlow {
+    0%, 100% { border-color: rgba(139,92,246,0.2); }
+    50%      { border-color: rgba(6,182,212,0.4); }
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 4rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  nav::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0;
+    width: 300px; height: 2px;
+    background: linear-gradient(90deg, var(--neon), var(--neon2), transparent);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: neon-flicker 4s infinite;
+  }
+
+  .nav-logo .accent {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+
+  .nav-links a:hover {
+    color: var(--neon2);
+    text-shadow: 0 0 10px rgba(6,182,212,0.4);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, rgba(6,182,212,0.05) 40%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 0;
+    padding: 0.5rem 1.5rem;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeInDown 0.8s ease both;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  }
+
+  .hero-badge::before { content: '●'; animation: pulse 2s infinite; }
+
+  .hero h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    animation: fadeInUp 1s ease 0.2s both;
+  }
+
+  .hero h1 .line1 { display: block; color: var(--text); }
+  .hero h1 .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--neon), var(--neon2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: fadeInUp 1s ease 0.2s both, gradientShift 4s ease infinite;
+  }
+
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    animation: fadeInUp 1s ease 0.4s both;
+  }
+
+  .hero-cta {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeInUp 1s ease 0.6s both;
+  }
+
+  .btn-primary {
+    background: var(--neon);
+    color: white;
+    padding: 0.9rem 2.2rem;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(139,92,246,0.4);
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 50px rgba(139,92,246,0.6);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    padding: 0.9rem 2.2rem;
+    border: 1px solid var(--border);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--neon2);
+    color: var(--neon2);
+    box-shadow: 0 0 20px rgba(6,182,212,0.2);
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,13,21,0.6);
+    padding: 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stats-bar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon), var(--neon2), transparent);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 3rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--neon), var(--neon2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Orbitron', monospace;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 0.3rem;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 6rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-tag::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neon), var(--neon2));
+    box-shadow: 0 0 8px var(--neon);
+  }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .section-title .accent {
+    background: linear-gradient(135deg, var(--neon), var(--neon2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── ABOUT SECTION ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .about-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  }
+
+  .about-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .about-card:hover {
+    border-color: rgba(139,92,246,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 40px rgba(139,92,246,0.1);
+  }
+
+  .about-card:hover::before { opacity: 1; }
+
+  .about-icon {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    background: rgba(139,92,246,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(139,92,246,0.25);
+  }
+
+  .about-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .about-card p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── TEAM GRID ── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .team-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+    animation: borderGlow 4s ease infinite;
+  }
+
+  .team-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon), var(--neon2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .team-card:hover {
+    border-color: rgba(139,92,246,0.5);
+    transform: translateY(-6px);
+    box-shadow: 0 15px 40px rgba(139,92,246,0.15);
+  }
+
+  .team-card:hover::before { opacity: 1; }
+
+  .team-card:hover .team-avatar {
+    transform: scale(1.08);
+    box-shadow: 0 0 30px currentColor;
+  }
+
+  .team-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  /* Unique gradient per member */
+  .team-avatar.hamza {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    box-shadow: 0 0 20px rgba(139,92,246,0.4);
+    color: rgba(139,92,246,0.4);
+  }
+
+  .team-avatar.islem {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    box-shadow: 0 0 20px rgba(6,182,212,0.4);
+    color: rgba(6,182,212,0.4);
+  }
+
+  .team-avatar.farah {
+    background: linear-gradient(135deg, #f472b6, #db2777);
+    box-shadow: 0 0 20px rgba(244,114,182,0.4);
+    color: rgba(244,114,182,0.4);
+  }
+
+  .team-avatar.nesrine {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    box-shadow: 0 0 20px rgba(167,139,250,0.4);
+    color: rgba(167,139,250,0.4);
+  }
+
+  .team-avatar.ghofrane {
+    background: linear-gradient(135deg, #34d399, #059669);
+    box-shadow: 0 0 20px rgba(52,211,153,0.4);
+    color: rgba(52,211,153,0.4);
+  }
+
+  .team-avatar.adem {
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    box-shadow: 0 0 20px rgba(251,191,36,0.4);
+    color: rgba(251,191,36,0.4);
+  }
+
+  .team-avatar.hazem {
+    background: linear-gradient(135deg, #f87171, #dc2626);
+    box-shadow: 0 0 20px rgba(248,113,113,0.4);
+    color: rgba(248,113,113,0.4);
+  }
+
+  .team-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    margin-bottom: 0.35rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .team-card .role {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .team-card .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    margin-top: 0.8rem;
+  }
+
+  .skill-pill {
+    padding: 3px 10px;
+    font-size: 10px;
+    font-family: 'Orbitron', monospace;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+  }
+
+  .skill-pill.purple  { background: rgba(139,92,246,0.1);  border: 1px solid rgba(139,92,246,0.3);  color: var(--neon); }
+  .skill-pill.cyan    { background: rgba(6,182,212,0.1);   border: 1px solid rgba(6,182,212,0.3);   color: var(--neon2); }
+  .skill-pill.green   { background: rgba(16,185,129,0.1);  border: 1px solid rgba(16,185,129,0.3);  color: var(--neon3); }
+  .skill-pill.pink    { background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.3); color: #f472b6; }
+  .skill-pill.yellow  { background: rgba(251,191,36,0.1);  border: 1px solid rgba(251,191,36,0.3);  color: #fbbf24; }
+  .skill-pill.red     { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
+
+  /* ── TECH STACK ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-top: 3rem;
+  }
+
+  .pipe-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.2rem 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-width: 110px;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .pipe-step:hover {
+    border-color: rgba(139,92,246,0.4);
+    transform: translateY(-2px);
+  }
+
+  .pipe-step .pipe-icon { font-size: 1.5rem; }
+
+  .pipe-step .pipe-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .pipe-step .pipe-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .pipe-arrow {
+    color: var(--neon);
+    font-size: 1.2rem;
+    margin: 0 0.5rem;
+    opacity: 0.6;
+    text-shadow: 0 0 10px var(--neon);
+  }
+
+  /* ── PROJECT SECTION ── */
+  .project-section {
+    padding: 6rem 4rem;
+    background: rgba(13,13,21,0.4);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .project-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .feature-list {
+    list-style: none;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.2rem;
+    background: rgba(139,92,246,0.05);
+    border: 1px solid rgba(139,92,246,0.15);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--muted);
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .feature-list li:hover {
+    border-color: rgba(139,92,246,0.3);
+    background: rgba(139,92,246,0.08);
+  }
+
+  .feature-list li span.check {
+    color: var(--neon3);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .feature-list li span.icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .challenge-list {
+    list-style: none;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .challenge-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.2rem;
+    background: rgba(248,113,113,0.05);
+    border: 1px solid rgba(248,113,113,0.15);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  .challenge-list li span.icon { font-size: 1.1rem; flex-shrink: 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: rgba(5,5,8,0.8);
+    position: relative;
+    z-index: 1;
+  }
+
+  footer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neon), var(--neon2), transparent);
+  }
+
+  footer .footer-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  footer .footer-brand span {
+    background: linear-gradient(135deg, var(--neon), var(--neon2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  footer p {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .section { padding: 4rem 1.5rem; }
+    .project-section { padding: 4rem 1.5rem; }
+    .project-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .stats-bar { padding: 1.5rem; }
+    .stat-item { padding: 0 1.5rem; }
+    footer { padding: 1.5rem; flex-direction: column; text-align: center; }
+    .team-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span>⚔️</span>
+    <span>Code<span class="accent">Arena</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#stack">Tech Stack</a></li>
+    <li><a href="#project">Project</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="about">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">Code Arena · Team · 2026</div>
+  <h1>
+    <span class="line1">Code</span>
+    <span class="line2">Arena</span>
+  </h1>
+  <p class="hero-sub">
+    A competitive coding platform built to sharpen your skills through
+    real-time challenges, battles, and rewards.
+    Developed by 7 passionate engineers.
+  </p>
+  <div class="hero-cta">
+    <a href="#team" class="btn-primary">Meet the Team</a>
+    <a href="#project" class="btn-ghost">Explore the Project →</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">7</span>
+    <span class="stat-label">Engineers</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">∞</span>
+    <span class="stat-label">Challenges</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">1v1</span>
+    <span class="stat-label">Battles</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">100%</span>
+    <span class="stat-label">Passion</span>
+  </div>
+</div>
+
+<!-- WHAT WE BUILT -->
+<section id="stack">
+  <div class="section">
+    <div class="section-tag">What We Built</div>
+    <h2 class="section-title">A Platform That Makes Coding<br><span class="accent">Competitive</span></h2>
+    <p style="color: var(--muted); max-width: 520px; line-height: 1.8; margin-top: 0.5rem; font-size: 15px;">
+      CodeArena is a full-stack competitive programming platform with gamification,
+      real-time battles, a rewards shop, and a powerful admin backoffice.
+    </p>
+
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-icon">⚡</div>
+        <h3>Real-Time Challenges</h3>
+        <p>Solve coding problems with a live code editor, anti-cheat system, and instant feedback on your submissions.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">⚔️</div>
+        <h3>1v1 Battles</h3>
+        <p>Challenge other coders to head-to-head battles. Fastest correct solution wins XP and bragging rights.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">🏆</div>
+        <h3>XP & Rewards</h3>
+        <p>Earn experience points, level up your profile, unlock badges, and spend coins in the rewards shop.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">🛒</div>
+        <h3>Rewards Shop</h3>
+        <p>Redeem your earned coins for exclusive items, badges, profile customizations, and more.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">💬</div>
+        <h3>Community</h3>
+        <p>Discuss solutions, share strategies, upvote helpful comments, and learn from fellow coders.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">🔧</div>
+        <h3>Admin Backoffice</h3>
+        <p>Full CRUD management for challenges, products, users, and platform analytics in a cyberpunk dashboard.</p>
+      </div>
+    </div>
+
+    <!-- TECH PIPELINE -->
+    <div style="margin-top: 3rem;">
+      <div class="section-tag" style="margin-bottom: 1.5rem;">Tech Stack</div>
+      <div class="pipeline">
+        <div class="pipe-step">
+          <span class="pipe-icon">🅰️</span>
+          <span class="pipe-name">Angular</span>
+          <span class="pipe-label">Frontend</span>
+        </div>
+        <span class="pipe-arrow">→</span>
+        <div class="pipe-step">
+          <span class="pipe-icon">☕</span>
+          <span class="pipe-name">Spring</span>
+          <span class="pipe-label">Backend</span>
+        </div>
+        <span class="pipe-arrow">→</span>
+        <div class="pipe-step">
+          <span class="pipe-icon">🐬</span>
+          <span class="pipe-name">MySQL</span>
+          <span class="pipe-label">Database</span>
+        </div>
+        <span class="pipe-arrow">→</span>
+        <div class="pipe-step">
+          <span class="pipe-icon">🔐</span>
+          <span class="pipe-name">Keycloak</span>
+          <span class="pipe-label">Auth</span>
+        </div>
+        <span class="pipe-arrow">→</span>
+        <div class="pipe-step">
+          <span class="pipe-icon">🚀</span>
+          <span class="pipe-name">Deploy</span>
+          <span class="pipe-label">& Ship</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT SECTION -->
+<section id="project" class="project-section">
+  <div class="project-inner">
+    <div>
+      <div class="section-tag">The Challenge</div>
+      <h2 class="section-title" style="margin-bottom: 0.5rem;">Why <span class="accent">CodeArena</span>?</h2>
+      <p style="color: var(--muted); line-height: 1.8; font-size: 15px; margin-bottom: 1rem;">
+        Traditional coding practice platforms lack engagement and competitive spirit.
+        <strong style="color: var(--neon2);">CodeArena</strong> changes the game.
+      </p>
+      <p style="color: var(--muted); font-size: 11px; margin-bottom: 1.5rem; font-family: 'Orbitron', monospace; letter-spacing: 1px; text-transform: uppercase;">⚠️ The Old Way</p>
+      <ul class="challenge-list">
+        <li><span class="icon">😴</span> Boring, static problem lists with no motivation</li>
+        <li><span class="icon">📉</span> No progress tracking or gamified experience</li>
+        <li><span class="icon">🚫</span> No real-time competition or social features</li>
+        <li><span class="icon">💤</span> Generic interfaces that put users to sleep</li>
+      </ul>
+    </div>
+
+    <div>
+      <p style="color: var(--muted); font-size: 11px; margin-bottom: 1.5rem; font-family: 'Orbitron', monospace; letter-spacing: 1px; text-transform: uppercase;">✅ The CodeArena Way</p>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Cyberpunk-themed UI that keeps users engaged for hours</li>
+        <li><span class="check">✓</span> XP system, leveling, badges, and a full rewards economy</li>
+        <li><span class="check">✓</span> Live 1v1 coding battles with real-time matchmaking</li>
+        <li><span class="check">✓</span> Anti-cheat protection & robust code evaluation engine</li>
+      </ul>
+      <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px;">
+        <p style="font-family: 'Orbitron', monospace; font-size: 10px; color: var(--neon); margin-bottom: 0.5rem; letter-spacing: 2px; text-transform: uppercase;">💬 Our Vision</p>
+        <p style="font-style: italic; color: var(--muted); font-size: 15px; line-height: 1.7;">From <strong style="color: var(--text);">"just another leetcode"</strong> to <strong style="color: var(--text);">"a gaming experience for coders."</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="section">
+    <div class="section-tag">The Squad</div>
+    <h2 class="section-title">The <span class="accent">Engineers</span> Behind the Code</h2>
+    <p style="color: var(--muted); max-width: 500px; line-height: 1.8; margin-top: 0.5rem; font-size: 15px;">
+      7 developers, one shared mission — building the most engaging competitive coding platform.
+    </p>
+
+    <div class="team-grid">
+      <!-- Hamza -->
+      <div class="team-card">
+        <div class="team-avatar hamza">⚡</div>
+        <h3>Hamza</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill purple">Angular</span>
+          <span class="skill-pill cyan">Spring</span>
+        </div>
+      </div>
+      <!-- Islem -->
+      <div class="team-card">
+        <div class="team-avatar islem">🧠</div>
+        <h3>Islem</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill cyan">Backend</span>
+          <span class="skill-pill green">API</span>
+        </div>
+      </div>
+      <!-- Farah -->
+      <div class="team-card">
+        <div class="team-avatar farah">💫</div>
+        <h3>Farah</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill pink">UI/UX</span>
+          <span class="skill-pill purple">Frontend</span>
+        </div>
+      </div>
+      <!-- Nesrine -->
+      <div class="team-card">
+        <div class="team-avatar nesrine">✨</div>
+        <h3>Nesrine</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill purple">Angular</span>
+          <span class="skill-pill green">Design</span>
+        </div>
+      </div>
+      <!-- Ghofrane -->
+      <div class="team-card">
+        <div class="team-avatar ghofrane">🚀</div>
+        <h3>Ghofrane</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill green">Spring</span>
+          <span class="skill-pill cyan">DevOps</span>
+        </div>
+      </div>
+      <!-- Adem -->
+      <div class="team-card">
+        <div class="team-avatar adem">🔥</div>
+        <h3>Adem</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill yellow">Backend</span>
+          <span class="skill-pill purple">Security</span>
+        </div>
+      </div>
+      <!-- Hazem -->
+      <div class="team-card">
+        <div class="team-avatar hazem">⚔️</div>
+        <h3>Hazem</h3>
+        <div class="role">Full-Stack Dev</div>
+        <div class="skill-tags">
+          <span class="skill-pill red">Java</span>
+          <span class="skill-pill cyan">Angular</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Code<span>Arena</span></div>
+  <p>Esprit · PI-DEV · 2026 · Tunisia 🇹🇳</p>
+  <p style="font-size: 9px; color: rgba(226,232,240,0.25); letter-spacing: 1px;">Built with passion. Coded with fire.</p>
+</footer>
+
+</body>
+</html>

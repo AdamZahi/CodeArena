@@ -28,6 +28,7 @@ export class BattleListComponent implements OnInit {
   creating = false;
   joining = false;
   createError = '';
+  joinError = '';
   searchQuery = '';
   selectedMode = '';
   inviteToken = '';
@@ -131,14 +132,27 @@ export class BattleListComponent implements OnInit {
 
   joinByInvite(): void {
     this.joining = true;
+    this.joinError = '';
     this.battleService.joinRoom({ inviteToken: this.inviteToken }).subscribe({
       next: (lobby) => {
         this.joining = false;
         this.showJoinModal = false;
         this.router.navigate(['/battle/lobby', lobby.room.id]);
       },
-      error: () => {
+      error: (err) => {
         this.joining = false;
+        const message: string = err?.error?.message || 'Unable to join this room.';
+
+        // "User already in room: roomId=<id>, userId=<sub>" — they're already a
+        // participant, so just send them to the lobby.
+        const dupMatch = /already in room:\s*roomId=([0-9a-fA-F-]+)/.exec(message);
+        if (dupMatch) {
+          this.showJoinModal = false;
+          this.router.navigate(['/battle/lobby', dupMatch[1]]);
+          return;
+        }
+
+        this.joinError = message;
       },
     });
   }

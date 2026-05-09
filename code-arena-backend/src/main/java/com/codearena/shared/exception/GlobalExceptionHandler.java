@@ -26,12 +26,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles bean validation exceptions.
+     * Handles bean validation exceptions — returns per-field error details.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+            .map(e -> e.getField() + ": " + e.getDefaultMessage())
+            .collect(java.util.stream.Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
-            .success(false).message("Validation failed").timestamp(Instant.now()).build());
+            .success(false).message(message).timestamp(Instant.now()).build());
     }
 
     /**
@@ -176,4 +179,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
             .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
     }
+    // ── Shop module exceptions ──
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.ProductNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleProductNotFound(
+            com.codearena.module4_shop.exception.ProductNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.InsufficientStockException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInsufficientStock(
+            com.codearena.module4_shop.exception.InsufficientStockException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.CartEmptyException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCartEmpty(
+            com.codearena.module4_shop.exception.CartEmptyException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
+    @ExceptionHandler(com.codearena.module4_shop.exception.OrderNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOrderNotFound(
+            com.codearena.module4_shop.exception.OrderNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.<Void>builder()
+                .success(false).message(ex.getMessage()).timestamp(Instant.now()).build());
+    }
+
 }

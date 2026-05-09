@@ -18,7 +18,7 @@ public class UserUnlock {
     private Long id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId; // keycloakId
+    private String userId; // auth0Id
 
     @Column(name = "item_type", nullable = false)
     private String itemType;

@@ -1,0 +1,27 @@
+<div class="smart-reply-wrapper">
+  <button class="smart-reply-btn" (click)="loadSuggestions()"
+    [disabled]="loading || !messages.length">
+    <span *ngIf="!loading">💡 Smart Reply</span>
+    <span *ngIf="loading">Thinking...</span>
+  </button>
+
+  <div class="suggestions-panel" *ngIf="shown">
+    <div class="suggestions-header">
+      <span>AI Suggestions</span>
+      <button class="close-btn" (click)="close()">×</button>
+    </div>
+
+    <div class="suggestions-loading" *ngIf="loading">
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+      <span>Generating replies...</span>
+    </div>
+
+    <div class="suggestions-list" *ngIf="!loading && suggestions.length > 0">
+      <button class="suggestion-chip" *ngFor="let reply of suggestions" (click)="selectReply(reply)">
+        {{ reply }}
+      </button>
+    </div>
+  </div>
+</div>

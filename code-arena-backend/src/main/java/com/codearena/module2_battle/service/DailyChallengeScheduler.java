@@ -31,7 +31,7 @@ public class DailyChallengeScheduler {
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
 
         // Idempotency guard: skip if today's challenge already exists
-        if (dailyChallengeRepository.findByChallengeDate(today).isPresent()) {
+        if (dailyChallengeRepository.findFirstByChallengeDate(today).isPresent()) {
             log.warn("Daily challenge for {} already exists — skipping generation", today);
             return;
         }

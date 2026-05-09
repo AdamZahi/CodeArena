@@ -26,6 +26,7 @@ export class ChallengeManagementComponent implements OnInit {
     description: '',
     difficulty: '',
     tags: '',
+    language: '',
     testCases: []
   };
 
@@ -63,6 +64,7 @@ export class ChallengeManagementComponent implements OnInit {
       description: '',
       difficulty: '',
       tags: '',
+      language: '',
       testCases: []
     };
     this.errors = {};
@@ -71,10 +73,20 @@ export class ChallengeManagementComponent implements OnInit {
   editChallenge(challenge: any): void {
     this.isEditMode = true;
     this.showForm = true;
-    this.formData = { ...challenge };
-    if (!this.formData.testCases) {
-        this.formData.testCases = [];
-    }
+    // Deep copy to prevent mutating the original list data
+    this.formData = {
+      id: challenge.id,
+      title: challenge.title || '',
+      description: challenge.description || '',
+      difficulty: challenge.difficulty || '',
+      tags: challenge.tags || '',
+      language: challenge.language || '',
+      testCases: (challenge.testCases || []).map((tc: any) => ({
+        input: tc.input || '',
+        expectedOutput: tc.expectedOutput || '',
+        isHidden: tc.isHidden || false
+      }))
+    };
     this.errors = {};
   }
 
@@ -126,13 +138,26 @@ export class ChallengeManagementComponent implements OnInit {
     if (!this.validateForm()) return;
     this.isSaving = true;
 
+    const payload = {
+      title: this.formData.title,
+      description: this.formData.description,
+      difficulty: this.formData.difficulty,
+      tags: this.formData.tags,
+      language: this.formData.language,
+      testCases: this.formData.testCases
+    };
+
     if (this.isEditMode) {
-       // Not implemented yet
-       this.isSaving = false;
-       this.showForm = false;
-       this.loadChallenges();
+       this.challengeService.updateChallenge(this.formData.id, payload).subscribe({
+          next: () => {
+             this.isSaving = false;
+             this.showForm = false;
+             this.loadChallenges();
+          },
+          error: (e) => { console.error('Update failed', e); this.isSaving = false; }
+       });
     } else {
-       this.challengeService.createChallenge(this.formData).subscribe({
+       this.challengeService.createChallenge(payload).subscribe({
           next: () => {
              this.isSaving = false;
              this.showForm = false;

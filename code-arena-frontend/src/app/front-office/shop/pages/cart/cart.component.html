@@ -10,9 +10,24 @@
   </div>
 
   <!-- ── SUCCESS ──────────────────────────────── -->
-  <div class="success-msg" *ngIf="checkoutSuccess">
-    🎉 ORDER PLACED! THANK YOU FOR YOUR PURCHASE!
+<div class="success-msg" *ngIf="checkoutSuccess">
+  <div class="success-icon">🎉</div>
+  <h2 class="success-title">ORDER PLACED!</h2>
+
+  <!-- ── AI MESSAGE ──────────────────────────── -->
+  <div class="ai-message-box" *ngIf="!isLoadingAiMessage && aiOrderMessage">
+    <span class="ai-label">⚡ AI MESSAGE</span>
+    <p class="ai-message">{{ aiOrderMessage }}</p>
   </div>
+  <div class="ai-loading" *ngIf="isLoadingAiMessage">
+    <span class="ai-label">⚡ AI is crafting your message...</span>
+    <div class="ai-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <p class="success-sub">Redirecting to your orders...</p>
+</div>
 
   <!-- ── EMPTY ────────────────────────────────── -->
   <div class="empty-cart" *ngIf="cartItems.length === 0 && !checkoutSuccess">
@@ -186,5 +201,12 @@
 
     </div>
   </div>
-
+<!-- ── PAYMENT MODAL ──────────────────────────── -->
+<app-payment-modal
+  *ngIf="showPaymentModal"
+  [amount]="getFinalTotal()"
+  [itemCount]="cartItems.length"
+  (paymentSuccess)="onPaymentSuccess($event)"
+  (closeModal)="onPaymentModalClose()">
+</app-payment-modal>
 </div>

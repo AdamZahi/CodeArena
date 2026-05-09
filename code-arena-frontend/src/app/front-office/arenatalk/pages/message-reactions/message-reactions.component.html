@@ -1,0 +1,27 @@
+<div class="reactions-wrapper" (clickOutside)="closePicker()">
+
+  <!-- Existing reactions -->
+  <div class="reactions-row">
+    <button class="reaction-chip"
+      *ngFor="let r of reactionEntries"
+      [class.reacted]="r.reacted"
+      (click)="toggleEmoji(r.emoji)">
+      {{ r.emoji }} <span>{{ r.count }}</span>
+    </button>
+
+    <!-- Add reaction button -->
+    <button class="add-reaction-btn" (click)="togglePicker($event)" title="Add reaction">
+      😊 +
+    </button>
+  </div>
+
+  <!-- Emoji picker -->
+  <div class="emoji-picker" *ngIf="showPicker">
+    <button class="emoji-opt"
+      *ngFor="let emoji of availableEmojis"
+      (click)="toggleEmoji(emoji)">
+      {{ emoji }}
+    </button>
+  </div>
+
+</div>

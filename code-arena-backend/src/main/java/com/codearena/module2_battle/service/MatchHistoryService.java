@@ -1,6 +1,8 @@
 package com.codearena.module2_battle.service;
 
-import com.codearena.module2_battle.dto.*;
+import com.codearena.module2_battle.dto.MatchHistoryPageResponse;
+import com.codearena.module2_battle.dto.MatchHistoryPageRequest;
+import com.codearena.module2_battle.dto.MatchHistorySummaryResponse;
 import com.codearena.module2_battle.entity.BattleParticipant;
 import com.codearena.module2_battle.entity.BattleRoom;
 import com.codearena.module2_battle.enums.BattleMode;
@@ -28,7 +30,7 @@ public class MatchHistoryService {
     public MatchHistoryPageResponse getMatchHistory(
             String targetUserId, String requestingUserId, MatchHistoryPageRequest request) {
 
-        userRepository.findByKeycloakId(targetUserId)
+        userRepository.findByAuth0Id(targetUserId)
                 .orElseThrow(() -> new UserNotFoundException(targetUserId));
 
         int size = Math.min(Math.max(request.getSize(), 1), 50);

@@ -40,8 +40,9 @@ public class ProgrammingEvent {
     @Column(name = "location", length = 255)
     private String location;
 
-    @Column(name = "organizer_id", nullable = false)
+    @Column(name = "organizer_id", nullable = true)
     private String organizerId;
+
 
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
@@ -70,4 +71,8 @@ public class ProgrammingEvent {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public boolean isFull() {
+        return maxParticipants > 0 && currentParticipants >= maxParticipants;
+    }
 }

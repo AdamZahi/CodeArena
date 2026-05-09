@@ -48,7 +48,7 @@ public class Judge0Service {
 
     public Map<String, Object> getSubmissionStatus(String token) {
         try {
-            ResponseEntity<Map> response = restTemplate.getForEntity(baseUrl + "/" + token + "?base64_encoded=true", Map.class);
+            ResponseEntity<Map> response = restTemplate.getForEntity(baseUrl + "/" + token + "?base64_encoded=true&fields=*", Map.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
             }

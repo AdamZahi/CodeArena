@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 
 export interface CurrentUser {
   id?: string;
-  keycloakId?: string;
+  auth0Id?: string;
   email?: string;
   firstName?: string;
   lastName?: string;
@@ -45,18 +45,29 @@ export class AuthUserSyncService {
       .pipe(
         distinctUntilChanged(),
         filter((isAuthenticated) => isAuthenticated),
-        switchMap(() =>
-          this.http.get<CurrentUser>(`${environment.apiBaseUrl}/api/users/me`)
-            .pipe(
-              switchMap((user) => this.applyPendingSignupProfileIfAny(user)),
-              switchMap((user) => this.applyAuth0ProfileIfMissing(user)),
-              tap((user) => this.currentUserSubject.next(user)),
-              catchError(() => {
-                this.currentUserSubject.next(null);
-                return EMPTY;
-              })
-            )
-        )
+        switchMap(() => this.auth.user$.pipe(take(1))),
+        filter(user => !!user),
+        switchMap((user) => 
+          this.http.patch<CurrentUser>(`${environment.apiBaseUrl}/api/users/me`, {
+            firstName: user?.given_name || (user?.name?.includes(' ') ? user.name.split(' ')[0] : user?.name),
+            lastName: user?.family_name || (user?.name?.includes(' ') ? user.name.split(' ').slice(1).join(' ') : null),
+            nickname: user?.nickname || user?.name,
+            email: user?.email,
+            avatarUrl: user?.picture
+          }).pipe(
+            catchError(err => {
+              console.warn('Silent profile sync failed', err);
+              return of(null);
+            }),
+            switchMap(() => this.http.get<CurrentUser>(`${environment.apiBaseUrl}/api/users/me`))
+          )
+        ),
+        switchMap((user) => this.applyPendingSignupProfileIfAny(user!)),
+        tap((user) => this.currentUserSubject.next(user)),
+        catchError(() => {
+          this.currentUserSubject.next(null);
+          return EMPTY;
+        })
       )
       .subscribe();
   }

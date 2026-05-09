@@ -25,5 +25,14 @@ export const SHOP_MANAGEMENT_ROUTES: Routes = [
   path: 'dashboard',
   loadComponent: () => import('./pages/shop-dashboard/shop-dashboard.component')
     .then(m => m.ShopDashboardComponent)
-}
+},
+  {
+    // ── ECO ALERTS: AI-powered sustainability monitoring ──
+    // Admin sees products with eco score ≤ 4
+    // Linked to SDG 12 — Responsible Consumption
+    path: 'eco-alerts',
+    loadComponent: () => import('./pages/eco-alerts/eco-alerts.component')
+      .then(m => m.EcoAlertsComponent)
+  }
+
 ];

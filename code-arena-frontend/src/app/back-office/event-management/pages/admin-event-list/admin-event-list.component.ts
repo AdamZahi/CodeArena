@@ -24,6 +24,12 @@ export class AdminEventListComponent implements OnInit, OnDestroy {
   showDashboard = false;
   toggleDashboard(): void {
     this.showDashboard = !this.showDashboard;
+    if (this.showDashboard) {
+      setTimeout(() => {
+        this.renderDonutChart();
+        this.renderBarChart(this.events);
+      }, 100);
+    }
   }
 
   totalEvents = 0;

@@ -11,7 +11,14 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const requiredRole = route.data['role'] as string;
 
   return http.get<{ role?: string }>(`${environment.apiBaseUrl}/api/users/me`).pipe(
-    map((user) => (user?.role === requiredRole ? true : router.parseUrl('/forbidden'))),
-    catchError(() => of(router.parseUrl('/forbidden')))
+map((user) => {
+  const role = user?.role ?? '';
+  const allowed = requiredRole.startsWith('!')
+    ? role !== requiredRole.substring(1)
+    : role === requiredRole;
+  if (allowed) return true;
+  const fallback = route.data['fallbackUrl'] as string;
+  return router.parseUrl(fallback || '/forbidden');
+}),    catchError(() => of(router.parseUrl('/forbidden')))
   );
 };

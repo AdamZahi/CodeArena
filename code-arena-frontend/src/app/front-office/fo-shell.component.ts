@@ -3,15 +3,16 @@ import { RouterOutlet } from '@angular/router';
 import { NotificationComponent } from './shop/notification/notification.component';
 import { NavbarComponent } from '../shared/layout/navbar.component';
 import { FooterComponent } from '../shared/layout/footer.component';
-
+import { CyberAlertComponent } from './coaching-quiz/components/cyber-alert/cyber-alert.component';
 @Component({
   selector: 'app-fo-shell',
   standalone: true,
-  imports: [RouterOutlet, NotificationComponent, NavbarComponent, FooterComponent],
+  imports: [RouterOutlet, NotificationComponent, NavbarComponent, FooterComponent, CyberAlertComponent],
   template: `
     <div class="layout">
       <app-navbar />
       <main class="content">
+        <app-cyber-alert></app-cyber-alert>
         <router-outlet />
       </main>
       <app-footer />

@@ -470,6 +470,40 @@
     text-align: center; max-width: 400px;
     box-shadow: 0 0 60px rgba(139,92,246,0.4);
   }
+
+  /* ── QR CODE VIEWER & SPINNER ────────────────── */
+  .qr-code-viewer {
+    min-height: 232px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
+  }
+
+  .qr-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--neon);
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(139, 92, 246, 0.1);
+    border-top: 3px solid var(--neon);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
   .qr-success-card h2 {
     font-family: 'Orbitron', sans-serif;
     color: #10b981; margin-bottom: 8px;
@@ -631,6 +665,27 @@
   background: var(--card2);
   box-shadow: 0 0 22px rgba(139, 92, 246, 0.28), inset 0 0 18px rgba(139, 92, 246, 0.08);
 }
+
+.char-counter {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.motivation-hint {
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.error-text {
+  color: #ef4444 !important;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
 
 /* ── NEON BUTTONS (checkout-btn) ──────────────── */
 .checkout-btn {

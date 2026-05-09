@@ -10,12 +10,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/shop")
@@ -27,25 +30,38 @@ public class PurchaseController {
     private final ExcelService excelService;
     private final CouponService couponService;
     private final LoyaltyService loyaltyService;
-
-
-
+    private final StripeService stripeService;
 
     // ── CHECKOUT ─────────────────────────────────
     // POST /api/shop/orders/checkout
-    // Main métier avancé — creates order + decrements stock
+    // FIX 1: Override participantId from JWT — client cannot spoof identity
+    // Any authenticated user can checkout — but only for themselves
     @PostMapping("/orders/checkout")
     public ResponseEntity<ApiResponse<PurchaseResponse>> checkout(
-            @Valid @RequestBody PurchaseRequest request
+            @Valid @RequestBody PurchaseRequest request,
+            @AuthenticationPrincipal Jwt jwt
+            // @AuthenticationPrincipal Jwt jwt → Spring injects the JWT token
+            // of the currently logged-in user — cannot be faked
     ) {
+        // CRITICAL: ignore whatever participantId the client sent
+        // always use the identity from the signed JWT token
+        request.setParticipantId(jwt.getSubject());
+        // jwt.getSubject() = Auth0 sub e.g. "google-oauth2|108378..."
+        // This is cryptographically signed — impossible to forge
+
         PurchaseResponse response = purchaseService.checkout(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Order placed successfully"));
     }
 
-    // ── GET ALL ORDERS (Admin) ───────────────────
+    // ── GET ALL ORDERS (Admin ONLY) ──────────────
     // GET /api/shop/orders
+    // FIX 5: Only ADMIN can see all orders
+    @PreAuthorize("hasRole('ADMIN')")
+    // hasRole('ADMIN') checks Spring Security authority "ROLE_ADMIN"
+    // set by JwtAuthConverter which reads from our DB
+    // if user is not ADMIN → 403 Forbidden automatically
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<PurchaseResponse>>> getAllOrders() {
         return ResponseEntity.ok(
@@ -56,8 +72,10 @@ public class PurchaseController {
         );
     }
 
-    // ── GET ORDER BY ID ──────────────────────────
+    // ── GET ORDER BY ID (Admin ONLY) ─────────────
     // GET /api/shop/orders/{id}
+    // FIX 5: Only ADMIN can view any specific order by ID
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/orders/{id}")
     public ResponseEntity<ApiResponse<PurchaseResponse>> getOrderById(
             @PathVariable UUID id
@@ -71,11 +89,19 @@ public class PurchaseController {
     }
 
     // ── GET MY ORDERS (Participant) ──────────────
-    // GET /api/shop/orders/my/{participantId}
-    @GetMapping("/orders/my/{participantId}")
+    // GET /api/shop/orders/me
+    // FIX 2: Replaced /orders/my/{participantId} with /orders/me
+    // participantId now comes from JWT — not from URL
+    // BEFORE: GET /orders/my/google-oauth2|victim → anyone could change this!
+    // AFTER:  GET /orders/me → backend reads identity from JWT
+    @GetMapping("/orders/me")
     public ResponseEntity<ApiResponse<List<PurchaseResponse>>> getMyOrders(
-            @PathVariable String participantId
+            @AuthenticationPrincipal Jwt jwt
     ) {
+        String participantId = jwt.getSubject();
+        // jwt.getSubject() is the Auth0 sub of the LOGGED IN user
+        // cannot be manipulated by the client — it's in the signed token
+
         return ResponseEntity.ok(
                 ApiResponse.success(
                         purchaseService.getOrdersByParticipant(participantId),
@@ -84,8 +110,10 @@ public class PurchaseController {
         );
     }
 
-    // ── UPDATE ORDER STATUS (Admin) ──────────────
+    // ── UPDATE ORDER STATUS (Admin ONLY) ─────────
     // PUT /api/shop/orders/{id}/status
+    // FIX 5: Only ADMIN can change order status
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/orders/{id}/status")
     public ResponseEntity<ApiResponse<PurchaseResponse>> updateStatus(
             @PathVariable UUID id,
@@ -101,20 +129,30 @@ public class PurchaseController {
 
     // ── CANCEL ORDER ─────────────────────────────
     // PUT /api/shop/orders/{id}/cancel
+    // Participant can cancel their OWN order only
+    // We verify ownership in the service layer
     @PutMapping("/orders/{id}/cancel")
     public ResponseEntity<ApiResponse<PurchaseResponse>> cancelOrder(
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt
     ) {
+        String participantId = jwt.getSubject();
+        // Pass participantId to service so it can verify
+        // the order belongs to this user before cancelling
+
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        purchaseService.cancelOrder(id),
+                        purchaseService.cancelOrder(id, participantId),
+                        // cancelOrder now takes participantId to verify ownership
                         "Order cancelled successfully"
                 )
         );
     }
 
-    // ── BEST SELLERS (Métier Avancé) ─────────────
+    // ── BEST SELLERS (Admin ONLY) ─────────────────
     // GET /api/shop/orders/best-sellers
+    // FIX 5: Analytics — admin only
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/orders/best-sellers")
     public ResponseEntity<ApiResponse<List<Object[]>>> getBestSellers() {
         return ResponseEntity.ok(
@@ -125,8 +163,10 @@ public class PurchaseController {
         );
     }
 
-    // ── REVENUE STATS (Métier Avancé) ────────────
+    // ── REVENUE STATS (Admin ONLY) ────────────────
     // GET /api/shop/orders/revenue
+    // FIX 5: Revenue stats — admin only
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/orders/revenue")
     public ResponseEntity<ApiResponse<Double>> getTotalRevenue() {
         return ResponseEntity.ok(
@@ -137,19 +177,28 @@ public class PurchaseController {
         );
     }
 
-    // ── EXCEPTION HANDLER ────────────────────────
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-        log.error("Purchase error: {}", e.getMessage());
-        return ResponseEntity
-                .badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-    }
-    // Add new endpoint:
+    // ── QR CODE ───────────────────────────────────
 // GET /api/shop/orders/{id}/qr
+// Participant gets QR for their OWN order only
+// Admin gets QR for any order
     @GetMapping("/orders/{id}/qr")
-    public ResponseEntity<ApiResponse<String>> getOrderQr(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<String>> getOrderQr(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
         PurchaseResponse order = purchaseService.getOrderById(id);
+
+        // SECURITY: verify ownership unless admin
+        String participantId = jwt.getSubject();
+        boolean isOwner = order.getParticipantId().equals(participantId);
+        boolean isAdmin = jwt.getClaimAsStringList("https://codearena.com/roles") != null
+                && jwt.getClaimAsStringList("https://codearena.com/roles").contains("ADMIN");
+
+        if (!isOwner && !isAdmin) {
+            return ResponseEntity.status(403)
+                    .body(ApiResponse.error("Access denied — not your order"));
+        }
+
         String qr = qrCodeService.generateOrderQr(
                 order.getId().toString(),
                 order.getParticipantId(),
@@ -157,7 +206,11 @@ public class PurchaseController {
         );
         return ResponseEntity.ok(ApiResponse.success(qr, "QR generated"));
     }
-    // GET /api/shop/export/orders
+
+    // ── EXPORT ORDERS (Admin ONLY) ────────────────
+    // GET /api/shop/orders/export
+    // FIX 5: Excel export — admin only
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/orders/export")
     public ResponseEntity<byte[]> exportOrders() throws Exception {
         List<PurchaseResponse> orders = purchaseService.getAllOrders();
@@ -168,16 +221,19 @@ public class PurchaseController {
                 .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .body(excel);
     }
-    // ── VALIDATE COUPON ──────────────────────────
-// POST /api/shop/coupons/validate
+
+    // ── VALIDATE COUPON ───────────────────────────
+    // POST /api/shop/coupons/validate
+    // Any authenticated user can validate a coupon
+    // No role restriction needed — participants use coupons
     @PostMapping("/coupons/validate")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> validateCoupon(
-            @RequestBody java.util.Map<String, String> body
+    public ResponseEntity<ApiResponse<Map<String, Object>>> validateCoupon(
+            @RequestBody Map<String, String> body
     ) {
         String code = body.get("code");
         boolean valid = couponService.isValid(code);
 
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("valid", valid);
         result.put("code", code != null ? code.toUpperCase() : "");
         result.put("discountRate", valid ? couponService.getDiscountRate(code) : 0);
@@ -187,16 +243,24 @@ public class PurchaseController {
 
         return ResponseEntity.ok(ApiResponse.success(result, "Coupon checked"));
     }
-    // ── GET LOYALTY POINTS ───────────────────────
-// GET /api/shop/loyalty/{participantId}
-    @GetMapping("/loyalty/{participantId}")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getLoyaltyPoints(
-            @PathVariable String participantId
+
+    // ── GET MY LOYALTY POINTS ─────────────────────
+    // GET /api/shop/loyalty/me
+    // FIX 3: Replaced /loyalty/{participantId} with /loyalty/me
+    // BEFORE: GET /loyalty/victim-id → anyone could view anyone's points!
+    // AFTER:  GET /loyalty/me → backend reads identity from JWT
+    @GetMapping("/loyalty/me")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getLoyaltyPoints(
+            @AuthenticationPrincipal Jwt jwt
     ) {
+        String participantId = jwt.getSubject();
+        // always reads the logged-in user's points
+        // impossible to read someone else's points
+
         int points = loyaltyService.getPoints(participantId);
         double redeemableValue = loyaltyService.getRedeemableValue(participantId);
 
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("points", points);
         result.put("redeemableValue", redeemableValue);
         result.put("canRedeem", loyaltyService.canRedeem(participantId));
@@ -204,21 +268,69 @@ public class PurchaseController {
         return ResponseEntity.ok(ApiResponse.success(result, "Points fetched"));
     }
 
-    // ── REDEEM POINTS ────────────────────────────
-// POST /api/shop/loyalty/redeem
+    // ── REDEEM POINTS ─────────────────────────────
+    // POST /api/shop/loyalty/redeem
+    // FIX 4: CRITICAL — replaced body participantId with JWT
+    // BEFORE: body had { "participantId": "victim-id", "points": 100 }
+    //         attacker could redeem ANYONE's points!
+    // AFTER:  participantId comes from JWT — only redeem YOUR OWN points
     @PostMapping("/loyalty/redeem")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> redeemPoints(
-            @RequestBody java.util.Map<String, Object> body
+    public ResponseEntity<ApiResponse<Map<String, Object>>> redeemPoints(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal Jwt jwt
+            // JWT is injected by Spring Security — cannot be manipulated
     ) {
-        String participantId = (String) body.get("participantId");
+        String participantId = jwt.getSubject();
+        // CRITICAL: we ignore body.get("participantId") completely
+        // even if attacker sends someone else's ID → we use JWT subject
+
         int pointsToRedeem = (Integer) body.get("points");
+        // only "points" is read from body — participantId is ignored
 
         double discount = loyaltyService.redeemPoints(participantId, pointsToRedeem);
 
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("discount", discount);
         result.put("remainingPoints", loyaltyService.getPoints(participantId));
 
         return ResponseEntity.ok(ApiResponse.success(result, "Points redeemed successfully"));
+    }
+
+    // ── CREATE PAYMENT INTENT ─────────────────────
+    // POST /api/shop/payment/create-intent
+    // Any authenticated user can create a payment intent
+    // Secret key stays on backend — publishable key goes to frontend
+    @PostMapping("/payment/create-intent")
+    public ResponseEntity<ApiResponse<Map<String, String>>> createPaymentIntent(
+            @RequestBody Map<String, Object> body
+    ) {
+        try {
+            double amount = Double.parseDouble(body.get("amount").toString());
+            String currency = body.getOrDefault("currency", "usd").toString();
+            Map<String, String> result = stripeService.createPaymentIntent(amount, currency);
+            return ResponseEntity.ok(ApiResponse.success(result, "Payment intent created"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to create payment intent: " + e.getMessage()));
+        }
+    }
+
+    // ── GET PUBLISHABLE KEY ───────────────────────
+    // GET /api/shop/payment/config
+    // Safe to expose — publishable key is meant to be public
+    @GetMapping("/payment/config")
+    public ResponseEntity<ApiResponse<Map<String, String>>> getPaymentConfig() {
+        Map<String, String> config = new HashMap<>();
+        config.put("publishableKey", stripeService.getPublishableKey());
+        return ResponseEntity.ok(ApiResponse.success(config, "Payment config"));
+    }
+
+    // ── EXCEPTION HANDLER ─────────────────────────
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        log.error("Purchase error: {}", e.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .body(ApiResponse.error(e.getMessage()));
     }
 }

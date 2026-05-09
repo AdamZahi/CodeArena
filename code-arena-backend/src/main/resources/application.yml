@@ -2,6 +2,11 @@ server:
   port: 8080
 
 spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: mistral
   datasource:
     url: jdbc:mysql://mysql-service.data.svc.cluster.local:3306/codearena
     username: codearena_user
@@ -12,8 +17,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: islemazzouz04@gmail.com
-    password: ycsm qcyo tqfk hlbd
+    username: codearenapi@gmail.com
+    password: ecgq lgjy gvmh kxbs
     properties:
       mail:
         smtp:
@@ -31,20 +36,28 @@ spring:
           issuer-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/
           jwk-set-uri: https://dev-70do2fpg2iw11ckn.us.auth0.com/.well-known/jwks.json
 
-keycloak:
-  realm: code-arena
-  client-id: code-arena-backend
-  server-url: http://localhost:8081
+
+
 
 codearena:
   base-url: https://codearena.app
 
 app:
   cors:
-    allowed-origins:
-      - http://localhost:4200
+    allowed-origins: "http://localhost:4200" 
   shop:
     admin-email: islemazzouz04@gmail.com
+    stripe:
+      secret-key: dummy_test_secret_key
+      publishable-key: dummy_test_publishable_key
+
+
+stripe:
+  secret-key: dummy_root_secret_key
+  webhook-secret: dummy_root_webhook_secret
+
+gemini:
+  api-key: ${GEMINI_API_KEY}
 
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
@@ -61,3 +74,23 @@ battle:
     blitz-minutes: 15
     practice-minutes: -1
     daily-minutes: -1
+  ranker:
+    base-url: ${ranker.base-url}
+    connect-timeout-ms: 1500
+    read-timeout-ms: 4000
+    enabled: true
+  classifier:
+    base-url: ${classifier.base-url}
+    connect-timeout-ms: 1500
+    read-timeout-ms: 8000
+    enabled: true
+
+
+
+ai-model:
+  url: ${ai-model}
+
+piston:
+  base-url: ${PISTON_BASE_URL:http://192.168.0.195:2000}
+  run-timeout-ms: 15000
+  memory-limit-bytes: 256000000

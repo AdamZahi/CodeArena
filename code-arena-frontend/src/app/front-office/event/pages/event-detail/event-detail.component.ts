@@ -49,6 +49,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
 
   showQROverlay = false;
   qrCodeImageUrl = '';
+  qrLoading = false;
 
   private subs = new Subscription();
 
@@ -180,7 +181,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
   }
 
   async generateQR(): Promise<void> {
-    const data = this.event?.qrCode || this.event?.id || 'CODEARENA';
+    const data = this.myRegistration?.qrCode || this.event?.id || 'CODEARENA';
+    this.qrLoading = true;
     try {
       const QRCode = await import('qrcode');
       this.qrCodeImageUrl = await QRCode.toDataURL(String(data), {
@@ -191,6 +193,8 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.error('QR failed', e);
       this.qrCodeImageUrl = '';
+    } finally {
+      this.qrLoading = false;
     }
   }
 
@@ -306,11 +310,11 @@ export class EventDetailComponent implements OnInit, OnDestroy {
     }
 
     const motivation = this.motivationText.trim();
-    if (!motivation) {
-      this.setErrorTemporarily('MOTIVATION REQUIRED.');
+    if (!motivation || motivation.length < 20) {
+      this.setErrorTemporarily('MOTIVATION TOO SHORT (MIN 20 CHARS).');
       return;
     }
-
+ 
     this.error = null;
     this.eventService.submitCandidature(this.eventId, motivation).subscribe({
       next: (response) => {
@@ -321,17 +325,18 @@ export class EventDetailComponent implements OnInit, OnDestroy {
         this.successMsg = '⏳ YOUR CANDIDATURE IS UNDER REVIEW';
       },
       error: (err) => {
-        if (err.status === 400) {
-          sessionStorage.setItem(`candidature_${this.eventId}`, 'PENDING');
-          this.exclusiveCandidature = { status: 'PENDING' } as any;
-          this.motivationText = '';
-          this.error = null;
-          this.successMsg = '⏳ YOUR CANDIDATURE IS UNDER REVIEW';
+        console.error('Candidature error:', err);
+        if (err.status === 400 && err.error) {
+          // Display specific validation errors from backend if available
+          const errorMsg = typeof err.error === 'string' ? err.error : 
+                          err.error.motivation || 'INVALID SUBMISSION';
+          this.setErrorTemporarily(errorMsg.toUpperCase());
         } else {
           this.setErrorTemporarily('Candidature submission failed.');
         }
       }
     });
+
   }
 
 
@@ -346,7 +351,7 @@ export class EventDetailComponent implements OnInit, OnDestroy {
             String(r.eventId) === String(this.event?.id)
           );
           this.myRegistration = myReg || null;
-          if (this.myRegistration?.status === 'CONFIRMED') {
+          if (myReg && myReg.status === 'CONFIRMED') {
             await this.generateQR();
           }
           this.loadWaitlistPosition();

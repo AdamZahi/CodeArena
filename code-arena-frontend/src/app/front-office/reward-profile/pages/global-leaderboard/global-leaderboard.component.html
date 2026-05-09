@@ -1,0 +1,83 @@
+<div class="leaderboard-container">
+  <div class="leaderboard-header">
+    <h1>GLOBAL LEADERBOARDS</h1>
+    <div class="tabs">
+      <button 
+        [class.active]="(activeTab$ | async) === 'elo'" 
+        (click)="setTab('elo')">
+        RANKED (ELO)
+      </button>
+      <button 
+        [class.active]="(activeTab$ | async) === 'xp'" 
+        (click)="setTab('xp')">
+        TOTAL XP
+      </button>
+    </div>
+  </div>
+
+  <div class="leaderboard-content">
+    <!-- ELO Leaderboard -->
+    <div class="table-wrapper" *ngIf="(activeTab$ | async) === 'elo'">
+      <table *ngIf="eloLeaderboard$ | async as entries; else loadingElo">
+        <thead>
+          <tr>
+            <th>RANK</th>
+            <th>CODER</th>
+            <th>TIER</th>
+            <th>ELO</th>
+            <th>WINRATE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of entries" [class.highlight]="entry.rank <= 3">
+            <td class="rank-col">
+              <span class="rank-badge" [attr.data-rank]="entry.rank">#{{ entry.rank }}</span>
+            </td>
+            <td class="user-col">
+              <div class="user-info">
+                <img [src]="entry.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + entry.username" class="avatar">
+                <span class="username">{{ entry.username }}</span>
+              </div>
+            </td>
+            <td><span class="tier-label" [attr.data-tier]="entry.tier">{{ entry.tier }}</span></td>
+            <td class="elo-col">{{ entry.elo }} LP</td>
+            <td>{{ (entry.wins + entry.losses) > 0 ? ((entry.wins / (entry.wins + entry.losses) * 100) | number:'1.0-1') + '%' : '0%' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #loadingElo><div class="loading-state">LOADING RANKINGS...</div></ng-template>
+    </div>
+
+    <!-- XP Leaderboard -->
+    <div class="table-wrapper" *ngIf="(activeTab$ | async) === 'xp'">
+      <table *ngIf="xpLeaderboard$ | async as entries; else loadingXp">
+        <thead>
+          <tr>
+            <th>RANK</th>
+            <th>CODER</th>
+            <th>LEVEL</th>
+            <th>TOTAL XP</th>
+            <th>TITLE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of entries" [class.highlight]="entry.rank <= 3">
+            <td class="rank-col">
+              <span class="rank-badge" [attr.data-rank]="entry.rank">#{{ entry.rank }}</span>
+            </td>
+            <td class="user-col">
+              <div class="user-info">
+                <img [src]="entry.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + entry.username" class="avatar">
+                <span class="username">{{ entry.username }}</span>
+              </div>
+            </td>
+            <td>Lvl {{ entry.level }}</td>
+            <td class="xp-col">{{ entry.totalXp | number }} XP</td>
+            <td><span class="title-tag">{{ entry.title || 'Newbie' }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #loadingXp><div class="loading-state">LOADING XP RANKINGS...</div></ng-template>
+    </div>
+  </div>
+</div>
