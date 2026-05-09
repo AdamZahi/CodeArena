@@ -2,14 +2,10 @@ package com.codearena.module2_battle.service;
 
 import com.codearena.module1_challenge.entity.Challenge;
 import com.codearena.module1_challenge.repository.ChallengeRepository;
-import com.codearena.module2_battle.dto.PostMatchSummaryResponse;
-import com.codearena.module2_battle.dto.ReplayResponse;
-import com.codearena.module2_battle.dto.SeasonLeaderboardResponse;
-import com.codearena.module2_battle.dto.SeasonLeaderboardEntryResponse;
-import com.codearena.module2_battle.dto.ReplaySubmissionResponse;
-import com.codearena.module2_battle.dto.ArenaChallengeResponse;
+import com.codearena.module2_battle.dto.*;
 import com.codearena.module2_battle.entity.*;
 import com.codearena.module2_battle.enums.BattleRoomStatus;
+import com.codearena.module2_battle.enums.BattleSubmissionStatus;
 import com.codearena.module2_battle.enums.ParticipantRole;
 import com.codearena.module2_battle.exception.ActiveSeasonNotFoundException;
 import com.codearena.module2_battle.exception.BattleRoomNotFoundException;
@@ -27,6 +23,12 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 import com.codearena.module2_battle.util.UserDisplayUtils;
+
+
+import com.codearena.module2_battle.dto.MatchComparisonResponse;
+import com.codearena.module2_battle.dto.ChallengeComparisonResponse;
+import com.codearena.module2_battle.dto.PlayerScoreResponse;
+import com.codearena.module2_battle.dto.PlayerChallengeAttemptResponse;
 
 /**
  * Read-only service for post-match queries (scoreboard, replay, leaderboard).
@@ -261,4 +263,84 @@ public class BattleResultsService {
     private String resolveUsername(String userId) {
         return UserDisplayUtils.resolveDisplayName(userId, userRepository);
     }
+
+    @Transactional(readOnly = true)
+    public MatchComparisonResponse getMatchComparison(String roomId, String requestingUserId) {
+        BattleRoom room = battleRoomRepository.findById(UUID.fromString(roomId))
+                .orElseThrow(() -> new BattleRoomNotFoundException(roomId));
+
+        List<BattleParticipant> participants = participantRepository.findByRoomId(roomId);
+        List<BattleRoomChallenge> roomChallenges = roomChallengeRepository.findByRoomIdOrderByPositionAsc(roomId);
+
+        // Build standings
+        List<PlayerScoreResponse> standings = participants.stream()
+                .sorted(Comparator.comparingInt(p -> (p.getRank() == null ? 999 : p.getRank())))
+                .map(p -> {
+                    String username = resolveUsername(p.getUserId());
+                    return PlayerScoreResponse.builder()
+                            .participantId(p.getId().toString())
+                            .userId(p.getUserId())
+                            .username(username)
+                            .finalRank(p.getRank() != null ? p.getRank() : 0)
+                            .finalScore(p.getScore() != null ? p.getScore() : 0)
+                            .isWinner(p.getRank() != null && p.getRank() == 1)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // Get all submissions for this room upfront
+        List<String> participantIds = participants.stream()
+                .map(p -> p.getId().toString())
+                .collect(Collectors.toList());
+        List<BattleSubmission> allSubs = submissionRepository.findByParticipantIdIn(participantIds);
+
+        // Build challenge comparisons
+        List<ChallengeComparisonResponse> challenges = roomChallenges.stream()
+                .map(rc -> {
+                    List<Object[]> rows = challengeRepository.findByIdSanitized(
+                            Long.parseLong(rc.getChallengeId().trim()));
+                    String title = rows.isEmpty() ? "Challenge" : String.valueOf(rows.get(0)[1]);
+                    String difficulty = rows.isEmpty() ? null : String.valueOf(rows.get(0)[3]);
+
+                    List<BattleSubmission> subs = allSubs.stream()
+                            .filter(s -> rc.getId().toString().equals(s.getRoomChallengeId()))
+                            .sorted(Comparator.comparingInt(s -> -(s.getScore() != null ? s.getScore() : 0)))
+                            .collect(Collectors.toList());
+
+                    List<PlayerChallengeAttemptResponse> attempts = subs.stream()
+                            .map(s -> PlayerChallengeAttemptResponse.builder()
+                                    .userId(s.getParticipantId())
+                                    .solved(s.getStatus() == BattleSubmissionStatus.ACCEPTED)
+                                    .totalChallengeScore(s.getScore() != null ? s.getScore() : 0)
+                                    .language(s.getLanguage())
+                                    .runtimeMs(s.getRuntimeMs())
+                                    .memoryKb(s.getMemoryKb())
+                                    .attemptCount(s.getAttemptNumber() != null ? s.getAttemptNumber() : 1)
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return ChallengeComparisonResponse.builder()
+                            .roomChallengeId(rc.getId().toString())
+                            .position(rc.getPosition())
+                            .title(title)
+                            .difficulty(difficulty)
+                            .attempts(attempts)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        long durationSeconds = (room.getStartsAt() != null && room.getEndsAt() != null)
+                ? Duration.between(room.getStartsAt(), room.getEndsAt()).getSeconds() : 0;
+
+        return MatchComparisonResponse.builder()
+                .roomId(roomId)
+                .mode(room.getMode() != null ? room.getMode().name() : null)
+                .durationSeconds(durationSeconds)
+                .standings(standings)
+                .challenges(challenges)
+                .scoringFormulaLines(List.of("Score = correctness × 60 + speed × 25 + quality × 15"))
+                .aiScoringAvailable(false)
+                .build();
+    }
+
 }
