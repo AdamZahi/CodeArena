@@ -56,6 +56,9 @@ stripe:
   secret-key: dummy_root_secret_key
   webhook-secret: dummy_root_webhook_secret
 
+gemini:
+  api-key: ${GEMINI_API_KEY}
+
 # Judge0 CE (Community Edition) — free, no API key required
 judge0:
   base-url: https://ce.judge0.com
@@ -88,6 +91,6 @@ ai-model:
   url: ${ai-model}
 
 piston:
-  base-url: ${piston.base-url}
+  base-url: ${PISTON_BASE_URL:http://192.168.0.195:2000}
   run-timeout-ms: 15000
   memory-limit-bytes: 256000000
