@@ -3,6 +3,7 @@ package com.codearena.module8_terminalquest.controller;
 import com.codearena.module8_terminalquest.dto.CreateStoryLevelRequest;
 import com.codearena.module8_terminalquest.dto.StoryLevelDto;
 import com.codearena.module8_terminalquest.service.StoryLevelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +34,13 @@ public class StoryLevelController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<StoryLevelDto> createLevel(@RequestBody CreateStoryLevelRequest request) {
+    public ResponseEntity<StoryLevelDto> createLevel(@Valid @RequestBody CreateStoryLevelRequest request) {
         return ResponseEntity.ok(storyLevelService.createLevel(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<StoryLevelDto> updateLevel(@PathVariable UUID id, @RequestBody CreateStoryLevelRequest request) {
+    public ResponseEntity<StoryLevelDto> updateLevel(@PathVariable UUID id, @Valid @RequestBody CreateStoryLevelRequest request) {
         return ResponseEntity.ok(storyLevelService.updateLevel(id, request));
     }
 

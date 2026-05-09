@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,10 +28,13 @@ interface TerminalLine {
 })
 export class LevelPlayComponent implements OnInit, OnDestroy {
   @ViewChild('terminalOutput') terminalOutput!: ElementRef<HTMLDivElement>;
+  @ViewChild('terminalInput') terminalInputRef!: ElementRef<HTMLInputElement>;
 
   mission: StoryMission | null = null;
   commandHistory: TerminalLine[] = [];
   currentCommand = '';
+  private inputHistory: string[] = [];
+  private historyIndex = -1;
   isCorrect: boolean | null = null;
   result: SubmitAnswerResponse | null = null;
   showHint = false;
@@ -91,6 +94,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
         this.totalTime = this.audio.getTimeForDifficulty(mission.difficulty, mission.isBoss);
         this.timeRemaining = this.totalTime;
         this.startTimer();
+        this.focusInput();
 
         this.isAdaptiveLoading = true;
         this.adaptiveService.predictAdaptation(this.missionId).subscribe({
@@ -199,17 +203,22 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
     this.colonBlink = false;
     this.currentCommand = '';
     this.commandHistory = [];
+    this.inputHistory = [];
+    this.historyIndex = -1;
     this.explanation = '';
     this.isExplaining = false;
     this.addLine('System ready. Type your command below.', 'info');
     this.timeRemaining = this.totalTime;
     this.startTimer();
+    this.focusInput();
   }
 
   executeCommand(): void {
     const cmd = this.currentCommand.trim();
     if (!cmd || this.isSubmitting || !this.mission || this.isCorrect === true || this.isTimeOut) return;
 
+    this.inputHistory.push(cmd);
+    this.historyIndex = -1;
     this.addLine(`$ ${cmd}`, 'input');
     this.currentCommand = '';
     this.isSubmitting = true;
@@ -220,6 +229,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
         this.result = res;
         this.isCorrect = res.correct;
         this.isSubmitting = false;
+        this.focusInput();
 
         if (res.correct) {
           this.clearTimer();
@@ -245,6 +255,7 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         this.addLine('✗ Connection error. Try again.', 'error');
         this.scrollTerminal();
+        this.focusInput();
       }
     });
   }
@@ -270,6 +281,38 @@ export class LevelPlayComponent implements OnInit, OnDestroy {
 
   getStarDisplay(stars: number): string[] {
     return [1, 2, 3].map(i => i <= stars ? '★' : '☆');
+  }
+
+  onInputKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!this.inputHistory.length) return;
+      this.historyIndex = Math.min(this.historyIndex + 1, this.inputHistory.length - 1);
+      this.currentCommand = this.inputHistory[this.inputHistory.length - 1 - this.historyIndex];
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (this.historyIndex <= 0) { this.historyIndex = -1; this.currentCommand = ''; return; }
+      this.historyIndex--;
+      this.currentCommand = this.inputHistory[this.inputHistory.length - 1 - this.historyIndex];
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      this.toggleHint();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'Escape') {
+      if (this.showHint) { this.showHint = false; }
+      else if (!this.isLoading && !this.isSubmitting) { this.backToMap(); }
+    } else if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      this.commandHistory = [];
+    }
+  }
+
+  private focusInput(): void {
+    setTimeout(() => this.terminalInputRef?.nativeElement?.focus(), 50);
   }
 
   private addLine(text: string, type: TerminalLine['type']): void {

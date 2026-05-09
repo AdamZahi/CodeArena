@@ -76,7 +76,7 @@ export class ChapterFormComponent implements OnInit {
       },
       error: (err) => {
         console.error('Save failed:', err);
-        this.errorMsg = 'Failed to save chapter. Please try again.';
+        this.errorMsg = err.error?.message || 'Failed to save chapter. Please try again.';
         this.isSaving = false;
       }
     });

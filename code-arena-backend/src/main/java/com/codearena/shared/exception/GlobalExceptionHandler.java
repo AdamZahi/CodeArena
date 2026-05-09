@@ -26,12 +26,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles bean validation exceptions.
+     * Handles bean validation exceptions — returns per-field error details.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+            .map(e -> e.getField() + ": " + e.getDefaultMessage())
+            .collect(java.util.stream.Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<Void>builder()
-            .success(false).message("Validation failed").timestamp(Instant.now()).build());
+            .success(false).message(message).timestamp(Instant.now()).build());
     }
 
     /**

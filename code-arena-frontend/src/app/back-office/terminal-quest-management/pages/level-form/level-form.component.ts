@@ -104,7 +104,7 @@ export class LevelFormComponent implements OnInit {
       },
       error: (err) => {
         console.error('Save failed:', err);
-        this.errorMsg = 'Failed to save level. Check that acceptedAnswers is valid JSON.';
+        this.errorMsg = err.error?.message || 'Failed to save level. Please try again.';
         this.isSaving = false;
       }
     });
