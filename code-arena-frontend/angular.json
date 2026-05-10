@@ -41,13 +41,19 @@
                   "maximumWarning": "500kB",
                   "maximumError": "1MB"
                 },
-     {
-  "type": "anyComponentStyle",
-  "maximumWarning": "50kb",
-  "maximumError": "100kb"
-}
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,

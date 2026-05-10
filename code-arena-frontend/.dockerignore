@@ -1,0 +1,15 @@
+node_modules
+dist
+.angular
+coverage
+.git
+.gitignore
+.vscode
+.idea
+.editorconfig
+*.log
+ng_build.log
+README.md
+sonar-project.properties
+Dockerfile
+.dockerignore
