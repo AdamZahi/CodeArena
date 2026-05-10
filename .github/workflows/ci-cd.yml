@@ -36,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/final-merge'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,11 +52,15 @@ jobs:
         with:
           context: ./code-arena-backend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/codearena-backend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/codearena-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/codearena-backend:2.0
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./code-arena-frontend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/codearena-frontend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/codearena-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/codearena-frontend:2.0
