@@ -37,7 +37,7 @@ spec:
       labels:
         app: backend
     spec:
-      # Avoid worker3 — historically flaky in this cluster.
+      # Avoid k8s-5vm-worker3 — historically flaky in this cluster.
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -45,7 +45,7 @@ spec:
               - matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: NotIn
-                    values: ["worker3"]
+                    values: ["k8s-5vm-worker3"]
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100

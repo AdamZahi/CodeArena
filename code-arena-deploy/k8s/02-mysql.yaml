@@ -34,11 +34,11 @@ spec:
       labels:
         app: mysql
     spec:
-      # Pin to worker2 because data lives on its hostPath (/data/mysql-codearena).
+      # Pin to k8s-5vm-worker2 because data lives on its hostPath (/data/mysql-codearena).
       # If you move this pod to another node the data WILL NOT follow.
       # Adjust hostname to match `kubectl get nodes -o wide` if yours differs.
       nodeSelector:
-        kubernetes.io/hostname: worker2
+        kubernetes.io/hostname: k8s-5vm-worker2
       terminationGracePeriodSeconds: 30
       containers:
         - name: mysql
