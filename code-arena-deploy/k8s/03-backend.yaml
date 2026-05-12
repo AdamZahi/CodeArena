@@ -1,4 +1,14 @@
 ---
+# ConfigMap for backend environment variables.
+# PISTON_BASE_URL points to the self-hosted Piston pod in the cluster.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: codearena
+data:
+  PISTON_BASE_URL: "http://192.168.241.14:2000"
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -37,7 +47,7 @@ spec:
       labels:
         app: backend
     spec:
-      # Avoid worker3 — historically flaky in this cluster.
+      # Avoid k8s-5vm-worker3 — historically flaky in this cluster.
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -45,7 +55,7 @@ spec:
               - matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: NotIn
-                    values: ["worker3"]
+                    values: ["k8s-5vm-worker3"]
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
@@ -56,7 +66,7 @@ spec:
                     app: backend
       containers:
         - name: backend
-          image: adamzahi/codearena-backend:2.0
+          image: adamzahi/codearena-backend:2.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

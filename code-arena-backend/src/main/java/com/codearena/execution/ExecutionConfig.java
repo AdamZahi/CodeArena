@@ -46,7 +46,7 @@ public class ExecutionConfig {
 
     public static class PistonConfig {
         private boolean enabled = true;
-        private String baseUrl = "http://192.168.0.195:2000/api/v2";
+        private String baseUrl = "${PISTON_BASE_URL:http://192.168.241.14:2000}";
         private int timeoutSeconds = 10;
         private int compileTimeoutMs = 10000;
         private int runTimeoutMs = 10000;
