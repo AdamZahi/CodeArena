@@ -104,6 +104,7 @@ spec:
               memory: "1Gi"
       volumes:
         - name: mysql-data
-          hostPath:
-            path: /data/mysql-codearena
-            type: DirectoryOrCreate
+          volumes:
+            - name: mysql-data
+              persistentVolumeClaim:
+                claimName: mysql-pvc
